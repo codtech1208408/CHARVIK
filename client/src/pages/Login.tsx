@@ -173,7 +173,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
             <div>
               <label className="block text-xs font-bold text-[#172B4D] uppercase tracking-wider mb-1.5">
                 {selectedRole === 'Captain'
-                  ? 'Captain Registered Mobile Number'
+                  ? 'Registered Mobile Number'
                   : 'Email / Username'}
               </label>
               <div className="relative rounded-xl shadow-xs">
