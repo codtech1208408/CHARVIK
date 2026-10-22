@@ -381,4 +381,22 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_complaints_status ON complaints(status, priority);
     CREATE INDEX IF NOT EXISTS idx_repairs_status ON repair_work_orders(status);
   `);
+
+  try {
+    db.exec('ALTER TABLE administrators ADD COLUMN phone_number TEXT;');
+  } catch (e) {
+    // Column already exists
+  }
+
+  try {
+    db.exec('ALTER TABLE buses ADD COLUMN assigned_captain_id INTEGER;');
+  } catch (e) {
+    // Column already exists
+  }
+
+  try {
+    db.exec("UPDATE administrators SET phone_number = '9701055555' WHERE role = 'Captain' AND (phone_number IS NULL OR phone_number = '');");
+    db.exec("UPDATE buses SET assigned_captain_id = (SELECT id FROM employees WHERE role = 'Captain' LIMIT 1) WHERE id = 1;");
+    db.exec("UPDATE employees SET assigned_bus_id = 1 WHERE role = 'Captain' AND id = (SELECT id FROM employees WHERE role = 'Captain' LIMIT 1);");
+  } catch (e) {}
 }

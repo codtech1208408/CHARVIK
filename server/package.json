@@ -7,16 +7,21 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "seed": "tsx src/seed.ts"
+    "seed": "tsx src/seed.ts",
+    "migrate:supabase": "tsx src/migrate_to_supabase.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
+    "@types/ws": "^8.18.2",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.8.1",
+    "cloudinary": "^2.11.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "ws": "^8.22.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

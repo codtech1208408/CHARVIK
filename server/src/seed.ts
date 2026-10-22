@@ -19,6 +19,19 @@ export function runSeed() {
     VALUES (?, ?, ?, ?, ?)
   `).run('Admin Manager', 'admin@charvik.com', passwordHash, 'Super Admin', 'Active');
 
+  // Seed default Captain & Supporter accounts
+  const captainHash = bcrypt.hashSync('captain123', 10);
+  db.prepare(`
+    INSERT INTO administrators (name, email_or_username, password_hash, role, status)
+    VALUES (?, ?, ?, ?, ?)
+  `).run('Fleet Captain', 'captain@charvik.com', captainHash, 'Captain', 'Active');
+
+  const supporterHash = bcrypt.hashSync('supporter123', 10);
+  db.prepare(`
+    INSERT INTO administrators (name, email_or_username, password_hash, role, status)
+    VALUES (?, ?, ?, ?, ?)
+  `).run('Support Staff Member', 'supporter@charvik.com', supporterHash, 'Support Staff', 'Active');
+
   // Seed Application Settings
   const insertSetting = db.prepare('INSERT OR REPLACE INTO application_settings (key, value, description) VALUES (?, ?, ?)');
   insertSetting.run('company_name', 'Charvik Staffing Consultancy', 'Official business name');

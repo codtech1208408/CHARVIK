@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { db } from './db';
+import { db } from './db.js';
 
 const hash = bcrypt.hashSync('charvik@temp2026', 10);
 

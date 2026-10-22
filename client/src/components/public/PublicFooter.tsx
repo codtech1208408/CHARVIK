@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUp, ChevronRight } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUp, ChevronRight, Users } from 'lucide-react';
 
 export const PublicFooter: React.FC = () => {
   const scrollToTop = () => {
@@ -63,7 +63,7 @@ export const PublicFooter: React.FC = () => {
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links with Supporter Login */}
           <div className="space-y-3">
             <h4 className="text-sm font-bold uppercase tracking-wider text-blue-400 border-b border-white/10 pb-2">
               Quick Navigation
@@ -156,17 +156,25 @@ export const PublicFooter: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar with Role Portal Links */}
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>© {new Date().getFullYear()} Charvik Staffing Consultancy. All rights reserved.</p>
-          <div className="flex items-center space-x-6">
-            <span className="text-slate-400">ISO Standards Fleet Maintenance</span>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <Link
+              to="/supporter"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 transition-all font-bold text-xs"
+              title="Supporter Account Portal (/supporter)"
+            >
+              <Users className="w-3.5 h-3.5 text-emerald-400" />
+              <span>/supporter</span>
+            </Link>
+
             <button
               onClick={scrollToTop}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
+              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 ml-2"
               aria-label="Back to top"
             >
-              <span>Back to top</span>
+              <span>Top</span>
               <ArrowUp className="w-3.5 h-3.5" />
             </button>
           </div>

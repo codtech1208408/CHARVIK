@@ -1,4 +1,4 @@
-import { db } from './db';
+import { db } from './db.js';
 
 // Clear out dummy operational records
 const tablesToClear = [

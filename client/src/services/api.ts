@@ -136,6 +136,20 @@ export const api = {
   saveSettings: (data: Record<string, string>) => request<any>('/settings', { method: 'POST', body: JSON.stringify(data) }),
   getAuditLogs: () => request<any[]>('/audit-logs'),
 
+  // Staff Credentials (issued by Admin)
+  getStaffCredentials: () => request<any[]>('/staff-credentials'),
+  createStaffCredential: (data: { name: string; email_or_username: string; phone_number?: string; password: string; role: string }) =>
+    request<any>('/staff-credentials', { method: 'POST', body: JSON.stringify(data) }),
+  resetStaffPassword: (id: number | string, newPassword: string) =>
+    request<any>(`/staff-credentials/${id}/password`, { method: 'PUT', body: JSON.stringify({ newPassword }) }),
+  toggleStaffCredentialStatus: (id: number | string, status: 'Active' | 'Inactive') =>
+    request<any>(`/staff-credentials/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  deleteStaffCredential: (id: number | string) =>
+    request<any>(`/staff-credentials/${id}`, { method: 'DELETE' }),
+
+  // Captain Duty
+  getCaptainDuty: () => request<any>('/captain/my-duty'),
+
   // File Upload
   uploadFile: async (file: File) => {
     const formData = new FormData();

@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (emailOrUser: string, pass: string) => Promise<void>;
+  login: (emailOrUser: string, pass: string) => Promise<User>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -40,12 +40,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     verifyAuth();
   }, [token]);
 
-  const login = async (emailOrUser: string, pass: string) => {
+  const login = async (emailOrUser: string, pass: string): Promise<User> => {
     const res = await api.login({ email_or_username: emailOrUser, password: pass });
     setToken(res.token);
     setUser(res.user);
     localStorage.setItem('charvik_token', res.token);
     localStorage.setItem('charvik_user', JSON.stringify(res.user));
+    return res.user;
   };
 
   const logout = () => {

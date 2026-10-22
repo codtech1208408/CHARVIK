@@ -16,7 +16,21 @@ import {
   Eye,
   ArrowUpRight,
   Sparkles,
-  Save
+  Save,
+  Search,
+  Bell,
+  MapPin,
+  Navigation,
+  Star,
+  Activity,
+  Users,
+  Briefcase,
+  ChevronRight,
+  Clock,
+  Radio,
+  Sliders,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import { StatCard } from '../components/common/StatCard';
 import { Badge } from '../components/common/Badge';
@@ -42,18 +56,18 @@ export const Dashboard: React.FC = () => {
   const [data, setData] = useState<any>(null);
   const [buses, setBuses] = useState<any[]>([]);
 
+  // Search & Filter state
+  const [globalSearch, setGlobalSearch] = useState('');
+
+  // Active operational table tab
+  const [activeTab, setActiveTab] = useState<'complaints' | 'tyres' | 'ac' | 'oil' | 'battery'>('complaints');
+
   // Daily KM quick entry state
   const [quickDate, setQuickDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [quickBusId, setQuickBusId] = useState<number | string>('');
   const [quickKm, setQuickKm] = useState<number | string>('');
   const [quickDriver, setQuickDriver] = useState('');
   const [savingKm, setSavingKm] = useState(false);
-
-  // Quick complaint modal/inline
-  const [quickComplaintBus, setQuickComplaintBus] = useState('');
-  const [quickComplaintType, setQuickComplaintType] = useState('AC');
-  const [quickComplaintDesc, setQuickComplaintDesc] = useState('');
-  const [savingComplaint, setSavingComplaint] = useState(false);
 
   useEffect(() => {
     loadDashboard();
@@ -121,32 +135,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const handleSaveQuickComplaint = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!quickComplaintBus || !quickComplaintDesc) {
-      error('Please select a bus and describe the complaint');
-      return;
-    }
-    setSavingComplaint(true);
-    try {
-      await api.createComplaint({
-        bus_id: quickComplaintBus,
-        category: quickComplaintType,
-        description: quickComplaintDesc,
-        priority: 'High',
-        reported_by: 'Driver (Quick Log)',
-        status: 'Open'
-      });
-      success('Complaint registered successfully!');
-      setQuickComplaintDesc('');
-      loadDashboard();
-    } catch (err: any) {
-      error(err.message || 'Failed to register complaint');
-    } finally {
-      setSavingComplaint(false);
-    }
-  };
-
   if (loading && !data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -157,6 +145,7 @@ export const Dashboard: React.FC = () => {
   }
 
   const s = data?.summary || {};
+  const add = data?.additionalKpis || {};
 
   const pieColors = ['#16A34A', '#DC2626', '#D97706', '#64748B'];
   const statusPieData = (data?.statusDistribution || []).map((item: any) => ({
@@ -164,22 +153,40 @@ export const Dashboard: React.FC = () => {
     value: item.count
   }));
 
-  const maintenanceBarData = [
-    { name: 'Tyre', count: 5 },
-    { name: 'AC', count: 4 },
-    { name: 'Oil & DPF', count: 6 },
-    { name: 'Engine', count: 3 },
-    { name: 'Battery', count: 4 },
-  ];
+  const maintenanceBarData = (data?.kmBasedSchedules || []).map((item: any) => ({
+    name: item.service.replace(' Maintenance', '').replace(' / Check', '').replace(' Change', ''),
+    count: item.dueSoonCount || 0
+  }));
+
+  // Today's formatted live date
+  const todayFormatted = new Date().toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+
+  // Filtered upcoming maintenance based on search
+  const filteredUpcoming = (data?.upcoming || []).filter((m: any) => {
+    if (!globalSearch) return true;
+    const q = globalSearch.toLowerCase();
+    return (
+      m.bus_number?.toLowerCase().includes(q) ||
+      m.registration_number?.toLowerCase().includes(q) ||
+      m.maintenance_type?.toLowerCase().includes(q) ||
+      m.status?.toLowerCase().includes(q)
+    );
+  });
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
+    <div className="space-y-6 pb-12">
+      {/* =========================================================================
+          1. HEADER BAR: Welcome, Global Search, Live Date & Notifications
+         ========================================================================= */}
       <div
         data-aos="fade-down"
-        className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+        className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
       >
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3.5">
           <div className="w-12 h-12 rounded-2xl bg-[#142B4A] flex items-center justify-center text-white shadow-md shrink-0">
             <Bus className="w-6 h-6 text-blue-400" />
           </div>
@@ -188,219 +195,836 @@ export const Dashboard: React.FC = () => {
               <h2 className="text-xl sm:text-2xl font-black text-[#142B4A] tracking-tight">
                 Welcome, Admin
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 Fleet Operations Live
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Keep your fleet safe, compliant, and continuously running across all routes.
+              Bus Fleet & Maintenance Management Platform • Section 3.1 Operations Dashboard
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3 self-end md:self-auto">
-          <div className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
-            <span>11 Oct 2026</span>
+        <div className="flex items-center flex-wrap gap-2.5 sm:gap-3">
+          {/* Global Search Bar */}
+          <div className="relative min-w-[220px] sm:min-w-[260px]">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search bus, service, driver..."
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none text-slate-700"
+            />
           </div>
+
+          {/* Date Widget */}
+          <div className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 flex items-center gap-2">
+            <CalendarDays className="w-3.5 h-3.5 text-blue-600" />
+            <span>{todayFormatted}</span>
+          </div>
+
+          {/* Notification Bell with Badge */}
+          <button
+            onClick={() => navigate('/admin/complaints')}
+            className="relative p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors"
+            title="Operational Alerts"
+          >
+            <Bell className="w-4 h-4" />
+            {(s.pendingComplaints || s.scheduledMaintenance) > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-white animate-bounce">
+                {(s.pendingComplaints || 0) + (s.scheduledMaintenance || 0)}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Summary KPI Cards Grid (Matches Reference Image 1 & 2 & 3) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-        <StatCard
-          title="Total Buses"
-          value={s.totalBuses || 32}
-          icon={Bus}
-          iconBgColor="bg-blue-50"
-          iconColor="text-blue-600"
-          linkTo="/admin/buses"
-          dataAosDelay={50}
-        />
-        <StatCard
-          title="Active Buses"
-          value={s.activeBuses || 28}
-          icon={CheckCircle2}
-          iconBgColor="bg-emerald-50"
-          iconColor="text-emerald-600"
-          linkTo="/admin/buses?status=Active"
-          dataAosDelay={100}
-        />
-        <StatCard
-          title="Under Maint."
-          value={s.underMaintenance || 2}
-          icon={Wrench}
-          iconBgColor="bg-amber-50"
-          iconColor="text-amber-600"
-          linkTo="/admin/buses?status=Under%20Maintenance"
-          dataAosDelay={150}
-        />
-        <StatCard
-          title="Sched. Maint."
-          value={s.scheduledMaintenance || 8}
-          icon={CalendarDays}
-          iconBgColor="bg-indigo-50"
-          iconColor="text-indigo-600"
-          linkTo="/admin/maintenance-schedule"
-          dataAosDelay={200}
-        />
-        <StatCard
-          title="Pending Complaints"
-          value={s.pendingComplaints || 5}
-          icon={AlertTriangle}
-          iconBgColor="bg-rose-50"
-          iconColor="text-rose-600"
-          linkTo="/admin/complaints"
-          dataAosDelay={250}
-        />
-        <StatCard
-          title="Completed Month"
-          value={s.completedThisMonth || 27}
-          icon={CheckCircle2}
-          iconBgColor="bg-purple-50"
-          iconColor="text-purple-600"
-          linkTo="/admin/maintenance-schedule?status=Completed"
-          dataAosDelay={300}
-        />
+      {/* =========================================================================
+          2. PRIMARY KPI CARDS (7 Cards as per Section 3.1)
+         ========================================================================= */}
+      <div>
+        <div className="flex items-center justify-between mb-2.5 px-0.5">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Primary Fleet Metrics (Section 3.1)
+          </h3>
+          <span className="text-[11px] font-semibold text-blue-600">7 Core KPIs</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 sm:gap-3.5">
+          <StatCard
+            title="Total Buses"
+            value={s.totalBuses ?? 0}
+            icon={Bus}
+            iconBgColor="bg-blue-50"
+            iconColor="text-blue-600"
+            linkTo="/admin/buses"
+            dataAosDelay={50}
+          />
+          <StatCard
+            title="Active Buses"
+            value={s.activeBuses ?? 0}
+            icon={CheckCircle2}
+            iconBgColor="bg-emerald-50"
+            iconColor="text-emerald-600"
+            linkTo="/admin/buses?status=Active"
+            dataAosDelay={100}
+          />
+          <StatCard
+            title="Under Maint."
+            value={s.underMaintenance ?? 0}
+            icon={Wrench}
+            iconBgColor="bg-amber-50"
+            iconColor="text-amber-600"
+            linkTo="/admin/buses?status=Under%20Maintenance"
+            dataAosDelay={150}
+          />
+          <StatCard
+            title="Total KM (Today)"
+            value={`${(s.todayKm || 0).toLocaleString()} km`}
+            icon={Gauge}
+            iconBgColor="bg-cyan-50"
+            iconColor="text-cyan-600"
+            linkTo="/admin/daily-kilometers"
+            dataAosDelay={200}
+          />
+          <StatCard
+            title="Sched. Maint."
+            value={s.scheduledMaintenance ?? 0}
+            icon={CalendarDays}
+            iconBgColor="bg-indigo-50"
+            iconColor="text-indigo-600"
+            linkTo="/admin/maintenance-schedule"
+            dataAosDelay={250}
+          />
+          <StatCard
+            title="Pending Complaints"
+            value={s.pendingComplaints ?? 0}
+            icon={AlertTriangle}
+            iconBgColor="bg-rose-50"
+            iconColor="text-rose-600"
+            linkTo="/admin/complaints"
+            dataAosDelay={300}
+          />
+          <StatCard
+            title="Completed Month"
+            value={s.completedThisMonth ?? 0}
+            icon={CheckCircle2}
+            iconBgColor="bg-purple-50"
+            iconColor="text-purple-600"
+            linkTo="/admin/maintenance-schedule?status=Completed"
+            dataAosDelay={350}
+          />
+        </div>
       </div>
 
-      {/* Hero Quote and Quick Actions Strip */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Safe Buses Hero Slogan Banner */}
-        <div
-          data-aos="fade-right"
-          className="lg:col-span-5 relative rounded-2xl overflow-hidden shadow-md group min-h-[220px] flex flex-col justify-end p-6 text-white bg-gradient-to-tr from-[#0c1b30] via-[#142B4A] to-[#1E3A5F]"
-        >
-          {/* Elegant decorative lighting gradients */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/15 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none -ml-12 -mb-12"></div>
-          
-          {/* Subtle transport bus icon watermark */}
-          <Bus className="absolute right-3 bottom-2 w-36 h-36 text-white/5 pointer-events-none group-hover:text-white/10 group-hover:scale-105 transition-all duration-500" />
-          <div className="relative z-10">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-400/30 mb-2">
-              <Sparkles className="w-3 h-3 text-amber-300" />
-              Charvik Fleet Safety Standard
-            </span>
-            <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
-              Safe Buses, Smooth Journeys, Better Tomorrow
-            </h3>
-            <p className="text-xs text-blue-200 mt-2 font-medium">
-              “Well maintained buses lead to safer journeys and happier passengers.”
-            </p>
-          </div>
-        </div>
-
-        {/* Quick Actions Grid (8 quick modules as in Reference Image 2 & 3) */}
-        <div data-aos="fade-left" className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Quick Fleet Actions
+      {/* =========================================================================
+          3. ADDITIONAL KPIS ROW (7 Extra Metrics as per Section 3.1)
+         ========================================================================= */}
+      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-md border border-slate-800">
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-blue-400" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Staff & Resource Distribution (Section 3.1 Extra KPIs)
             </h4>
-            <span className="text-xs text-blue-600 font-semibold cursor-pointer hover:underline" onClick={() => navigate('/admin/reports')}>
-              View All Modules →
-            </span>
+          </div>
+          <span className="text-[11px] text-slate-400">Live Roster & Assignments</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div
+            onClick={() => navigate('/admin/captains')}
+            className="p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 cursor-pointer transition-all"
+          >
+            <p className="text-[11px] text-slate-400 font-medium">Total Captains</p>
+            <p className="text-xl font-black text-blue-400 mt-0.5">{add.totalCaptains ?? 0}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Route supervisors</p>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 sm:gap-3">
-            <button
-              onClick={() => navigate('/admin/tyre-maintenance')}
-              className="p-3 rounded-xl border border-blue-100 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-300 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
-            >
-              <Disc className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="text-[11px] font-bold text-slate-800 leading-tight">Tyre Maint.</span>
-            </button>
+          <div
+            onClick={() => navigate('/admin/drivers')}
+            className="p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 cursor-pointer transition-all"
+          >
+            <p className="text-[11px] text-slate-400 font-medium">Total Drivers</p>
+            <p className="text-xl font-black text-emerald-400 mt-0.5">{add.totalDrivers ?? 0}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Active licensed crew</p>
+          </div>
 
-            <button
-              onClick={() => navigate('/admin/ac-maintenance')}
-              className="p-3 rounded-xl border border-cyan-100 bg-cyan-50/50 hover:bg-cyan-50 hover:border-cyan-300 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
-            >
-              <Snowflake className="w-5 h-5 text-cyan-600 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="text-[11px] font-bold text-slate-800 leading-tight">AC Maint.</span>
-            </button>
+          <div
+            onClick={() => navigate('/admin/helpers')}
+            className="p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 cursor-pointer transition-all"
+          >
+            <p className="text-[11px] text-slate-400 font-medium">Total Helpers</p>
+            <p className="text-xl font-black text-amber-400 mt-0.5">{add.totalHelpers ?? 0}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Cabin attendants</p>
+          </div>
 
-            <button
-              onClick={() => navigate('/admin/oil-filter-maintenance')}
-              className="p-3 rounded-xl border border-amber-100 bg-amber-50/50 hover:bg-amber-50 hover:border-amber-300 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
-            >
-              <Fuel className="w-5 h-5 text-amber-600 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="text-[11px] font-bold text-slate-800 leading-tight">Oil & Filter</span>
-            </button>
+          <div
+            onClick={() => navigate('/admin/buses')}
+            className="p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 cursor-pointer transition-all"
+          >
+            <p className="text-[11px] text-slate-400 font-medium">Total Operators</p>
+            <p className="text-xl font-black text-indigo-400 mt-0.5">{add.totalOperators ?? 0}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Fleet OEMs / Makes</p>
+          </div>
 
+          <div
+            onClick={() => navigate('/admin/live-tracking')}
+            className="p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 cursor-pointer transition-all"
+          >
+            <p className="text-[11px] text-slate-400 font-medium">Running Projects</p>
+            <p className="text-xl font-black text-cyan-400 mt-0.5">{add.runningProjects ?? 0}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Active contracts</p>
+          </div>
+
+          <div
+            onClick={() => navigate('/admin/buses')}
+            className="p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 cursor-pointer transition-all"
+          >
+            <p className="text-[11px] text-slate-400 font-medium">Unassigned Buses</p>
+            <p className="text-xl font-black text-rose-400 mt-0.5">{add.unassignedBuses ?? 0}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Awaiting allocation</p>
+          </div>
+
+          <div
+            onClick={() => navigate('/admin/drivers')}
+            className="p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 cursor-pointer transition-all"
+          >
+            <p className="text-[11px] text-slate-400 font-medium">Unassigned Staff</p>
+            <p className="text-xl font-black text-purple-400 mt-0.5">{add.unassignedStaff ?? 0}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Reserve backup pool</p>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          4. LIVE FLEET MAP WIDGET & REAL-TIME TRACKING (Section 3.1)
+         ========================================================================= */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-2">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <Navigation className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-[#142B4A]">Live Fleet Map & Active Runs</h3>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              </div>
+              <p className="text-[11px] text-slate-500">Real-time GPS status, speeds, and in-transit route monitoring</p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/admin/live-tracking')}
+            className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 self-start sm:self-auto"
+          >
+            <span>Open Full Fleet Radar</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Interactive Radar Graphic Canvas */}
+          <div className="lg:col-span-7 rounded-xl bg-slate-900 border border-slate-800 p-4 relative overflow-hidden flex flex-col justify-between min-h-[260px]">
+            {/* Grid background lines */}
+            <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+            
+            <div className="relative z-10 flex items-center justify-between">
+              <span className="px-2.5 py-1 rounded-md bg-slate-800 text-[10px] font-bold text-slate-300 border border-slate-700 flex items-center gap-1.5">
+                <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
+                GPS Telemetry Active • AP Fleet Grid
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">16.5062° N, 80.6480° E</span>
+            </div>
+
+            {/* Simulated Live Fleet Map Pins */}
+            <div className="relative z-10 my-6 grid grid-cols-3 gap-3">
+              {(data?.liveRunningBuses || []).slice(0, 6).map((bus: any, idx: number) => (
+                <div
+                  key={idx}
+                  onClick={() => navigate('/admin/live-tracking')}
+                  className="bg-slate-800/90 border border-slate-700/70 hover:border-blue-500 p-2.5 rounded-xl cursor-pointer transition-all hover:scale-[1.02] shadow-sm"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-white">{bus.bus_number}</span>
+                    <span className={`w-2 h-2 rounded-full ${bus.status === 'Running' ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`}></span>
+                  </div>
+                  <p className="text-[10px] text-blue-300 truncate">{bus.route}</p>
+                  <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-700/60 text-[10px]">
+                    <span className="text-slate-400 font-mono">{bus.speed} km/h</span>
+                    <span className="text-emerald-400 font-semibold">{bus.battery}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="relative z-10 flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span> {(data?.liveRunningBuses || []).filter((b: any) => b.status === 'Running').length} En Route
+                <span className="w-2 h-2 rounded-full bg-amber-400 ml-2"></span> {(data?.liveRunningBuses || []).filter((b: any) => b.status !== 'Running').length} Idle / Rest
+              </span>
+              <span className="text-slate-500">Auto-sync active</span>
+            </div>
+          </div>
+
+          {/* Running Vehicles List */}
+          <div className="lg:col-span-5 flex flex-col justify-between">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+              Active In-Transit Units
+            </p>
+            <div className="space-y-2 overflow-y-auto max-h-[230px] pr-1">
+              {(data?.liveRunningBuses || []).map((bus: any) => (
+                <div
+                  key={bus.id}
+                  onClick={() => navigate('/admin/live-tracking')}
+                  className="p-2.5 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 cursor-pointer transition-all flex items-center justify-between"
+                >
+                  <div className="truncate mr-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900">{bus.bus_number}</span>
+                      <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-100">
+                        {bus.speed} km/h
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 font-medium truncate mt-0.5">{bus.route}</p>
+                    <p className="text-[10px] text-slate-400">Driver: {bus.driver}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {bus.status}
+                    </span>
+                    <p className="text-[10px] text-slate-400 mt-1">{bus.ac}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>{(data?.liveRunningBuses || []).length} buses streaming active telemetry</span>
+              <span className="text-blue-600 font-semibold cursor-pointer" onClick={() => navigate('/admin/live-tracking')}>
+                Manage routes →
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          5. UPCOMING MAINTENANCE (NEXT 5) - Table as per Section 3.1
+         ========================================================================= */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-[#142B4A]">Upcoming Maintenance (Next 5)</h3>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                Section 3.1
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Bus number, service type, due km, due date, and urgent priority status
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/admin/maintenance-schedule')}
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+          >
+            <span>Full Schedule</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                <th className="py-2.5 px-3 font-semibold rounded-l-lg">Bus Number</th>
+                <th className="py-2.5 px-3 font-semibold">Service Type</th>
+                <th className="py-2.5 px-3 font-semibold">Due Km</th>
+                <th className="py-2.5 px-3 font-semibold">Due Date</th>
+                <th className="py-2.5 px-3 font-semibold">Priority</th>
+                <th className="py-2.5 px-3 font-semibold">Status</th>
+                <th className="py-2.5 px-3 font-semibold rounded-r-lg text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {filteredUpcoming.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400">
+                    <p className="text-xs font-semibold text-slate-600">No upcoming maintenance scheduled</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">All fleet vehicles are operating up to date.</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredUpcoming.slice(0, 5).map((m: any) => (
+                  <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-3 font-bold text-slate-900">
+                      <div className="flex items-center gap-2">
+                        <Bus className="w-4 h-4 text-blue-600 shrink-0" />
+                        <div>
+                          <p className="font-bold leading-tight">{m.bus_number}</p>
+                          <p className="text-[10px] text-slate-400 font-normal">{m.registration_number}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 font-semibold text-slate-800">
+                      {m.maintenance_type}
+                    </td>
+                    <td className="py-3 px-3 font-semibold text-blue-600">
+                      {m.next_due_km ? `${m.next_due_km.toLocaleString()} km` : 'Interval Scheduled'}
+                    </td>
+                    <td className="py-3 px-3 text-slate-600">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-slate-400" />
+                        <span>{m.next_due_date || 'Km-Based Interval'}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                          m.priority === 'Critical'
+                            ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                            : m.priority === 'High'
+                            ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                            : 'bg-blue-100 text-blue-700 border border-blue-200'
+                        }`}
+                      >
+                        {m.priority || 'Medium'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span
+                        className={`text-[10px] px-2.5 py-1 rounded-full font-bold flex items-center w-fit gap-1 ${
+                          m.status === 'Due Soon'
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                            : m.status === 'Overdue'
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-blue-50 text-blue-700 border border-blue-200'
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${m.status === 'Overdue' ? 'bg-rose-500' : 'bg-amber-500'}`}></span>
+                        {m.status || 'Pending'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <button
+                        onClick={() => navigate('/admin/maintenance-schedule')}
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 text-[11px] font-bold transition-colors cursor-pointer"
+                      >
+                        Service Now
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          6. MAINTENANCE SCHEDULE (KM-BASED) & 8 QUICK ACTIONS (Section 3.1 & 3.4)
+         ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Km-based Table matching Section 3.4 */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-[#142B4A]">Maintenance Schedule (Km-based)</h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Section 3.4 Standard
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Tyre, AC, Oil + DPF, Engine Oil, and Battery intervals
+              </p>
+            </div>
             <button
               onClick={() => navigate('/admin/maintenance-schedule')}
-              className="p-3 rounded-xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50 hover:border-emerald-300 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
             >
-              <Wrench className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="text-[11px] font-bold text-slate-800 leading-tight">General Svc</span>
+              Full Rules →
             </button>
+          </div>
 
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                  <th className="py-2 px-3 font-semibold">Service Name</th>
+                  <th className="py-2 px-3 font-semibold">Standard Interval</th>
+                  <th className="py-2 px-3 font-semibold">Operational Scope</th>
+                  <th className="py-2 px-3 font-semibold text-right">Due Units</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {(data?.kmBasedSchedules || []).map((kItem: any, idx: number) => (
+                  <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                      <span>{kItem.service}</span>
+                    </td>
+                    <td className="py-2.5 px-3 font-bold text-blue-600">
+                      Every {kItem.interval_km.toLocaleString()} km
+                    </td>
+                    <td className="py-2.5 px-3 text-[11px] text-slate-500">
+                      {kItem.notes}
+                    </td>
+                    <td className="py-2.5 px-3 text-right">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        {kItem.dueSoonCount || 0} buses due
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 8 Quick Actions (Section 3.1) */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Quick Action Buttons (Section 3.1)
+              </h4>
+              <p className="text-[11px] text-slate-400">Direct operational entry shortcuts</p>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-blue-50 text-blue-700 border border-blue-200">
+              8 Actions
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <button
-              onClick={() => navigate('/admin/battery-maintenance')}
-              className="p-3 rounded-xl border border-purple-100 bg-purple-50/50 hover:bg-purple-50 hover:border-purple-300 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
+              onClick={() => navigate('/admin/buses')}
+              className="p-3 rounded-xl border border-blue-200/80 bg-blue-50/40 hover:bg-blue-600 hover:text-white text-slate-800 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
             >
-              <BatteryCharging className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="text-[11px] font-bold text-slate-800 leading-tight">Battery Check</span>
+              <PlusCircle className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors mb-1.5" />
+              <span className="text-xs font-bold leading-tight">+ Add Bus</span>
             </button>
 
             <button
               onClick={() => navigate('/admin/complaints')}
-              className="p-3 rounded-xl border border-rose-100 bg-rose-50/50 hover:bg-rose-50 hover:border-rose-300 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
+              className="p-3 rounded-xl border border-rose-200/80 bg-rose-50/40 hover:bg-rose-600 hover:text-white text-slate-800 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
             >
-              <AlertTriangle className="w-5 h-5 text-rose-600 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="text-[11px] font-bold text-slate-800 leading-tight">Add Complaint</span>
+              <AlertTriangle className="w-5 h-5 text-rose-600 group-hover:text-white transition-colors mb-1.5" />
+              <span className="text-xs font-bold leading-tight">+ Complaint</span>
             </button>
 
             <button
               onClick={() => navigate('/admin/repairs')}
-              className="p-3 rounded-xl border border-teal-100 bg-teal-50/50 hover:bg-teal-50 hover:border-teal-300 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
+              className="p-3 rounded-xl border border-amber-200/80 bg-amber-50/40 hover:bg-amber-600 hover:text-white text-slate-800 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
             >
-              <Wrench className="w-5 h-5 text-teal-600 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="text-[11px] font-bold text-slate-800 leading-tight">Repairs & Svc</span>
+              <Wrench className="w-5 h-5 text-amber-600 group-hover:text-white transition-colors mb-1.5" />
+              <span className="text-xs font-bold leading-tight">Record Repair</span>
             </button>
 
             <button
-              onClick={() => navigate('/admin/bus-condition')}
-              className="p-3 rounded-xl border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-300 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
+              onClick={() => navigate('/admin/tyre-maintenance')}
+              className="p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-[#142B4A] hover:text-white text-slate-800 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
             >
-              <ShieldCheck className="w-5 h-5 text-indigo-600 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="text-[11px] font-bold text-slate-800 leading-tight">Bus Condition</span>
+              <Disc className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors mb-1.5" />
+              <span className="text-xs font-bold leading-tight">Tyre</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/ac-maintenance')}
+              className="p-3 rounded-xl border border-cyan-200/80 bg-cyan-50/40 hover:bg-cyan-600 hover:text-white text-slate-800 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
+            >
+              <Snowflake className="w-5 h-5 text-cyan-600 group-hover:text-white transition-colors mb-1.5" />
+              <span className="text-xs font-bold leading-tight">AC</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/oil-filter-maintenance')}
+              className="p-3 rounded-xl border border-orange-200/80 bg-orange-50/40 hover:bg-orange-600 hover:text-white text-slate-800 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
+            >
+              <Fuel className="w-5 h-5 text-orange-600 group-hover:text-white transition-colors mb-1.5" />
+              <span className="text-xs font-bold leading-tight">Oil & Filter</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/battery-maintenance')}
+              className="p-3 rounded-xl border border-purple-200/80 bg-purple-50/40 hover:bg-purple-600 hover:text-white text-slate-800 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
+            >
+              <BatteryCharging className="w-5 h-5 text-purple-600 group-hover:text-white transition-colors mb-1.5" />
+              <span className="text-xs font-bold leading-tight">Battery</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/reports')}
+              className="p-3 rounded-xl border border-emerald-200/80 bg-emerald-50/40 hover:bg-emerald-600 hover:text-white text-slate-800 text-center flex flex-col items-center justify-center transition-all group cursor-pointer"
+            >
+              <Eye className="w-5 h-5 text-emerald-600 group-hover:text-white transition-colors mb-1.5" />
+              <span className="text-xs font-bold leading-tight">View Reports</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Row 2: Daily Kilometer Entry Widget & Km-Based Preventive Maintenance Card */}
+      {/* =========================================================================
+          7. TABBED OPERATIONAL TABLES & DAILY KILOMETER ENTRY
+         ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Daily Kilometer Quick Entry */}
-        <div data-aos="fade-up" className="lg:col-span-6 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Gauge className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-[#142B4A]">Daily Kilometer Entry</h3>
-                <p className="text-[11px] text-slate-500">Update daily km reading for each bus</p>
-              </div>
+        {/* Tabbed Operational Summary Tables */}
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-[#142B4A]">Operational Activity Tables</h3>
+              <p className="text-[11px] text-slate-500">Live records for Complaints, Tyres, AC, Oil, and Battery</p>
             </div>
-            <button
-              onClick={() => navigate('/admin/daily-kilometers')}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-            >
-              All Entries →
-            </button>
+
+            {/* Tab Switcher */}
+            <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab('complaints')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'complaints'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Complaints
+              </button>
+              <button
+                onClick={() => setActiveTab('tyres')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'tyres'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Tyres
+              </button>
+              <button
+                onClick={() => setActiveTab('ac')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'ac'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                AC
+              </button>
+              <button
+                onClick={() => setActiveTab('oil')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'oil'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Oil & Filter
+              </button>
+              <button
+                onClick={() => setActiveTab('battery')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'battery'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Battery
+              </button>
+            </div>
           </div>
 
-          <form onSubmit={handleSaveQuickKm} className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* TAB 1: Complaints */}
+          {activeTab === 'complaints' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold">Ref #</th>
+                    <th className="py-2 px-3 font-semibold">Bus</th>
+                    <th className="py-2 px-3 font-semibold">Category</th>
+                    <th className="py-2 px-3 font-semibold">Description</th>
+                    <th className="py-2 px-3 font-semibold">Reported By</th>
+                    <th className="py-2 px-3 font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {(data?.recentComplaints || []).map((c: any) => (
+                    <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-mono font-bold text-slate-800">{c.complaint_ref}</td>
+                      <td className="py-2.5 px-3 font-bold text-blue-600">{c.bus_number}</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                          {c.category}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 max-w-[200px] truncate text-slate-600">{c.description}</td>
+                      <td className="py-2.5 px-3 text-slate-500">{c.reported_by}</td>
+                      <td className="py-2.5 px-3">
+                        <Badge status={c.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 2: Tyre Records */}
+          {activeTab === 'tyres' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold">Bus</th>
+                    <th className="py-2 px-3 font-semibold">Serial #</th>
+                    <th className="py-2 px-3 font-semibold">Position</th>
+                    <th className="py-2 px-3 font-semibold">Brand / Size</th>
+                    <th className="py-2 px-3 font-semibold">Tread Depth</th>
+                    <th className="py-2 px-3 font-semibold">Condition</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {(data?.recentTyres || []).map((t: any) => (
+                    <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-blue-600">{t.bus_number}</td>
+                      <td className="py-2.5 px-3 font-mono text-slate-700">{t.tyre_serial_number}</td>
+                      <td className="py-2.5 px-3 text-slate-600">{t.tyre_position}</td>
+                      <td className="py-2.5 px-3 text-slate-800 font-medium">{t.brand} ({t.size})</td>
+                      <td className="py-2.5 px-3 font-bold text-slate-900">{t.tread_depth_mm} mm</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {t.condition}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 3: AC Records */}
+          {activeTab === 'ac' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold">Bus</th>
+                    <th className="py-2 px-3 font-semibold">Working Status</th>
+                    <th className="py-2 px-3 font-semibold">Cooling Performance</th>
+                    <th className="py-2 px-3 font-semibold">Refrigerant Check</th>
+                    <th className="py-2 px-3 font-semibold">Next Due Km</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {(data?.recentAc || []).map((a: any) => (
+                    <tr key={a.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-blue-600">{a.bus_number}</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
+                          {a.ac_working_status}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-700 font-medium">{a.cooling_performance}</td>
+                      <td className="py-2.5 px-3 text-slate-500">{a.refrigerant_check}</td>
+                      <td className="py-2.5 px-3 font-bold text-blue-600">{a.next_service_km?.toLocaleString()} km</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 4: Oil and Filter */}
+          {activeTab === 'oil' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold">Bus</th>
+                    <th className="py-2 px-3 font-semibold">Oil Type & Brand</th>
+                    <th className="py-2 px-3 font-semibold">Filter Replaced</th>
+                    <th className="py-2 px-3 font-semibold">Total Cost</th>
+                    <th className="py-2 px-3 font-semibold">Next Due Km</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {(data?.recentOil || []).map((o: any) => (
+                    <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-blue-600">{o.bus_number}</td>
+                      <td className="py-2.5 px-3 text-slate-800 font-medium">{o.oil_type} ({o.oil_brand})</td>
+                      <td className="py-2.5 px-3 text-slate-600">{o.oil_filter_details}</td>
+                      <td className="py-2.5 px-3 font-bold text-emerald-600">₹{o.total_cost?.toLocaleString()}</td>
+                      <td className="py-2.5 px-3 font-bold text-blue-600">{o.next_due_km?.toLocaleString()} km</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* TAB 5: Battery */}
+          {activeTab === 'battery' && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold">Bus</th>
+                    <th className="py-2 px-3 font-semibold">Battery Brand</th>
+                    <th className="py-2 px-3 font-semibold">Measured Voltage</th>
+                    <th className="py-2 px-3 font-semibold">Battery Health</th>
+                    <th className="py-2 px-3 font-semibold">Alternator / System</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {(data?.recentBattery || []).map((b: any) => (
+                    <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-blue-600">{b.bus_number}</td>
+                      <td className="py-2.5 px-3 text-slate-800 font-medium">{b.battery_brand}</td>
+                      <td className="py-2.5 px-3 font-bold text-purple-600">{b.measured_voltage}V</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {b.battery_health}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-500 text-[11px]">{b.charging_system_status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Daily Kilometer Quick Entry Form */}
+        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Gauge className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#142B4A]">Daily Kilometer Entry</h3>
+                  <p className="text-[11px] text-slate-500">Quick odometer logging widget</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/admin/daily-kilometers')}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+              >
+                All Entries →
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveQuickKm} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-bold text-slate-600 mb-1">Date *</label>
                 <input
                   type="date"
                   value={quickDate}
                   onChange={(e) => setQuickDate(e.target.value)}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                   required
                 />
               </div>
@@ -410,7 +1034,7 @@ export const Dashboard: React.FC = () => {
                 <select
                   value={quickBusId}
                   onChange={(e) => handleBusSelect(e.target.value)}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                   required
                 >
                   {buses.map((b) => (
@@ -422,284 +1046,130 @@ export const Dashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-600 mb-1">Kilometer Reading *</label>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Kilometer Reading (Closing KM) *</label>
                 <input
                   type="number"
-                  placeholder="Enter KM"
+                  placeholder="e.g. 45200"
                   value={quickKm}
                   onChange={(e) => setQuickKm(e.target.value)}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                   required
                 />
               </div>
-            </div>
 
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-xs text-slate-500">
-                Driver: <span className="font-semibold text-slate-800">{quickDriver || 'Assigned Driver'}</span>
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-xs text-slate-500 truncate max-w-[150px]">
+                  Driver: <strong className="text-slate-800">{quickDriver || 'Assigned Driver'}</strong>
+                </span>
+                <button
+                  type="submit"
+                  disabled={savingKm}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-60"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{savingKm ? 'Saving...' : 'Save Entry'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+            <span>Odometer updates auto-trigger maintenance schedule alerts.</span>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          8. BUS CONDITION RATING WIDGET (Section 3.1 & Star Ratings)
+         ========================================================================= */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-2">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-[#142B4A]">Bus Condition Rating & Roadworthiness Widget</h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Section 3.1 Standard
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Multi-point safety condition breakdown, star ratings, and road fitness confirmation
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 bg-amber-50 px-3 py-1 rounded-xl border border-amber-200">
+              <div className="flex text-amber-500">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                ))}
+              </div>
+              <span className="text-xs font-black text-amber-800 ml-1">
+                {data?.recentCondition?.length > 0 ? '5.0 / 5' : 'Active'}
               </span>
-              <button
-                type="submit"
-                disabled={savingKm}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-60"
+            </div>
+            <button
+              onClick={() => navigate('/admin/bus-condition')}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+            >
+              Full Inspection Logs →
+            </button>
+          </div>
+        </div>
+
+        {/* System Condition Items Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+          {[
+            { label: 'Exterior Body', status: 'Good', icon: Bus },
+            { label: 'Tyre Condition', status: 'Good', icon: Disc },
+            { label: 'Brake Condition', status: 'Good', icon: Activity },
+            { label: 'Engine Condition', status: 'Good', icon: Wrench },
+            { label: 'Battery Health', status: 'Good', icon: BatteryCharging },
+            { label: 'AC Condition', status: 'Good', icon: Snowflake },
+            { label: 'Lights Condition', status: 'Good', icon: CheckCircle },
+            { label: 'Mirrors Condition', status: 'Good', icon: Eye },
+            { label: 'Windshield', status: 'Good', icon: ShieldCheck },
+            { label: 'Wipers Condition', status: 'Good', icon: Sliders },
+            { label: 'Doors & Exits', status: 'Good', icon: CheckCircle2 },
+            { label: 'Seat Condition', status: 'Good', icon: Users },
+          ].map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={idx}
+                className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-emerald-200 hover:shadow-xs transition-all flex items-center justify-between"
               >
-                <Save className="w-3.5 h-3.5" />
-                <span>{savingKm ? 'Saving...' : 'Save Entry'}</span>
-              </button>
-            </div>
-          </form>
-
-          {/* Last 5 Entries Table */}
-          <div className="mt-4 pt-3 border-t border-slate-100">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-              Recent Logged Entries
-            </p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="text-slate-400 border-b border-slate-100">
-                    <th className="py-1.5 font-medium">Date</th>
-                    <th className="py-1.5 font-medium">Bus No.</th>
-                    <th className="py-1.5 font-medium">Reading</th>
-                    <th className="py-1.5 font-medium">Driver</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50 text-slate-700">
-                  {(data?.recentKm || []).length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="py-6 text-center text-slate-400">
-                        No daily kilometer entries recorded today yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    (data?.recentKm || []).slice(0, 4).map((k: any) => (
-                      <tr key={k.id} className="hover:bg-slate-50/80">
-                        <td className="py-1.5 font-medium">{k.entry_date}</td>
-                        <td className="py-1.5 font-bold text-slate-900">{k.registration_number || k.bus_number}</td>
-                        <td className="py-1.5 font-semibold text-blue-600">{k.closing_km.toLocaleString()} km</td>
-                        <td className="py-1.5 text-slate-600">{k.driver_name || 'Driver'}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Maintenance Standard Intervals (Km Based) Widget */}
-        <div data-aos="fade-up" data-aos-delay="100" className="lg:col-span-6 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <CalendarDays className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-[#142B4A]">Standard Maintenance Intervals</h3>
-                <p className="text-[11px] text-slate-500">Fleet preventive service guidelines</p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate('/admin/settings')}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-            >
-              Configure →
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            {[
-              { title: 'Tyre Rotation / Check', interval: 'Every 10,000 km', threshold: '10,000 km', badge: 'Preventive', icon: Disc, color: 'text-blue-600' },
-              { title: 'AC System Service', interval: 'Every 10,000 km', threshold: '10,000 km', badge: 'Preventive', icon: Snowflake, color: 'text-cyan-600' },
-              { title: 'Oil + DPF Filter Change', interval: 'Every 40,000 km', threshold: '40,000 km', badge: 'Periodic', icon: Fuel, color: 'text-amber-600' },
-              { title: 'Engine Oil + General Service', interval: 'Every 1,20,000 km', threshold: '1,20,000 km', badge: 'Major Milestone', icon: Wrench, color: 'text-indigo-600' },
-              { title: 'Battery Health Inspection', interval: 'Every 10,000 km', threshold: '10,000 km', badge: 'Electrical', icon: BatteryCharging, color: 'text-purple-600' },
-            ].map((item, idx) => {
-              const ItemIcon = item.icon;
-              return (
-                <div
-                  key={idx}
-                  onClick={() => navigate('/admin/maintenance-schedule')}
-                  className="p-2.5 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 flex items-center justify-between cursor-pointer transition-all"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center">
-                      <ItemIcon className={`w-3.5 h-3.5 ${item.color}`} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-800 leading-tight">{item.title}</p>
-                      <p className="text-[11px] text-slate-500 font-medium">{item.interval}</p>
-                    </div>
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Icon className="w-3.5 h-3.5" />
                   </div>
-
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                      {item.badge}
-                    </span>
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 leading-tight">{item.label}</p>
+                    <p className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      {item.status}
+                    </p>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Row 3: Upcoming Maintenance Table & Recent Complaints */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Upcoming Maintenance Table */}
-        <div data-aos="fade-up" className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-            <div>
-              <h3 className="text-sm font-bold text-[#142B4A]">Upcoming Maintenance (Next 5)</h3>
-              <p className="text-[11px] text-slate-500">Buses requiring immediate or near-term service</p>
-            </div>
-            <button
-              onClick={() => navigate('/admin/maintenance-schedule')}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-            >
-              Full Schedule →
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="text-slate-400 border-b border-slate-100">
-                  <th className="py-2 font-semibold">Bus No.</th>
-                  <th className="py-2 font-semibold">Service Type</th>
-                  <th className="py-2 font-semibold">Due Km</th>
-                  <th className="py-2 font-semibold">Due Date</th>
-                  <th className="py-2 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50 text-slate-700">
-                {(data?.upcoming || []).length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-400">
-                      <p className="text-xs font-semibold text-slate-600">No upcoming maintenance scheduled</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">All fleet vehicles are up to date on service.</p>
-                    </td>
-                  </tr>
-                ) : (
-                  (data?.upcoming || []).map((m: any) => (
-                    <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 font-bold text-slate-900">{m.registration_number || m.bus_number}</td>
-                      <td className="py-2.5 font-medium text-slate-800">{m.maintenance_type}</td>
-                      <td className="py-2.5 font-semibold text-blue-600">{m.next_due_km?.toLocaleString()} km</td>
-                      <td className="py-2.5 text-slate-500">{m.next_due_date || 'KM Based'}</td>
-                      <td className="py-2.5">
-                        <Badge status={m.status} />
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Recent Complaints */}
-        <div data-aos="fade-up" data-aos-delay="100" className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-            <div>
-              <h3 className="text-sm font-bold text-[#142B4A]">Recent Complaints</h3>
-              <p className="text-[11px] text-slate-500">Reported issues from drivers and staff</p>
-            </div>
-            <button
-              onClick={() => navigate('/admin/complaints')}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-            >
-              View All →
-            </button>
-          </div>
-
-          <div className="space-y-2.5">
-            {(data?.recentComplaints || []).length === 0 ? (
-              <div className="p-8 text-center bg-slate-50/50 rounded-xl border border-slate-100">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80" />
-                <p className="text-xs font-semibold text-slate-700">No Active Complaints</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">All reported issues have been resolved or none logged.</p>
               </div>
-            ) : (
-              (data?.recentComplaints || []).map((c: any) => (
-                <div
-                  key={c.id}
-                  onClick={() => navigate('/admin/complaints')}
-                  className="p-3 rounded-xl border border-slate-100 hover:border-rose-200 hover:bg-rose-50/20 cursor-pointer transition-all flex items-center justify-between"
-                >
-                  <div className="truncate flex-1 mr-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-slate-900 text-xs">{c.registration_number || c.bus_number}</span>
-                      <span className="text-[10px] text-slate-400">• {c.category}</span>
-                    </div>
-                    <p className="text-xs text-slate-600 font-medium truncate mt-0.5">{c.description}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <Badge status={c.status} />
-                    <p className="text-[10px] text-slate-400 mt-1">{c.reported_date?.split(' ')[0]}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Row 4: Fleet Status Distribution & Visual Overview Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div data-aos="fade-up" className="lg:col-span-6 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-[#142B4A] mb-1">Fleet Status Distribution</h3>
-          <p className="text-[11px] text-slate-500 mb-4">Active, under maintenance, and out of service breakdown</p>
-
-          <div className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={statusPieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {statusPieData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="flex justify-center gap-4 text-xs font-medium text-slate-600 pt-2 border-t border-slate-100">
-            {statusPieData.map((item: any, i: number) => (
-              <div key={i} className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pieColors[i % pieColors.length] }}></span>
-                <span>{item.name}: <strong className="text-slate-900">{item.value}</strong></span>
-              </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        <div data-aos="fade-up" data-aos-delay="100" className="lg:col-span-6 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-[#142B4A] mb-1">Maintenance Categories Overview</h3>
-          <p className="text-[11px] text-slate-500 mb-4">Current maintenance tracking across operational categories</p>
-
-          <div className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={maintenanceBarData}>
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
-                <YAxis stroke="#94a3b8" fontSize={11} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#1E3A5F" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 gap-2">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-700">Roadworthiness Status:</span>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Fit for Service (Safety Compliant)
+            </span>
           </div>
-
-          <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
-            <span>Preventive schedules automatically calculate alerts based on daily kilometer updates.</span>
-          </div>
+          <span className="text-[11px] text-slate-400">
+            Audit status: {data?.recentCondition?.[0]?.inspection_date ? `Latest inspection on ${data.recentCondition[0].inspection_date}` : 'Fleet Inspection Current'}
+          </span>
         </div>
       </div>
     </div>

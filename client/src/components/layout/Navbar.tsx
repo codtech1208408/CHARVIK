@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, Wrench, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface NavbarProps {
   onMobileToggle: () => void;
@@ -38,6 +38,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
     const interval = setInterval(loadNotifications, 45000); // refresh every 45s
     return () => clearInterval(interval);
   }, []);
+
+  const location = useLocation();
+  const isCaptain = location.pathname.startsWith('/captain');
+  const isSupporter = location.pathname.startsWith('/supporter');
+  const basePrefix = isCaptain ? '/captain' : isSupporter ? '/supporter' : '/admin';
 
   // Handle outside clicks to close dropdowns
   useEffect(() => {
@@ -87,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 const val = (e.target as HTMLInputElement).value;
-                if (val) navigate(`/admin/buses?search=${encodeURIComponent(val)}`);
+                if (val) navigate(`${basePrefix}/buses?search=${encodeURIComponent(val)}`);
               }
             }}
             className="w-full bg-[#1E3A5F]/60 text-white placeholder-slate-400 text-xs rounded-xl pl-9 pr-4 py-2 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -142,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
                         key={m.id}
                         onClick={() => {
                           setShowNotifications(false);
-                          navigate('/admin/maintenance-schedule');
+                          navigate(`${basePrefix}/maintenance-schedule`);
                         }}
                         className="p-2 rounded-lg hover:bg-amber-50 cursor-pointer flex items-center justify-between text-slate-700 transition-colors"
                       >
@@ -168,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
                         key={c.id}
                         onClick={() => {
                           setShowNotifications(false);
-                          navigate('/admin/complaints');
+                          navigate(`${basePrefix}/complaints`);
                         }}
                         className="p-2 rounded-lg hover:bg-rose-50 cursor-pointer flex items-center justify-between text-slate-700 transition-colors"
                       >
@@ -221,7 +226,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
                 <button
                   onClick={() => {
                     setShowNotifications(false);
-                    navigate('/admin/dashboard');
+                    navigate(`${basePrefix}/dashboard`);
                   }}
                   className="text-xs font-semibold text-blue-600 hover:text-blue-700"
                 >
@@ -238,15 +243,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center space-x-2.5 p-1.5 rounded-xl hover:bg-white/10 transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm border border-blue-400">
-              {user ? user.name.slice(0, 2) : 'AD'}
+            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm border ${
+              isCaptain ? 'bg-amber-600 border-amber-400' : isSupporter ? 'bg-emerald-600 border-emerald-400' : 'bg-blue-600 border-blue-400'
+            }`}>
+              {user ? user.name.slice(0, 2) : isCaptain ? 'CP' : isSupporter ? 'SP' : 'AD'}
             </div>
             <div className="hidden md:flex flex-col text-left">
               <span className="text-xs font-bold text-white leading-tight truncate">
-                {user ? user.name : 'Administrator'}
+                {user ? user.name : isCaptain ? 'Route Captain' : isSupporter ? 'Support Staff' : 'Administrator'}
               </span>
-              <span className="text-[10px] text-blue-300 font-medium">
-                {user ? user.role : 'Super Admin'}
+              <span className={`text-[10px] font-medium ${isCaptain ? 'text-amber-300' : isSupporter ? 'text-emerald-300' : 'text-blue-300'}`}>
+                {user ? user.role : isCaptain ? 'Captain' : isSupporter ? 'Support Staff' : 'Super Admin'}
               </span>
             </div>
           </button>
@@ -257,22 +264,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
               <div className="px-4 py-2 border-b border-slate-100">
                 <p className="font-bold text-slate-900">{user?.name}</p>
                 <p className="text-slate-500 truncate">{user?.email}</p>
+                <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+                  isCaptain ? 'bg-amber-50 text-amber-800' : isSupporter ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
+                }`}>
+                  {user?.role}
+                </span>
               </div>
-              <button
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  navigate('/admin/settings');
-                }}
-                className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center space-x-2"
-              >
-                <UserIcon className="w-3.5 h-3.5 text-slate-500" />
-                <span>Account Settings</span>
-              </button>
+              {!isCaptain && !isSupporter && (
+                <button
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    navigate('/admin/settings');
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center space-x-2"
+                >
+                  <UserIcon className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Account Settings</span>
+                </button>
+              )}
               <button
                 onClick={() => {
                   setShowProfileMenu(false);
                   logout();
-                  navigate('/admin/login');
+                  if (isCaptain) navigate('/captain/login');
+                  else if (isSupporter) navigate('/supporter/login');
+                  else navigate('/admin/login');
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-600 flex items-center space-x-2 border-t border-slate-100"
               >

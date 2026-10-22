@@ -230,24 +230,32 @@ export const DriverRegistration: React.FC = () => {
           {currentStep === 1 && (
             <div className="space-y-4 animate-in fade-in">
               <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 1: Personal Information
+                Step 1: Personal Information (Biodata Driver)
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Full Name (As per Aadhaar) *
-                  </label>
+              {/* 1. Profile Photo */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl bg-slate-200 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
+                  {formData.profile_photo ? (
+                    <img src={formData.profile_photo} alt="Profile Photo" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-7 h-7 text-slate-400" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-slate-800 mb-0.5">Profile Photo</label>
+                  <p className="text-[11px] text-slate-500 mb-2">Upload driver portrait / passport size photo</p>
                   <input
-                    type="text"
-                    value={formData.full_name}
-                    onChange={(e) => handleInputChange('full_name', e.target.value)}
-                    placeholder="Enter full name as printed on Aadhaar"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-                    required
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload('profile_photo', e)}
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                   />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 2. Gender */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>
                   <select
@@ -260,11 +268,27 @@ export const DriverRegistration: React.FC = () => {
                     <option value="Other">Other</option>
                   </select>
                 </div>
+
+                {/* 3. Name (As per Aadhaar) */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Name (As per Aadhaar) *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.full_name}
+                    onChange={(e) => handleInputChange('full_name', e.target.value)}
+                    placeholder="Enter full name as printed on Aadhaar"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 4. DOB */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Date of Birth (DOB) *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">DOB (Date of Birth) *</label>
                   <input
                     type="date"
                     value={formData.date_of_birth}
@@ -274,39 +298,44 @@ export const DriverRegistration: React.FC = () => {
                   />
                 </div>
 
+                {/* 5. E MAIL */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">E MAIL</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="driver@charvikstaffing.com"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 6. Phone Number * */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
                   <input
                     type="tel"
                     value={formData.phone_number}
                     onChange={(e) => handleInputChange('phone_number', e.target.value)}
-                    placeholder="9848012345"
+                    placeholder="e.g. 9848012345"
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                     required
                   />
                 </div>
 
+                {/* 7. Alternative Number */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Alternative Phone Number</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Alternative Number</label>
                   <input
                     type="tel"
                     value={formData.alternative_phone_number}
                     onChange={(e) => handleInputChange('alternative_phone_number', e.target.value)}
-                    placeholder="Alternative contact"
+                    placeholder="e.g. 9848099999"
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  placeholder="driver@charvikstaffing.com"
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-                />
               </div>
             </div>
           )}
@@ -343,27 +372,38 @@ export const DriverRegistration: React.FC = () => {
                 </div>
               </div>
 
+              {/* Upload Photo File (Aadhaar front back ) & Upload Photo File (PAN Card) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
                   <Upload className="w-6 h-6 text-slate-400 mb-2" />
-                  <p className="text-xs font-bold text-slate-700">Upload Aadhaar Front & Back</p>
-                  <p className="text-[11px] text-slate-400 mb-3">PDF or JPEG file</p>
-                  <input
-                    type="file"
-                    onChange={(e) => handleFileUpload('aadhaar_front_doc', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  />
+                  <p className="text-xs font-bold text-slate-700">Upload Photo File (Aadhaar front back )</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Upload Front and/or Back side</p>
+                  <div className="space-y-1.5 w-full">
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileUpload('aadhaar_front_doc', e)}
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                    />
+                    {formData.aadhaar_front_doc && (
+                      <p className="text-[10px] text-emerald-600 font-bold">✓ Aadhaar file attached</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
                   <Upload className="w-6 h-6 text-slate-400 mb-2" />
-                  <p className="text-xs font-bold text-slate-700">Upload PAN Card File</p>
-                  <p className="text-[11px] text-slate-400 mb-3">PDF or JPEG file</p>
+                  <p className="text-xs font-bold text-slate-700">Upload Photo File (PAN Card)</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Upload clear photo of PAN Card</p>
                   <input
                     type="file"
+                    accept="image/*,.pdf"
                     onChange={(e) => handleFileUpload('pan_doc', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                   />
+                  {formData.pan_doc && (
+                    <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ PAN Card file attached</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -373,7 +413,7 @@ export const DriverRegistration: React.FC = () => {
           {currentStep === 3 && (
             <div className="space-y-4 animate-in fade-in">
               <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 3: Commercial Driving Licence Details
+                Step 3: Driving Licence Details
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -392,7 +432,7 @@ export const DriverRegistration: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Issuing State</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Issued By State</label>
                   <select
                     value={formData.issuing_state}
                     onChange={(e) => handleInputChange('issuing_state', e.target.value)}
@@ -415,13 +455,13 @@ export const DriverRegistration: React.FC = () => {
                     type="text"
                     value={formData.issuing_rto_office}
                     onChange={(e) => handleInputChange('issuing_rto_office', e.target.value)}
-                    placeholder="Vijayawada (AP-16)"
+                    placeholder="e.g. Vijayawada (AP-16)"
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Licence Issue Date (TRANS)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Issue Date (TRANS)</label>
                   <input
                     type="date"
                     value={formData.licence_issue_date}
@@ -432,7 +472,7 @@ export const DriverRegistration: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Validity Date (TRANS) [2-Day Buffer] *
+                    Validity Date (TRANS)2-Day Buffer *
                   </label>
                   <input
                     type="date"
@@ -447,12 +487,13 @@ export const DriverRegistration: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Total Experience as per Licence (Years)
+                    Total Experience as Per Licence
                   </label>
                   <input
                     type="number"
                     value={formData.licence_experience_years}
                     onChange={(e) => handleInputChange('licence_experience_years', Number(e.target.value))}
+                    placeholder="e.g. 5 (Years)"
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                   />
                 </div>
@@ -475,39 +516,45 @@ export const DriverRegistration: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Any Criminal Background as per Licence or Authorized Verification
+                  Any Criminal Background As Per Licence
                 </label>
                 <textarea
                   rows={2}
                   value={formData.criminal_background_details}
                   onChange={(e) => handleInputChange('criminal_background_details', e.target.value)}
+                  placeholder="Record any violations, traffic challans, or write 'None / Clean Record'"
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                 />
               </div>
 
               <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
                 <Upload className="w-6 h-6 text-slate-400 mb-2" />
-                <p className="text-xs font-bold text-slate-700">Upload Photo File (DL Front & Back)</p>
+                <p className="text-xs font-bold text-slate-700">Upload Photo File (DL front back)</p>
+                <p className="text-[11px] text-slate-400 mb-2">Upload DL photo (Front & Back)</p>
                 <input
                   type="file"
+                  accept="image/*,.pdf"
                   onChange={(e) => handleFileUpload('licence_front_doc', e)}
-                  className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                 />
+                {formData.licence_front_doc && (
+                  <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Driving Licence document attached</p>
+                )}
               </div>
             </div>
           )}
 
-          {/* STEP 4: Bank Details */}
+          {/* STEP 4: Bank Name */}
           {currentStep === 4 && (
             <div className="space-y-4 animate-in fade-in">
               <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 4: Bank Account Details
+                Step 4: Bank Details
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Bank Name (passbook / cheque)
+                    Bank Name
                   </label>
                   <input
                     type="text"
@@ -524,7 +571,7 @@ export const DriverRegistration: React.FC = () => {
                     type="text"
                     value={formData.account_holder_name || formData.full_name}
                     onChange={(e) => handleInputChange('account_holder_name', e.target.value)}
-                    placeholder="Name on bank account"
+                    placeholder="Name as printed on bank passbook"
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                   />
                 </div>
@@ -567,12 +614,17 @@ export const DriverRegistration: React.FC = () => {
 
               <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
                 <Upload className="w-6 h-6 text-slate-400 mb-2" />
-                <p className="text-xs font-bold text-slate-700">Upload Photo File (Passbook / Cancelled Cheque)</p>
+                <p className="text-xs font-bold text-slate-700">Upload Photo File (passbook check )</p>
+                <p className="text-[11px] text-slate-400 mb-2">Upload photo of passbook front page or cancelled cheque</p>
                 <input
                   type="file"
+                  accept="image/*,.pdf"
                   onChange={(e) => handleFileUpload('bank_proof_doc', e)}
-                  className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                 />
+                {formData.bank_proof_doc && (
+                  <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Bank passbook / cheque attached</p>
+                )}
               </div>
             </div>
           )}
@@ -586,12 +638,12 @@ export const DriverRegistration: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Reference Person Name</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Name</label>
                   <input
                     type="text"
                     value={formData.reference_name}
                     onChange={(e) => handleInputChange('reference_name', e.target.value)}
-                    placeholder="Reference Contact Person"
+                    placeholder="Reference person name"
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                   />
                 </div>
@@ -613,7 +665,7 @@ export const DriverRegistration: React.FC = () => {
                     type="tel"
                     value={formData.reference_alt_phone}
                     onChange={(e) => handleInputChange('reference_alt_phone', e.target.value)}
-                    placeholder="Alt reference phone"
+                    placeholder="Secondary reference phone"
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                   />
                 </div>
@@ -754,21 +806,209 @@ export const DriverRegistration: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div><strong>Full Name:</strong> {formData.full_name || 'Not filled'}</div>
-            <div><strong>Employee Code:</strong> {formData.employee_code}</div>
-            <div><strong>DOB:</strong> {formData.date_of_birth}</div>
-            <div><strong>Phone:</strong> {formData.phone_number}</div>
-            <div><strong>Aadhaar:</strong> {formData.aadhaar_number || 'XXXX-XXXX-XXXX'}</div>
-            <div><strong>PAN:</strong> {formData.pan_number || 'N/A'}</div>
-            <div><strong>Licence Number:</strong> {formData.licence_number || 'N/A'}</div>
-            <div><strong>Licence Validity:</strong> {formData.licence_validity_date}</div>
-            <div><strong>Experience:</strong> {formData.licence_experience_years} Years</div>
-            <div><strong>Bank Name:</strong> {formData.bank_name}</div>
-            <div><strong>Account Number:</strong> {formData.account_number || 'N/A'}</div>
-            <div><strong>IFSC:</strong> {formData.ifsc_code}</div>
-            <div><strong>Reference Contact:</strong> {formData.reference_name} ({formData.reference_phone})</div>
-            <div><strong>Status:</strong> {formData.employment_status}</div>
+          {/* Biodata Driver Official Table Format */}
+          <div className="border-2 border-black overflow-hidden font-sans">
+            {/* Yellow Header */}
+            <div className="bg-[#FFFF00] text-black font-black text-center py-2.5 text-sm uppercase tracking-wider border-b-2 border-black">
+              Biodata Driver
+            </div>
+
+            <table className="w-full text-xs border-collapse">
+              <tbody className="divide-y divide-black">
+                {/* 1. Profile Photo */}
+                <tr className="hover:bg-slate-50">
+                  <td className="w-1/2 p-2.5 font-bold border-r border-black bg-slate-50/50">Profile Photo</td>
+                  <td className="w-1/2 p-2.5">
+                    {formData.profile_photo ? (
+                      <img src={formData.profile_photo} alt="Profile" className="w-16 h-16 object-cover rounded-lg border border-slate-300" />
+                    ) : (
+                      <span className="text-slate-400 italic">No Photo Uploaded</span>
+                    )}
+                  </td>
+                </tr>
+
+                {/* 2. Gender */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Gender</td>
+                  <td className="p-2.5">{formData.gender || 'Male'}</td>
+                </tr>
+
+                {/* 3. Name (As per Aadhaar) */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Name (As per Aadhaar)</td>
+                  <td className="p-2.5 font-bold text-slate-900">{formData.full_name || '-'}</td>
+                </tr>
+
+                {/* 4. DOB */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">DOB</td>
+                  <td className="p-2.5 font-mono">{formData.date_of_birth || '-'}</td>
+                </tr>
+
+                {/* 5. E MAIL */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">E MAIL</td>
+                  <td className="p-2.5">{formData.email || '-'}</td>
+                </tr>
+
+                {/* 6. Phone Number * */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Phone Number *</td>
+                  <td className="p-2.5 font-mono font-bold text-blue-700">{formData.phone_number || '-'}</td>
+                </tr>
+
+                {/* 7. Alternative Number */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Alternative Number</td>
+                  <td className="p-2.5 font-mono">{formData.alternative_phone_number || '-'}</td>
+                </tr>
+
+                {/* 8. Aadhaar Number */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Number</td>
+                  <td className="p-2.5 font-mono">{formData.aadhaar_number || '-'}</td>
+                </tr>
+
+                {/* 9. Upload Photo File (Aadhaar front back ) */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Upload Photo File (Aadhaar front back )</td>
+                  <td className="p-2.5">
+                    {formData.aadhaar_front_doc ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ✓ Aadhaar File Uploaded
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Uploaded</span>
+                    )}
+                  </td>
+                </tr>
+
+                {/* 10. PAN Card Number */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">PAN Card Number</td>
+                  <td className="p-2.5 font-mono uppercase">{formData.pan_number || '-'}</td>
+                </tr>
+
+                {/* 11. Upload Photo File (PAN Card) */}
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Upload Photo File (PAN Card)</td>
+                  <td className="p-2.5">
+                    {formData.pan_doc ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ✓ PAN Card File Uploaded
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Uploaded</span>
+                    )}
+                  </td>
+                </tr>
+
+                {/* 12. Driving Licence Details (Header) */}
+                <tr className="bg-slate-100 font-black text-slate-800">
+                  <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
+                    Driving Licence Details
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Upload Photo File (DL front back)</td>
+                  <td className="p-2.5">
+                    {formData.licence_front_doc ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ✓ DL File Uploaded
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Uploaded</span>
+                    )}
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence Number</td>
+                  <td className="p-2.5 font-mono font-bold text-blue-700 uppercase">{formData.licence_number || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Issued By State</td>
+                  <td className="p-2.5">{formData.issuing_state || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Issued RTO Office</td>
+                  <td className="p-2.5">{formData.issuing_rto_office || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Issue Date (TRANS)</td>
+                  <td className="p-2.5 font-mono">{formData.licence_issue_date || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Validity Date (TRANS)2-Day Buffer</td>
+                  <td className="p-2.5 font-mono font-bold text-blue-700">{formData.licence_validity_date || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Total Experience as Per Licence</td>
+                  <td className="p-2.5">{formData.licence_experience_years ? `${formData.licence_experience_years} Years` : '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Any Criminal Background As Per Licence</td>
+                  <td className="p-2.5">{formData.criminal_background_details || 'Clean Record / None'}</td>
+                </tr>
+
+                {/* 13. Bank Name (Header) */}
+                <tr className="bg-slate-100 font-black text-slate-800">
+                  <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
+                    Bank Name
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Bank Name</td>
+                  <td className="p-2.5 font-bold">{formData.bank_name || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Upload Photo File (passbook check )</td>
+                  <td className="p-2.5">
+                    {formData.bank_proof_doc ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ✓ Passbook / Cheque File Uploaded
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Uploaded</span>
+                    )}
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Account Holder Name</td>
+                  <td className="p-2.5">{formData.account_holder_name || formData.full_name || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Account Number</td>
+                  <td className="p-2.5 font-mono">{formData.account_number || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">IFSC Code</td>
+                  <td className="p-2.5 font-mono uppercase">{formData.ifsc_code || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Branch</td>
+                  <td className="p-2.5">{formData.branch || '-'}</td>
+                </tr>
+
+                {/* 14. Reference Details (Header) */}
+                <tr className="bg-slate-100 font-black text-slate-800">
+                  <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
+                    Reference Details
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Name</td>
+                  <td className="p-2.5">{formData.reference_name || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Phone Number</td>
+                  <td className="p-2.5 font-mono">{formData.reference_phone || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Alternative Number</td>
+                  <td className="p-2.5 font-mono">{formData.reference_alt_phone || '-'}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </Modal>

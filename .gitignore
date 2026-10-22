@@ -40,3 +40,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Media & Recordings
+*.mp4
+

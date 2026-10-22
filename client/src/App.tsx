@@ -14,6 +14,8 @@ import { Contact } from './pages/public/Contact';
 // Admin Pages
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { SupportDashboard } from './pages/SupportDashboard';
+import { CaptainDashboard } from './pages/CaptainDashboard';
 import { BusMaster } from './pages/BusMaster';
 import { DailyKilometers } from './pages/DailyKilometers';
 import { MaintenanceSchedule } from './pages/MaintenanceSchedule';
@@ -44,8 +46,11 @@ export function App() {
               <Route path="/contact" element={<Contact />} />
             </Route>
 
-            {/* Public Login Route */}
-            <Route path="/admin/login" element={<Login />} />
+            {/* Public Login Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin/login" element={<Login defaultRole="Admin" />} />
+            <Route path="/captain/login" element={<Login defaultRole="Captain" />} />
+            <Route path="/supporter/login" element={<Login defaultRole="Supporter" />} />
 
             {/* Protected Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
@@ -66,6 +71,31 @@ export function App() {
               <Route path="employees" element={<EmployeeManagement />} />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
+            </Route>
+
+            {/* Protected Captain Routes */}
+            <Route path="/captain" element={<AdminLayout />}>
+              <Route index element={<Navigate to="/captain/dashboard" replace />} />
+              <Route path="dashboard" element={<CaptainDashboard />} />
+              <Route path="buses" element={<BusMaster />} />
+              <Route path="daily-kilometers" element={<DailyKilometers />} />
+              <Route path="bus-condition" element={<BusCondition />} />
+              <Route path="complaints" element={<Complaints />} />
+              <Route path="maintenance-schedule" element={<MaintenanceSchedule />} />
+              <Route path="tyre-maintenance" element={<TyreMaintenance />} />
+              <Route path="battery-maintenance" element={<BatteryMaintenance />} />
+            </Route>
+
+            {/* Protected Supporter Routes */}
+            <Route path="/supporter" element={<AdminLayout />}>
+              <Route index element={<Navigate to="/supporter/dashboard" replace />} />
+              <Route path="dashboard" element={<SupportDashboard />} />
+              <Route path="bus-condition" element={<BusCondition />} />
+              <Route path="complaints" element={<Complaints />} />
+              <Route path="repairs" element={<Repairs />} />
+              <Route path="daily-kilometers" element={<DailyKilometers />} />
+              <Route path="maintenance-schedule" element={<MaintenanceSchedule />} />
+              <Route path="buses" element={<BusMaster />} />
             </Route>
 
             {/* Fallback to Public Website Home */}

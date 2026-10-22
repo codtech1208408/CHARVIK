@@ -22,9 +22,12 @@ import type { Bus as BusType } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { useAuth } from '../context/AuthContext';
 
 export const BusMaster: React.FC = () => {
   const { success, error } = useToast();
+  const { user } = useAuth();
+  const isAdmin = (user?.role || '').toLowerCase().includes('admin');
 
   const [buses, setBuses] = useState<BusType[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
@@ -320,16 +323,18 @@ export const BusMaster: React.FC = () => {
                         >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => {
-                            setBusToArchive(b);
-                            setIsArchiveConfirmOpen(true);
-                          }}
-                          className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors"
-                          title="Archive Bus"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => {
+                              setBusToArchive(b);
+                              setIsArchiveConfirmOpen(true);
+                            }}
+                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Archive Bus"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

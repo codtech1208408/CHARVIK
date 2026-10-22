@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import AOS from 'aos';
 
 export const AdminLayout: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
@@ -34,30 +34,58 @@ export const AdminLayout: React.FC = () => {
     );
   }
 
+  const isCaptainPortal = location.pathname.startsWith('/captain');
+  const isSupporterPortal = location.pathname.startsWith('/supporter');
+  const isAdminPortal = location.pathname.startsWith('/admin');
+
   if (!isAuthenticated) {
+    if (isCaptainPortal) return <Navigate to="/captain/login" replace />;
+    if (isSupporterPortal) return <Navigate to="/supporter/login" replace />;
     return <Navigate to="/admin/login" replace />;
+  }
+
+  // Strict Role-Based Access Guard
+  const userRole = (user?.role || '').toLowerCase();
+  
+  // Admin Portal: Only Admin accounts can access. If not logged in as Admin, redirect directly to Admin Login
+  if (isAdminPortal && !userRole.includes('admin')) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  // Captain Portal: Only Captain accounts can access
+  if (isCaptainPortal && !userRole.includes('captain')) {
+    return <Navigate to="/captain/login" replace />;
+  }
+
+  // Supporter Portal: Only Support/Helper accounts can access
+  if (isSupporterPortal && !userRole.includes('support') && !userRole.includes('helper')) {
+    return <Navigate to="/supporter/login" replace />;
   }
 
   // Determine current page title
   const getPageTitle = () => {
     const p = location.pathname;
-    if (p.includes('/dashboard')) return 'Fleet & Maintenance Dashboard';
-    if (p.includes('/buses')) return 'Bus Master & Fleet Details';
+    if (p.includes('/dashboard')) {
+      if (isCaptainPortal) return 'Captain Route & Fleet Overview';
+      if (isSupporterPortal) return 'Supporter Operational Dashboard';
+      return 'Fleet & Maintenance Dashboard';
+    }
+    if (p.includes('/buses')) return isCaptainPortal ? 'Assigned Fleet & Bus Details' : isSupporterPortal ? 'Fleet Bus Overview' : 'Bus Master & Fleet Details';
     if (p.includes('/daily-kilometers')) return 'Daily Kilometer Entry';
     if (p.includes('/maintenance-schedule')) return 'Preventive Maintenance Schedule';
     if (p.includes('/tyre-maintenance')) return 'Tyre Maintenance & Tracking';
     if (p.includes('/ac-maintenance')) return 'AC Maintenance & Service';
     if (p.includes('/oil-filter-maintenance')) return 'Oil & Filter Replacement';
     if (p.includes('/battery-maintenance')) return 'Battery Health & Inspection';
-    if (p.includes('/complaints')) return 'Bus Complaints Management';
+    if (p.includes('/complaints')) return isCaptainPortal ? 'Report & Track Bus Complaints' : isSupporterPortal ? 'Bus Issues & Defect Log' : 'Bus Complaints Management';
     if (p.includes('/repairs')) return 'Repairs & Service Work Orders';
-    if (p.includes('/bus-condition')) return 'Bus Condition Inspection';
+    if (p.includes('/bus-condition')) return isSupporterPortal ? 'Bus Cleanliness & Condition Check' : 'Bus Condition Inspection';
     if (p.includes('/drivers/new')) return 'Driver Biodata Registration';
     if (p.includes('/support-staff/new')) return 'Helper & Captain Registration';
     if (p.includes('/employees')) return 'Employee Biodata Management';
     if (p.includes('/reports')) return 'Fleet & Operational Reports';
     if (p.includes('/settings')) return 'Application & System Settings';
-    return 'Admin Panel';
+    return isCaptainPortal ? 'Captain Portal' : isSupporterPortal ? 'Supporter Portal' : 'Admin Panel';
   };
 
   return (
