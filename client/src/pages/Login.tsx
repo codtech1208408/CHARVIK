@@ -37,6 +37,20 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
     }
   }, [defaultRole, urlRole]);
 
+  // If already logged in, seamlessly forward directly to dashboard
+  useEffect(() => {
+    if (user) {
+      const normalizedRole = (user.role || '').toLowerCase();
+      if (normalizedRole.includes('captain')) {
+        navigate('/captain/dashboard', { replace: true });
+      } else if (normalizedRole.includes('support') || normalizedRole.includes('helper')) {
+        navigate('/supporter/dashboard', { replace: true });
+      } else {
+        navigate('/admin/dashboard', { replace: true });
+      }
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailOrUser || !password) {

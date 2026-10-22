@@ -16,11 +16,17 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   };
 
   const response = await fetch(url, { ...options, headers });
+  const contentType = response.headers.get('content-type') || '';
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
+    const errorData = contentType.includes('application/json')
+      ? await response.json().catch(() => ({ error: 'Request failed' }))
+      : { error: `HTTP ${response.status}: ${response.statusText}` };
     const err: any = new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
     err.status = response.status;
     throw err;
+  }
+  if (!contentType.includes('application/json')) {
+    return {} as T;
   }
   return response.json();
 }

@@ -15,30 +15,46 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('charvik_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('charvik_user');
+      if (!saved || saved === 'undefined' || saved === 'null') return null;
+      return JSON.parse(saved);
+    } catch {
+      return null;
+    }
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('charvik_token'));
-  const [loading, setLoading] = useState<boolean>(() => !localStorage.getItem('charvik_user'));
+
+  const [token, setToken] = useState<string | null>(() => {
+    try {
+      const saved = localStorage.getItem('charvik_token');
+      if (!saved || saved === 'undefined' || saved === 'null') return null;
+      return saved;
+    } catch {
+      return null;
+    }
+  });
+
+  // Never block rendering on refresh when stored user session is present
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     async function verifyAuth() {
-      if (token) {
-        try {
-          const res = await api.getMe();
-          if (res?.user) {
-            setUser(res.user);
-            localStorage.setItem('charvik_user', JSON.stringify(res.user));
-          }
-        } catch (err: any) {
-          // Never log out automatically on background sync/refresh network failure
-          console.warn('Background auth sync note; retaining active session:', err?.message || err);
+      const currentToken = localStorage.getItem('charvik_token');
+      if (!currentToken) return;
+
+      try {
+        const res = await api.getMe();
+        if (res && res.user && res.user.role) {
+          setUser(res.user);
+          localStorage.setItem('charvik_user', JSON.stringify(res.user));
         }
+      } catch (err: any) {
+        // Never log out on background sync or refresh error
+        console.warn('Background auth sync note; retaining active session:', err?.message || err);
       }
-      setLoading(false);
     }
     verifyAuth();
-  }, [token]);
+  }, []);
 
   const login = async (emailOrUser: string, pass: string): Promise<User> => {
     const res = await api.login({ email_or_username: emailOrUser, password: pass });

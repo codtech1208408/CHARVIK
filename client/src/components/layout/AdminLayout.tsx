@@ -23,7 +23,19 @@ export const AdminLayout: React.FC = () => {
     AOS.refresh();
   }, [location.pathname]);
 
-  if (loading) {
+  // Synchronous fallback from localStorage to guarantee zero-flicker and eliminate refresh logout
+  const activeUser = user || (function() {
+    try {
+      const s = localStorage.getItem('charvik_user');
+      return s ? JSON.parse(s) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const isUserAuthenticated = isAuthenticated || !!activeUser;
+
+  if (loading && !isUserAuthenticated) {
     return (
       <div className="min-h-screen bg-[#F5F7FB] flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
@@ -38,27 +50,30 @@ export const AdminLayout: React.FC = () => {
   const isSupporterPortal = location.pathname.startsWith('/supporter');
   const isAdminPortal = location.pathname.startsWith('/admin');
 
-  if (!isAuthenticated) {
+  if (!isUserAuthenticated) {
     if (isCaptainPortal) return <Navigate to="/captain/login" replace />;
     if (isSupporterPortal) return <Navigate to="/supporter/login" replace />;
     return <Navigate to="/admin/login" replace />;
   }
 
   // Strict Role-Based Access Guard
-  const userRole = (user?.role || '').toLowerCase();
-  
-  // Admin Portal: Only Admin accounts can access. If not logged in as Admin, redirect directly to Admin Login
-  if (isAdminPortal && !userRole.includes('admin')) {
+  const userRole = (activeUser?.role || '').toLowerCase();
+  const isAdmin = userRole.includes('admin');
+  const isCaptain = userRole.includes('captain');
+  const isSupporter = userRole.includes('support') || userRole.includes('helper');
+
+  // Admin Portal: Only Admin accounts can access
+  if (isAdminPortal && !isAdmin) {
     return <Navigate to="/admin/login" replace />;
   }
 
   // Captain Portal: Only Captain accounts can access
-  if (isCaptainPortal && !userRole.includes('captain')) {
+  if (isCaptainPortal && !isCaptain) {
     return <Navigate to="/captain/login" replace />;
   }
 
   // Supporter Portal: Only Support/Helper accounts can access
-  if (isSupporterPortal && !userRole.includes('support') && !userRole.includes('helper')) {
+  if (isSupporterPortal && !isSupporter) {
     return <Navigate to="/supporter/login" replace />;
   }
 
