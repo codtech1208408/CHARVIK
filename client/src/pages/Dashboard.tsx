@@ -498,6 +498,11 @@ export const Dashboard: React.FC = () => {
                   </div>
                 </div>
               ))}
+              {(data?.liveRunningBuses || []).length === 0 && (
+                <div className="py-8 px-4 rounded-xl border border-dashed border-slate-200 text-center text-slate-400 text-xs">
+                  No active in-transit buses at this time.
+                </div>
+              )}
             </div>
 
             <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
@@ -864,6 +869,13 @@ export const Dashboard: React.FC = () => {
                       </td>
                     </tr>
                   ))}
+                  {(data?.recentComplaints || []).length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                        No recent complaints recorded. Fleet operating smoothly.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -898,6 +910,13 @@ export const Dashboard: React.FC = () => {
                       </td>
                     </tr>
                   ))}
+                  {(data?.recentTyres || []).length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                        No tyre maintenance records logged yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -930,6 +949,13 @@ export const Dashboard: React.FC = () => {
                       <td className="py-2.5 px-3 font-bold text-blue-600">{a.next_service_km?.toLocaleString()} km</td>
                     </tr>
                   ))}
+                  {(data?.recentAc || []).length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                        No AC maintenance records logged yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -958,6 +984,13 @@ export const Dashboard: React.FC = () => {
                       <td className="py-2.5 px-3 font-bold text-blue-600">{o.next_due_km?.toLocaleString()} km</td>
                     </tr>
                   ))}
+                  {(data?.recentOil || []).length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                        No oil & filter replacement records logged yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -990,6 +1023,13 @@ export const Dashboard: React.FC = () => {
                       <td className="py-2.5 px-3 text-slate-500 text-[11px]">{b.charging_system_status}</td>
                     </tr>
                   ))}
+                  {(data?.recentBattery || []).length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                        No battery maintenance records logged yet.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

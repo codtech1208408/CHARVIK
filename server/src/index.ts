@@ -342,11 +342,11 @@ app.get('/api/captain/my-duty', (req: Request, res: Response) => {
     `).all(bus.id) : [];
 
     // Pending complaints for this bus
-    const busComplaints = bus ? db.prepare(`
+    const busComplaints = (bus ? db.prepare(`
       SELECT * FROM complaints
       WHERE bus_id = ? AND status NOT IN ('Resolved', 'Closed')
       ORDER BY id DESC LIMIT 5
-    `).all(bus.id) : [];
+    `).all(bus.id) : []) as any[];
 
     // Next scheduled maintenance for this bus
     const nextMaintenance = bus ? db.prepare(`
