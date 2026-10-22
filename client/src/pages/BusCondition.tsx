@@ -84,13 +84,13 @@ export const BusCondition: React.FC = () => {
 
   const handleOpenAdd = () => {
     const firstBus = buses[0];
-    const currentKm = firstBus ? firstBus.current_odometer_km : 50000;
+    const currentKm = firstBus ? firstBus.current_odometer_km : '';
     setFormData({
       bus_id: firstBus ? String(firstBus.id) : '',
       inspection_date: new Date().toISOString().split('T')[0],
-      inspection_time: '11:00',
+      inspection_time: new Date().toTimeString().slice(0, 5),
       odometer_km: currentKm,
-      inspector_name: 'K. Satyanarayana (Senior Inspector)',
+      inspector_name: '',
       exterior_body: 'Good',
       tyre_condition: 'Good',
       brake_condition: 'Good',
@@ -109,7 +109,7 @@ export const BusCondition: React.FC = () => {
       roadworthiness_status: 'Fit for Service',
       defects_found: '',
       corrective_action_required: '',
-      inspector_remarks: 'Vehicle inspected and cleared for service.'
+      inspector_remarks: ''
     });
     setIsAddOpen(true);
   };

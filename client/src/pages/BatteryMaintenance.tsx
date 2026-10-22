@@ -71,25 +71,25 @@ export const BatteryMaintenance: React.FC = () => {
 
   const handleOpenAdd = () => {
     const firstBus = buses[0];
-    const currentKm = firstBus ? firstBus.current_odometer_km : 50000;
+    const currentKm = firstBus ? firstBus.current_odometer_km : '';
     setFormData({
       bus_id: firstBus ? String(firstBus.id) : '',
       inspection_date: new Date().toISOString().split('T')[0],
       current_km: currentKm,
-      battery_brand: 'Amaron Hi-Way',
-      serial_number: `AMR-${Math.floor(1000 + Math.random() * 9000)}-${new Date().getFullYear()}`,
+      battery_brand: '',
+      serial_number: '',
       battery_type: 'Lead Acid Heavy Duty',
-      battery_voltage: 24.0,
-      measured_voltage: 25.2,
+      battery_voltage: '',
+      measured_voltage: '',
       battery_health: 'Good',
-      terminal_condition: 'Clean & greased with petroleum jelly',
-      charging_system_status: 'Alternator charging normal at 28.2V',
-      installation_date: '2024-04-10',
-      warranty_expiry_date: '2027-04-10',
-      battery_cost: 14500,
-      technician: 'S. Naresh (Senior Electrician)',
-      next_check_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      remarks: 'Electrolyte levels topped up and specific gravity checked.'
+      terminal_condition: 'Clean',
+      charging_system_status: 'Normal',
+      installation_date: '',
+      warranty_expiry_date: '',
+      battery_cost: '',
+      technician: '',
+      next_check_date: '',
+      remarks: ''
     });
     setIsAddOpen(true);
   };

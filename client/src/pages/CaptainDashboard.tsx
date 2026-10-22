@@ -91,6 +91,21 @@ export const CaptainDashboard: React.FC = () => {
 
   useEffect(() => {
     loadDutyInfo();
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLiveGpsCoords((prev) => ({
+            ...prev,
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            speed: Math.round((pos.coords.speed || 0) * 3.6),
+            lastPing: 'Live'
+          }));
+        },
+        () => {},
+        { enableHighAccuracy: false, timeout: 5000 }
+      );
+    }
   }, []);
 
   const loadDutyInfo = async () => {
@@ -417,13 +432,17 @@ export const CaptainDashboard: React.FC = () => {
                     <p className="text-[11px] text-slate-500">Phone: {driver?.phone_number || driver?.phone || '-'}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setViewingCrewBiodata({ role: 'Driver', data: driver })}
-                  className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Biodata</span>
-                </button>
+                {driver ? (
+                  <button
+                    onClick={() => setViewingCrewBiodata({ role: 'Driver', data: driver })}
+                    className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Biodata</span>
+                  </button>
+                ) : (
+                  <span className="text-[11px] text-slate-400 font-semibold px-2 py-1 bg-slate-50 rounded-lg border border-slate-100">Unassigned</span>
+                )}
               </div>
 
               <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs flex items-center justify-between">
@@ -437,13 +456,17 @@ export const CaptainDashboard: React.FC = () => {
                     <p className="text-[11px] text-slate-500">Phone: {helper?.phone_number || helper?.phone || '-'}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setViewingCrewBiodata({ role: 'Helper', data: helper })}
-                  className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Biodata</span>
-                </button>
+                {helper ? (
+                  <button
+                    onClick={() => setViewingCrewBiodata({ role: 'Helper', data: helper })}
+                    className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Biodata</span>
+                  </button>
+                ) : (
+                  <span className="text-[11px] text-slate-400 font-semibold px-2 py-1 bg-slate-50 rounded-lg border border-slate-100">Unassigned</span>
+                )}
               </div>
             </div>
           </div>

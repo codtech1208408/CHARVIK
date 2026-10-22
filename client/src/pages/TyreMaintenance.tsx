@@ -79,19 +79,19 @@ export const TyreMaintenance: React.FC = () => {
     const firstBus = buses[0];
     setFormData({
       bus_id: firstBus ? String(firstBus.id) : '',
-      tyre_serial_number: `TYRE-${Math.floor(1000 + Math.random() * 9000)}-${new Date().getFullYear()}`,
-      brand: 'MRF Steel Muscle',
-      size: '295/80 R22.5',
+      tyre_serial_number: '',
+      brand: '',
+      size: '',
       tyre_position: 'Front Left',
-      installation_date: '2025-06-15',
-      installation_km: firstBus ? firstBus.current_odometer_km : 50000,
+      installation_date: new Date().toISOString().split('T')[0],
+      installation_km: firstBus ? firstBus.current_odometer_km : '',
       last_inspection_date: new Date().toISOString().split('T')[0],
-      tread_depth_mm: 10.0,
-      tyre_pressure_psi: 110,
+      tread_depth_mm: '',
+      tyre_pressure_psi: '',
       condition: 'Good',
-      supplier: 'Tirumala Tyres Pvt Ltd',
-      cost: 18500,
-      remarks: 'Mounted on vehicle'
+      supplier: '',
+      cost: '',
+      remarks: ''
     });
     setIsAddOpen(true);
   };

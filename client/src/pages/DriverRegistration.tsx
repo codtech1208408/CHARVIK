@@ -79,7 +79,7 @@ export const DriverRegistration: React.FC = () => {
     joining_date: new Date().toISOString().split('T')[0],
     employment_status: 'Active',
     assigned_bus_id: '',
-    internal_remarks: 'Enrolled as commercial heavy passenger vehicle driver.'
+    internal_remarks: ''
   });
 
   useEffect(() => {

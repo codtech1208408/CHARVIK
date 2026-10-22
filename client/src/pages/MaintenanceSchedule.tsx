@@ -59,7 +59,7 @@ export const MaintenanceSchedule: React.FC = () => {
     completion_date: new Date().toISOString().split('T')[0],
     odometer_km: 0,
     actual_cost: 0,
-    work_performed: 'Completed scheduled service and inspection',
+    work_performed: '',
     next_due_km: 0,
     next_due_date: ''
   });

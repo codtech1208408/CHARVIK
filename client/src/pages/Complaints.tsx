@@ -85,13 +85,13 @@ export const Complaints: React.FC = () => {
       bus_id: firstBus ? String(firstBus.id) : '',
       category: 'AC',
       description: '',
-      priority: 'High',
-      reported_by: 'Driver (Morning Shift)',
-      contact_number: '9848012345',
-      assigned_staff: 'Chief Mechanic Anand',
-      assigned_vendor: 'Subzero AC Solutions',
-      expected_resolution_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      remarks: 'Reported during routine depot arrival.'
+      priority: 'Medium',
+      reported_by: '',
+      contact_number: '',
+      assigned_staff: '',
+      assigned_vendor: '',
+      expected_resolution_date: '',
+      remarks: ''
     });
     setIsAddOpen(true);
   };

@@ -86,13 +86,13 @@ export const DailyKilometers: React.FC = () => {
 
   const handleOpenAdd = async () => {
     const firstBus = buses[0];
-    let openKm = 50000;
+    let openKm = 0;
     if (firstBus) {
       try {
         const res = await api.suggestOpeningKm(firstBus.id);
-        openKm = res.suggestedOpening || firstBus.current_odometer_km || 50000;
+        openKm = res.suggestedOpening || firstBus.current_odometer_km || 0;
       } catch (e) {
-        openKm = firstBus.current_odometer_km || 50000;
+        openKm = firstBus.current_odometer_km || 0;
       }
     }
 
@@ -101,8 +101,8 @@ export const DailyKilometers: React.FC = () => {
       bus_id: firstBus ? String(firstBus.id) : '',
       driver_id: firstBus?.assigned_driver_id ? String(firstBus.assigned_driver_id) : '',
       opening_km: openKm,
-      closing_km: openKm + 120,
-      remarks: 'Regular daily operational route shift'
+      closing_km: '',
+      remarks: ''
     });
     setIsAddOpen(true);
   };

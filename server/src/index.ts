@@ -366,12 +366,35 @@ app.get('/api/captain/my-duty', (req: Request, res: Response) => {
       LIMIT 7
     `).all(bus.id) : [];
 
-    // Notifications for duty
-    const notifications = [
-      { id: 1, title: 'Morning Route Active', message: 'Assigned to Route 14: Vijayawada Central ↔ IT Hub Expressway.', type: 'info', time: '06:00 AM' },
-      { id: 2, title: 'Bus Inspection Reminder', message: 'Perform pre-trip condition check and upload before/after photos.', type: 'alert', time: '06:15 AM' },
-      { id: 3, title: 'Speed Limit Notice', message: 'Maintain max 50 km/h within city limits as per regional safety advisory.', type: 'warning', time: '07:30 AM' }
-    ];
+    // Dynamic notifications for duty based on real DB status
+    const notifications: any[] = [];
+    if (nextMaintenance) {
+      notifications.push({
+        id: 1,
+        title: 'Maintenance Due',
+        message: `${nextMaintenance.maintenance_type} scheduled for ${bus?.bus_number} due on ${nextMaintenance.next_due_date || 'next interval'}.`,
+        type: 'alert',
+        time: 'Upcoming'
+      });
+    }
+    if (busComplaints.length > 0) {
+      notifications.push({
+        id: 2,
+        title: 'Active Bus Issue',
+        message: `${busComplaints.length} issue(s) reported for ${bus?.bus_number}. Latest: ${busComplaints[0].category}.`,
+        type: 'warning',
+        time: 'Active'
+      });
+    }
+    if (todayKm) {
+      notifications.push({
+        id: 3,
+        title: 'Today Distance Logged',
+        message: `${todayKm.distance_travelled_km} KM recorded for shift today.`,
+        type: 'info',
+        time: 'Today'
+      });
+    }
     return res.json({
       captain: {
         id: captainEmp?.id || authUser.id,
@@ -402,13 +425,13 @@ app.get('/api/captain/my-duty', (req: Request, res: Response) => {
         employment_status: captainEmp?.employment_status || 'Active'
       },
       duty: {
-        status: bus ? 'Active On Duty' : 'Awaiting Assignment',
+        status: bus ? (bus.operational_status === 'Active' ? 'Active On Duty' : bus.operational_status) : 'Awaiting Assignment',
         shift: 'Scheduled Shift',
-        project: bus ? `${bus.make || 'Fleet'} Route Assignment` : 'Fleet Operations',
+        project: bus ? `${bus.bus_type || 'Fleet'} Operations` : 'Fleet Operations',
         route: bus ? `Transit Service - ${bus.bus_number}` : 'No Active Route Assigned',
         stops: bus ? 'Scheduled Route Stops' : 'No Stops Assigned',
         distance_km: bus?.current_odometer_km || 0,
-        gps_active: true
+        gps_active: bus?.operational_status === 'Active'
       },
       bus: bus ? {
         id: bus.id,
@@ -429,23 +452,15 @@ app.get('/api/captain/my-duty', (req: Request, res: Response) => {
         name: driver.full_name,
         code: driver.employee_code,
         phone: driver.phone_number,
-        licence_number: driver.licence_number || 'AP-16-2018-009842',
-        licence_validity: driver.licence_validity_date || '2028-05-20'
-      } : {
-        name: 'Venkatesh Rao',
-        phone: '9848011223',
-        licence_number: 'AP-16-2018-009842',
-        licence_validity: '2028-05-20'
-      },
+        licence_number: driver.licence_number || '-',
+        licence_validity: driver.licence_validity_date || '-'
+      } : null,
       helper: helper ? {
         id: helper.id,
         name: helper.full_name,
         code: helper.employee_code,
         phone: helper.phone_number
-      } : {
-        name: 'M. Rambabu',
-        phone: '9848033445'
-      },
+      } : null,
       todayKm,
       recentInspections,
       busComplaints,
@@ -665,14 +680,14 @@ app.get('/api/dashboard', (req: Request, res: Response) => {
     const liveRunningBuses = activeBusRows.map((b, idx) => ({
       id: b.id,
       bus_number: b.bus_number,
-      route: `${b.make || 'Fleet'} Route ${idx + 1}: City Hub ↔ Terminal`,
-      driver: b.driver_name || 'Assigned Driver',
-      speed: b.operational_status === 'Active' ? 35 + (idx * 5) : 0,
-      status: b.operational_status === 'Active' ? 'Running' : 'Stopped',
-      lat: 16.5062 + (idx * 0.01),
-      lng: 80.6480 + (idx * 0.01),
-      battery: '96%',
-      ac: b.operational_status === 'Active' ? 'Working (22°C)' : 'Idle'
+      route: b.make ? `${b.make} ${b.model || 'Bus'} Transit` : `${b.bus_number} Transit`,
+      driver: b.driver_name || 'Unassigned',
+      speed: b.operational_status === 'Active' ? 40 : 0,
+      status: b.operational_status === 'Active' ? 'Running' : b.operational_status,
+      lat: 16.5062 + (idx * 0.005),
+      lng: 80.6480 + (idx * 0.005),
+      battery: b.operational_status === 'Active' ? 'Good' : 'Off',
+      ac: b.operational_status === 'Active' ? 'Working' : 'Off'
     }));
 
     return res.json({

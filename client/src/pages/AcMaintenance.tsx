@@ -73,27 +73,27 @@ export const AcMaintenance: React.FC = () => {
 
   const handleOpenAdd = () => {
     const firstBus = buses[0];
-    const currentKm = firstBus ? firstBus.current_odometer_km : 50000;
+    const currentKm = firstBus ? firstBus.current_odometer_km : '';
     setFormData({
       bus_id: firstBus ? String(firstBus.id) : '',
       inspection_date: new Date().toISOString().split('T')[0],
       current_km: currentKm,
       ac_working_status: 'Working',
-      cooling_performance: 'Good (Cabin 21°C)',
-      refrigerant_check: 'Normal (R134a 45 psi)',
-      filter_cleaning_replacement: 'Cleaned return air filters',
-      compressor_condition: 'Good & Quiet',
-      leak_inspection: 'No leaks found',
-      electrical_check: 'Clutch and blower normal',
+      cooling_performance: 'Good',
+      refrigerant_check: 'Normal',
+      filter_cleaning_replacement: '',
+      compressor_condition: 'Good',
+      leak_inspection: 'None',
+      electrical_check: 'Normal',
       issue_description: '',
-      work_performed: 'Routine monthly checkup and filter wash',
-      service_provider: 'Subzero AC Solutions',
-      next_service_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      next_service_km: currentKm + 10000,
-      service_cost: 3200,
-      technician: 'Naveen Kumar',
+      work_performed: '',
+      service_provider: '',
+      next_service_date: '',
+      next_service_km: '',
+      service_cost: '',
+      technician: '',
       status: 'Completed',
-      remarks: 'AC running at full cooling efficiency'
+      remarks: ''
     });
     setIsAddOpen(true);
   };

@@ -72,28 +72,28 @@ export const OilFilterMaintenance: React.FC = () => {
 
   const handleOpenAdd = () => {
     const firstBus = buses[0];
-    const currentKm = firstBus ? firstBus.current_odometer_km : 50000;
+    const currentKm = firstBus ? firstBus.current_odometer_km : '';
     setFormData({
       bus_id: firstBus ? String(firstBus.id) : '',
       replacement_date: new Date().toISOString().split('T')[0],
       odometer_km: currentKm,
-      oil_type: '15W-40 CI-4 Plus',
-      oil_brand: 'Castrol Vecton',
-      oil_quantity_liters: 18,
-      oil_cost: 7200,
+      oil_type: '',
+      oil_brand: '',
+      oil_quantity_liters: '',
+      oil_cost: '',
       oil_filter_replaced: true,
-      oil_filter_details: 'Fleetguard LF16015 Spin-on',
-      air_filter_replaced: true,
-      air_filter_details: 'Fleetguard AF25437 Primary',
-      fuel_filter_replaced: true,
-      fuel_filter_details: 'Fleetguard FF5488 Cartridge',
-      other_filter_details: 'DPF cleaner wash performed',
-      labour_cost: 1500,
-      service_provider: 'Charvik In-house Workshop',
-      next_due_date: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      next_due_km: currentKm + 40000,
-      performed_by: 'Chief Mechanic Anand',
-      remarks: 'Full oil and filter renewal'
+      oil_filter_details: '',
+      air_filter_replaced: false,
+      air_filter_details: '',
+      fuel_filter_replaced: false,
+      fuel_filter_details: '',
+      other_filter_details: '',
+      labour_cost: '',
+      service_provider: '',
+      next_due_date: '',
+      next_due_km: '',
+      performed_by: '',
+      remarks: ''
     });
     setIsAddOpen(true);
   };

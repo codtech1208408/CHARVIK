@@ -84,7 +84,7 @@ export const Repairs: React.FC = () => {
 
   const handleOpenAdd = () => {
     const firstBus = buses[0];
-    const currentKm = firstBus ? firstBus.current_odometer_km : 50000;
+    const currentKm = firstBus ? firstBus.current_odometer_km : '';
     setFormData({
       bus_id: firstBus ? String(firstBus.id) : '',
       linked_complaint_id: '',
@@ -97,15 +97,15 @@ export const Repairs: React.FC = () => {
       diagnosis: '',
       work_performed: '',
       parts_replaced: '',
-      labour_cost: 2000,
-      parts_cost: 5000,
-      other_charges: 300,
-      workshop_vendor: 'In-house Workshop Bay 2',
-      assigned_technician: 'Chief Mechanic Anand',
+      labour_cost: '',
+      parts_cost: '',
+      other_charges: '',
+      workshop_vendor: '',
+      assigned_technician: '',
       bus_availability_status: 'Under Maintenance',
-      warranty_details: '6 Months on parts',
+      warranty_details: '',
       status: 'In Progress',
-      remarks: 'Work order initiated'
+      remarks: ''
     });
     setIsAddOpen(true);
   };
