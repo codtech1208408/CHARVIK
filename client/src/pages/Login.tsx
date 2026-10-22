@@ -155,28 +155,6 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
 
         {/* Card */}
         <div className="mt-5 bg-white py-8 px-6 sm:px-10 shadow-xl rounded-2xl border border-slate-200/80">
-          {/* Active Session info if switching roles */}
-          {user && (
-            <div className="mb-5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between gap-2">
-              <div className="truncate">
-                <span className="font-semibold text-slate-500">Logged in as:</span>{' '}
-                <span className="font-bold text-[#142B4A]">{user.name}</span>{' '}
-                <span className="text-slate-400">({user.role})</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  logout();
-                  setEmailOrUser('');
-                  setPassword('');
-                }}
-                className="text-[11px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200 shrink-0 transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
-          )}
-
           {/* Admin Credentials Info Notice for Supporter & Captain */}
           {currentTheme.notice && (
             <div className="mb-5 p-3.5 rounded-xl bg-amber-50/90 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5 leading-relaxed">
@@ -196,9 +174,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
               <label className="block text-xs font-bold text-[#172B4D] uppercase tracking-wider mb-1.5">
                 {selectedRole === 'Captain'
                   ? 'Captain Registered Mobile Number'
-                  : selectedRole === 'Supporter'
-                  ? 'Supporter Username / Email'
-                  : 'Admin Email / Username'}
+                  : 'Email / Username'}
               </label>
               <div className="relative rounded-xl shadow-xs">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">

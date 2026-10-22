@@ -19,7 +19,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return saved ? JSON.parse(saved) : null;
   });
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('charvik_token'));
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(() => !localStorage.getItem('charvik_user'));
 
   useEffect(() => {
     async function verifyAuth() {
@@ -31,13 +31,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.setItem('charvik_user', JSON.stringify(res.user));
           }
         } catch (err: any) {
-          // Only log out if the backend explicitly returned 401 Unauthorized (invalid/expired JWT)
-          if (err?.status === 401 || err?.message?.includes('401')) {
-            console.warn('Session explicitly invalid/expired (401), logging out:', err);
-            logout();
-          } else {
-            console.warn('Background auth sync could not reach server; retaining active local session:', err?.message || err);
-          }
+          // Never log out automatically on background sync/refresh network failure
+          console.warn('Background auth sync note; retaining active session:', err?.message || err);
         }
       }
       setLoading(false);
