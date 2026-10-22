@@ -37,19 +37,23 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
     }
   }, [defaultRole, urlRole]);
 
-  // If already logged in, seamlessly forward directly to dashboard
+  // Only auto-forward to dashboard if already logged in with the MATCHING role for this portal
   useEffect(() => {
     if (user) {
-      const normalizedRole = (user.role || '').toLowerCase();
-      if (normalizedRole.includes('captain')) {
+      const userRole = (user.role || '').toLowerCase();
+      const isAdmin = userRole.includes('admin');
+      const isCaptain = userRole.includes('captain');
+      const isSupporter = userRole.includes('support') || userRole.includes('helper');
+
+      if (selectedRole === 'Captain' && isCaptain) {
         navigate('/captain/dashboard', { replace: true });
-      } else if (normalizedRole.includes('support') || normalizedRole.includes('helper')) {
+      } else if (selectedRole === 'Supporter' && isSupporter) {
         navigate('/supporter/dashboard', { replace: true });
-      } else {
+      } else if (selectedRole === 'Admin' && isAdmin) {
         navigate('/admin/dashboard', { replace: true });
       }
     }
-  }, [user, navigate]);
+  }, [user, selectedRole, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
