@@ -3,6 +3,7 @@ import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { useAuth } from '../../context/AuthContext';
+import { ErrorBoundary } from '../common/ErrorBoundary';
 import AOS from 'aos';
 
 export const AdminLayout: React.FC = () => {
@@ -125,7 +126,9 @@ export const AdminLayout: React.FC = () => {
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          <Outlet />
+          <ErrorBoundary fallbackTitle="Unable to Load Dashboard View">
+            <Outlet />
+          </ErrorBoundary>
         </main>
 
         <footer className="py-4 px-6 border-t border-slate-200 bg-white text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 no-print">

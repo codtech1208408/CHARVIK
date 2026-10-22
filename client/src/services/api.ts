@@ -352,28 +352,104 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
   // 6. DAILY KILOMETERS
   if (path === '/daily-kilometers') {
     if (method === 'GET') {
+      let list: any[] = [];
       try {
-        const { data, error } = await supabase.from('daily_kilometer_entries').select('*').order('date', { ascending: false });
-        if (!error && data) {
+        const { data, error } = await supabase
+          .from('daily_kilometer_entries')
+          .select('*')
+          .order('id', { ascending: false });
+        if (!error && Array.isArray(data)) {
+          list = data;
           setLocalCollection('daily_km', data);
-          return data as any;
+        } else {
+          list = getLocalCollection<any>('daily_km');
         }
-      } catch {}
-      return getLocalCollection<any>('daily_km') as any;
+      } catch {
+        list = getLocalCollection<any>('daily_km');
+      }
+
+      if (!Array.isArray(list)) list = [];
+
+      // Filter by params if provided
+      const dateFilter = params.get('date');
+      const busFilter = params.get('bus_id');
+      const driverFilter = params.get('driver_id');
+
+      if (dateFilter) list = list.filter(k => k.entry_date === dateFilter);
+      if (busFilter) list = list.filter(k => String(k.bus_id) === String(busFilter));
+      if (driverFilter) list = list.filter(k => String(k.driver_id) === String(driverFilter));
+
+      // Resolve bus_number, registration_number, driver_name from buses & employees cache
+      const buses = getLocalCollection<any>('buses') || [];
+      const employees = getLocalCollection<any>('employees') || [];
+
+      const enriched = list.map(item => {
+        const bus = buses.find(b => String(b.id) === String(item.bus_id));
+        const driver = employees.find(e => String(e.id) === String(item.driver_id));
+        const openKm = Number(item.opening_km) || 0;
+        const closeKm = Number(item.closing_km) || 0;
+        const dist = item.distance_travelled_km != null ? Number(item.distance_travelled_km) : Math.max(0, closeKm - openKm);
+        return {
+          ...item,
+          bus_number: item.bus_number || bus?.bus_number || (item.bus_id ? `Bus #${item.bus_id}` : '-'),
+          registration_number: item.registration_number || bus?.registration_number || '-',
+          driver_name: item.driver_name || driver?.full_name || (item.driver_id ? `Driver #${item.driver_id}` : '-'),
+          opening_km: openKm,
+          closing_km: closeKm,
+          distance_travelled_km: dist
+        };
+      });
+
+      const totalDistance = enriched.reduce((sum, item) => sum + (Number(item.distance_travelled_km) || 0), 0);
+      const totalEntries = enriched.length;
+
+      return {
+        entries: enriched,
+        summary: {
+          totalDistance,
+          totalEntries
+        }
+      } as any;
     }
 
     if (method === 'POST') {
+      const buses = getLocalCollection<any>('buses') || [];
+      const employees = getLocalCollection<any>('employees') || [];
+      const bus = buses.find(b => String(b.id) === String(body.bus_id));
+      const driver = employees.find(e => String(e.id) === String(body.driver_id));
+      const openKm = Number(body.opening_km) || 0;
+      const closeKm = Number(body.closing_km) || 0;
+      const dist = Math.max(0, closeKm - openKm);
+
       const newKm = {
         ...body,
         id: Date.now(),
+        opening_km: openKm,
+        closing_km: closeKm,
+        distance_travelled_km: dist,
+        bus_number: bus?.bus_number || `Bus #${body.bus_id}`,
+        registration_number: bus?.registration_number || '-',
+        driver_name: driver?.full_name || '-',
         created_at: new Date().toISOString()
       };
+
       try {
         await supabase.from('daily_kilometer_entries').insert([newKm]);
       } catch {}
-      const list = getLocalCollection<any>('daily_km');
+
+      const list = getLocalCollection<any>('daily_km') || [];
       list.unshift(newKm);
       setLocalCollection('daily_km', list);
+
+      // Also update the bus current odometer km in local cache & Supabase
+      if (body.bus_id) {
+        try {
+          await supabase.from('buses').update({ current_odometer_km: closeKm }).eq('id', body.bus_id);
+        } catch {}
+        const updatedBuses = buses.map(b => String(b.id) === String(body.bus_id) ? { ...b, current_odometer_km: closeKm } : b);
+        setLocalCollection('buses', updatedBuses);
+      }
+
       return newKm as any;
     }
   }
@@ -391,9 +467,14 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         return { suggestedOpening: Number(data[0].closing_km) || 0 } as any;
       }
     } catch {}
-    const list = getLocalCollection<any>('daily_km');
+    const list = getLocalCollection<any>('daily_km') || [];
     const busEntry = list.find(k => String(k.bus_id) === String(busId));
-    return { suggestedOpening: Number(busEntry?.closing_km) || 0 } as any;
+    if (busEntry && busEntry.closing_km) {
+      return { suggestedOpening: Number(busEntry.closing_km) || 0 } as any;
+    }
+    const buses = getLocalCollection<any>('buses') || [];
+    const bus = buses.find(b => String(b.id) === String(busId));
+    return { suggestedOpening: Number(bus?.current_odometer_km) || 0 } as any;
   }
 
   if (path.startsWith('/daily-kilometers/')) {
@@ -402,12 +483,16 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       try {
         await supabase.from('daily_kilometer_entries').update(body).eq('id', id);
       } catch {}
+      const list = (getLocalCollection<any>('daily_km') || []).map(k => String(k.id) === String(id) ? { ...k, ...body } : k);
+      setLocalCollection('daily_km', list);
       return { success: true, ...body } as any;
     }
     if (method === 'DELETE') {
       try {
         await supabase.from('daily_kilometer_entries').delete().eq('id', id);
       } catch {}
+      const list = (getLocalCollection<any>('daily_km') || []).filter(k => String(k.id) !== String(id));
+      setLocalCollection('daily_km', list);
       return { success: true } as any;
     }
   }

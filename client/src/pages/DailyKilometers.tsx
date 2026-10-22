@@ -69,16 +69,39 @@ export const DailyKilometers: React.FC = () => {
           date: selectedDate || undefined,
           bus_id: selectedBus || undefined,
           driver_id: selectedDriver || undefined
-        }),
-        api.getBuses(),
-        api.getEmployees({ role: 'Driver' })
+        }).catch(() => ({ entries: [], summary: { totalDistance: 0, totalEntries: 0 } })),
+        api.getBuses().catch(() => []),
+        api.getEmployees({ role: 'Driver' }).catch(() => [])
       ]);
-      setEntries(kmRes.entries || []);
-      setSummary(kmRes.summary || { totalDistance: 0, totalEntries: 0 });
-      setBuses(busesData);
-      setDrivers(empsData);
+
+      const rawEntries = Array.isArray(kmRes)
+        ? kmRes
+        : (Array.isArray(kmRes?.entries) ? kmRes.entries : []);
+
+      const totalDist = rawEntries.reduce(
+        (sum: number, item: any) =>
+          sum + (Number(item.distance_travelled_km) || Math.max(0, (Number(item.closing_km) || 0) - (Number(item.opening_km) || 0))),
+        0
+      );
+
+      const summaryData = kmRes?.summary || {
+        totalDistance: totalDist,
+        totalEntries: rawEntries.length
+      };
+
+      setEntries(rawEntries);
+      setSummary({
+        totalDistance: Number(summaryData.totalDistance) || 0,
+        totalEntries: Number(summaryData.totalEntries) || 0
+      });
+      setBuses(Array.isArray(busesData) ? busesData : []);
+      setDrivers(Array.isArray(empsData) ? empsData : []);
     } catch (err: any) {
       error(err.message || 'Failed to load kilometer entries');
+      setEntries([]);
+      setSummary({ totalDistance: 0, totalEntries: 0 });
+      setBuses([]);
+      setDrivers([]);
     } finally {
       setLoading(false);
     }
@@ -220,7 +243,9 @@ export const DailyKilometers: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase">Total Logged Distance</p>
-            <h3 className="text-2xl font-black text-blue-600 mt-1">{summary.totalDistance?.toLocaleString()} KM</h3>
+            <h3 className="text-2xl font-black text-blue-600 mt-1">
+              {(summary?.totalDistance != null ? Number(summary.totalDistance) : 0).toLocaleString()} KM
+            </h3>
             <p className="text-[11px] text-slate-400 mt-0.5">Combined fleet distance</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -231,7 +256,7 @@ export const DailyKilometers: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase">Total Trip Entries</p>
-            <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.totalEntries} Logs</h3>
+            <h3 className="text-2xl font-black text-slate-800 mt-1">{summary?.totalEntries || 0} Logs</h3>
             <p className="text-[11px] text-slate-400 mt-0.5">Audited daily submissions</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -243,7 +268,7 @@ export const DailyKilometers: React.FC = () => {
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase">Average Daily Shift</p>
             <h3 className="text-2xl font-black text-purple-600 mt-1">
-              {summary.totalEntries ? Math.round(summary.totalDistance / summary.totalEntries) : 0} KM
+              {summary?.totalEntries ? Math.round((Number(summary.totalDistance) || 0) / summary.totalEntries) : 0} KM
             </h3>
             <p className="text-[11px] text-slate-400 mt-0.5">Per bus per service run</p>
           </div>
@@ -273,7 +298,7 @@ export const DailyKilometers: React.FC = () => {
             className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 outline-none"
           >
             <option value="">All Fleet Buses</option>
-            {buses.map((b) => (
+            {Array.isArray(buses) && buses.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.bus_number} ({b.registration_number})
               </option>
@@ -289,7 +314,7 @@ export const DailyKilometers: React.FC = () => {
             className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 outline-none"
           >
             <option value="">All Drivers</option>
-            {drivers.map((d) => (
+            {Array.isArray(drivers) && drivers.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.full_name}
               </option>
@@ -335,7 +360,7 @@ export const DailyKilometers: React.FC = () => {
                     Loading entries...
                   </td>
                 </tr>
-              ) : entries.length === 0 ? (
+              ) : !Array.isArray(entries) || entries.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-400">
                     No daily kilometer records found matching the criteria.
@@ -344,19 +369,23 @@ export const DailyKilometers: React.FC = () => {
               ) : (
                 entries.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-semibold text-slate-800">{item.entry_date}</td>
+                    <td className="py-3 px-4 font-semibold text-slate-800">{item.entry_date || '-'}</td>
                     <td className="py-3 px-4">
-                      <span className="font-bold text-slate-900">{item.bus_number}</span>
-                      <span className="block text-[11px] text-blue-700 font-semibold">{item.registration_number}</span>
+                      <span className="font-bold text-slate-900">{item.bus_number || '-'}</span>
+                      <span className="block text-[11px] text-blue-700 font-semibold">{item.registration_number || '-'}</span>
                     </td>
                     <td className="py-3 px-4 font-medium text-slate-700">
                       {item.driver_name || <span className="text-slate-400 italic">Not recorded</span>}
                     </td>
-                    <td className="py-3 px-4 font-mono font-medium text-slate-600">{item.opening_km.toLocaleString()}</td>
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900">{item.closing_km.toLocaleString()}</td>
+                    <td className="py-3 px-4 font-mono font-medium text-slate-600">
+                      {(item.opening_km != null ? Number(item.opening_km) : 0).toLocaleString()}
+                    </td>
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                      {(item.closing_km != null ? Number(item.closing_km) : 0).toLocaleString()}
+                    </td>
                     <td className="py-3 px-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                        +{item.distance_travelled_km} KM
+                        +{item.distance_travelled_km != null ? item.distance_travelled_km : Math.max(0, (Number(item.closing_km) || 0) - (Number(item.opening_km) || 0))} KM
                       </span>
                     </td>
                     <td className="py-3 px-4 text-slate-500 max-w-[180px] truncate">
@@ -422,7 +451,7 @@ export const DailyKilometers: React.FC = () => {
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                 required
               >
-                {buses.map((b) => (
+                {Array.isArray(buses) && buses.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.bus_number} ({b.registration_number})
                   </option>
@@ -439,7 +468,7 @@ export const DailyKilometers: React.FC = () => {
               className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
             >
               <option value="">-- Select Active Driver --</option>
-              {drivers.map((d) => (
+              {Array.isArray(drivers) && drivers.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.full_name} ({d.employee_code})
                 </option>
