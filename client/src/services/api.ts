@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 function getAuthHeaders() {
   const token = localStorage.getItem('charvik_token');
@@ -18,7 +18,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   const response = await fetch(url, { ...options, headers });
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    const err: any = new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    err.status = response.status;
+    throw err;
   }
   return response.json();
 }

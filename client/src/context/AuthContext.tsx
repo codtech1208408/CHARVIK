@@ -26,13 +26,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token) {
         try {
           const res = await api.getMe();
-          if (res.user) {
+          if (res?.user) {
             setUser(res.user);
             localStorage.setItem('charvik_user', JSON.stringify(res.user));
           }
-        } catch (err) {
-          console.warn('Session expired or invalid:', err);
-          logout();
+        } catch (err: any) {
+          // Only log out if the backend explicitly returned 401 Unauthorized (invalid/expired JWT)
+          if (err?.status === 401 || err?.message?.includes('401')) {
+            console.warn('Session explicitly invalid/expired (401), logging out:', err);
+            logout();
+          } else {
+            console.warn('Background auth sync could not reach server; retaining active local session:', err?.message || err);
+          }
         }
       }
       setLoading(false);
