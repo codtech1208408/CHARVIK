@@ -107,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar Drawer */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r-2 border-amber-400 shadow-2xl ${
+        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl ${
           isCollapsed ? 'w-20' : 'w-72'
         } ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
@@ -115,7 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-4 border-b border-slate-100 flex flex-col items-center justify-between">
           <div className="w-full flex items-center justify-between mb-2">
             {!isCollapsed && (
-              <span className="text-[11px] font-black tracking-widest text-[#8A9BA8] uppercase">
+              <span className="text-[11px] font-black tracking-widest text-slate-400 uppercase">
                 MANAGEMENT
               </span>
             )}
@@ -162,7 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Navigation Items List */}
-        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1 scrollbar-thin scrollbar-thumb-amber-300">
+        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-200">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isItemActive =
@@ -178,14 +178,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => setIsMobileOpen(false)}
                 className={`flex items-center px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group relative ${
                   isItemActive
-                    ? 'bg-[#C68A00] text-white shadow-md shadow-amber-600/30'
-                    : 'text-slate-800 hover:bg-amber-50/80 hover:text-amber-800'
+                    ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
+                    : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
                 } ${isCollapsed ? 'justify-center px-2' : ''}`}
                 title={isCollapsed ? item.label : undefined}
               >
                 <Icon
                   className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
-                    isItemActive ? 'text-white' : 'text-amber-500'
+                    isItemActive ? 'text-white' : 'text-[#2563EB]'
                   } ${isCollapsed ? '' : 'mr-3'}`}
                 />
                 {!isCollapsed && (
@@ -197,8 +197,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span
                     className={`ml-auto px-2 py-0.5 text-[10px] font-black uppercase rounded-full tracking-wider ${
                       isItemActive
-                        ? 'bg-amber-600/50 text-white border border-white/30'
-                        : 'bg-amber-100 text-amber-800'
+                        ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                     }`}
                   >
                     LIVE
@@ -210,16 +210,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Footer Area: View Public Website & User Actions */}
-        <div className="p-3 border-t border-slate-100 bg-[#FFFDF9] shrink-0 space-y-2">
+        <div className="p-3 border-t border-slate-100 bg-slate-50/60 shrink-0 space-y-2">
           {!isCollapsed && (
             <Link
               to="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white hover:border-amber-400 hover:shadow-xs transition-all text-xs font-bold text-slate-800 group"
+              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:bg-blue-50/30 hover:shadow-xs transition-all text-xs font-bold text-slate-800 group"
             >
               <div className="flex items-center gap-2">
-                <ExternalLink className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
+                <ExternalLink className="w-4 h-4 text-[#2563EB] group-hover:scale-110 transition-transform" />
                 <span>View Public Website</span>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
@@ -228,8 +228,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* User Profile info if available */}
           {!isCollapsed && user && (
-            <div className="px-3 py-2 bg-slate-50 rounded-xl flex items-center space-x-2.5 border border-slate-100">
-              <div className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs uppercase shadow-xs">
+            <div className="px-3 py-2 bg-white rounded-xl flex items-center space-x-2.5 border border-slate-200 shadow-xs">
+              <div className="w-7 h-7 rounded-full bg-[#142B4A] text-white flex items-center justify-center font-bold text-xs uppercase shadow-xs">
                 {user.name.slice(0, 2)}
               </div>
               <div className="truncate flex-1">
@@ -261,7 +261,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           className={({ isActive }) =>
             `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
               isActive
-                ? 'border-2 border-amber-500 bg-amber-50 text-amber-700 font-bold'
+                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
                 : 'text-slate-500 hover:text-slate-800'
             }`
           }
@@ -276,7 +276,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           className={({ isActive }) =>
             `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
               isActive
-                ? 'border-2 border-amber-500 bg-amber-50 text-amber-700 font-bold'
+                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
                 : 'text-slate-500 hover:text-slate-800'
             }`
           }
@@ -291,7 +291,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           className={({ isActive }) =>
             `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
               isActive
-                ? 'border-2 border-amber-500 bg-amber-50 text-amber-700 font-bold'
+                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
                 : 'text-slate-500 hover:text-slate-800'
             }`
           }
@@ -306,7 +306,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           className={({ isActive }) =>
             `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
               isActive
-                ? 'border-2 border-amber-500 bg-amber-50 text-amber-700 font-bold'
+                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
                 : 'text-slate-500 hover:text-slate-800'
             }`
           }

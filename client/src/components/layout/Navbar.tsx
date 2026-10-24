@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
           onClick={onMobileToggle}
           className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
         >
-          <Menu className="w-5 h-5 text-amber-500" />
+          <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
 
         <div>
@@ -95,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
                 if (val) navigate(`${basePrefix}/vehicles?search=${encodeURIComponent(val)}`);
               }
             }}
-            className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 text-xs rounded-xl pl-9 pr-4 py-2 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
+            className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 text-xs rounded-xl pl-9 pr-4 py-2 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
         </div>
       </div>
@@ -104,7 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
       <div className="flex items-center space-x-2 sm:space-x-3">
         {/* Date Display */}
         <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
-          <Calendar className="w-3.5 h-3.5 text-amber-500" />
+          <Calendar className="w-3.5 h-3.5 text-[#2563EB]" />
           <span className="font-semibold">{todayStr}</span>
         </div>
 
@@ -115,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
             className="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
             title="Notifications & Alerts"
           >
-            <Bell className="w-5 h-5 text-amber-500" />
+            <Bell className="w-5 h-5 text-[#2563EB]" />
             {notifications.totalCount > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
                 {notifications.totalCount}
@@ -126,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
           {/* Notifications Dropdown */}
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 text-slate-800 z-50 overflow-hidden animate-in fade-in-50 zoom-in-95">
-              <div className="px-4 py-3 bg-[#C68A00] text-white flex items-center justify-between">
+              <div className="px-4 py-3 bg-[#142B4A] text-white flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Bell className="w-4 h-4 text-white" />
                   <span className="font-bold text-sm">Fleet Alerts & Updates</span>
@@ -244,15 +244,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
             className="flex items-center space-x-2.5 p-1.5 rounded-xl hover:bg-white/10 transition-colors"
           >
             <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm border ${
-              isCaptain ? 'bg-amber-600 border-amber-400' : isSupporter ? 'bg-emerald-600 border-emerald-400' : 'bg-blue-600 border-blue-400'
+              isCaptain ? 'bg-[#142B4A] border-blue-400' : isSupporter ? 'bg-emerald-600 border-emerald-400' : 'bg-[#142B4A] border-blue-500'
             }`}>
               {user ? user.name.slice(0, 2) : isCaptain ? 'CP' : isSupporter ? 'SP' : 'AD'}
             </div>
             <div className="hidden md:flex flex-col text-left">
-              <span className="text-xs font-bold text-white leading-tight truncate">
+              <span className="text-xs font-bold text-slate-800 leading-tight truncate">
                 {user ? user.name : isCaptain ? 'Route Captain' : isSupporter ? 'Support Staff' : 'Administrator'}
               </span>
-              <span className={`text-[10px] font-medium ${isCaptain ? 'text-amber-300' : isSupporter ? 'text-emerald-300' : 'text-blue-300'}`}>
+              <span className={`text-[10px] font-medium ${isCaptain ? 'text-blue-600' : isSupporter ? 'text-emerald-600' : 'text-slate-500'}`}>
                 {user ? user.role : isCaptain ? 'Captain' : isSupporter ? 'Support Staff' : 'Super Admin'}
               </span>
             </div>
@@ -265,7 +265,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
                 <p className="font-bold text-slate-900">{user?.name}</p>
                 <p className="text-slate-500 truncate">{user?.email}</p>
                 <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${
-                  isCaptain ? 'bg-amber-50 text-amber-800' : isSupporter ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
+                  isCaptain ? 'bg-blue-50 text-blue-800' : isSupporter ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
                 }`}>
                   {user?.role}
                 </span>
