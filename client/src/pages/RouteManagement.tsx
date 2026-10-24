@@ -10,11 +10,14 @@ import {
   Edit,
   Trash2,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  IndianRupee,
+  ShieldCheck
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 interface RouteItem {
   id: number;
@@ -29,19 +32,80 @@ interface RouteItem {
   assigned_bus_number: string;
   assigned_driver_name: string;
   status: 'Active' | 'Inactive' | 'Under Review';
+  trip_amount?: number;
+  operator_commission?: number;
 }
 
 const STORAGE_KEY = 'charvik_route_management_data';
 
+const DEFAULT_ROUTES: RouteItem[] = [
+  {
+    id: 1,
+    route_code: 'RT-101',
+    route_name: 'Kukatpally - HITEC City Express',
+    origin: 'Kukatpally Depot',
+    destination: 'HITEC City Tech Park',
+    total_distance_km: 22,
+    morning_time: '07:15 AM',
+    evening_time: '05:45 PM',
+    total_stops: 6,
+    assigned_bus_number: 'TS09-UA-1234',
+    assigned_driver_name: 'Ramesh Kumar',
+    status: 'Active',
+    trip_amount: 2500,
+    operator_commission: 350
+  },
+  {
+    id: 2,
+    route_code: 'RT-204',
+    route_name: 'Secunderabad - Gachibowli Shuttle',
+    origin: 'Secunderabad Station',
+    destination: 'Gachibowli Financial Dist',
+    total_distance_km: 28,
+    morning_time: '07:30 AM',
+    evening_time: '06:00 PM',
+    total_stops: 8,
+    assigned_bus_number: 'TS09-UA-5678',
+    assigned_driver_name: 'Suresh Babu',
+    status: 'Active',
+    trip_amount: 2800,
+    operator_commission: 400
+  },
+  {
+    id: 3,
+    route_code: 'RT-305',
+    route_name: 'Dilsukhnagar - Madhapur Metro Link',
+    origin: 'Dilsukhnagar Hub',
+    destination: 'Madhapur Cyber Towers',
+    total_distance_km: 24,
+    morning_time: '08:00 AM',
+    evening_time: '06:30 PM',
+    total_stops: 7,
+    assigned_bus_number: 'TS09-UB-9012',
+    assigned_driver_name: 'Venkatesh Rao',
+    status: 'Active',
+    trip_amount: 2400,
+    operator_commission: 300
+  }
+];
+
 export const RouteManagement: React.FC = () => {
+  const { user } = useAuth();
+  const isAdmin = (user?.role || '').toLowerCase().includes('admin');
   const { success, error } = useToast();
 
   const [routes, setRoutes] = useState<RouteItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+      return DEFAULT_ROUTES;
     } catch {
-      return [];
+      return DEFAULT_ROUTES;
     }
   });
 
@@ -63,7 +127,9 @@ export const RouteManagement: React.FC = () => {
     total_stops: 8,
     assigned_bus_number: '',
     assigned_driver_name: '',
-    status: 'Active'
+    status: 'Active',
+    trip_amount: undefined,
+    operator_commission: undefined
   });
 
   useEffect(() => {
@@ -99,7 +165,9 @@ export const RouteManagement: React.FC = () => {
       total_stops: 6,
       assigned_bus_number: buses[0]?.bus_number || '',
       assigned_driver_name: drivers[0]?.full_name || '',
-      status: 'Active'
+      status: 'Active',
+      trip_amount: undefined,
+      operator_commission: undefined
     });
     setIsAddOpen(true);
   };
@@ -119,7 +187,14 @@ export const RouteManagement: React.FC = () => {
 
     if (editingRoute) {
       const updated = routes.map((r) =>
-        r.id === editingRoute.id ? ({ ...r, ...formData } as RouteItem) : r
+        r.id === editingRoute.id
+          ? ({
+              ...r,
+              ...formData,
+              trip_amount: formData.trip_amount !== undefined ? Number(formData.trip_amount) : r.trip_amount,
+              operator_commission: formData.operator_commission !== undefined ? Number(formData.operator_commission) : r.operator_commission
+            } as RouteItem)
+          : r
       );
       setRoutes(updated);
       success('Route updated successfully.');
@@ -136,7 +211,9 @@ export const RouteManagement: React.FC = () => {
         total_stops: Number(formData.total_stops) || 5,
         assigned_bus_number: formData.assigned_bus_number || 'Unassigned',
         assigned_driver_name: formData.assigned_driver_name || 'Unassigned',
-        status: (formData.status as any) || 'Active'
+        status: (formData.status as any) || 'Active',
+        trip_amount: formData.trip_amount !== undefined ? Number(formData.trip_amount) : 0,
+        operator_commission: formData.operator_commission !== undefined ? Number(formData.operator_commission) : 0
       };
       setRoutes([newItem, ...routes]);
       success('New route created successfully.');
@@ -184,7 +261,7 @@ export const RouteManagement: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className={`grid grid-cols-1 ${isAdmin ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-4`}>
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase">Active Transit Routes</p>
@@ -226,6 +303,26 @@ export const RouteManagement: React.FC = () => {
             <MapPin className="w-5 h-5" />
           </div>
         </div>
+
+        {isAdmin && (
+          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-semibold text-slate-500 uppercase">Avg Driver Trip Rate</p>
+                <span className="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">Admin</span>
+              </div>
+              <h3 className="text-2xl font-black text-slate-800 mt-1 font-mono">
+                ₹{routes.length
+                  ? Math.round(routes.reduce((acc, r) => acc + (r.trip_amount || 0), 0) / routes.length).toLocaleString('en-IN')
+                  : 0}
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">Payable to driver per trip</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <IndianRupee className="w-5 h-5" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filter Strip */}
@@ -267,6 +364,7 @@ export const RouteManagement: React.FC = () => {
                 <th className="py-3 px-4">Distance & Stops</th>
                 <th className="py-3 px-4">Timings (Morning / Eve)</th>
                 <th className="py-3 px-4">Assigned Bus & Driver</th>
+                {isAdmin && <th className="py-3 px-4">Trip Amount & Commission</th>}
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-center">Actions</th>
               </tr>
@@ -274,7 +372,7 @@ export const RouteManagement: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredRoutes.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={isAdmin ? 9 : 8} className="py-12 text-center text-slate-400">
                     No routes created yet. Click &quot;Add New Route&quot; to configure your first route.
                   </td>
                 </tr>
@@ -306,6 +404,24 @@ export const RouteManagement: React.FC = () => {
                       <p className="font-bold text-slate-900">{r.assigned_bus_number || 'Unassigned'}</p>
                       <p className="text-[11px] text-slate-500">{r.assigned_driver_name || 'No driver assigned'}</p>
                     </td>
+                    {isAdmin && (
+                      <td className="py-3 px-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-semibold text-slate-500 uppercase">Trip:</span>
+                            <span className="font-mono font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                              ₹{r.trip_amount !== undefined ? Number(r.trip_amount).toLocaleString('en-IN') : '0'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-semibold text-slate-500 uppercase">Comm:</span>
+                            <span className="font-mono font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                              ₹{r.operator_commission !== undefined ? Number(r.operator_commission).toLocaleString('en-IN') : '0'}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                    )}
                     <td className="py-3 px-4">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
@@ -485,6 +601,70 @@ export const RouteManagement: React.FC = () => {
               </select>
             </div>
           </div>
+
+          {/* Admin Only: Trip Amount & Operator Commission */}
+          {isAdmin && (
+            <div className="p-3.5 bg-gradient-to-r from-amber-50/80 to-orange-50/40 rounded-xl border border-amber-200/80 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-amber-600" />
+                  Route Commercials & Payout
+                </span>
+                <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">
+                  Visible Only to Admin
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Trip Amount (₹) *
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={formData.trip_amount !== undefined ? formData.trip_amount : ''}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          trip_amount: e.target.value === '' ? undefined : Number(e.target.value)
+                        })
+                      }
+                      placeholder="e.g. 2500"
+                      className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-amber-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Amount payable to driver per route trip</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Operator Commission (₹)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={formData.operator_commission !== undefined ? formData.operator_commission : ''}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          operator_commission: e.target.value === '' ? undefined : Number(e.target.value)
+                        })
+                      }
+                      placeholder="e.g. 350"
+                      className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-amber-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Operator margin per trip</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button
