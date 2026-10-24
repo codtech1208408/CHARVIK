@@ -307,10 +307,7 @@ export const RouteManagement: React.FC = () => {
         {isAdmin && (
           <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-1.5">
-                <p className="text-xs font-semibold text-slate-500 uppercase">Avg Driver Trip Rate</p>
-                <span className="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">Admin</span>
-              </div>
+              <p className="text-xs font-semibold text-slate-500 uppercase">Avg Driver Trip Rate</p>
               <h3 className="text-2xl font-black text-slate-800 mt-1 font-mono">
                 ₹{routes.length
                   ? Math.round(routes.reduce((acc, r) => acc + (r.trip_amount || 0), 0) / routes.length).toLocaleString('en-IN')
@@ -604,63 +601,50 @@ export const RouteManagement: React.FC = () => {
 
           {/* Admin Only: Trip Amount & Operator Commission */}
           {isAdmin && (
-            <div className="p-3.5 bg-gradient-to-r from-amber-50/80 to-orange-50/40 rounded-xl border border-amber-200/80 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-amber-600" />
-                  Route Commercials & Payout
-                </span>
-                <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">
-                  Visible Only to Admin
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Trip Amount (₹) *
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formData.trip_amount !== undefined ? formData.trip_amount : ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          trip_amount: e.target.value === '' ? undefined : Number(e.target.value)
-                        })
-                      }
-                      placeholder="e.g. 2500"
-                      className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-amber-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 focus:ring-1 focus:ring-amber-500"
-                    />
-                  </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Amount payable to driver per route trip</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Trip Amount (₹)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formData.trip_amount !== undefined ? formData.trip_amount : ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        trip_amount: e.target.value === '' ? undefined : Number(e.target.value)
+                      })
+                    }
+                    placeholder="e.g. 2500"
+                    className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                  />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Operator Commission (₹)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formData.operator_commission !== undefined ? formData.operator_commission : ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          operator_commission: e.target.value === '' ? undefined : Number(e.target.value)
-                        })
-                      }
-                      placeholder="e.g. 350"
-                      className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-amber-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 focus:ring-1 focus:ring-amber-500"
-                    />
-                  </div>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Operator margin per trip</p>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Operator Commission (₹)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formData.operator_commission !== undefined ? formData.operator_commission : ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        operator_commission: e.target.value === '' ? undefined : Number(e.target.value)
+                      })
+                    }
+                    placeholder="e.g. 350"
+                    className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                  />
                 </div>
               </div>
             </div>
