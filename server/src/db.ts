@@ -114,10 +114,13 @@ export function initDatabase() {
       engine_number TEXT,
       fuel_type TEXT DEFAULT 'Diesel',
       seating_capacity INTEGER DEFAULT 45,
+      registration_date DATE,
+      tax_valid_upto DATE,
       insurance_expiry DATE,
       fitness_expiry DATE,
       permit_expiry DATE,
       puc_expiry DATE,
+      aitp_valid_upto DATE,
       current_odometer_km INTEGER DEFAULT 0,
       operational_status TEXT DEFAULT 'Active', -- 'Active', 'Inactive', 'Under Maintenance', 'Out of Service'
       assigned_driver_id INTEGER REFERENCES employees(id) ON DELETE SET NULL,
@@ -415,6 +418,16 @@ export function initDatabase() {
   } catch (e) {}
   try {
     db.exec('ALTER TABLE employees ADD COLUMN nominee_aadhaar TEXT;');
+  } catch (e) {}
+
+  try {
+    db.exec('ALTER TABLE buses ADD COLUMN registration_date DATE;');
+  } catch (e) {}
+  try {
+    db.exec('ALTER TABLE buses ADD COLUMN tax_valid_upto DATE;');
+  } catch (e) {}
+  try {
+    db.exec('ALTER TABLE buses ADD COLUMN aitp_valid_upto DATE;');
   } catch (e) {}
 
   try {

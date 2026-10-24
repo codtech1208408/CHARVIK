@@ -11,10 +11,13 @@ export interface Bus {
   engine_number: string;
   fuel_type: string;
   seating_capacity: number;
+  registration_date?: string;
+  tax_valid_upto?: string;
   insurance_expiry: string;
   fitness_expiry: string;
   permit_expiry: string;
   puc_expiry: string;
+  aitp_valid_upto?: string;
   current_odometer_km: number;
   operational_status: 'Active' | 'Inactive' | 'Under Maintenance' | 'Out of Service';
   assigned_driver_id?: number | null;

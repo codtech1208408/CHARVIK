@@ -59,10 +59,13 @@ export const BusMaster: React.FC = () => {
     seating_capacity: '',
     current_odometer_km: '',
     operational_status: 'Active',
+    registration_date: '',
+    tax_valid_upto: '',
     insurance_expiry: '',
     fitness_expiry: '',
     permit_expiry: '',
     puc_expiry: '',
+    aitp_valid_upto: '',
     assigned_driver_id: '',
     assigned_helper_id: '',
     notes: ''
@@ -104,10 +107,13 @@ export const BusMaster: React.FC = () => {
       seating_capacity: '',
       current_odometer_km: '',
       operational_status: 'Active',
+      registration_date: '',
+      tax_valid_upto: '',
       insurance_expiry: '',
       fitness_expiry: '',
       permit_expiry: '',
       puc_expiry: '',
+      aitp_valid_upto: '',
       assigned_driver_id: '',
       assigned_helper_id: '',
       notes: ''
@@ -131,10 +137,13 @@ export const BusMaster: React.FC = () => {
       seating_capacity: bus.seating_capacity || 45,
       current_odometer_km: bus.current_odometer_km || 0,
       operational_status: bus.operational_status || 'Active',
+      registration_date: bus.registration_date || '',
+      tax_valid_upto: bus.tax_valid_upto || '',
       insurance_expiry: bus.insurance_expiry || '',
       fitness_expiry: bus.fitness_expiry || '',
       permit_expiry: bus.permit_expiry || '',
       puc_expiry: bus.puc_expiry || '',
+      aitp_valid_upto: bus.aitp_valid_upto || '',
       assigned_driver_id: bus.assigned_driver_id ? String(bus.assigned_driver_id) : '',
       assigned_helper_id: bus.assigned_helper_id ? String(bus.assigned_helper_id) : '',
       notes: bus.notes || ''
@@ -505,49 +514,89 @@ export const BusMaster: React.FC = () => {
           </div>
 
           {/* Compliance & Document Expiry Dates */}
-          <div className="pt-2 border-t border-slate-100">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              Vehicle Compliance Expiry Dates
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Insurance Expiry</label>
-                <input
-                  type="date"
-                  value={formData.insurance_expiry}
-                  onChange={(e) => setFormData({ ...formData, insurance_expiry: e.target.value })}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-                />
+          <div className="pt-3 border-t border-slate-100 space-y-3">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-blue-600" />
+              <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Document & Compliance Validity
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/70 p-4 rounded-xl border border-slate-200/80">
+              {/* Left Column */}
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Registration Date</label>
+                  <input
+                    type="date"
+                    value={formData.registration_date || ''}
+                    onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Tax Valid Upto</label>
+                  <input
+                    type="date"
+                    value={formData.tax_valid_upto || ''}
+                    onChange={(e) => setFormData({ ...formData, tax_valid_upto: e.target.value })}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">PUCC Valid Upto</label>
+                  <input
+                    type="date"
+                    value={formData.puc_expiry || ''}
+                    onChange={(e) => setFormData({ ...formData, puc_expiry: e.target.value })}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">AITP Valid Upto</label>
+                  <input
+                    type="date"
+                    value={formData.aitp_valid_upto || ''}
+                    onChange={(e) => setFormData({ ...formData, aitp_valid_upto: e.target.value })}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Fitness Expiry</label>
-                <input
-                  type="date"
-                  value={formData.fitness_expiry}
-                  onChange={(e) => setFormData({ ...formData, fitness_expiry: e.target.value })}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-                />
-              </div>
+              {/* Right Column */}
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Fitness Valid Upto</label>
+                  <input
+                    type="date"
+                    value={formData.fitness_expiry || ''}
+                    onChange={(e) => setFormData({ ...formData, fitness_expiry: e.target.value })}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Permit Expiry</label>
-                <input
-                  type="date"
-                  value={formData.permit_expiry}
-                  onChange={(e) => setFormData({ ...formData, permit_expiry: e.target.value })}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Insurance Valid Upto</label>
+                  <input
+                    type="date"
+                    value={formData.insurance_expiry || ''}
+                    onChange={(e) => setFormData({ ...formData, insurance_expiry: e.target.value })}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">PUC Expiry</label>
-                <input
-                  type="date"
-                  value={formData.puc_expiry}
-                  onChange={(e) => setFormData({ ...formData, puc_expiry: e.target.value })}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-                />
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Permit Valid Upto</label>
+                  <input
+                    type="date"
+                    value={formData.permit_expiry || ''}
+                    onChange={(e) => setFormData({ ...formData, permit_expiry: e.target.value })}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -608,6 +657,44 @@ export const BusMaster: React.FC = () => {
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Insurance Valid Till</span>
                 <span className="font-bold text-blue-700">{viewingBusDetails.bus.insurance_expiry || 'N/A'}</span>
+              </div>
+            </div>
+
+            {/* Document Validity & Compliance Overview */}
+            <div className="bg-slate-50/70 p-3 rounded-xl border border-slate-200/80 space-y-2 text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-slate-800 text-[11px] uppercase tracking-wider">
+                <Shield className="w-3.5 h-3.5 text-blue-600" />
+                <span>Document Validity & Compliance Status</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="bg-white p-2 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-semibold block">Registration Date</span>
+                  <span className="font-mono font-bold text-slate-800">{viewingBusDetails.bus.registration_date || 'N/A'}</span>
+                </div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-semibold block">Fitness Valid Upto</span>
+                  <span className="font-mono font-bold text-slate-800">{viewingBusDetails.bus.fitness_expiry || 'N/A'}</span>
+                </div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-semibold block">Tax Valid Upto</span>
+                  <span className="font-mono font-bold text-slate-800">{viewingBusDetails.bus.tax_valid_upto || 'N/A'}</span>
+                </div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-semibold block">Insurance Valid Upto</span>
+                  <span className="font-mono font-bold text-slate-800">{viewingBusDetails.bus.insurance_expiry || 'N/A'}</span>
+                </div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-semibold block">PUCC Valid Upto</span>
+                  <span className="font-mono font-bold text-slate-800">{viewingBusDetails.bus.puc_expiry || 'N/A'}</span>
+                </div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-semibold block">Permit Valid Upto</span>
+                  <span className="font-mono font-bold text-slate-800">{viewingBusDetails.bus.permit_expiry || 'N/A'}</span>
+                </div>
+                <div className="bg-white p-2 rounded-lg border border-slate-200 sm:col-span-2">
+                  <span className="text-[10px] text-slate-500 font-semibold block">AITP Valid Upto</span>
+                  <span className="font-mono font-bold text-slate-800">{viewingBusDetails.bus.aitp_valid_upto || 'N/A'}</span>
+                </div>
               </div>
             </div>
 

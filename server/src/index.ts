@@ -813,9 +813,10 @@ app.post('/api/buses', (req: Request, res: Response) => {
     INSERT INTO buses (
       bus_number, registration_number, make, model, bus_type, manufacturing_year,
       purchase_date, chassis_number, engine_number, fuel_type, seating_capacity,
-      insurance_expiry, fitness_expiry, permit_expiry, puc_expiry,
+      registration_date, tax_valid_upto, insurance_expiry, fitness_expiry,
+      permit_expiry, puc_expiry, aitp_valid_upto,
       current_odometer_km, operational_status, assigned_driver_id, assigned_helper_id, notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const info = stmt.run(
@@ -830,10 +831,13 @@ app.post('/api/buses', (req: Request, res: Response) => {
     b.engine_number || '',
     b.fuel_type || 'Diesel',
     b.seating_capacity || 45,
+    b.registration_date || null,
+    b.tax_valid_upto || null,
     b.insurance_expiry || null,
     b.fitness_expiry || null,
     b.permit_expiry || null,
     b.puc_expiry || null,
+    b.aitp_valid_upto || null,
     b.current_odometer_km || 0,
     b.operational_status || 'Active',
     b.assigned_driver_id || null,
@@ -853,8 +857,9 @@ app.put('/api/buses/:id', (req: Request, res: Response) => {
     UPDATE buses SET
       bus_number = ?, registration_number = ?, make = ?, model = ?, bus_type = ?,
       manufacturing_year = ?, purchase_date = ?, chassis_number = ?, engine_number = ?,
-      fuel_type = ?, seating_capacity = ?, insurance_expiry = ?, fitness_expiry = ?,
-      permit_expiry = ?, puc_expiry = ?, current_odometer_km = ?, operational_status = ?,
+      fuel_type = ?, seating_capacity = ?, registration_date = ?, tax_valid_upto = ?,
+      insurance_expiry = ?, fitness_expiry = ?, permit_expiry = ?, puc_expiry = ?,
+      aitp_valid_upto = ?, current_odometer_km = ?, operational_status = ?,
       assigned_driver_id = ?, assigned_helper_id = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `);
@@ -871,10 +876,13 @@ app.put('/api/buses/:id', (req: Request, res: Response) => {
     b.engine_number || '',
     b.fuel_type || 'Diesel',
     b.seating_capacity || 45,
+    b.registration_date || null,
+    b.tax_valid_upto || null,
     b.insurance_expiry || null,
     b.fitness_expiry || null,
     b.permit_expiry || null,
     b.puc_expiry || null,
+    b.aitp_valid_upto || null,
     b.current_odometer_km || 0,
     b.operational_status || 'Active',
     b.assigned_driver_id || null,
