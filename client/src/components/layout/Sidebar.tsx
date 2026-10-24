@@ -150,11 +150,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 />
               </div>
             ) : (
-              <div className="w-full rounded-2xl bg-white p-2 flex items-center justify-center shadow-xs border border-slate-200 overflow-hidden hover:border-blue-400 transition-colors">
+              <div className="w-full rounded-2xl bg-white p-3 flex items-center justify-center shadow-xs border border-slate-200/90 overflow-hidden hover:border-blue-400 transition-colors">
                 <img
-                  src="/logo-horizontal.png"
+                  src="/logo-tight.png"
                   alt="Charvik Staffing Consultancy"
-                  className="w-full h-auto max-h-16 object-contain"
+                  className="w-full h-auto max-h-32 object-contain"
                 />
               </div>
             )}
