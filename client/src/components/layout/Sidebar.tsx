@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Logo */}
           <div className="w-full flex items-center justify-center">
             {isCollapsed ? (
-              <div className="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shadow-xs border border-slate-200">
+              <div className="w-11 h-11 rounded-xl bg-white p-1 flex items-center justify-center shadow-xs border border-slate-200">
                 <img
                   src="/logo-mark.png"
                   alt="Charvik Logo"
@@ -150,11 +150,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 />
               </div>
             ) : (
-              <div className="w-full rounded-2xl bg-white px-3 py-2 flex items-center justify-center shadow-xs border border-slate-200/90 overflow-hidden hover:border-blue-400 transition-colors">
+              <div className="w-full rounded-2xl bg-white px-3 py-1.5 flex items-center justify-center shadow-xs border border-slate-200/90 overflow-hidden hover:border-blue-400 transition-colors">
                 <img
                   src="/logo-compact.png"
                   alt="Charvik Staffing Consultancy"
-                  className="w-full h-auto max-h-20 object-contain"
+                  className="w-auto h-auto max-h-[62px] max-w-[88%] object-contain"
                 />
               </div>
             )}
