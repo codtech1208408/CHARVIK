@@ -60,6 +60,13 @@ export function initDatabase() {
       ifsc_code TEXT,
       branch TEXT,
 
+      -- Nominee Details (Statutory, Insurance & Accidental Beneficiary)
+      nominee_name TEXT,
+      nominee_relationship TEXT,
+      nominee_phone TEXT,
+      nominee_age INTEGER,
+      nominee_aadhaar TEXT,
+
       -- Reference Details
       reference_name TEXT,
       reference_phone TEXT,
@@ -393,6 +400,22 @@ export function initDatabase() {
   } catch (e) {
     // Column already exists
   }
+
+  try {
+    db.exec('ALTER TABLE employees ADD COLUMN nominee_name TEXT;');
+  } catch (e) {}
+  try {
+    db.exec('ALTER TABLE employees ADD COLUMN nominee_relationship TEXT;');
+  } catch (e) {}
+  try {
+    db.exec('ALTER TABLE employees ADD COLUMN nominee_phone TEXT;');
+  } catch (e) {}
+  try {
+    db.exec('ALTER TABLE employees ADD COLUMN nominee_age INTEGER;');
+  } catch (e) {}
+  try {
+    db.exec('ALTER TABLE employees ADD COLUMN nominee_aadhaar TEXT;');
+  } catch (e) {}
 
   try {
     db.exec("UPDATE administrators SET phone_number = '9701055555' WHERE role = 'Captain' AND (phone_number IS NULL OR phone_number = '');");

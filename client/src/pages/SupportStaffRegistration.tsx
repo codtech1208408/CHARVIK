@@ -13,7 +13,8 @@ import {
   Eye,
   Save,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  ShieldCheck
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
@@ -54,6 +55,13 @@ export const SupportStaffRegistration: React.FC = () => {
     account_number: '',
     ifsc_code: '',
     branch: '',
+
+    // Nominee Details (Statutory & Accidental Insurance Beneficiary)
+    nominee_name: '',
+    nominee_relationship: 'Spouse',
+    nominee_phone: '',
+    nominee_age: '',
+    nominee_aadhaar: '',
 
     // References
     reference_name: '',
@@ -140,8 +148,9 @@ export const SupportStaffRegistration: React.FC = () => {
     { number: 1, title: 'Personal Info', icon: User },
     { number: 2, title: 'Identity Docs', icon: CreditCard },
     { number: 3, title: 'Bank Details', icon: Building },
-    { number: 4, title: 'References', icon: Users },
-    { number: 5, title: 'Employment', icon: Briefcase },
+    { number: 4, title: 'Nominee Details', icon: ShieldCheck },
+    { number: 5, title: 'References', icon: Users },
+    { number: 6, title: 'Employment', icon: Briefcase },
   ];
 
   return (
@@ -515,12 +524,98 @@ export const SupportStaffRegistration: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 4: Reference Details */}
+          {/* STEP 4: Nominee Details */}
           {currentStep === 4 && (
             <div className="space-y-4 animate-in fade-in">
-              <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 4: Reference Details
-              </h3>
+              <div className="border-b border-slate-100 pb-2">
+                <h3 className="text-sm font-bold text-[#142B4A]">
+                  Step 4: Nominee Details (Legal & Accidental Beneficiary)
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Record next of kin nominee information for {formData.role} statutory claims, accidental coverage, and emergency settlements.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Nominee Full Name *</label>
+                  <input
+                    type="text"
+                    value={formData.nominee_name}
+                    onChange={(e) => handleInputChange('nominee_name', e.target.value)}
+                    placeholder="e.g. Smt. Lakshmi"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Relationship with {formData.role} *</label>
+                  <select
+                    value={formData.nominee_relationship}
+                    onChange={(e) => handleInputChange('nominee_relationship', e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-semibold text-slate-800"
+                  >
+                    <option value="Spouse">Spouse (Wife / Husband)</option>
+                    <option value="Mother">Mother</option>
+                    <option value="Father">Father</option>
+                    <option value="Son">Son</option>
+                    <option value="Daughter">Daughter</option>
+                    <option value="Brother">Brother</option>
+                    <option value="Sister">Sister</option>
+                    <option value="Other">Other Relative</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Nominee Contact Number *</label>
+                  <input
+                    type="tel"
+                    value={formData.nominee_phone}
+                    onChange={(e) => handleInputChange('nominee_phone', e.target.value)}
+                    placeholder="10-digit mobile number"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Nominee Age / Date of Birth</label>
+                  <input
+                    type="text"
+                    value={formData.nominee_age}
+                    onChange={(e) => handleInputChange('nominee_age', e.target.value)}
+                    placeholder="e.g. 30 or YYYY-MM-DD"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Nominee Aadhaar Number (Optional)</label>
+                  <input
+                    type="text"
+                    value={formData.nominee_aadhaar}
+                    onChange={(e) => handleInputChange('nominee_aadhaar', e.target.value)}
+                    placeholder="12-digit Aadhaar number"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: Reference Details */}
+          {currentStep === 5 && (
+            <div className="space-y-4 animate-in fade-in">
+              <div className="border-b border-slate-100 pb-2">
+                <h3 className="text-sm font-bold text-[#142B4A]">
+                  Step 5: Reference Details (Verification)
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Previous transport employer or acquaintance who can verify conduct.
+                </p>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
@@ -558,11 +653,12 @@ export const SupportStaffRegistration: React.FC = () => {
               </div>
             </div>
           )}
-          {/* STEP 5: Employment */}
-          {currentStep === 5 && (
+
+          {/* STEP 6: Employment */}
+          {currentStep === 6 && (
             <div className="space-y-4 animate-in fade-in">
               <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 5: Employment & Allocation
+                Step 6: Employment & Allocation
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -651,7 +747,7 @@ export const SupportStaffRegistration: React.FC = () => {
               </button>
             )}
 
-            {currentStep < 5 ? (
+            {currentStep < 6 ? (
               <button
                 type="button"
                 onClick={handleNext}
@@ -836,10 +932,37 @@ export const SupportStaffRegistration: React.FC = () => {
                   <td className="p-2.5">{formData.branch || '-'}</td>
                 </tr>
 
-                {/* 13. Reference Details */}
+                {/* 13. Nominee Details (Beneficiary) */}
                 <tr className="bg-slate-100 font-black text-slate-800">
                   <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
-                    Reference Details
+                    Nominee Details (Beneficiary)
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Nominee Name</td>
+                  <td className="p-2.5 font-bold">{formData.nominee_name || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Relationship with {formData.role}</td>
+                  <td className="p-2.5 font-semibold text-blue-700">{formData.nominee_relationship || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Nominee Phone Number</td>
+                  <td className="p-2.5 font-mono">{formData.nominee_phone || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Nominee Age</td>
+                  <td className="p-2.5">{formData.nominee_age ? `${formData.nominee_age} Years` : '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Nominee Aadhaar Number</td>
+                  <td className="p-2.5 font-mono">{formData.nominee_aadhaar || '-'}</td>
+                </tr>
+
+                {/* 14. Reference Details */}
+                <tr className="bg-slate-100 font-black text-slate-800">
+                  <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
+                    Reference Details (Verification)
                   </td>
                 </tr>
                 <tr className="hover:bg-slate-50">

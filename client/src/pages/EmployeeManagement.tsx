@@ -72,9 +72,9 @@ export const EmployeeManagement: React.FC = () => {
   const [viewingProfile, setViewingProfile] = useState<any>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewTab, setViewTab] = useState<'sheet' | 'sections'>('sheet');
-  const [activeTab, setActiveTab] = useState<'personal' | 'identity' | 'licence' | 'bank' | 'references' | 'employment'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'identity' | 'licence' | 'bank' | 'nominee' | 'references' | 'employment'>('personal');
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editTab, setEditTab] = useState<'personal' | 'identity' | 'licence' | 'bank' | 'references' | 'employment'>('personal');
+  const [editTab, setEditTab] = useState<'personal' | 'identity' | 'licence' | 'bank' | 'nominee' | 'references' | 'employment'>('personal');
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [viewingDocModal, setViewingDocModal] = useState<{ title: string; url: string } | null>(null);
   const [buses, setBuses] = useState<any[]>([]);
@@ -99,6 +99,11 @@ export const EmployeeManagement: React.FC = () => {
     account_number: '',
     ifsc_code: '',
     branch: '',
+    nominee_name: '',
+    nominee_relationship: 'Spouse',
+    nominee_phone: '',
+    nominee_age: '',
+    nominee_aadhaar: '',
     reference_name: '',
     reference_phone: '',
     reference_alt_phone: '',
@@ -272,6 +277,11 @@ export const EmployeeManagement: React.FC = () => {
         account_number: e.account_number || '',
         ifsc_code: e.ifsc_code || '',
         branch: e.branch || '',
+        nominee_name: e.nominee_name || '',
+        nominee_relationship: e.nominee_relationship || 'Spouse',
+        nominee_phone: e.nominee_phone || '',
+        nominee_age: e.nominee_age ? String(e.nominee_age) : '',
+        nominee_aadhaar: e.nominee_aadhaar || '',
         reference_name: e.reference_name || '',
         reference_phone: e.reference_phone || '',
         reference_alt_phone: e.reference_alt_phone || '',
@@ -1312,6 +1322,33 @@ export const EmployeeManagement: React.FC = () => {
                       <td className="p-2.5">{viewingProfile.employee.branch || '-'}</td>
                     </tr>
 
+                    {/* Nominee Details (Beneficiary) */}
+                    <tr className="bg-slate-100 font-black text-slate-800">
+                      <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
+                        Nominee Details (Beneficiary)
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Nominee Name</td>
+                      <td className="p-2.5">{viewingProfile.employee.nominee_name || '-'}</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Relationship</td>
+                      <td className="p-2.5">{viewingProfile.employee.nominee_relationship || '-'}</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Phone Number</td>
+                      <td className="p-2.5 font-mono">{viewingProfile.employee.nominee_phone || '-'}</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Age</td>
+                      <td className="p-2.5">{viewingProfile.employee.nominee_age ? `${viewingProfile.employee.nominee_age} Years` : '-'}</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Aadhaar Number</td>
+                      <td className="p-2.5 font-mono">{viewingProfile.employee.nominee_aadhaar || '-'}</td>
+                    </tr>
+
                     {/* Reference Details */}
                     <tr className="bg-slate-100 font-black text-slate-800">
                       <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
@@ -1344,6 +1381,7 @@ export const EmployeeManagement: React.FC = () => {
                     { id: 'identity', label: 'Identity Documents' },
                     ...(viewingProfile.employee.role === 'Driver' ? [{ id: 'licence', label: 'Driving Licence' }] : []),
                     { id: 'bank', label: 'Bank Details' },
+                    { id: 'nominee', label: 'Nominee' },
                     { id: 'references', label: 'References' },
                     { id: 'employment', label: 'Employment & Bus' }
                   ].map((t) => (
@@ -1433,6 +1471,16 @@ export const EmployeeManagement: React.FC = () => {
                     </div>
                   )}
 
+                  {activeTab === 'nominee' && (
+                    <div className="grid grid-cols-2 gap-3 leading-relaxed">
+                      <div><strong>Nominee Name:</strong> {viewingProfile.employee.nominee_name || 'None provided'}</div>
+                      <div><strong>Relationship:</strong> {viewingProfile.employee.nominee_relationship || '-'}</div>
+                      <div><strong>Phone Number:</strong> {viewingProfile.employee.nominee_phone || '-'}</div>
+                      <div><strong>Age:</strong> {viewingProfile.employee.nominee_age ? `${viewingProfile.employee.nominee_age} Years` : '-'}</div>
+                      <div className="col-span-2"><strong>Aadhaar Number:</strong> {viewingProfile.employee.nominee_aadhaar || '-'}</div>
+                    </div>
+                  )}
+
                   {activeTab === 'references' && (
                     <div className="grid grid-cols-2 gap-3 leading-relaxed">
                       <div><strong>Reference Person:</strong> {viewingProfile.employee.reference_name || 'None provided'}</div>
@@ -1473,6 +1521,7 @@ export const EmployeeManagement: React.FC = () => {
               { id: 'identity', label: '2. Identity & Documents' },
               ...(editingEmployee?.role === 'Driver' ? [{ id: 'licence', label: '3. Driving Licence' }] : []),
               { id: 'bank', label: 'Bank Details' },
+              { id: 'nominee', label: 'Nominee' },
               { id: 'references', label: 'References' },
               { id: 'employment', label: 'Employment' }
             ].map((t) => (
@@ -1873,7 +1922,79 @@ export const EmployeeManagement: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 5: Reference Details */}
+          {/* TAB: Nominee Details */}
+          {editTab === 'nominee' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <h4 className="text-xs font-bold text-[#142B4A] uppercase tracking-wider">Nominee Details (Beneficiary)</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Nominee Full Name</label>
+                    <input
+                      type="text"
+                      value={editFormData.nominee_name}
+                      onChange={(e) => setEditFormData({ ...editFormData, nominee_name: e.target.value })}
+                      placeholder="Nominee full name"
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Relationship</label>
+                    <select
+                      value={editFormData.nominee_relationship}
+                      onChange={(e) => setEditFormData({ ...editFormData, nominee_relationship: e.target.value })}
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none"
+                    >
+                      <option value="Spouse">Spouse</option>
+                      <option value="Father">Father</option>
+                      <option value="Mother">Mother</option>
+                      <option value="Son">Son</option>
+                      <option value="Daughter">Daughter</option>
+                      <option value="Brother">Brother</option>
+                      <option value="Sister">Sister</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={editFormData.nominee_phone}
+                      onChange={(e) => setEditFormData({ ...editFormData, nominee_phone: e.target.value })}
+                      placeholder="Nominee contact number"
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Age</label>
+                    <input
+                      type="number"
+                      value={editFormData.nominee_age}
+                      onChange={(e) => setEditFormData({ ...editFormData, nominee_age: e.target.value })}
+                      placeholder="Nominee age"
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Aadhaar Number (Optional)</label>
+                    <input
+                      type="text"
+                      value={editFormData.nominee_aadhaar}
+                      onChange={(e) => setEditFormData({ ...editFormData, nominee_aadhaar: e.target.value })}
+                      placeholder="12-digit Aadhaar number"
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: Reference Details */}
           {editTab === 'references' && (
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">

@@ -1750,10 +1750,11 @@ app.post('/api/employees', (req: Request, res: Response) => {
       employee_code, role, full_name, gender, date_of_birth, email, phone_number,
       alternative_phone_number, aadhaar_number, aadhaar_front_doc, aadhaar_back_doc,
       pan_number, pan_doc, bank_name, bank_proof_doc, account_holder_name,
-      account_number, ifsc_code, branch, reference_name, reference_phone,
+      account_number, ifsc_code, branch, nominee_name, nominee_relationship,
+      nominee_phone, nominee_age, nominee_aadhaar, reference_name, reference_phone,
       reference_alt_phone, joining_date, employment_status, assigned_bus_id,
       internal_remarks, profile_photo
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const info = insertEmp.run(
@@ -1776,6 +1777,11 @@ app.post('/api/employees', (req: Request, res: Response) => {
     e.account_number || '',
     e.ifsc_code || '',
     e.branch || '',
+    e.nominee_name || '',
+    e.nominee_relationship || '',
+    e.nominee_phone || '',
+    e.nominee_age ? Number(e.nominee_age) : null,
+    e.nominee_aadhaar || '',
     e.reference_name || '',
     e.reference_phone || '',
     e.reference_alt_phone || '',
@@ -1833,8 +1839,10 @@ app.put('/api/employees/:id', (req: Request, res: Response) => {
       full_name = ?, gender = ?, date_of_birth = ?, email = ?, phone_number = ?,
       alternative_phone_number = ?, aadhaar_number = ?, pan_number = ?,
       bank_name = ?, account_holder_name = ?, account_number = ?, ifsc_code = ?,
-      branch = ?, reference_name = ?, reference_phone = ?, reference_alt_phone = ?,
-      joining_date = ?, employment_status = ?, assigned_bus_id = ?, internal_remarks = ?,
+      branch = ?, nominee_name = ?, nominee_relationship = ?, nominee_phone = ?,
+      nominee_age = ?, nominee_aadhaar = ?, reference_name = ?, reference_phone = ?,
+      reference_alt_phone = ?, joining_date = ?, employment_status = ?,
+      assigned_bus_id = ?, internal_remarks = ?,
       profile_photo = COALESCE(?, profile_photo),
       aadhaar_front_doc = COALESCE(?, aadhaar_front_doc),
       aadhaar_back_doc = COALESCE(?, aadhaar_back_doc),
@@ -1856,6 +1864,11 @@ app.put('/api/employees/:id', (req: Request, res: Response) => {
     e.account_number || '',
     e.ifsc_code || '',
     e.branch || '',
+    e.nominee_name || '',
+    e.nominee_relationship || '',
+    e.nominee_phone || '',
+    e.nominee_age ? Number(e.nominee_age) : null,
+    e.nominee_aadhaar || '',
     e.reference_name || '',
     e.reference_phone || '',
     e.reference_alt_phone || '',

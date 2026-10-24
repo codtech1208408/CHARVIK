@@ -50,6 +50,11 @@ export interface Employee {
   account_number?: string;
   ifsc_code?: string;
   branch?: string;
+  nominee_name?: string;
+  nominee_relationship?: string;
+  nominee_phone?: string;
+  nominee_age?: number | string;
+  nominee_aadhaar?: string;
   reference_name?: string;
   reference_phone?: string;
   reference_alt_phone?: string;
