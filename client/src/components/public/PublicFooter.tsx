@@ -49,9 +49,9 @@ export const PublicFooter: React.FC = () => {
           {/* Company Column */}
           <div className="space-y-4">
             <div className="flex items-center">
-              <div className="h-16 sm:h-18 w-auto px-2.5 py-1.5 rounded-xl bg-white border border-white/20 shadow-md flex items-center justify-center shrink-0">
+              <div className="h-14 sm:h-16 w-auto px-3 py-1.5 rounded-xl bg-white border border-white/20 shadow-md flex items-center justify-center shrink-0">
                 <img
-                  src="/logo.jpg"
+                  src="/logo-horizontal.png"
                   alt="Charvik Staffing Consultancy Logo"
                   className="h-full w-auto object-contain"
                 />
