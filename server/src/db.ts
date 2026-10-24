@@ -73,6 +73,8 @@ export function initDatabase() {
       reference_alt_phone TEXT,
 
       -- Employment Details
+      employment_type TEXT DEFAULT 'Permanent', -- 'Permanent', 'Temporary'
+      salary REAL DEFAULT 0,
       joining_date DATE,
       employment_status TEXT DEFAULT 'Active', -- 'Active', 'Inactive', 'On Leave', 'Suspended', 'Resigned', 'Terminated'
       assigned_bus_id INTEGER,
@@ -418,6 +420,13 @@ export function initDatabase() {
   } catch (e) {}
   try {
     db.exec('ALTER TABLE employees ADD COLUMN nominee_aadhaar TEXT;');
+  } catch (e) {}
+
+  try {
+    db.exec("ALTER TABLE employees ADD COLUMN employment_type TEXT DEFAULT 'Permanent';");
+  } catch (e) {}
+  try {
+    db.exec("ALTER TABLE employees ADD COLUMN salary REAL DEFAULT 0;");
   } catch (e) {}
 
   try {

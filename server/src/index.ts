@@ -1760,9 +1760,9 @@ app.post('/api/employees', (req: Request, res: Response) => {
       pan_number, pan_doc, bank_name, bank_proof_doc, account_holder_name,
       account_number, ifsc_code, branch, nominee_name, nominee_relationship,
       nominee_phone, nominee_age, nominee_aadhaar, reference_name, reference_phone,
-      reference_alt_phone, joining_date, employment_status, assigned_bus_id,
+      reference_alt_phone, employment_type, salary, joining_date, employment_status, assigned_bus_id,
       internal_remarks, profile_photo
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const info = insertEmp.run(
@@ -1793,6 +1793,8 @@ app.post('/api/employees', (req: Request, res: Response) => {
     e.reference_name || '',
     e.reference_phone || '',
     e.reference_alt_phone || '',
+    e.employment_type || 'Permanent',
+    e.salary ? Number(e.salary) : 0,
     e.joining_date || new Date().toISOString().split('T')[0],
     e.employment_status || 'Active',
     e.assigned_bus_id || null,
@@ -1849,7 +1851,7 @@ app.put('/api/employees/:id', (req: Request, res: Response) => {
       bank_name = ?, account_holder_name = ?, account_number = ?, ifsc_code = ?,
       branch = ?, nominee_name = ?, nominee_relationship = ?, nominee_phone = ?,
       nominee_age = ?, nominee_aadhaar = ?, reference_name = ?, reference_phone = ?,
-      reference_alt_phone = ?, joining_date = ?, employment_status = ?,
+      reference_alt_phone = ?, employment_type = ?, salary = ?, joining_date = ?, employment_status = ?,
       assigned_bus_id = ?, internal_remarks = ?,
       profile_photo = COALESCE(?, profile_photo),
       aadhaar_front_doc = COALESCE(?, aadhaar_front_doc),
@@ -1880,6 +1882,8 @@ app.put('/api/employees/:id', (req: Request, res: Response) => {
     e.reference_name || '',
     e.reference_phone || '',
     e.reference_alt_phone || '',
+    e.employment_type || 'Permanent',
+    e.salary !== undefined && e.salary !== null && e.salary !== '' ? Number(e.salary) : 0,
     e.joining_date || null,
     e.employment_status || 'Active',
     e.assigned_bus_id || null,

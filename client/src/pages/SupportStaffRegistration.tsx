@@ -70,6 +70,8 @@ export const SupportStaffRegistration: React.FC = () => {
 
     // Employment
     employee_code: `EMP-HLP-00${Math.floor(10 + Math.random() * 90)}`,
+    employment_type: 'Permanent',
+    salary: '',
     joining_date: new Date().toISOString().split('T')[0],
     employment_status: 'Active',
     assigned_bus_id: '',
@@ -118,7 +120,7 @@ export const SupportStaffRegistration: React.FC = () => {
         return;
       }
     }
-    setCurrentStep((prev) => Math.min(prev + 1, 5));
+    setCurrentStep((prev) => Math.min(prev + 1, 6));
   };
 
   const handlePrev = () => {
@@ -662,6 +664,44 @@ export const SupportStaffRegistration: React.FC = () => {
                 Step 6: Employment & Allocation
               </h3>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-blue-50/60 border border-blue-200">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Worker Type (Employment Category) *
+                  </label>
+                  <select
+                    value={formData.employment_type || 'Permanent'}
+                    onChange={(e) => handleInputChange('employment_type', e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl border border-blue-300 bg-white font-bold text-blue-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option value="Permanent">Permanent Worker</option>
+                    <option value="Temporary">Temporary Worker</option>
+                  </select>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Select whether the {formData.role} is a Permanent worker or Temporary staff.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    {formData.employment_type === 'Temporary' ? `Temporary Worker ${formData.role} Salary / Wage (₹) *` : `Permanent Worker ${formData.role} Salary (₹) *`}
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={formData.salary || ''}
+                      onChange={(e) => handleInputChange('salary', e.target.value)}
+                      placeholder={formData.employment_type === 'Temporary' ? 'Enter temporary wage amount (₹)' : 'Enter permanent salary amount (₹)'}
+                      className="w-full text-xs pl-7 pr-3 p-2.5 rounded-xl border border-blue-300 bg-white font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">Admin manual salary entry</p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Employee Code *</label>
@@ -977,6 +1017,49 @@ export const SupportStaffRegistration: React.FC = () => {
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Alternative Number</td>
                   <td className="p-2.5 font-mono">{formData.reference_alt_phone || '-'}</td>
+                </tr>
+
+                {/* 15. Employment Details (Header) */}
+                <tr className="bg-slate-100 font-black text-slate-800">
+                  <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
+                    Employment & Salary Details
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Worker Type</td>
+                  <td className="p-2.5">
+                    <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
+                      formData.employment_type === 'Temporary'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    }`}>
+                      {formData.employment_type === 'Temporary' ? 'Temporary Worker' : 'Permanent Worker'}
+                    </span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">
+                    {formData.employment_type === 'Temporary' ? 'Temporary Wage / Salary' : 'Permanent Monthly Salary'}
+                  </td>
+                  <td className="p-2.5 font-bold text-slate-900">
+                    {formData.salary ? `₹${Number(formData.salary).toLocaleString('en-IN')}` : '₹0'}
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Designation / Role</td>
+                  <td className="p-2.5 font-bold text-blue-700">{formData.role}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Employee Code</td>
+                  <td className="p-2.5 font-mono font-bold">{formData.employee_code || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Joining Date</td>
+                  <td className="p-2.5">{formData.joining_date || '-'}</td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Status</td>
+                  <td className="p-2.5">{formData.employment_status || 'Active'}</td>
                 </tr>
               </tbody>
             </table>

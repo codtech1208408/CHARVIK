@@ -61,6 +61,8 @@ export interface Employee {
   reference_name?: string;
   reference_phone?: string;
   reference_alt_phone?: string;
+  employment_type?: 'Permanent' | 'Temporary' | string;
+  salary?: number | string;
   joining_date?: string;
   employment_status: 'Active' | 'Inactive' | 'On Leave' | 'Suspended' | 'Resigned' | 'Terminated';
   assigned_bus_id?: number | null;

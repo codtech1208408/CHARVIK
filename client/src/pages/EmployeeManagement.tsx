@@ -107,6 +107,8 @@ export const EmployeeManagement: React.FC = () => {
     reference_name: '',
     reference_phone: '',
     reference_alt_phone: '',
+    employment_type: 'Permanent',
+    salary: '',
     joining_date: '',
     employment_status: 'Active',
     assigned_bus_id: '',
@@ -285,6 +287,8 @@ export const EmployeeManagement: React.FC = () => {
         reference_name: e.reference_name || '',
         reference_phone: e.reference_phone || '',
         reference_alt_phone: e.reference_alt_phone || '',
+        employment_type: e.employment_type || 'Permanent',
+        salary: e.salary !== undefined && e.salary !== null ? String(e.salary) : '',
         joining_date: e.joining_date || '',
         employment_status: e.employment_status || 'Active',
         assigned_bus_id: e.assigned_bus_id ? String(e.assigned_bus_id) : '',
@@ -461,6 +465,7 @@ export const EmployeeManagement: React.FC = () => {
                 <th className="py-3 px-4">Code</th>
                 <th className="py-3 px-4">Employee Name</th>
                 <th className="py-3 px-4">Role</th>
+                <th className="py-3 px-4">Worker Type & Salary</th>
                 <th className="py-3 px-4">Phone Number</th>
                 <th className="py-3 px-4">Assigned Bus</th>
                 <th className="py-3 px-4">Joining Date</th>
@@ -472,14 +477,14 @@ export const EmployeeManagement: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading employee records...
                   </td>
                 </tr>
               ) : filteredEmployees.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     No employees found matching the filters.
                   </td>
                 </tr>
@@ -499,6 +504,20 @@ export const EmployeeManagement: React.FC = () => {
                       <span className="px-2 py-0.5 rounded-md font-bold text-[11px] bg-slate-100 text-slate-800">
                         {e.role}
                       </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex flex-col">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold w-fit ${
+                          e.employment_type === 'Temporary'
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}>
+                          {e.employment_type === 'Temporary' ? 'Temporary' : 'Permanent'}
+                        </span>
+                        <span className="font-bold text-slate-900 text-xs mt-0.5">
+                          {e.salary ? `₹${Number(e.salary).toLocaleString('en-IN')}` : '₹0'}
+                        </span>
+                      </div>
                     </td>
                     <td className="py-3 px-4 font-medium">{e.phone_number}</td>
                     <td className="py-3 px-4">
@@ -1367,6 +1386,45 @@ export const EmployeeManagement: React.FC = () => {
                       <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Alternative Number</td>
                       <td className="p-2.5 font-mono">{viewingProfile.employee.reference_alt_phone || '-'}</td>
                     </tr>
+
+                    {/* Employment Details */}
+                    <tr className="bg-slate-100 font-black text-slate-800">
+                      <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
+                        Employment & Salary Details
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Worker Type</td>
+                      <td className="p-2.5">
+                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
+                          viewingProfile.employee.employment_type === 'Temporary'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                            : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        }`}>
+                          {viewingProfile.employee.employment_type === 'Temporary' ? 'Temporary Worker' : 'Permanent Worker'}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">
+                        {viewingProfile.employee.employment_type === 'Temporary' ? 'Temporary Wage / Salary' : 'Permanent Monthly Salary'}
+                      </td>
+                      <td className="p-2.5 font-bold text-slate-900">
+                        {viewingProfile.employee.salary ? `₹${Number(viewingProfile.employee.salary).toLocaleString('en-IN')}` : '₹0'}
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Assigned Bus</td>
+                      <td className="p-2.5">{viewingProfile.employee.bus_number || 'None'}</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Joining Date</td>
+                      <td className="p-2.5">{viewingProfile.employee.joining_date || '-'}</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Employment Status</td>
+                      <td className="p-2.5">{viewingProfile.employee.employment_status || 'Active'}</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -1491,6 +1549,22 @@ export const EmployeeManagement: React.FC = () => {
 
                   {activeTab === 'employment' && (
                     <div className="grid grid-cols-2 gap-3 leading-relaxed">
+                      <div>
+                        <strong>Worker Type:</strong>{' '}
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                          viewingProfile.employee.employment_type === 'Temporary'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                            : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        }`}>
+                          {viewingProfile.employee.employment_type === 'Temporary' ? 'Temporary Worker' : 'Permanent Worker'}
+                        </span>
+                      </div>
+                      <div>
+                        <strong>Salary / Wage:</strong>{' '}
+                        <span className="font-bold text-slate-900">
+                          {viewingProfile.employee.salary ? `₹${Number(viewingProfile.employee.salary).toLocaleString('en-IN')}` : '₹0'}
+                        </span>
+                      </div>
                       <div><strong>Employee Code:</strong> {viewingProfile.employee.employee_code}</div>
                       <div><strong>Assigned Bus:</strong> {viewingProfile.employee.bus_number || 'None'}</div>
                       <div><strong>Joining Date:</strong> {viewingProfile.employee.joining_date}</div>
@@ -2043,6 +2117,40 @@ export const EmployeeManagement: React.FC = () => {
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                 <h4 className="text-xs font-bold text-[#142B4A] uppercase tracking-wider">Employment & Bus Allocation</h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-blue-50/70 border border-blue-200 rounded-xl">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
+                      Worker Type (Employment Category) *
+                    </label>
+                    <select
+                      value={editFormData.employment_type || 'Permanent'}
+                      onChange={(e) => setEditFormData({ ...editFormData, employment_type: e.target.value })}
+                      className="w-full text-xs p-2.5 rounded-xl border border-blue-300 bg-white font-bold text-blue-900 outline-none"
+                    >
+                      <option value="Permanent">Permanent Worker</option>
+                      <option value="Temporary">Temporary Worker</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
+                      {editFormData.employment_type === 'Temporary' ? 'Temporary Worker Salary / Wage (₹) *' : 'Permanent Worker Salary (₹) *'}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={editFormData.salary !== undefined ? editFormData.salary : ''}
+                        onChange={(e) => setEditFormData({ ...editFormData, salary: e.target.value })}
+                        placeholder={editFormData.employment_type === 'Temporary' ? 'Enter temporary wage amount (₹)' : 'Enter permanent salary amount (₹)'}
+                        className="w-full text-xs pl-7 pr-3 p-2.5 rounded-xl border border-blue-300 bg-white font-semibold text-slate-900 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Employment Status</label>
