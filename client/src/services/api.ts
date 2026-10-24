@@ -660,6 +660,8 @@ export const api = {
   createBus: (data: any) => request<any>('/buses', { method: 'POST', body: JSON.stringify(data) }),
   updateBus: (id: number | string, data: any) => request<any>(`/buses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   archiveBus: (id: number | string) => request<any>(`/buses/${id}`, { method: 'DELETE' }),
+  sendExpiryAlert: (busId: number | string, data: { doc_name: string; expiry_date: string; recipient?: string; message?: string }) =>
+    request<any>(`/buses/${busId}/send-expiry-alert`, { method: 'POST', body: JSON.stringify(data) }),
 
   // Daily Kilometers
   getDailyKm: (params?: { date?: string; bus_id?: number | string; driver_id?: number | string }) => {

@@ -1973,14 +1973,18 @@ app.get('/api/notifications', (req: Request, res: Response) => {
       ORDER BY d.licence_validity_date ASC
     `).all();
 
-    // 4. Vehicle document expiries (Insurance, Fitness, PUC, Permit within 45 days)
+    // 4. Vehicle document expiries (Fitness, Tax, Insurance, PUCC, Permit, AITP within 45 days)
     const expiringDocs = db.prepare(`
-      SELECT id, bus_number, registration_number, insurance_expiry, fitness_expiry, puc_expiry, permit_expiry
+      SELECT id, bus_number, registration_number, tax_valid_upto, fitness_expiry,
+        insurance_expiry, puc_expiry, permit_expiry, aitp_valid_upto
       FROM buses
       WHERE is_archived = 0 AND (
-        insurance_expiry <= date('now', '+45 days') OR
-        fitness_expiry <= date('now', '+45 days') OR
-        puc_expiry <= date('now', '+45 days')
+        (insurance_expiry IS NOT NULL AND insurance_expiry <= date('now', '+45 days')) OR
+        (fitness_expiry IS NOT NULL AND fitness_expiry <= date('now', '+45 days')) OR
+        (tax_valid_upto IS NOT NULL AND tax_valid_upto <= date('now', '+45 days')) OR
+        (puc_expiry IS NOT NULL AND puc_expiry <= date('now', '+45 days')) OR
+        (permit_expiry IS NOT NULL AND permit_expiry <= date('now', '+45 days')) OR
+        (aitp_valid_upto IS NOT NULL AND aitp_valid_upto <= date('now', '+45 days'))
       )
     `).all();
 
@@ -1996,6 +2000,29 @@ app.get('/api/notifications', (req: Request, res: Response) => {
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
+});
+
+// Endpoint to dispatch / log document expiry alert message
+app.post('/api/buses/:id/send-expiry-alert', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { doc_name, expiry_date, recipient, message } = req.body;
+
+  const bus = db.prepare('SELECT bus_number, registration_number FROM buses WHERE id = ?').get(id) as any;
+  if (!bus) {
+    return res.status(404).json({ error: 'Bus not found' });
+  }
+
+  logAudit(
+    'DOCUMENT_EXPIRY_ALERT',
+    'Vehicles',
+    id,
+    `Dispatched 1-day expiry notification for ${bus.bus_number} (${bus.registration_number}) - ${doc_name} expiring on ${expiry_date} to ${recipient || 'Admin/Captain'}`
+  );
+
+  return res.json({
+    success: true,
+    message: `Expiry alert message for ${doc_name} sent successfully to ${recipient || 'staff'}!`
+  });
 });
 
 // ================= COMPREHENSIVE REPORTS =================

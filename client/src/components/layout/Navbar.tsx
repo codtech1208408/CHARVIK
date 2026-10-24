@@ -234,6 +234,34 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
                   </div>
                 )}
 
+                {notifications.expiringDocs?.length > 0 && (
+                  <div className="p-3">
+                    <p className="font-bold text-amber-700 flex items-center gap-1.5 mb-2">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> Vehicle Document Expiry Alerts
+                    </p>
+                    {notifications.expiringDocs.slice(0, 3).map((d: any) => (
+                      <div
+                        key={d.id}
+                        onClick={() => {
+                          setShowNotifications(false);
+                          navigate(`${basePrefix}/vehicles`);
+                        }}
+                        className="p-2 rounded-lg hover:bg-amber-50 cursor-pointer flex items-center justify-between text-slate-700 transition-colors"
+                      >
+                        <div>
+                          <p className="font-semibold text-slate-900">{d.bus_number} ({d.registration_number})</p>
+                          <p className="text-[11px] text-amber-700 font-semibold">
+                            Compliance doc expiring / requires renewal
+                          </p>
+                        </div>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800">
+                          Inspect
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {notifications.totalCount === 0 && (
                   <div className="p-6 text-center text-slate-400">
                     <p className="text-xs font-medium">All caught up! No critical fleet alerts.</p>
