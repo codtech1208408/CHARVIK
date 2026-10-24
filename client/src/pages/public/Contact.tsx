@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Phone,
   Mail,
@@ -9,7 +10,8 @@ import {
   CheckCircle2,
   ShieldCheck,
   Building2,
-  CalendarCheck
+  CalendarCheck,
+  ArrowLeft
 } from 'lucide-react';
 
 export const Contact: React.FC = () => {
@@ -39,6 +41,15 @@ export const Contact: React.FC = () => {
       {/* 1. Header Banner */}
       <section className="bg-gradient-to-r from-[#0c1b30] via-[#142B4A] to-[#1E3A5F] text-white py-16 sm:py-20 text-center relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="mb-4">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-200 hover:text-white transition-colors bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-full border border-white/15"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
           <span
             className="inline-block px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-blue-500/20 text-blue-300 border border-blue-400/30 mb-3"
             data-aos="fade-down"

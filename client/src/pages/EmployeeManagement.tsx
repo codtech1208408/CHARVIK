@@ -26,7 +26,8 @@ import {
   X,
   Upload,
   ExternalLink,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ArrowLeft
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { Employee } from '../types';
@@ -561,13 +562,22 @@ export const EmployeeManagement: React.FC = () => {
               </p>
             </div>
 
-            <button
-              onClick={() => setShowCreateStaffModal(true)}
-              className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-2 cursor-pointer"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span>Create Staff Account</span>
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setPageView('biodata')}
+                className="inline-flex items-center px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all shadow-sm gap-1.5 cursor-pointer border border-slate-200"
+              >
+                <ArrowLeft className="w-4 h-4 text-blue-600" />
+                <span>Back to Directory</span>
+              </button>
+              <button
+                onClick={() => setShowCreateStaffModal(true)}
+                className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-2 cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Create Staff Account</span>
+              </button>
+            </div>
           </div>
 
           {/* Quick Info Cards */}

@@ -161,6 +161,14 @@ export const SupportStaffRegistration: React.FC = () => {
         <div className="flex items-center space-x-2">
           <button
             type="button"
+            onClick={() => navigate('/admin/employee-registration')}
+            className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors gap-1.5 cursor-pointer border border-slate-200"
+          >
+            <ArrowLeft className="w-4 h-4 text-blue-600" />
+            <span>Back to Employees</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setIsPreviewOpen(true)}
             className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors gap-1.5 cursor-pointer"
           >
@@ -632,7 +640,16 @@ export const SupportStaffRegistration: React.FC = () => {
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Previous Step</span>
               </button>
-            ) : <div></div>}
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate('/admin/employee-registration')}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
+                <span>Cancel & Back</span>
+              </button>
+            )}
 
             {currentStep < 5 ? (
               <button

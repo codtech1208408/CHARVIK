@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, Wrench, ShieldAlert } from 'lucide-react';
+import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, Wrench, ShieldAlert, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -43,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
   const isCaptain = location.pathname.startsWith('/captain');
   const isSupporter = location.pathname.startsWith('/supporter');
   const basePrefix = isCaptain ? '/captain' : isSupporter ? '/supporter' : '/admin';
+  const isDashboard = location.pathname.endsWith('/dashboard');
 
   // Handle outside clicks to close dropdowns
   useEffect(() => {
@@ -66,14 +67,32 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
 
   return (
     <header className="h-16 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
-      {/* Left: Mobile Toggle & Page Title */}
-      <div className="flex items-center space-x-3 sm:space-x-4">
+      {/* Left: Mobile Toggle & Back Button & Page Title */}
+      <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         <button
           onClick={onMobileToggle}
           className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
         >
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
+
+        {/* Universal Back Navigation Option */}
+        {!isDashboard && (
+          <button
+            onClick={() => {
+              if (window.history.state && window.history.state.idx > 0) {
+                navigate(-1);
+              } else {
+                navigate(`${basePrefix}/dashboard`);
+              }
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-[#142B4A] hover:border-blue-300 border border-slate-200 transition-all cursor-pointer shadow-2xs group shrink-0"
+            title="Go back to previous screen"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-blue-600 group-hover:-translate-x-0.5 transition-transform" />
+            <span className="hidden sm:inline">Back</span>
+          </button>
+        )}
 
         <div>
           <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
