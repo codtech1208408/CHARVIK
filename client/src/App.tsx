@@ -29,6 +29,14 @@ import { BusCondition } from './pages/BusCondition';
 import { DriverRegistration } from './pages/DriverRegistration';
 import { SupportStaffRegistration } from './pages/SupportStaffRegistration';
 import { EmployeeManagement } from './pages/EmployeeManagement';
+import { EmployeeRegistration } from './pages/EmployeeRegistration';
+import { ProductManagement } from './pages/ProductManagement';
+import { CleaningManagement } from './pages/CleaningManagement';
+import { RouteManagement } from './pages/RouteManagement';
+import { OrganizerManagement } from './pages/OrganizerManagement';
+import { TaskManagement } from './pages/TaskManagement';
+import { Earnings } from './pages/Earnings';
+import { WebsiteInquiries } from './pages/WebsiteInquiries';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 
@@ -56,10 +64,23 @@ export function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="vehicles" element={<BusMaster />} />
               <Route path="buses" element={<BusMaster />} />
+              <Route path="mileage-fueling" element={<DailyKilometers />} />
               <Route path="daily-kilometers" element={<DailyKilometers />} />
-              <Route path="maintenance-schedule" element={<MaintenanceSchedule />} />
               <Route path="tyre-maintenance" element={<TyreMaintenance />} />
+              <Route path="products" element={<ProductManagement />} />
+              <Route path="cleaning" element={<CleaningManagement />} />
+              <Route path="routes" element={<RouteManagement />} />
+              <Route path="organizers" element={<OrganizerManagement />} />
+              <Route path="tasks" element={<TaskManagement />} />
+              <Route path="employee-registration" element={<EmployeeRegistration />} />
+              <Route path="employees" element={<EmployeeRegistration />} />
+              <Route path="earnings" element={<Earnings />} />
+              <Route path="inquiries" element={<WebsiteInquiries />} />
+
+              {/* Specific Submodules & Secondary Views */}
+              <Route path="maintenance-schedule" element={<MaintenanceSchedule />} />
               <Route path="ac-maintenance" element={<AcMaintenance />} />
               <Route path="oil-filter-maintenance" element={<OilFilterMaintenance />} />
               <Route path="battery-maintenance" element={<BatteryMaintenance />} />
@@ -68,7 +89,6 @@ export function App() {
               <Route path="bus-condition" element={<BusCondition />} />
               <Route path="drivers/new" element={<DriverRegistration />} />
               <Route path="support-staff/new" element={<SupportStaffRegistration />} />
-              <Route path="employees" element={<EmployeeManagement />} />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
             </Route>

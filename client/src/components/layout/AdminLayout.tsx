@@ -84,28 +84,33 @@ export const AdminLayout: React.FC = () => {
     if (p.includes('/dashboard')) {
       if (isCaptainPortal) return 'Captain Route & Fleet Overview';
       if (isSupporterPortal) return 'Supporter Operational Dashboard';
-      return 'Fleet & Maintenance Dashboard';
+      return 'Dashboard';
     }
-    if (p.includes('/buses')) return isCaptainPortal ? 'Assigned Fleet & Bus Details' : isSupporterPortal ? 'Fleet Bus Overview' : 'Bus Master & Fleet Details';
-    if (p.includes('/daily-kilometers')) return 'Daily Kilometer Entry';
-    if (p.includes('/maintenance-schedule')) return 'Preventive Maintenance Schedule';
-    if (p.includes('/tyre-maintenance')) return 'Tyre Maintenance & Tracking';
-    if (p.includes('/ac-maintenance')) return 'AC Maintenance & Service';
+    if (p.includes('/vehicles') || p.includes('/buses')) return isCaptainPortal ? 'Vehicle Management' : isSupporterPortal ? 'Fleet Overview' : 'Vehicle Management';
+    if (p.includes('/mileage-fueling') || p.includes('/daily-kilometers')) return 'Mileage & Fueling';
+    if (p.includes('/tyre-maintenance')) return 'Tyre Maintenance';
+    if (p.includes('/products')) return 'Product Management';
+    if (p.includes('/cleaning')) return 'Cleaning Management';
+    if (p.includes('/routes')) return 'Route Management';
+    if (p.includes('/organizers')) return 'Organizer Management';
+    if (p.includes('/tasks')) return 'Task Management';
+    if (p.includes('/employee-registration') || p.includes('/employees') || p.includes('/drivers/new') || p.includes('/support-staff/new')) return 'Employee Registration';
+    if (p.includes('/earnings')) return 'Earnings';
+    if (p.includes('/inquiries')) return 'Website Inquiries';
+    if (p.includes('/maintenance-schedule')) return 'Maintenance Schedule';
+    if (p.includes('/ac-maintenance')) return 'AC Maintenance';
     if (p.includes('/oil-filter-maintenance')) return 'Oil & Filter Replacement';
     if (p.includes('/battery-maintenance')) return 'Battery Health & Inspection';
-    if (p.includes('/complaints')) return isCaptainPortal ? 'Report & Track Bus Complaints' : isSupporterPortal ? 'Bus Issues & Defect Log' : 'Bus Complaints Management';
-    if (p.includes('/repairs')) return 'Repairs & Service Work Orders';
-    if (p.includes('/bus-condition')) return isSupporterPortal ? 'Bus Cleanliness & Condition Check' : 'Bus Condition Inspection';
-    if (p.includes('/drivers/new')) return 'Driver Biodata Registration';
-    if (p.includes('/support-staff/new')) return 'Helper & Captain Registration';
-    if (p.includes('/employees')) return 'Employee Biodata Management';
+    if (p.includes('/complaints')) return isCaptainPortal ? 'Complaints & Defects' : isSupporterPortal ? 'Bus Complaints & Issues' : 'Complaints';
+    if (p.includes('/repairs')) return 'Repairs & Service';
+    if (p.includes('/bus-condition')) return isSupporterPortal ? 'Cleaning Management' : 'Bus Condition Inspection';
     if (p.includes('/reports')) return 'Fleet & Operational Reports';
     if (p.includes('/settings')) return 'Application & System Settings';
     return isCaptainPortal ? 'Captain Portal' : isSupporterPortal ? 'Supporter Portal' : 'Admin Panel';
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] flex flex-col">
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
       {/* Sidebar */}
       <Sidebar
         isCollapsed={isCollapsed}
@@ -117,7 +122,7 @@ export const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          isCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+          isCollapsed ? 'lg:pl-20' : 'lg:pl-72'
         }`}
       >
         <Navbar
@@ -125,7 +130,7 @@ export const AdminLayout: React.FC = () => {
           pageTitle={getPageTitle()}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-24 lg:pb-8">
           <ErrorBoundary fallbackTitle="Unable to Load Dashboard View">
             <Outlet />
           </ErrorBoundary>

@@ -65,18 +65,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
   }).format(new Date());
 
   return (
-    <header className="h-16 bg-[#142B4A] text-white sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-md border-b border-slate-700">
+    <header className="h-16 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
       {/* Left: Mobile Toggle & Page Title */}
       <div className="flex items-center space-x-3 sm:space-x-4">
         <button
           onClick={onMobileToggle}
-          className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+          className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-5 h-5 text-amber-500" />
         </button>
 
         <div>
-          <h1 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
             {pageTitle}
           </h1>
         </div>
@@ -92,10 +92,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 const val = (e.target as HTMLInputElement).value;
-                if (val) navigate(`${basePrefix}/buses?search=${encodeURIComponent(val)}`);
+                if (val) navigate(`${basePrefix}/vehicles?search=${encodeURIComponent(val)}`);
               }
             }}
-            className="w-full bg-[#1E3A5F]/60 text-white placeholder-slate-400 text-xs rounded-xl pl-9 pr-4 py-2 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 text-xs rounded-xl pl-9 pr-4 py-2 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
           />
         </div>
       </div>
@@ -103,19 +103,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
       {/* Right: Date, Notifications, Profile */}
       <div className="flex items-center space-x-2 sm:space-x-3">
         {/* Date Display */}
-        <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-200">
-          <Calendar className="w-3.5 h-3.5 text-blue-400" />
-          <span className="font-medium">{todayStr}</span>
+        <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
+          <Calendar className="w-3.5 h-3.5 text-amber-500" />
+          <span className="font-semibold">{todayStr}</span>
         </div>
 
         {/* Notification Bell */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            className="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
             title="Notifications & Alerts"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-5 h-5 text-amber-500" />
             {notifications.totalCount > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
                 {notifications.totalCount}
@@ -126,12 +126,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
           {/* Notifications Dropdown */}
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 text-slate-800 z-50 overflow-hidden animate-in fade-in-50 zoom-in-95">
-              <div className="px-4 py-3 bg-[#142B4A] text-white flex items-center justify-between">
+              <div className="px-4 py-3 bg-[#C68A00] text-white flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Bell className="w-4 h-4 text-blue-400" />
+                  <Bell className="w-4 h-4 text-white" />
                   <span className="font-bold text-sm">Fleet Alerts & Updates</span>
                 </div>
-                <span className="text-[11px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-semibold border border-blue-400/30">
+                <span className="text-[11px] bg-white/20 text-white px-2 py-0.5 rounded-full font-semibold border border-white/30">
                   {notifications.totalCount} pending
                 </span>
               </div>
