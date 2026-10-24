@@ -51,7 +51,7 @@ export const PublicFooter: React.FC = () => {
             <div className="flex items-center">
               <div className="h-16 sm:h-20 w-auto px-3 py-1.5 rounded-xl bg-white border border-white/20 shadow-md flex items-center justify-center shrink-0">
                 <img
-                  src="/logo-tight.png"
+                  src="/logo-compact.png"
                   alt="Charvik Staffing Consultancy Logo"
                   className="h-full w-auto object-contain"
                 />
