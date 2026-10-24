@@ -71,7 +71,7 @@ export const DriverRegistration: React.FC = () => {
 
     // Step 5: Nominee Details (Insurance & Statutory Beneficiary)
     nominee_name: '',
-    nominee_relationship: 'Spouse',
+    nominee_relationship: '',
     nominee_phone: '',
     nominee_age: '',
     nominee_aadhaar: '',
@@ -677,6 +677,7 @@ export const DriverRegistration: React.FC = () => {
                     onChange={(e) => handleInputChange('nominee_relationship', e.target.value)}
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-semibold text-slate-800"
                   >
+                    <option value="">Select Option</option>
                     <option value="Spouse">Spouse (Wife / Husband)</option>
                     <option value="Mother">Mother</option>
                     <option value="Father">Father</option>

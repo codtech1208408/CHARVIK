@@ -100,7 +100,7 @@ export const EmployeeManagement: React.FC = () => {
     ifsc_code: '',
     branch: '',
     nominee_name: '',
-    nominee_relationship: 'Spouse',
+    nominee_relationship: '',
     nominee_phone: '',
     nominee_age: '',
     nominee_aadhaar: '',
@@ -278,7 +278,7 @@ export const EmployeeManagement: React.FC = () => {
         ifsc_code: e.ifsc_code || '',
         branch: e.branch || '',
         nominee_name: e.nominee_name || '',
-        nominee_relationship: e.nominee_relationship || 'Spouse',
+        nominee_relationship: e.nominee_relationship || '',
         nominee_phone: e.nominee_phone || '',
         nominee_age: e.nominee_age ? String(e.nominee_age) : '',
         nominee_aadhaar: e.nominee_aadhaar || '',
@@ -1946,7 +1946,8 @@ export const EmployeeManagement: React.FC = () => {
                       onChange={(e) => setEditFormData({ ...editFormData, nominee_relationship: e.target.value })}
                       className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none"
                     >
-                      <option value="Spouse">Spouse</option>
+                      <option value="">Select Option</option>
+                      <option value="Spouse">Spouse (Wife / Husband)</option>
                       <option value="Father">Father</option>
                       <option value="Mother">Mother</option>
                       <option value="Son">Son</option>
