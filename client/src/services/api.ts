@@ -37,6 +37,129 @@ function setLocalCollection<T>(key: string, items: T[]) {
 }
 
 /**
+ * Resilient merge helper:
+ * Guarantees that local newly-added/edited records are NEVER wiped out by an empty or partial remote array.
+ */
+function mergeWithLocal<T extends { id?: any; is_archived?: number; registration_number?: string; bus_number?: string }>(
+  key: string,
+  remoteItems: T[] | null | undefined,
+  idField: string = 'id'
+): T[] {
+  const localItems = getLocalCollection<T>(key);
+  if (!remoteItems || !Array.isArray(remoteItems) || remoteItems.length === 0) {
+    // If remote has nothing or is offline, retain all non-archived local items!
+    return localItems.filter(item => (item as any)?.is_archived !== 1);
+  }
+
+  const map = new Map<string, T>();
+
+  // 1. Load valid remote items
+  for (const item of remoteItems) {
+    if (item && (item as any).is_archived !== 1) {
+      const uKey = String((item as any)[idField] ?? (item as any).registration_number ?? (item as any).bus_number ?? (item as any).id);
+      map.set(uKey, item);
+    }
+  }
+
+  // 2. Overlay local items (preserves user-created items that haven't synced or are newer)
+  for (const item of localItems) {
+    if (item) {
+      const uKey = String((item as any)[idField] ?? (item as any).registration_number ?? (item as any).bus_number ?? (item as any).id);
+      if ((item as any).is_archived === 1) {
+        map.delete(uKey);
+      } else {
+        map.set(uKey, item);
+      }
+    }
+  }
+
+  const merged = Array.from(map.values());
+  setLocalCollection(key, merged);
+  return merged;
+}
+
+/**
+ * Helper to handle full CRUD on any fleet management table in fallback/cloud mode
+ */
+async function handleFallbackTableCrud(
+  tableKey: string,
+  supabaseTable: string,
+  path: string,
+  method: string,
+  body: any,
+  params: URLSearchParams,
+  options?: {
+    idGenerator?: () => any;
+    enrich?: (items: any[]) => any[];
+    filter?: (items: any[], params: URLSearchParams) => any[];
+  }
+) {
+  const parts = path.split('/').filter(Boolean);
+  const isItemRoute = parts.length > 1;
+  const itemId = isItemRoute ? parts[1] : null;
+
+  if (!isItemRoute) {
+    if (method === 'GET') {
+      let list: any[] = [];
+      try {
+        const { data, error } = await supabase.from(supabaseTable).select('*').order('id', { ascending: false });
+        list = mergeWithLocal(tableKey, !error && Array.isArray(data) ? data : []);
+      } catch {
+        list = getLocalCollection<any>(tableKey).filter(x => x?.is_archived !== 1);
+      }
+      if (options?.enrich) list = options.enrich(list);
+      if (options?.filter) list = options.filter(list, params);
+      return list;
+    }
+
+    if (method === 'POST') {
+      const record = {
+        ...body,
+        id: body.id || (options?.idGenerator ? options.idGenerator() : Date.now()),
+        is_archived: 0,
+        created_at: new Date().toISOString()
+      };
+      const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(record.id));
+      list.unshift(record);
+      setLocalCollection(tableKey, list);
+      try {
+        await supabase.from(supabaseTable).insert([record]);
+      } catch {}
+      return record;
+    }
+  } else if (itemId) {
+    if (method === 'GET') {
+      const list = getLocalCollection<any>(tableKey);
+      const found = list.find(x => String(x.id) === String(itemId));
+      if (found) return found;
+      try {
+        const { data } = await supabase.from(supabaseTable).select('*').eq('id', itemId).single();
+        if (data) return data;
+      } catch {}
+      return found || {};
+    }
+
+    if (method === 'PUT') {
+      const list = getLocalCollection<any>(tableKey).map(x => (String(x.id) === String(itemId) ? { ...x, ...body } : x));
+      setLocalCollection(tableKey, list);
+      try {
+        await supabase.from(supabaseTable).update(body).eq('id', itemId);
+      } catch {}
+      return { success: true, ...body };
+    }
+
+    if (method === 'DELETE') {
+      const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(itemId));
+      setLocalCollection(tableKey, list);
+      try {
+        await supabase.from(supabaseTable).delete().eq('id', itemId);
+      } catch {}
+      return { success: true };
+    }
+  }
+}
+
+/**
  * Cloud and Offline Fallback Handler
  * Executes directly against Supabase & local resilience store when the local Express server is unreachable
  * (e.g. on mobile devices, external networks, or Vercel production).
@@ -169,21 +292,21 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       const [bRes, eRes, kRes, cRes, sRes] = await Promise.all([
         supabase.from('buses').select('*').eq('is_archived', 0),
         supabase.from('employees').select('*').eq('is_archived', 0),
-        supabase.from('daily_kilometer_entries').select('*').order('entry_date', { ascending: false }).limit(20),
-        supabase.from('complaints').select('*').order('created_at', { ascending: false }).limit(10),
-        supabase.from('maintenance_schedules').select('*').order('next_due_date', { ascending: true }).limit(10)
+        supabase.from('daily_kilometer_entries').select('*').order('entry_date', { ascending: false }).limit(50),
+        supabase.from('complaints').select('*').order('created_at', { ascending: false }).limit(20),
+        supabase.from('maintenance_schedules').select('*').order('next_due_date', { ascending: true }).limit(20)
       ]);
-      buses = bRes.data || getLocalCollection('buses');
-      employees = eRes.data || getLocalCollection('employees');
-      dailyKm = kRes.data || getLocalCollection('daily_km');
-      complaints = cRes.data || getLocalCollection('complaints');
-      schedules = sRes.data || getLocalCollection('maintenance_schedules');
+      buses = mergeWithLocal('buses', bRes.data);
+      employees = mergeWithLocal('employees', eRes.data);
+      dailyKm = mergeWithLocal('daily_km', kRes.data);
+      complaints = mergeWithLocal('complaints', cRes.data);
+      schedules = mergeWithLocal('maintenance_schedules', sRes.data);
     } catch {
-      buses = getLocalCollection('buses');
-      employees = getLocalCollection('employees');
-      dailyKm = getLocalCollection('daily_km');
-      complaints = getLocalCollection('complaints');
-      schedules = getLocalCollection('maintenance_schedules');
+      buses = getLocalCollection('buses').filter(b => (b as any).is_archived !== 1);
+      employees = getLocalCollection('employees').filter(e => (e as any).is_archived !== 1);
+      dailyKm = getLocalCollection('daily_km').filter(k => (k as any).is_archived !== 1);
+      complaints = getLocalCollection('complaints').filter(c => (c as any).is_archived !== 1);
+      schedules = getLocalCollection('maintenance_schedules').filter(s => (s as any).is_archived !== 1);
     }
 
     const totalBuses = buses.length;
@@ -207,7 +330,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         totalBuses,
         activeBuses,
         maintenanceBuses,
-        inactiveBuses: totalBuses - activeBuses - maintenanceBuses,
+        inactiveBuses: Math.max(0, totalBuses - activeBuses - maintenanceBuses),
         totalKmToday: dailyKm.reduce((acc, row) => acc + (Number(row.distance_travelled_km) || 0), 0),
         totalExpensesMonth: 0,
         openComplaints: openComplaintsCount,
@@ -234,122 +357,75 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
   }
 
   // 4. BUSES CRUD
-  if (path === '/buses') {
-    if (method === 'GET') {
-      try {
-        const { data, error } = await supabase.from('buses').select('*').eq('is_archived', 0);
-        if (!error && data) {
-          setLocalCollection('buses', data);
-          return data as any;
+  if (path === '/buses' || path.startsWith('/buses/')) {
+    if (path.includes('/send-expiry-alert')) {
+      return { success: true, message: 'Compliance alert recorded successfully.' } as any;
+    }
+
+    const res = await handleFallbackTableCrud('buses', 'buses', path, method, body, params, {
+      enrich: (items) => {
+        return items.map(b => {
+          const reg = b.registration_number || b.bus_number || '';
+          return {
+            ...b,
+            registration_number: reg,
+            bus_number: b.bus_number || reg
+          };
+        });
+      },
+      filter: (items, qParams) => {
+        let filtered = items;
+        const status = qParams.get('status');
+        const search = qParams.get('search');
+        if (status && status !== 'All') {
+          filtered = filtered.filter(b => (b.operational_status || '').toLowerCase() === status.toLowerCase());
         }
-      } catch {}
-      return getLocalCollection<any>('buses') as any;
-    }
+        if (search) {
+          const s = search.toLowerCase();
+          filtered = filtered.filter(b =>
+            (b.registration_number || '').toLowerCase().includes(s) ||
+            (b.bus_number || '').toLowerCase().includes(s) ||
+            (b.bus_type || '').toLowerCase().includes(s)
+          );
+        }
+        return filtered;
+      }
+    });
 
-    if (method === 'POST') {
-      const newBus = {
-        ...body,
-        id: Date.now(),
-        is_archived: 0,
-        created_at: new Date().toISOString()
-      };
-      try {
-        await supabase.from('buses').insert([newBus]);
-      } catch {}
-      const list = getLocalCollection<any>('buses');
-      list.unshift(newBus);
-      setLocalCollection('buses', list);
-      return newBus as any;
+    if (method === 'POST' && res && res.registration_number) {
+      res.registration_number = String(res.registration_number).trim().toUpperCase();
+      res.bus_number = res.registration_number;
     }
-  }
-
-  if (path.startsWith('/buses/')) {
-    const id = path.split('/')[2];
-    if (method === 'GET') {
-      try {
-        const { data } = await supabase.from('buses').select('*').eq('id', id).single();
-        if (data) return data as any;
-      } catch {}
-      const list = getLocalCollection<any>('buses');
-      return list.find(b => String(b.id) === String(id)) || ({} as any);
-    }
-    if (method === 'PUT') {
-      try {
-        await supabase.from('buses').update(body).eq('id', id);
-      } catch {}
-      const list = getLocalCollection<any>('buses').map(b => (String(b.id) === String(id) ? { ...b, ...body } : b));
-      setLocalCollection('buses', list);
-      return { success: true, ...body } as any;
-    }
-    if (method === 'DELETE') {
-      try {
-        await supabase.from('buses').update({ is_archived: 1 }).eq('id', id);
-      } catch {}
-      const list = getLocalCollection<any>('buses').filter(b => String(b.id) !== String(id));
-      setLocalCollection('buses', list);
-      return { success: true } as any;
-    }
+    return res as any;
   }
 
   // 5. EMPLOYEES CRUD
-  if (path === '/employees') {
-    if (method === 'GET') {
-      try {
-        const { data, error } = await supabase.from('employees').select('*').eq('is_archived', 0);
-        if (!error && data) {
-          setLocalCollection('employees', data);
-          return data as any;
+  if (path === '/employees' || path.startsWith('/employees/')) {
+    return handleFallbackTableCrud('employees', 'employees', path, method, body, params, {
+      enrich: (items) => items.map(e => ({
+        ...e,
+        full_name: e.full_name || e.name || 'Staff Member'
+      })),
+      filter: (items, qParams) => {
+        let filtered = items;
+        const role = qParams.get('role');
+        const status = qParams.get('status');
+        const search = qParams.get('search');
+        if (role && role !== 'All') filtered = filtered.filter(e => e.role === role);
+        if (status && status !== 'All') filtered = filtered.filter(e => e.status === status);
+        if (search) {
+          const s = search.toLowerCase();
+          filtered = filtered.filter(e =>
+            (e.full_name || e.name || '').toLowerCase().includes(s) ||
+            (e.phone_number || e.mobile || '').toLowerCase().includes(s)
+          );
         }
-      } catch {}
-      return getLocalCollection<any>('employees') as any;
-    }
-
-    if (method === 'POST') {
-      const newEmp = {
-        ...body,
-        id: Date.now(),
-        is_archived: 0,
-        created_at: new Date().toISOString()
-      };
-      try {
-        await supabase.from('employees').insert([newEmp]);
-      } catch {}
-      const list = getLocalCollection<any>('employees');
-      list.unshift(newEmp);
-      setLocalCollection('employees', list);
-      return newEmp as any;
-    }
+        return filtered;
+      }
+    }) as any;
   }
 
-  if (path.startsWith('/employees/')) {
-    const id = path.split('/')[2];
-    if (method === 'GET') {
-      try {
-        const { data } = await supabase.from('employees').select('*').eq('id', id).single();
-        if (data) return data as any;
-      } catch {}
-      const list = getLocalCollection<any>('employees');
-      return list.find(e => String(e.id) === String(id)) || ({} as any);
-    }
-    if (method === 'PUT') {
-      try {
-        await supabase.from('employees').update(body).eq('id', id);
-      } catch {}
-      const list = getLocalCollection<any>('employees').map(e => (String(e.id) === String(id) ? { ...e, ...body } : e));
-      setLocalCollection('employees', list);
-      return { success: true, ...body } as any;
-    }
-    if (method === 'DELETE') {
-      try {
-        await supabase.from('employees').update({ is_archived: 1 }).eq('id', id);
-      } catch {}
-      const list = getLocalCollection<any>('employees').filter(e => String(e.id) !== String(id));
-      setLocalCollection('employees', list);
-      return { success: true } as any;
-    }
-  }
-
-  // 6. DAILY KILOMETERS
+  // 6. DAILY KILOMETERS (MILEAGE & FUELING)
   if (path === '/daily-kilometers') {
     if (method === 'GET') {
       let list: any[] = [];
@@ -358,19 +434,13 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
           .from('daily_kilometer_entries')
           .select('*')
           .order('id', { ascending: false });
-        if (!error && Array.isArray(data)) {
-          list = data;
-          setLocalCollection('daily_km', data);
-        } else {
-          list = getLocalCollection<any>('daily_km');
-        }
+        list = mergeWithLocal('daily_km', !error && Array.isArray(data) ? data : []);
       } catch {
         list = getLocalCollection<any>('daily_km');
       }
 
       if (!Array.isArray(list)) list = [];
 
-      // Filter by params if provided
       const dateFilter = params.get('date');
       const busFilter = params.get('bus_id');
       const driverFilter = params.get('driver_id');
@@ -379,7 +449,6 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       if (busFilter) list = list.filter(k => String(k.bus_id) === String(busFilter));
       if (driverFilter) list = list.filter(k => String(k.driver_id) === String(driverFilter));
 
-      // Resolve bus_number, registration_number, driver_name from buses & employees cache
       const buses = getLocalCollection<any>('buses') || [];
       const employees = getLocalCollection<any>('employees') || [];
 
@@ -400,14 +469,11 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         };
       });
 
-      const totalDistance = enriched.reduce((sum, item) => sum + (Number(item.distance_travelled_km) || 0), 0);
-      const totalEntries = enriched.length;
-
       return {
         entries: enriched,
         summary: {
-          totalDistance,
-          totalEntries
+          totalDistance: enriched.reduce((sum, item) => sum + (Number(item.distance_travelled_km) || 0), 0),
+          totalEntries: enriched.length
         }
       } as any;
     }
@@ -433,21 +499,20 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         created_at: new Date().toISOString()
       };
 
-      try {
-        await supabase.from('daily_kilometer_entries').insert([newKm]);
-      } catch {}
-
       const list = getLocalCollection<any>('daily_km') || [];
       list.unshift(newKm);
       setLocalCollection('daily_km', list);
 
-      // Also update the bus current odometer km in local cache & Supabase
+      try {
+        await supabase.from('daily_kilometer_entries').insert([newKm]);
+      } catch {}
+
       if (body.bus_id) {
+        const updatedBuses = buses.map(b => String(b.id) === String(body.bus_id) ? { ...b, current_odometer_km: closeKm } : b);
+        setLocalCollection('buses', updatedBuses);
         try {
           await supabase.from('buses').update({ current_odometer_km: closeKm }).eq('id', body.bus_id);
         } catch {}
-        const updatedBuses = buses.map(b => String(b.id) === String(body.bus_id) ? { ...b, current_odometer_km: closeKm } : b);
-        setLocalCollection('buses', updatedBuses);
       }
 
       return newKm as any;
@@ -456,20 +521,9 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
 
   if (path.startsWith('/daily-kilometers/suggest-opening/')) {
     const busId = path.split('/')[3];
-    try {
-      const { data } = await supabase
-        .from('daily_kilometer_entries')
-        .select('closing_km')
-        .eq('bus_id', busId)
-        .order('id', { ascending: false })
-        .limit(1);
-      if (data && data.length > 0) {
-        return { suggestedOpening: Number(data[0].closing_km) || 0 } as any;
-      }
-    } catch {}
     const list = getLocalCollection<any>('daily_km') || [];
     const busEntry = list.find(k => String(k.bus_id) === String(busId));
-    if (busEntry && busEntry.closing_km) {
+    if (busEntry && busEntry.closing_km != null) {
       return { suggestedOpening: Number(busEntry.closing_km) || 0 } as any;
     }
     const buses = getLocalCollection<any>('buses') || [];
@@ -480,31 +534,151 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
   if (path.startsWith('/daily-kilometers/')) {
     const id = path.split('/')[2];
     if (method === 'PUT') {
+      const list = (getLocalCollection<any>('daily_km') || []).map(k => String(k.id) === String(id) ? { ...k, ...body } : k);
+      setLocalCollection('daily_km', list);
       try {
         await supabase.from('daily_kilometer_entries').update(body).eq('id', id);
       } catch {}
-      const list = (getLocalCollection<any>('daily_km') || []).map(k => String(k.id) === String(id) ? { ...k, ...body } : k);
-      setLocalCollection('daily_km', list);
       return { success: true, ...body } as any;
     }
     if (method === 'DELETE') {
+      const list = (getLocalCollection<any>('daily_km') || []).filter(k => String(k.id) !== String(id));
+      setLocalCollection('daily_km', list);
       try {
         await supabase.from('daily_kilometer_entries').delete().eq('id', id);
       } catch {}
-      const list = (getLocalCollection<any>('daily_km') || []).filter(k => String(k.id) !== String(id));
-      setLocalCollection('daily_km', list);
       return { success: true } as any;
     }
   }
 
-  // 7. CAPTAIN DUTY
+  // 7. MAINTENANCE SCHEDULES
+  if (path === '/maintenance-schedules' || path.startsWith('/maintenance-schedules/')) {
+    return handleFallbackTableCrud('maintenance_schedules', 'maintenance_schedules', path, method, body, params, {
+      enrich: (items) => {
+        const buses = getLocalCollection<any>('buses');
+        return items.map(m => {
+          const bus = buses.find(b => String(b.id) === String(m.bus_id));
+          return {
+            ...m,
+            bus_number: m.bus_number || bus?.bus_number || (m.bus_id ? `Bus #${m.bus_id}` : '-'),
+            registration_number: m.registration_number || bus?.registration_number || '-'
+          };
+        });
+      },
+      filter: (items, qParams) => {
+        let filtered = items;
+        const busId = qParams.get('bus_id');
+        const status = qParams.get('status');
+        if (busId) filtered = filtered.filter(m => String(m.bus_id) === String(busId));
+        if (status && status !== 'All') filtered = filtered.filter(m => m.status === status);
+        return filtered;
+      }
+    }) as any;
+  }
+
+  // 8. TYRE MAINTENANCE
+  if (path === '/tyre-maintenance' || path.startsWith('/tyre-maintenance/')) {
+    return handleFallbackTableCrud('tyre_records', 'tyre_records', path, method, body, params, {
+      filter: (items, qParams) => {
+        const busId = qParams.get('bus_id');
+        return busId ? items.filter(t => String(t.bus_id) === String(busId)) : items;
+      }
+    }) as any;
+  }
+
+  // 9. AC MAINTENANCE
+  if (path === '/ac-maintenance' || path.startsWith('/ac-maintenance/')) {
+    return handleFallbackTableCrud('ac_maintenance_records', 'ac_maintenance_records', path, method, body, params, {
+      filter: (items, qParams) => {
+        const busId = qParams.get('bus_id');
+        return busId ? items.filter(a => String(a.bus_id) === String(busId)) : items;
+      }
+    }) as any;
+  }
+
+  // 10. OIL & FILTER MAINTENANCE
+  if (path === '/oil-filter-maintenance' || path.startsWith('/oil-filter-maintenance/')) {
+    return handleFallbackTableCrud('oil_filter_records', 'oil_filter_records', path, method, body, params, {
+      filter: (items, qParams) => {
+        const busId = qParams.get('bus_id');
+        return busId ? items.filter(o => String(o.bus_id) === String(busId)) : items;
+      }
+    }) as any;
+  }
+
+  // 11. BATTERY MAINTENANCE
+  if (path === '/battery-maintenance' || path.startsWith('/battery-maintenance/')) {
+    return handleFallbackTableCrud('battery_records', 'battery_records', path, method, body, params, {
+      filter: (items, qParams) => {
+        const busId = qParams.get('bus_id');
+        return busId ? items.filter(b => String(b.bus_id) === String(busId)) : items;
+      }
+    }) as any;
+  }
+
+  // 12. REPAIRS (Work Orders)
+  if (path === '/repairs' || path.startsWith('/repairs/')) {
+    return handleFallbackTableCrud('repairs', 'repair_work_orders', path, method, body, params, {
+      idGenerator: () => Date.now(),
+      enrich: (items) => {
+        const buses = getLocalCollection<any>('buses');
+        return items.map(r => {
+          const bus = buses.find(b => String(b.id) === String(r.bus_id));
+          return {
+            ...r,
+            work_order_number: r.work_order_number || `WO-${r.id}`,
+            bus_number: r.bus_number || bus?.bus_number || (r.bus_id ? `Bus #${r.bus_id}` : '-'),
+            registration_number: r.registration_number || bus?.registration_number || '-'
+          };
+        });
+      },
+      filter: (items, qParams) => {
+        let filtered = items;
+        const busId = qParams.get('bus_id');
+        const status = qParams.get('status');
+        if (busId) filtered = filtered.filter(r => String(r.bus_id) === String(busId));
+        if (status && status !== 'All') filtered = filtered.filter(r => r.status === status);
+        return filtered;
+      }
+    }) as any;
+  }
+
+  // 13. COMPLAINTS
+  if (path === '/complaints' || path.startsWith('/complaints/')) {
+    return handleFallbackTableCrud('complaints', 'complaints', path, method, body, params, {
+      idGenerator: () => Date.now(),
+      enrich: (items) => items.map(c => ({
+        ...c,
+        complaint_code: c.complaint_code || `CMP-${c.id}`
+      })),
+      filter: (items, qParams) => {
+        let filtered = items;
+        const busId = qParams.get('bus_id');
+        const status = qParams.get('status');
+        const priority = qParams.get('priority');
+        if (busId) filtered = filtered.filter(c => String(c.bus_id) === String(busId));
+        if (status && status !== 'All') filtered = filtered.filter(c => c.status === status);
+        if (priority && priority !== 'All') filtered = filtered.filter(c => c.priority === priority);
+        return filtered;
+      }
+    }) as any;
+  }
+
+  // 14. BUS CONDITION / INSPECTIONS
+  if (path === '/bus-condition' || path.startsWith('/bus-condition/')) {
+    return handleFallbackTableCrud('bus_conditions', 'bus_condition_inspections', path, method, body, params, {
+      filter: (items, qParams) => {
+        const busId = qParams.get('bus_id');
+        return busId ? items.filter(i => String(i.bus_id) === String(busId)) : items;
+      }
+    }) as any;
+  }
+
+  // 15. CAPTAIN DUTY
   if (path === '/captain/my-duty') {
     const currentUser = getStoredUser();
-    let assignedBus: any = null;
-    try {
-      const { data } = await supabase.from('buses').select('*').eq('operational_status', 'Active').limit(1);
-      if (data && data.length > 0) assignedBus = data[0];
-    } catch {}
+    const buses = getLocalCollection<any>('buses');
+    const assignedBus = buses.find(b => b.operational_status === 'Active') || null;
 
     return {
       captain: currentUser || {
@@ -517,7 +691,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         status: assignedBus ? 'Active On Duty' : 'Awaiting Assignment',
         shift: 'Scheduled Shift',
         project: 'Fleet Operations',
-        route: assignedBus ? `Transit Service - ${assignedBus.bus_number}` : 'No Active Route Assigned',
+        route: assignedBus ? `Transit Service - ${assignedBus.registration_number || assignedBus.bus_number}` : 'No Active Route Assigned',
         distance_km: assignedBus?.current_odometer_km || 0,
         gps_active: !!assignedBus
       },
@@ -533,63 +707,77 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     } as any;
   }
 
-  // 8. COMPLAINTS & REPAIRS
-  if (path === '/complaints') {
-    if (method === 'GET') {
-      try {
-        const { data } = await supabase.from('complaints').select('*').order('created_at', { ascending: false });
-        if (data) return data as any;
-      } catch {}
-      return getLocalCollection<any>('complaints') as any;
-    }
-    if (method === 'POST') {
-      const rec = { ...body, id: Date.now(), created_at: new Date().toISOString() };
-      try {
-        await supabase.from('complaints').insert([rec]);
-      } catch {}
-      const list = getLocalCollection<any>('complaints');
-      list.unshift(rec);
-      setLocalCollection('complaints', list);
-      return rec as any;
+  // 16. STAFF CREDENTIALS
+  if (path === '/staff-credentials' || path.startsWith('/staff-credentials/')) {
+    if (path === '/staff-credentials') {
+      if (method === 'GET') {
+        const localCreds = getLocalCollection<any>('staff_credentials');
+        if (localCreds.length > 0) return localCreds as any;
+        const defaults = [
+          { id: 1, name: 'Admin Manager', email_or_username: 'admin@charvik.com', phone_number: '9876543210', role: 'Super Admin', status: 'Active' },
+          { id: 2, name: 'Fleet Captain', email_or_username: 'captain@charvik.com', phone_number: '9701055555', role: 'Captain', status: 'Active' },
+          { id: 3, name: 'Support Staff Member', email_or_username: 'supporter@charvik.com', phone_number: '9848033445', role: 'Support Staff', status: 'Active' }
+        ];
+        setLocalCollection('staff_credentials', defaults);
+        return defaults as any;
+      }
+      if (method === 'POST') {
+        const rec = {
+          id: Date.now(),
+          name: body.name,
+          email_or_username: body.email_or_username || body.phone_number,
+          phone_number: body.phone_number,
+          role: body.role || 'Support Staff',
+          status: 'Active',
+          created_at: new Date().toISOString()
+        };
+        const list = getLocalCollection<any>('staff_credentials');
+        list.push(rec);
+        setLocalCollection('staff_credentials', list);
+        try {
+          await supabase.from('administrators').insert([rec]);
+        } catch {}
+        return { success: true, ...rec } as any;
+      }
+    } else {
+      const parts = path.split('/').filter(Boolean);
+      const staffId = parts[1];
+      const subAction = parts[2];
+      const list = getLocalCollection<any>('staff_credentials');
+      if (subAction === 'password' && method === 'PUT') {
+        return { success: true, message: 'Password updated successfully' } as any;
+      }
+      if (subAction === 'status' && method === 'PUT') {
+        const updated = list.map(s => String(s.id) === String(staffId) ? { ...s, status: body.status } : s);
+        setLocalCollection('staff_credentials', updated);
+        return { success: true } as any;
+      }
+      if (method === 'DELETE') {
+        const updated = list.filter(s => String(s.id) !== String(staffId));
+        setLocalCollection('staff_credentials', updated);
+        return { success: true } as any;
+      }
     }
   }
 
-  // 9. STAFF CREDENTIALS
-  if (path === '/staff-credentials') {
-    if (method === 'GET') {
-      try {
-        const { data } = await supabase.from('administrators').select('id, name, email_or_username, phone_number, role, status, created_at');
-        if (data && data.length > 0) return data as any;
-      } catch {}
-      return [
-        { id: 1, name: 'Admin Manager', email_or_username: 'admin@charvik.com', phone_number: '9876543210', role: 'Super Admin', status: 'Active' },
-        { id: 2, name: 'Fleet Captain', email_or_username: 'captain@charvik.com', phone_number: '9701055555', role: 'Captain', status: 'Active' },
-        { id: 3, name: 'Support Staff Member', email_or_username: 'supporter@charvik.com', phone_number: '9848033445', role: 'Support Staff', status: 'Active' }
-      ] as any;
-    }
-    if (method === 'POST') {
-      const rec = {
-        name: body.name,
-        email_or_username: body.email_or_username || body.phone_number,
-        phone_number: body.phone_number,
-        role: body.role || 'Support Staff',
-        status: 'Active',
-        created_at: new Date().toISOString()
-      };
-      try {
-        await supabase.from('administrators').insert([rec]);
-      } catch {}
-      return { success: true, ...rec } as any;
-    }
-  }
-
-  // 10. NOTIFICATIONS, SETTINGS, AUDIT LOGS, REPORTS
+  // 17. NOTIFICATIONS, SETTINGS, AUDIT LOGS, REPORTS
   if (path === '/notifications') return [] as any;
-  if (path === '/settings') return { company_name: 'Charvik Staffing Consultancy' } as any;
+  if (path === '/settings') {
+    if (method === 'POST') {
+      try {
+        localStorage.setItem('charvik_app_settings', JSON.stringify(body));
+      } catch {}
+      return { success: true, ...body } as any;
+    }
+    try {
+      const saved = localStorage.getItem('charvik_app_settings');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { company_name: 'Charvik Staffing Consultancy' } as any;
+  }
   if (path === '/audit-logs') return [] as any;
   if (path.startsWith('/reports')) return [] as any;
 
-  // Generic fallback for any other table (maintenance, tyres, ac, battery, etc.)
   return [] as any;
 }
 

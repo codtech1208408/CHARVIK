@@ -166,8 +166,12 @@ export const BusMaster: React.FC = () => {
         api.getBuses({ status: statusFilter !== 'All' ? statusFilter : undefined }),
         api.getEmployees()
       ]);
-      setBuses(busData);
-      setEmployees(empData);
+      if (Array.isArray(busData)) {
+        setBuses(busData);
+      }
+      if (Array.isArray(empData)) {
+        setEmployees(empData);
+      }
     } catch (err: any) {
       error(err.message || 'Failed to load buses');
     } finally {
@@ -233,10 +237,20 @@ export const BusMaster: React.FC = () => {
     };
     try {
       if (editingBus) {
-        await api.updateBus(editingBus.id, payload);
+        const res = await api.updateBus(editingBus.id, payload);
+        const updated = { ...editingBus, ...payload, ...(res || {}) };
+        setBuses((prev) => prev.map((b) => (String(b.id) === String(editingBus.id) ? updated : b)));
         success(`Bus ${cleanReg} updated successfully!`);
       } else {
-        await api.createBus(payload);
+        const created = await api.createBus(payload);
+        const newBusItem: BusType = {
+          ...payload,
+          id: created?.id || Date.now(),
+          is_archived: 0,
+          created_at: new Date().toISOString(),
+          ...(created || {})
+        };
+        setBuses((prev) => [newBusItem, ...prev.filter((b) => (b.registration_number || b.bus_number) !== cleanReg && String(b.id) !== String(newBusItem.id))]);
         success(`Bus ${cleanReg} added to fleet!`);
       }
       setIsAddEditOpen(false);
@@ -260,6 +274,7 @@ export const BusMaster: React.FC = () => {
     if (!busToArchive) return;
     try {
       await api.archiveBus(busToArchive.id);
+      setBuses((prev) => prev.filter((b) => String(b.id) !== String(busToArchive.id)));
       success(`Bus ${busToArchive.registration_number || busToArchive.bus_number} archived safely.`);
       setIsArchiveConfirmOpen(false);
       setBusToArchive(null);
@@ -296,11 +311,11 @@ export const BusMaster: React.FC = () => {
   );
 
   const filteredBuses = buses.filter((b) => {
-    const s = searchTerm.toLowerCase();
-    const matchesSearch =
-      b.registration_number.toLowerCase().includes(s) ||
-      (b.bus_number && b.bus_number.toLowerCase().includes(s)) ||
-      (b.bus_type && b.bus_type.toLowerCase().includes(s));
+    const s = searchTerm.toLowerCase().trim();
+    const reg = String(b.registration_number || '').toLowerCase();
+    const num = String(b.bus_number || '').toLowerCase();
+    const type = String(b.bus_type || '').toLowerCase();
+    const matchesSearch = !s || reg.includes(s) || num.includes(s) || type.includes(s);
 
     if (!matchesSearch) return false;
 
