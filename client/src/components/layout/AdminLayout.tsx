@@ -185,13 +185,15 @@ export const AdminLayout: React.FC = () => {
 
         {/* Module Sub-Tabs Bar: Vehicle Registration */}
         {isAdminPortal && isRegistrationModule && (
-          <div className="bg-white border-b border-slate-200 shadow-2xs px-4 sm:px-6 lg:px-8 py-2.5 shrink-0 sticky top-16 z-20">
-            <div className="max-w-[1920px] mx-auto flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
+          <div className="px-4 sm:px-6 lg:px-8 pt-3 pb-1 shrink-0">
+            <div className="max-w-[1920px] mx-auto bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-indigo-50/60 border-2 border-blue-200/90 rounded-2xl p-2 sm:p-2.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2 shrink-0">
-                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-                <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <Bus className="w-4 h-4 text-blue-600" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-wider shadow-xs">
+                  <Bus className="w-4 h-4" />
                   <span>Vehicle Registration</span>
+                </span>
+                <span className="hidden xl:inline text-[11px] font-bold text-slate-500">
+                  Fleet, routes, duty tasks, organizers & staff
                 </span>
               </div>
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
@@ -209,8 +211,8 @@ export const AdminLayout: React.FC = () => {
                       to={tab.route}
                       className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
                         isTabActive
-                          ? 'bg-[#142B4A] text-white border-[#142B4A] shadow-xs'
-                          : 'bg-slate-50 text-slate-600 border-slate-200/90 hover:bg-slate-100 hover:text-slate-900'
+                          ? 'bg-[#142B4A] text-white border-[#142B4A] shadow-md shadow-[#142B4A]/25 ring-2 ring-blue-400/30 font-black'
+                          : 'bg-white/90 text-slate-700 border-slate-200/90 hover:bg-white hover:text-blue-700 hover:border-blue-300 shadow-2xs'
                       }`}
                     >
                       <TabIcon className={`w-3.5 h-3.5 ${isTabActive ? 'text-white' : 'text-blue-600'}`} />
@@ -225,13 +227,15 @@ export const AdminLayout: React.FC = () => {
 
         {/* Module Sub-Tabs Bar: Vehicle Maintenance */}
         {isAdminPortal && isMaintenanceModule && (
-          <div className="bg-white border-b border-slate-200 shadow-2xs px-4 sm:px-6 lg:px-8 py-2.5 shrink-0 sticky top-16 z-20">
-            <div className="max-w-[1920px] mx-auto flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
+          <div className="px-4 sm:px-6 lg:px-8 pt-3 pb-1 shrink-0">
+            <div className="max-w-[1920px] mx-auto bg-gradient-to-r from-blue-50/90 via-sky-50/60 to-indigo-50/60 border-2 border-blue-200/90 rounded-2xl p-2 sm:p-2.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2 shrink-0">
-                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-                <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <Wrench className="w-4 h-4 text-blue-600" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-wider shadow-xs">
+                  <Wrench className="w-4 h-4" />
                   <span>Vehicle Maintenance</span>
+                </span>
+                <span className="hidden xl:inline text-[11px] font-bold text-slate-500">
+                  Fueling, tyres, products & cleaning
                 </span>
               </div>
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
@@ -248,8 +252,8 @@ export const AdminLayout: React.FC = () => {
                       to={tab.route}
                       className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
                         isTabActive
-                          ? 'bg-[#142B4A] text-white border-[#142B4A] shadow-xs'
-                          : 'bg-slate-50 text-slate-600 border-slate-200/90 hover:bg-slate-100 hover:text-slate-900'
+                          ? 'bg-[#142B4A] text-white border-[#142B4A] shadow-md shadow-[#142B4A]/25 ring-2 ring-blue-400/30 font-black'
+                          : 'bg-white/90 text-slate-700 border-slate-200/90 hover:bg-white hover:text-blue-700 hover:border-blue-300 shadow-2xs'
                       }`}
                     >
                       <TabIcon className={`w-3.5 h-3.5 ${isTabActive ? 'text-white' : 'text-blue-600'}`} />
