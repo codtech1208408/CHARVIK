@@ -242,15 +242,26 @@ export const TaskManagement: React.FC = () => {
   };
 
   // Status Change Rule: If Vehicle Status is HOLD, Driver 1 & Driver 2 salary auto-sets to 500 and advance resets to 0.
-  // If RUN, it is in admin's hand to enter manually.
+  // If RUN, it auto-restores the driver's registered salary (temporary or permanent).
   const handleVehicleStatusChange = (newStatus: 'RUN' | 'HOLD (Low Occupancy)' | 'HOLD (Maintenance)' | 'HOLD (Break Down)' | 'HOLD (Finance Side)') => {
     setFormData((prev) => {
       const isHold = newStatus.startsWith('HOLD');
-      const d1Adv = isHold ? 0 : Number(prev.driver1?.advance_amount || 0);
-      const d2Adv = isHold ? 0 : Number(prev.driver2?.advance_amount || 0);
+      let d1Salary: any = '';
+      let d2Salary: any = '';
 
-      const d1Salary = isHold ? 500 : (prev.driver1?.salary_amount === 500 ? ('' as any) : prev.driver1?.salary_amount);
-      const d2Salary = isHold ? 500 : (prev.driver2?.salary_amount === 500 ? ('' as any) : prev.driver2?.salary_amount);
+      if (isHold) {
+        d1Salary = 500;
+        d2Salary = 500;
+      } else {
+        const d1Emp = drivers.find((d) => d.full_name === prev.driver1?.employee_name);
+        const d2Emp = drivers.find((d) => d.full_name === prev.driver2?.employee_name);
+        d1Salary = (d1Emp && d1Emp.salary !== undefined && d1Emp.salary !== null && d1Emp.salary !== '')
+          ? Number(d1Emp.salary)
+          : (prev.driver1?.salary_amount === 500 ? ('' as any) : prev.driver1?.salary_amount);
+        d2Salary = (d2Emp && d2Emp.salary !== undefined && d2Emp.salary !== null && d2Emp.salary !== '')
+          ? Number(d2Emp.salary)
+          : (prev.driver2?.salary_amount === 500 ? ('' as any) : prev.driver2?.salary_amount);
+      }
 
       return {
         ...prev,
@@ -259,26 +270,32 @@ export const TaskManagement: React.FC = () => {
           employee_name: prev.driver1?.employee_name || '',
           role: 'Driver',
           salary_amount: d1Salary,
-          advance_amount: d1Adv,
-          balance_due: Math.max(0, Number(d1Salary || 0) - d1Adv)
+          advance_amount: 0,
+          balance_due: Number(d1Salary || 0)
         },
         driver2: {
           employee_name: prev.driver2?.employee_name || '',
           role: 'Driver',
           salary_amount: d2Salary,
-          advance_amount: d2Adv,
-          balance_due: Math.max(0, Number(d2Salary || 0) - d2Adv)
+          advance_amount: 0,
+          balance_due: Number(d2Salary || 0)
         }
       };
     });
   };
 
-  // Driver 1 Selection
+  // Driver 1 Selection: Auto-populates registered salary (Permanent/Temporary)
   const handleDriver1Select = (empName: string) => {
     const isHold = formData.vehicle_status?.startsWith('HOLD');
     const emp = drivers.find((d) => d.full_name === empName);
-    const adv = isHold ? 0 : Number(formData.driver1?.advance_amount || 0);
-    const salary = isHold ? 500 : (formData.driver1?.salary_amount ?? ('' as any));
+    let salary: any = '';
+    if (isHold) {
+      salary = 500;
+    } else if (emp && emp.salary !== undefined && emp.salary !== null && emp.salary !== '') {
+      salary = Number(emp.salary);
+    } else {
+      salary = formData.driver1?.salary_amount ?? ('' as any);
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -287,18 +304,24 @@ export const TaskManagement: React.FC = () => {
         employee_name: empName,
         role: 'Driver',
         salary_amount: salary,
-        advance_amount: adv,
-        balance_due: Math.max(0, Number(salary || 0) - adv)
+        advance_amount: 0,
+        balance_due: Number(salary || 0)
       }
     }));
   };
 
-  // Driver 2 Selection
+  // Driver 2 Selection: Auto-populates registered salary (Permanent/Temporary)
   const handleDriver2Select = (empName: string) => {
     const isHold = formData.vehicle_status?.startsWith('HOLD');
     const emp = drivers.find((d) => d.full_name === empName);
-    const adv = isHold ? 0 : Number(formData.driver2?.advance_amount || 0);
-    const salary = isHold ? 500 : (formData.driver2?.salary_amount ?? ('' as any));
+    let salary: any = '';
+    if (isHold) {
+      salary = 500;
+    } else if (emp && emp.salary !== undefined && emp.salary !== null && emp.salary !== '') {
+      salary = Number(emp.salary);
+    } else {
+      salary = formData.driver2?.salary_amount ?? ('' as any);
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -307,20 +330,25 @@ export const TaskManagement: React.FC = () => {
         employee_name: empName,
         role: 'Driver',
         salary_amount: salary,
-        advance_amount: adv,
-        balance_due: Math.max(0, Number(salary || 0) - adv)
+        advance_amount: 0,
+        balance_due: Number(salary || 0)
       }
     }));
   };
 
-  // Helper Selection
+  // Helper Selection: Auto-populates registered salary if present
   const handleHelperSelect = (empName: string) => {
     if (!empName) {
       setFormData((prev) => ({ ...prev, helper: undefined }));
       return;
     }
     const emp = helpers.find((h) => h.full_name === empName);
-    const existingSalary = formData.helper?.salary_amount;
+    let salary: any = '';
+    if (emp && emp.salary !== undefined && emp.salary !== null && emp.salary !== '') {
+      salary = Number(emp.salary);
+    } else {
+      salary = formData.helper?.salary_amount ?? ('' as any);
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -1185,7 +1213,7 @@ export const TaskManagement: React.FC = () => {
                     <option value="">-- Select Driver 1 --</option>
                     {drivers.map((d) => (
                       <option key={d.id} value={d.full_name}>
-                        {d.full_name} ({d.employee_code})
+                        {d.full_name} ({d.employee_code}){d.salary ? ` • ₹${Number(d.salary).toLocaleString('en-IN')}` : ''}{d.employment_type ? ` [${d.employment_type}]` : ''}
                       </option>
                     ))}
                   </select>
@@ -1229,12 +1257,21 @@ export const TaskManagement: React.FC = () => {
                     <span>⚡</span> Bus on Hold: Driver 1 receives ₹500 flat pay
                   </span>
                 ) : (
-                  <span className="text-slate-500">
-                    Driver 1 Pay:{' '}
-                    <strong className="text-slate-900 font-bold">
-                      ₹{Number(formData.driver1?.salary_amount || 0)}
-                    </strong>
-                  </span>
+                  <div className="w-full flex items-center justify-between text-slate-500">
+                    <span className="text-[10px]">
+                      {drivers.find((d) => d.full_name === formData.driver1?.employee_name)?.salary ? (
+                        <span className="text-emerald-700 font-semibold">
+                          ✓ Auto-filled from {drivers.find((d) => d.full_name === formData.driver1?.employee_name)?.employment_type || 'registered'} salary
+                        </span>
+                      ) : null}
+                    </span>
+                    <span>
+                      Driver 1 Pay:{' '}
+                      <strong className="text-slate-900 font-bold">
+                        ₹{Number(formData.driver1?.salary_amount || 0)}
+                      </strong>
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
@@ -1269,7 +1306,7 @@ export const TaskManagement: React.FC = () => {
                       .filter((d) => d.full_name !== formData.driver1?.employee_name)
                       .map((d) => (
                         <option key={d.id} value={d.full_name}>
-                          {d.full_name} ({d.employee_code})
+                          {d.full_name} ({d.employee_code}){d.salary ? ` • ₹${Number(d.salary).toLocaleString('en-IN')}` : ''}{d.employment_type ? ` [${d.employment_type}]` : ''}
                         </option>
                       ))}
                   </select>
@@ -1313,12 +1350,21 @@ export const TaskManagement: React.FC = () => {
                     <span>⚡</span> Bus on Hold: Driver 2 receives ₹500 flat pay
                   </span>
                 ) : (
-                  <span className="text-slate-500">
-                    Driver 2 Pay:{' '}
-                    <strong className="text-slate-900 font-bold">
-                      ₹{Number(formData.driver2?.salary_amount || 0)}
-                    </strong>
-                  </span>
+                  <div className="w-full flex items-center justify-between text-slate-500">
+                    <span className="text-[10px]">
+                      {drivers.find((d) => d.full_name === formData.driver2?.employee_name)?.salary ? (
+                        <span className="text-emerald-700 font-semibold">
+                          ✓ Auto-filled from {drivers.find((d) => d.full_name === formData.driver2?.employee_name)?.employment_type || 'registered'} salary
+                        </span>
+                      ) : null}
+                    </span>
+                    <span>
+                      Driver 2 Pay:{' '}
+                      <strong className="text-slate-900 font-bold">
+                        ₹{Number(formData.driver2?.salary_amount || 0)}
+                      </strong>
+                    </span>
+                  </div>
                 )}
               </div>
             </div>

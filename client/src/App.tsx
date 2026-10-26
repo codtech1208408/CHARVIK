@@ -66,6 +66,8 @@ export function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="vehicles" element={<BusMaster />} />
               <Route path="buses" element={<BusMaster />} />
+              <Route path="vehicle-registration" element={<Navigate to="/admin/vehicles" replace />} />
+              <Route path="vehicle-maintenance" element={<Navigate to="/admin/mileage-fueling" replace />} />
               <Route path="mileage-fueling" element={<DailyKilometers />} />
               <Route path="daily-kilometers" element={<DailyKilometers />} />
               <Route path="tyre-maintenance" element={<TyreMaintenance />} />

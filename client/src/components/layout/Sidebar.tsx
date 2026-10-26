@@ -15,6 +15,7 @@ import {
   Bell,
   ExternalLink,
   ChevronRight,
+  ChevronDown,
   LogOut,
   ChevronLeft,
   X,
@@ -28,6 +29,23 @@ import {
   Users
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+
+export interface NavItemLeaf {
+  label: string;
+  route: string;
+  icon: any;
+  hasLiveBadge?: boolean;
+}
+
+export interface NavItemGroup {
+  isGroup: true;
+  id: string;
+  label: string;
+  icon: any;
+  items: NavItemLeaf[];
+}
+
+export type NavItemEntry = NavItemLeaf | NavItemGroup;
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -51,6 +69,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isCaptain = location.pathname.startsWith('/captain');
   const isSupporter = location.pathname.startsWith('/supporter');
 
+  const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({
+    'vehicle-registration': true,
+    'vehicle-maintenance': true,
+  });
+
+  // Automatically keep current module group open when navigating
+  React.useEffect(() => {
+    const p = location.pathname;
+    if (['/admin/vehicles', '/admin/buses', '/admin/routes', '/admin/tasks', '/admin/organizers', '/admin/employee-registration', '/admin/employees'].some((r) => p.startsWith(r))) {
+      setOpenGroups((prev) => ({ ...prev, 'vehicle-registration': true }));
+    }
+    if (['/admin/mileage-fueling', '/admin/daily-kilometers', '/admin/tyre-maintenance', '/admin/products', '/admin/cleaning'].some((r) => p.startsWith(r))) {
+      setOpenGroups((prev) => ({ ...prev, 'vehicle-maintenance': true }));
+    }
+  }, [location.pathname]);
+
+  const toggleGroup = (groupId: string) => {
+    if (isCollapsed) {
+      setIsCollapsed(false);
+      setOpenGroups((prev) => ({ ...prev, [groupId]: true }));
+    } else {
+      setOpenGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+    }
+  };
+
   const handleLogout = () => {
     logout();
     if (isCaptain) navigate('/captain/login');
@@ -58,23 +101,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
     else navigate('/admin/login');
   };
 
-  // Dedicated navigation matching the user's provided management structure
-  const adminNavItems = [
+  // Structured navigation with Vehicle Registration and Vehicle Maintenance parent tabs
+  const adminNavItems: NavItemEntry[] = [
     { label: 'Dashboard', route: '/admin/dashboard', icon: LayoutGrid, hasLiveBadge: true },
-    { label: 'Vehicle Management', route: '/admin/vehicles', icon: Truck },
-    { label: 'Mileage & Fueling', route: '/admin/mileage-fueling', icon: Fuel },
-    { label: 'Tyre Maintenance', route: '/admin/tyre-maintenance', icon: CircleDot },
-    { label: 'Product Management', route: '/admin/products', icon: Package },
-    { label: 'Cleaning Management', route: '/admin/cleaning', icon: Droplets },
-    { label: 'Route Management', route: '/admin/routes', icon: Navigation },
-    { label: 'Organizer Management', route: '/admin/organizers', icon: Building2 },
-    { label: 'Task Management', route: '/admin/tasks', icon: ClipboardList },
-    { label: 'Employee Registration', route: '/admin/employee-registration', icon: UserPlus },
+    {
+      isGroup: true,
+      id: 'vehicle-registration',
+      label: 'Vehicle Registration',
+      icon: Bus,
+      items: [
+        { label: 'Vehicle Management', route: '/admin/vehicles', icon: Truck },
+        { label: 'Route Management', route: '/admin/routes', icon: Navigation },
+        { label: 'Task Management', route: '/admin/tasks', icon: ClipboardList },
+        { label: 'Organizer Management', route: '/admin/organizers', icon: Building2 },
+        { label: 'Employee Registration', route: '/admin/employee-registration', icon: UserPlus },
+      ],
+    },
+    {
+      isGroup: true,
+      id: 'vehicle-maintenance',
+      label: 'Vehicle Maintenance',
+      icon: Wrench,
+      items: [
+        { label: 'Mileage & Fueling', route: '/admin/mileage-fueling', icon: Fuel },
+        { label: 'Tyre Maintenance', route: '/admin/tyre-maintenance', icon: CircleDot },
+        { label: 'Product Management', route: '/admin/products', icon: Package },
+        { label: 'Cleaning Management', route: '/admin/cleaning', icon: Droplets },
+      ],
+    },
     { label: 'Earnings', route: '/admin/earnings', icon: TrendingUp },
     { label: 'Website Inquiries', route: '/admin/inquiries', icon: Bell },
   ];
 
-  const captainNavItems = [
+  const captainNavItems: NavItemEntry[] = [
     { label: 'Dashboard', route: '/captain/dashboard', icon: LayoutGrid, hasLiveBadge: true },
     { label: 'Vehicle Management', route: '/captain/buses', icon: Truck },
     { label: 'Mileage & Fueling', route: '/captain/daily-kilometers', icon: Fuel },
@@ -85,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Battery Check', route: '/captain/battery-maintenance', icon: BatteryCharging },
   ];
 
-  const supporterNavItems = [
+  const supporterNavItems: NavItemEntry[] = [
     { label: 'Dashboard', route: '/supporter/dashboard', icon: LayoutGrid, hasLiveBadge: true },
     { label: 'Cleaning Management', route: '/supporter/bus-condition', icon: Droplets },
     { label: 'Complaints & Issues', route: '/supporter/complaints', icon: AlertTriangle },
@@ -195,8 +254,89 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Navigation Items List */}
-        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-200">
-          {navItems.map((item) => {
+        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200">
+          {navItems.map((item: any) => {
+            if (item.isGroup) {
+              const isGroupActive = item.items.some((sub: any) => {
+                return (
+                  location.pathname === sub.route ||
+                  (sub.route === '/admin/vehicles' && location.pathname === '/admin/buses') ||
+                  (sub.route === '/admin/mileage-fueling' && location.pathname === '/admin/daily-kilometers') ||
+                  (sub.route === '/admin/employee-registration' && location.pathname === '/admin/employees')
+                );
+              });
+              const isGroupOpen = !!openGroups[item.id];
+              const GroupIcon = item.icon;
+
+              return (
+                <div key={item.id} className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(item.id)}
+                    className={`w-full flex items-center px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group cursor-pointer ${
+                      isGroupActive
+                        ? 'bg-blue-50/90 text-[#142B4A] border border-blue-200/80 shadow-xs'
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-[#142B4A]'
+                    } ${isCollapsed ? 'justify-center px-2' : ''}`}
+                    title={isCollapsed ? `${item.label} (${item.items.length})` : undefined}
+                  >
+                    <GroupIcon
+                      className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
+                        isGroupActive ? 'text-[#142B4A]' : 'text-[#2563EB]'
+                      } ${isCollapsed ? '' : 'mr-3'}`}
+                    />
+                    {!isCollapsed && (
+                      <>
+                        <span className="truncate flex-1 text-left tracking-tight">{item.label}</span>
+                        <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-slate-200/70 text-slate-600 mr-2">
+                          {item.items.length}
+                        </span>
+                        {isGroupOpen ? (
+                          <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
+                        )}
+                      </>
+                    )}
+                  </button>
+
+                  {/* Sub-items list */}
+                  {!isCollapsed && isGroupOpen && (
+                    <div className="ml-4 pl-3 border-l-2 border-blue-200/60 space-y-1 my-1">
+                      {item.items.map((sub: any) => {
+                        const SubIcon = sub.icon;
+                        const isSubActive =
+                          location.pathname === sub.route ||
+                          (sub.route === '/admin/vehicles' && location.pathname === '/admin/buses') ||
+                          (sub.route === '/admin/mileage-fueling' && location.pathname === '/admin/daily-kilometers') ||
+                          (sub.route === '/admin/employee-registration' && location.pathname === '/admin/employees');
+
+                        return (
+                          <NavLink
+                            key={sub.route}
+                            to={sub.route}
+                            onClick={() => setIsMobileOpen(false)}
+                            className={`flex items-center px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 group ${
+                              isSubActive
+                                ? 'bg-[#142B4A] text-white shadow-xs font-black'
+                                : 'text-slate-600 hover:bg-blue-50/70 hover:text-[#142B4A]'
+                            }`}
+                          >
+                            <SubIcon
+                              className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 mr-2.5 ${
+                                isSubActive ? 'text-white' : 'text-[#2563EB]'
+                              }`}
+                            />
+                            <span className="truncate flex-1 tracking-tight">{sub.label}</span>
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             const Icon = item.icon;
             const isItemActive =
               location.pathname === item.route ||

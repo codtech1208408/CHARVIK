@@ -1,10 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation, Navigate } from 'react-router-dom';
+import { Outlet, useLocation, Navigate, NavLink } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { useAuth } from '../../context/AuthContext';
 import { ErrorBoundary } from '../common/ErrorBoundary';
+import {
+  Truck,
+  Navigation,
+  ClipboardList,
+  Building2,
+  UserPlus,
+  Fuel,
+  CircleDot,
+  Package,
+  Droplets,
+  Bus,
+  Wrench
+} from 'lucide-react';
 import AOS from 'aos';
+
+const registrationTabs = [
+  { label: 'Vehicle Management', route: '/admin/vehicles', icon: Truck },
+  { label: 'Route Management', route: '/admin/routes', icon: Navigation },
+  { label: 'Task Management', route: '/admin/tasks', icon: ClipboardList },
+  { label: 'Organizer Management', route: '/admin/organizers', icon: Building2 },
+  { label: 'Employee Registration', route: '/admin/employee-registration', icon: UserPlus },
+];
+
+const maintenanceTabs = [
+  { label: 'Mileage & Fueling', route: '/admin/mileage-fueling', icon: Fuel },
+  { label: 'Tyre Maintenance', route: '/admin/tyre-maintenance', icon: CircleDot },
+  { label: 'Product Management', route: '/admin/products', icon: Package },
+  { label: 'Cleaning Management', route: '/admin/cleaning', icon: Droplets },
+];
 
 export const AdminLayout: React.FC = () => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -118,6 +146,19 @@ export const AdminLayout: React.FC = () => {
     location.pathname === '/supporter' ||
     location.pathname === '/supporter/';
 
+  const isRegistrationModule = registrationTabs.some(
+    (t) =>
+      location.pathname === t.route ||
+      (t.route === '/admin/vehicles' && location.pathname === '/admin/buses') ||
+      (t.route === '/admin/employee-registration' && location.pathname === '/admin/employees')
+  );
+
+  const isMaintenanceModule = maintenanceTabs.some(
+    (t) =>
+      location.pathname === t.route ||
+      (t.route === '/admin/mileage-fueling' && location.pathname === '/admin/daily-kilometers')
+  );
+
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
       {/* Sidebar - Pinned only on Dashboard; hidden into off-canvas drawer on any tab page */}
@@ -139,6 +180,73 @@ export const AdminLayout: React.FC = () => {
           onMobileToggle={() => setIsMobileOpen(true)}
           pageTitle={getPageTitle()}
         />
+
+        {/* Module Sub-Tabs Bar: Vehicle Registration */}
+        {isAdminPortal && isRegistrationModule && (
+          <div className="bg-white border-b border-slate-200/90 shadow-2xs px-4 sm:px-6 py-2.5 flex items-center justify-between overflow-x-auto no-scrollbar gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 text-xs font-black text-slate-800 uppercase tracking-wider shrink-0 mr-1 sm:mr-3">
+              <Bus className="w-4 h-4 text-blue-600" />
+              <span className="hidden sm:inline">Vehicle Registration:</span>
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              {registrationTabs.map((tab) => {
+                const isTabActive =
+                  location.pathname === tab.route ||
+                  (tab.route === '/admin/vehicles' && location.pathname === '/admin/buses') ||
+                  (tab.route === '/admin/employee-registration' && location.pathname === '/admin/employees');
+                const TabIcon = tab.icon;
+
+                return (
+                  <NavLink
+                    key={tab.route}
+                    to={tab.route}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                      isTabActive
+                        ? 'bg-[#142B4A] text-white shadow-xs'
+                        : 'bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
+                    }`}
+                  >
+                    <TabIcon className={`w-3.5 h-3.5 ${isTabActive ? 'text-white' : 'text-blue-600'}`} />
+                    <span>{tab.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Module Sub-Tabs Bar: Vehicle Maintenance */}
+        {isAdminPortal && isMaintenanceModule && (
+          <div className="bg-white border-b border-slate-200/90 shadow-2xs px-4 sm:px-6 py-2.5 flex items-center justify-between overflow-x-auto no-scrollbar gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 text-xs font-black text-slate-800 uppercase tracking-wider shrink-0 mr-1 sm:mr-3">
+              <Wrench className="w-4 h-4 text-blue-600" />
+              <span className="hidden sm:inline">Vehicle Maintenance:</span>
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              {maintenanceTabs.map((tab) => {
+                const isTabActive =
+                  location.pathname === tab.route ||
+                  (tab.route === '/admin/mileage-fueling' && location.pathname === '/admin/daily-kilometers');
+                const TabIcon = tab.icon;
+
+                return (
+                  <NavLink
+                    key={tab.route}
+                    to={tab.route}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                      isTabActive
+                        ? 'bg-[#142B4A] text-white shadow-xs'
+                        : 'bg-slate-100/90 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900'
+                    }`}
+                  >
+                    <TabIcon className={`w-3.5 h-3.5 ${isTabActive ? 'text-white' : 'text-blue-600'}`} />
+                    <span>{tab.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <main className={`flex-1 p-4 sm:p-6 lg:p-8 w-full ${isDashboard ? 'max-w-7xl' : 'max-w-[1920px]'} mx-auto pb-24 lg:pb-8`}>
           <ErrorBoundary fallbackTitle="Unable to Load Dashboard View">
