@@ -45,7 +45,7 @@ export interface TripDutyItem {
   id: number;
   trip_start_date: string; // YYYY-MM-DD
   vehicle_number: string; // registration_number
-  vehicle_status: 'RUN' | 'HOLD (Low Occupancy)' | 'HOLD (Maintenance)';
+  vehicle_status: 'RUN' | 'HOLD (Low Occupancy)' | 'HOLD (Maintenance)' | 'HOLD (Break Down)' | 'HOLD (Finance Side)';
   route_corridor: string;
   operator_organizer: string;
   driver1: CrewFinancial;
@@ -243,7 +243,7 @@ export const TaskManagement: React.FC = () => {
 
   // Status Change Rule: If Vehicle Status is HOLD, Driver 1 & Driver 2 salary auto-sets to 500 and advance resets to 0.
   // If RUN, it is in admin's hand to enter manually.
-  const handleVehicleStatusChange = (newStatus: 'RUN' | 'HOLD (Low Occupancy)' | 'HOLD (Maintenance)') => {
+  const handleVehicleStatusChange = (newStatus: 'RUN' | 'HOLD (Low Occupancy)' | 'HOLD (Maintenance)' | 'HOLD (Break Down)' | 'HOLD (Finance Side)') => {
     setFormData((prev) => {
       const isHold = newStatus.startsWith('HOLD');
       const d1Adv = isHold ? 0 : Number(prev.driver1?.advance_amount || 0);
@@ -799,10 +799,7 @@ export const TaskManagement: React.FC = () => {
                         </td>
                         <td className="py-3.5 px-4">
                           <p className="font-bold text-slate-900 text-xs">₹{busTotalSalary.toLocaleString()}</p>
-                          <p className="text-[10px] text-slate-500">
-                            Adv: <strong className="text-slate-700">₹{busTotalAdv}</strong> • Due:{' '}
-                            <strong className="text-rose-600">₹{busTotalDue}</strong>
-                          </p>
+                          <p className="text-[10px] text-slate-500">Total Payout</p>
                         </td>
                         <td className="py-3.5 px-4">
                           <span
@@ -1035,7 +1032,7 @@ export const TaskManagement: React.FC = () => {
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         title={editingTrip ? 'Edit Task & Multi-Staff Duty' : 'Log New Task & Multi-Staff Duty'}
-        subtitle="Assign up to 4 crew members (Driver 1, Driver 2, Helper, Captain) with independent advance & salary records."
+        subtitle="Assign up to 4 crew members (Driver 1, Driver 2, Helper, Captain) and fleet operation tracking."
         maxWidth="max-w-4xl"
       >
         <form onSubmit={handleSaveTrip} className="space-y-5">
@@ -1086,6 +1083,8 @@ export const TaskManagement: React.FC = () => {
                   <option value="RUN">🟢 RUN</option>
                   <option value="HOLD (Low Occupancy)">🟡 HOLD (Low Occupancy)</option>
                   <option value="HOLD (Maintenance)">🔴 HOLD (Maintenance)</option>
+                  <option value="HOLD (Break Down)">🟠 HOLD (Break Down)</option>
+                  <option value="HOLD (Finance Side)">🟣 HOLD (Finance Side)</option>
                 </select>
               </div>
 
@@ -1135,11 +1134,8 @@ export const TaskManagement: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-black text-slate-900 uppercase tracking-wider">
                 <Users className="w-4 h-4 text-blue-600" />
-                <span>2. Crew Assignment & Separate Financial Split (Up to 4 Members)</span>
+                <span>2. Crew Assignment & Salary Split (Up to 4 Members)</span>
               </div>
-              <span className="text-[11px] text-slate-500 font-semibold bg-slate-100 px-2 py-0.5 rounded-full">
-                Individual Advance & Salary Records
-              </span>
             </div>
 
             {/* Hold Status Auto-Rate Banner */}
@@ -1177,8 +1173,8 @@ export const TaskManagement: React.FC = () => {
                 )}
               </div>
 
-              <div className={`grid grid-cols-1 ${formData.vehicle_status?.startsWith('HOLD') ? 'sm:grid-cols-2' : 'sm:grid-cols-4'} gap-3`}>
-                <div className={formData.vehicle_status?.startsWith('HOLD') ? 'sm:col-span-1' : 'sm:col-span-2'}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Driver 1 Employee *</label>
                   <select
                     required
@@ -1195,7 +1191,7 @@ export const TaskManagement: React.FC = () => {
                   </select>
                 </div>
 
-                <div className={formData.vehicle_status?.startsWith('HOLD') ? 'sm:col-span-1' : ''}>
+                <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
                     Salary Amount ₹ *{' '}
                     {formData.vehicle_status?.startsWith('HOLD') && (
@@ -1212,44 +1208,19 @@ export const TaskManagement: React.FC = () => {
                       if (formData.vehicle_status?.startsWith('HOLD')) return;
                       const val = e.target.value;
                       const sal = val === '' ? ('' as any) : Number(val);
-                      const adv = Number(formData.driver1?.advance_amount || 0);
                       setFormData({
                         ...formData,
                         driver1: {
                           ...formData.driver1!,
                           salary_amount: sal,
-                          balance_due: Math.max(0, Number(sal || 0) - adv)
+                          advance_amount: 0,
+                          balance_due: Number(sal || 0)
                         }
                       });
                     }}
                     className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') ? 'bg-amber-100/60 text-amber-900 border-amber-300 cursor-not-allowed' : 'bg-white'}`}
                   />
                 </div>
-
-                {!formData.vehicle_status?.startsWith('HOLD') && (
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Advance Paid ₹</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={formData.driver1?.advance_amount !== undefined && formData.driver1?.advance_amount !== null ? formData.driver1.advance_amount : ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const adv = val === '' ? 0 : Number(val);
-                        const sal = Number(formData.driver1?.salary_amount || 0);
-                        setFormData({
-                          ...formData,
-                          driver1: {
-                            ...formData.driver1!,
-                            advance_amount: adv,
-                            balance_due: Math.max(0, sal - adv)
-                          }
-                        });
-                      }}
-                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
-                    />
-                  </div>
-                )}
               </div>
 
               <div className="flex items-center justify-between text-[11px] pt-1 border-t border-amber-200/50">
@@ -1259,9 +1230,9 @@ export const TaskManagement: React.FC = () => {
                   </span>
                 ) : (
                   <span className="text-slate-500">
-                    Driver 1 Balance Due:{' '}
+                    Driver 1 Pay:{' '}
                     <strong className="text-slate-900 font-bold">
-                      ₹{Math.max(0, Number(formData.driver1?.salary_amount || 0) - Number(formData.driver1?.advance_amount || 0))}
+                      ₹{Number(formData.driver1?.salary_amount || 0)}
                     </strong>
                   </span>
                 )}
@@ -1285,8 +1256,8 @@ export const TaskManagement: React.FC = () => {
                 )}
               </div>
 
-              <div className={`grid grid-cols-1 ${formData.vehicle_status?.startsWith('HOLD') ? 'sm:grid-cols-2' : 'sm:grid-cols-4'} gap-3`}>
-                <div className={formData.vehicle_status?.startsWith('HOLD') ? 'sm:col-span-1' : 'sm:col-span-2'}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Driver 2 Employee</label>
                   <select
                     value={formData.driver2?.employee_name || ''}
@@ -1304,7 +1275,7 @@ export const TaskManagement: React.FC = () => {
                   </select>
                 </div>
 
-                <div className={formData.vehicle_status?.startsWith('HOLD') ? 'sm:col-span-1' : ''}>
+                <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
                     Salary Amount ₹{' '}
                     {formData.vehicle_status?.startsWith('HOLD') && (
@@ -1320,48 +1291,20 @@ export const TaskManagement: React.FC = () => {
                       if (formData.vehicle_status?.startsWith('HOLD')) return;
                       const val = e.target.value;
                       const sal = val === '' ? ('' as any) : Number(val);
-                      const adv = Number(formData.driver2?.advance_amount || 0);
                       setFormData({
                         ...formData,
                         driver2: {
                           employee_name: formData.driver2?.employee_name || '',
                           role: 'Driver',
                           salary_amount: sal,
-                          advance_amount: Number(formData.driver2?.advance_amount || 0),
-                          balance_due: Math.max(0, Number(sal || 0) - adv)
+                          advance_amount: 0,
+                          balance_due: Number(sal || 0)
                         }
                       });
                     }}
                     className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') ? 'bg-amber-100/60 text-amber-900 border-amber-300 cursor-not-allowed' : 'bg-white'}`}
                   />
                 </div>
-
-                {!formData.vehicle_status?.startsWith('HOLD') && (
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Advance Paid ₹</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={formData.driver2?.advance_amount !== undefined && formData.driver2?.advance_amount !== null ? formData.driver2.advance_amount : ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const adv = val === '' ? 0 : Number(val);
-                        const sal = Number(formData.driver2?.salary_amount || 0);
-                        setFormData({
-                          ...formData,
-                          driver2: {
-                            employee_name: formData.driver2?.employee_name || '',
-                            role: 'Driver',
-                            salary_amount: Number(formData.driver2?.salary_amount || 0),
-                            advance_amount: adv,
-                            balance_due: Math.max(0, sal - adv)
-                          }
-                        });
-                      }}
-                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
-                    />
-                  </div>
-                )}
               </div>
 
               <div className="flex items-center justify-between text-[11px] pt-1 border-t border-blue-200/50">
@@ -1371,9 +1314,9 @@ export const TaskManagement: React.FC = () => {
                   </span>
                 ) : (
                   <span className="text-slate-500">
-                    Driver 2 Balance Due:{' '}
+                    Driver 2 Pay:{' '}
                     <strong className="text-slate-900 font-bold">
-                      ₹{Math.max(0, Number(formData.driver2?.salary_amount || 0) - Number(formData.driver2?.advance_amount || 0))}
+                      ₹{Number(formData.driver2?.salary_amount || 0)}
                     </strong>
                   </span>
                 )}
@@ -1391,8 +1334,8 @@ export const TaskManagement: React.FC = () => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div className="sm:col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Helper Employee</label>
                   <select
                     value={formData.helper?.employee_name || ''}
@@ -1409,53 +1352,30 @@ export const TaskManagement: React.FC = () => {
                 </div>
 
                 {formData.helper?.employee_name && (
-                  <>
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Salary Amount ₹
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="Enter salary ₹"
-                        value={formData.helper?.salary_amount !== undefined && formData.helper?.salary_amount !== null ? formData.helper.salary_amount : ''}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const sal = val === '' ? ('' as any) : Number(val);
-                          const adv = Number(formData.helper?.advance_amount || 0);
-                          setFormData({
-                            ...formData,
-                            helper: {
-                              ...formData.helper!,
-                              salary_amount: sal,
-                              balance_due: Math.max(0, Number(sal || 0) - adv)
-                            }
-                          });
-                        }}
-                        className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Advance Paid ₹</label>
-                      <input
-                        type="number"
-                        value={formData.helper?.advance_amount || 0}
-                        onChange={(e) => {
-                          const adv = Number(e.target.value);
-                          const sal = Number(formData.helper?.salary_amount || 0);
-                          setFormData({
-                            ...formData,
-                            helper: {
-                              ...formData.helper!,
-                              advance_amount: adv,
-                              balance_due: Math.max(0, sal - adv)
-                            }
-                          });
-                        }}
-                        className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
-                      />
-                    </div>
-                  </>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Salary Amount ₹
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Enter salary ₹"
+                      value={formData.helper?.salary_amount !== undefined && formData.helper?.salary_amount !== null ? formData.helper.salary_amount : ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const sal = val === '' ? ('' as any) : Number(val);
+                        setFormData({
+                          ...formData,
+                          helper: {
+                            ...formData.helper!,
+                            salary_amount: sal,
+                            advance_amount: 0,
+                            balance_due: Number(sal || 0)
+                          }
+                        });
+                      }}
+                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
+                    />
+                  </div>
                 )}
               </div>
             </div>
@@ -1534,12 +1454,8 @@ export const TaskManagement: React.FC = () => {
           {/* Bottom Tally Bar & Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
             <div className="text-xs font-bold text-slate-700 flex items-center gap-2">
-              <span className="uppercase tracking-wider text-slate-400 text-[10px]">TALLY:</span>
-              <span className="font-black text-slate-900">₹{tally.totalSalary} Total</span>
-              <span>•</span>
-              <span className="text-amber-700 font-bold">₹{tally.totalAdv} Adv</span>
-              <span>•</span>
-              <span className="text-emerald-700 font-bold">₹{tally.totalDue} Due</span>
+              <span className="uppercase tracking-wider text-slate-400 text-[10px]">TOTAL CREW PAYOUT:</span>
+              <span className="font-black text-slate-900 text-sm">₹{tally.totalSalary}</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -1640,7 +1556,7 @@ export const TaskManagement: React.FC = () => {
                       <p className="font-bold text-slate-900 truncate">{t.driver1.employee_name}</p>
                       <div className="flex items-center gap-1">
                         <p className="text-[10px] text-slate-500">
-                          ₹{t.driver1.salary_amount} (Adv: ₹{t.driver1.advance_amount})
+                          ₹{t.driver1.salary_amount}
                         </p>
                         {t.vehicle_status.startsWith('HOLD') && (
                           <span className="text-[8px] font-black px-1 rounded bg-amber-100 text-amber-800">
@@ -1656,7 +1572,7 @@ export const TaskManagement: React.FC = () => {
                       {t.driver2?.employee_name && (
                         <div className="flex items-center gap-1">
                           <p className="text-[10px] text-slate-500">
-                            ₹{t.driver2.salary_amount} (Adv: ₹{t.driver2.advance_amount})
+                            ₹{t.driver2.salary_amount}
                           </p>
                           {t.vehicle_status.startsWith('HOLD') && (
                             <span className="text-[8px] font-black px-1 rounded bg-amber-100 text-amber-800">
