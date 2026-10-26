@@ -84,7 +84,7 @@ export const DriverRegistration: React.FC = () => {
     reference_alt_phone: '',
 
     // Step 7: Employment Details
-    employee_code: `EMP-DRV-00${Math.floor(10 + Math.random() * 90)}`,
+    employee_code: `EMP-DRV-${Math.floor(1000 + Math.random() * 9000)}`,
     employment_type: 'Permanent',
     salary: '',
     joining_date: new Date().toISOString().split('T')[0],

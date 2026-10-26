@@ -400,6 +400,16 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
   }
 
   // 5. EMPLOYEES CRUD
+  function isDummySeedEmployee(e: any): boolean {
+    if (!e) return false;
+    const code = String(e.employee_code || '').trim().toUpperCase();
+    const name = String(e.full_name || e.name || '').trim().toLowerCase();
+    if (code === 'EMP-DRV-001' && (name.includes('ramesh') || name.includes('kumar'))) return true;
+    if (code === 'EMP-CPT-001' && (name.includes('mohammad') || name.includes('rafiq'))) return true;
+    if (code === 'EMP-HLP-001' && (name.includes('suresh') || name.includes('reddy'))) return true;
+    return false;
+  }
+
   if (path === '/employees' || path.startsWith('/employees/')) {
     const parts = path.split('/').filter(Boolean);
     const isItemRoute = parts.length > 1;
@@ -415,66 +425,9 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
           list = getLocalCollection<any>('employees').filter(x => x?.is_archived !== 1);
         }
 
-        // If list is empty (fresh load), provide seed employees so the directory is never barren
-        if (!list || list.length === 0) {
-          list = [
-            {
-              id: 1,
-              employee_code: 'EMP-DRV-001',
-              role: 'Driver',
-              full_name: 'Ramesh Kumar',
-              gender: 'Male',
-              date_of_birth: '1985-06-15',
-              phone_number: '9848011223',
-              aadhaar_number: 'XXXX-XXXX-1234',
-              licence_number: 'TS0920150012345',
-              licence_validity_date: '2028-12-31',
-              licence_verification_status: 'Verified',
-              employment_type: 'Permanent',
-              salary: 28000,
-              employment_status: 'Active',
-              joining_date: '2023-01-10',
-              bank_name: 'State Bank of India',
-              is_archived: 0
-            },
-            {
-              id: 2,
-              employee_code: 'EMP-CPT-001',
-              role: 'Captain',
-              full_name: 'Mohammad Rafiq',
-              gender: 'Male',
-              date_of_birth: '1990-03-22',
-              phone_number: '9701055555',
-              aadhaar_number: 'XXXX-XXXX-5678',
-              licence_number: 'TS0920180056789',
-              licence_validity_date: '2029-05-15',
-              licence_verification_status: 'Verified',
-              employment_type: 'Permanent',
-              salary: 32000,
-              employment_status: 'Active',
-              joining_date: '2023-02-01',
-              bank_name: 'HDFC Bank',
-              is_archived: 0
-            },
-            {
-              id: 3,
-              employee_code: 'EMP-HLP-001',
-              role: 'Helper',
-              full_name: 'Suresh Reddy',
-              gender: 'Male',
-              date_of_birth: '1996-11-05',
-              phone_number: '9848033445',
-              aadhaar_number: 'XXXX-XXXX-9012',
-              employment_type: 'Temporary',
-              salary: 18000,
-              employment_status: 'Active',
-              joining_date: '2023-06-15',
-              bank_name: 'Andhra Bank',
-              is_archived: 0
-            }
-          ];
-          setLocalCollection('employees', list);
-        }
+        // Active cleanup: Purge any hardcoded dummy seed employees so user data is strictly shown
+        list = (list || []).filter(e => !isDummySeedEmployee(e));
+        setLocalCollection('employees', list);
 
         // Enrich & standardize
         let enriched = list.map(e => ({
@@ -518,7 +471,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
           created_at: new Date().toISOString()
         };
 
-        const list = getLocalCollection<any>('employees').filter(x => String(x.id) !== String(newId));
+        const list = getLocalCollection<any>('employees').filter(x => String(x.id) !== String(newId) && !isDummySeedEmployee(x));
         list.unshift(record);
         setLocalCollection('employees', list);
 

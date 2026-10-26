@@ -84,7 +84,7 @@ export const SupportStaffRegistration: React.FC = () => {
     reference_alt_phone: '',
 
     // Employment
-    employee_code: `EMP-HLP-00${Math.floor(10 + Math.random() * 90)}`,
+    employee_code: `EMP-STF-${Math.floor(1000 + Math.random() * 9000)}`,
     employment_type: 'Permanent',
     salary: '',
     joining_date: new Date().toISOString().split('T')[0],
