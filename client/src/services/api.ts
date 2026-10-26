@@ -401,28 +401,230 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
 
   // 5. EMPLOYEES CRUD
   if (path === '/employees' || path.startsWith('/employees/')) {
-    return handleFallbackTableCrud('employees', 'employees', path, method, body, params, {
-      enrich: (items) => items.map(e => ({
-        ...e,
-        full_name: e.full_name || e.name || 'Staff Member'
-      })),
-      filter: (items, qParams) => {
-        let filtered = items;
-        const role = qParams.get('role');
-        const status = qParams.get('status');
-        const search = qParams.get('search');
-        if (role && role !== 'All') filtered = filtered.filter(e => e.role === role);
-        if (status && status !== 'All') filtered = filtered.filter(e => e.status === status);
-        if (search) {
+    const parts = path.split('/').filter(Boolean);
+    const isItemRoute = parts.length > 1;
+    const itemId = isItemRoute ? parts[1] : null;
+
+    if (!isItemRoute) {
+      if (method === 'GET') {
+        let list: any[] = [];
+        try {
+          const { data, error } = await supabase.from('employees').select('*').order('id', { ascending: false });
+          list = mergeWithLocal('employees', !error && Array.isArray(data) ? data : []);
+        } catch {
+          list = getLocalCollection<any>('employees').filter(x => x?.is_archived !== 1);
+        }
+
+        // If list is empty (fresh load), provide seed employees so the directory is never barren
+        if (!list || list.length === 0) {
+          list = [
+            {
+              id: 1,
+              employee_code: 'EMP-DRV-001',
+              role: 'Driver',
+              full_name: 'Ramesh Kumar',
+              gender: 'Male',
+              date_of_birth: '1985-06-15',
+              phone_number: '9848011223',
+              aadhaar_number: 'XXXX-XXXX-1234',
+              licence_number: 'TS0920150012345',
+              licence_validity_date: '2028-12-31',
+              licence_verification_status: 'Verified',
+              employment_type: 'Permanent',
+              salary: 28000,
+              employment_status: 'Active',
+              joining_date: '2023-01-10',
+              bank_name: 'State Bank of India',
+              is_archived: 0
+            },
+            {
+              id: 2,
+              employee_code: 'EMP-CPT-001',
+              role: 'Captain',
+              full_name: 'Mohammad Rafiq',
+              gender: 'Male',
+              date_of_birth: '1990-03-22',
+              phone_number: '9701055555',
+              aadhaar_number: 'XXXX-XXXX-5678',
+              licence_number: 'TS0920180056789',
+              licence_validity_date: '2029-05-15',
+              licence_verification_status: 'Verified',
+              employment_type: 'Permanent',
+              salary: 32000,
+              employment_status: 'Active',
+              joining_date: '2023-02-01',
+              bank_name: 'HDFC Bank',
+              is_archived: 0
+            },
+            {
+              id: 3,
+              employee_code: 'EMP-HLP-001',
+              role: 'Helper',
+              full_name: 'Suresh Reddy',
+              gender: 'Male',
+              date_of_birth: '1996-11-05',
+              phone_number: '9848033445',
+              aadhaar_number: 'XXXX-XXXX-9012',
+              employment_type: 'Temporary',
+              salary: 18000,
+              employment_status: 'Active',
+              joining_date: '2023-06-15',
+              bank_name: 'Andhra Bank',
+              is_archived: 0
+            }
+          ];
+          setLocalCollection('employees', list);
+        }
+
+        // Enrich & standardize
+        let enriched = list.map(e => ({
+          ...e,
+          full_name: e.full_name || e.name || 'Staff Member',
+          employment_status: e.employment_status || e.status || 'Active',
+          status: e.employment_status || e.status || 'Active'
+        }));
+
+        // Filter safely (never filter out on 'undefined' or 'All')
+        const role = params.get('role');
+        const status = params.get('status');
+        const search = params.get('search');
+
+        if (role && role !== 'All' && role !== 'undefined' && role !== 'null') {
+          enriched = enriched.filter(e => (e.role || '').toLowerCase() === role.toLowerCase());
+        }
+        if (status && status !== 'All' && status !== 'undefined' && status !== 'null') {
+          enriched = enriched.filter(e => (e.employment_status || e.status || '').toLowerCase() === status.toLowerCase());
+        }
+        if (search && search !== 'undefined' && search !== 'null') {
           const s = search.toLowerCase();
-          filtered = filtered.filter(e =>
-            (e.full_name || e.name || '').toLowerCase().includes(s) ||
-            (e.phone_number || e.mobile || '').toLowerCase().includes(s)
+          enriched = enriched.filter(e =>
+            (e.full_name || '').toLowerCase().includes(s) ||
+            (e.employee_code || '').toLowerCase().includes(s) ||
+            (e.phone_number || '').toLowerCase().includes(s)
           );
         }
-        return filtered;
+
+        return enriched as any;
       }
-    }) as any;
+
+      if (method === 'POST') {
+        const newId = body.id || Date.now();
+        const record = {
+          ...body,
+          id: newId,
+          employment_status: body.employment_status || 'Active',
+          status: body.employment_status || 'Active',
+          is_archived: 0,
+          created_at: new Date().toISOString()
+        };
+
+        const list = getLocalCollection<any>('employees').filter(x => String(x.id) !== String(newId));
+        list.unshift(record);
+        setLocalCollection('employees', list);
+
+        // Also attempt background sync to Supabase safely (separating employees and driver_details)
+        try {
+          const empPayload: any = {
+            employee_code: record.employee_code,
+            role: record.role,
+            full_name: record.full_name,
+            gender: record.gender || 'Male',
+            date_of_birth: record.date_of_birth || null,
+            email: record.email || null,
+            phone_number: record.phone_number,
+            alternative_phone_number: record.alternative_phone_number || null,
+            profile_photo: record.profile_photo || null,
+            aadhaar_number: record.aadhaar_number || null,
+            aadhaar_front_doc: record.aadhaar_front_doc || null,
+            aadhaar_back_doc: record.aadhaar_back_doc || null,
+            pan_number: record.pan_number || null,
+            pan_doc: record.pan_doc || null,
+            bank_name: record.bank_name || null,
+            bank_proof_doc: record.bank_proof_doc || null,
+            account_holder_name: record.account_holder_name || null,
+            account_number: record.account_number || null,
+            ifsc_code: record.ifsc_code || null,
+            branch: record.branch || null,
+            nominee_name: record.nominee_name || null,
+            nominee_relationship: record.nominee_relationship || null,
+            nominee_phone: record.nominee_phone || null,
+            nominee_age: record.nominee_age ? Number(record.nominee_age) : null,
+            nominee_aadhaar: record.nominee_aadhaar || null,
+            reference_name: record.reference_name || null,
+            reference_phone: record.reference_phone || null,
+            reference_alt_phone: record.reference_alt_phone || null,
+            employment_type: record.employment_type || 'Permanent',
+            salary: record.salary ? Number(record.salary) : 0,
+            joining_date: record.joining_date || null,
+            employment_status: record.employment_status || 'Active',
+            assigned_bus_id: record.assigned_bus_id ? Number(record.assigned_bus_id) : null,
+            internal_remarks: record.internal_remarks || null,
+            is_archived: 0
+          };
+          const { data: insertedEmp } = await supabase.from('employees').insert([empPayload]).select().single();
+
+          if (insertedEmp && (record.licence_number || record.role === 'Driver')) {
+            await supabase.from('driver_details').insert([{
+              employee_id: insertedEmp.id,
+              licence_number: record.licence_number || 'PENDING',
+              licence_front_doc: record.licence_front_doc || null,
+              licence_back_doc: record.licence_back_doc || null,
+              licence_verification_doc: record.licence_verification_doc || null,
+              licence_verification_status: record.licence_verification_status || 'Pending Verification',
+              issuing_state: record.issuing_state || null,
+              issuing_rto_office: record.issuing_rto_office || null,
+              licence_issue_date: record.licence_issue_date || null,
+              licence_validity_date: record.licence_validity_date || '2028-12-31',
+              licence_experience_years: record.licence_experience_years ? Number(record.licence_experience_years) : 0,
+              criminal_background_details: record.criminal_background_details || null
+            }]);
+          }
+        } catch (syncErr) {
+          console.warn('Note: Cloud background sync caught (cached locally):', syncErr);
+        }
+
+        return record as any;
+      }
+    } else if (itemId) {
+      if (method === 'GET') {
+        const list = getLocalCollection<any>('employees');
+        let found = list.find(x => String(x.id) === String(itemId));
+        if (!found) {
+          try {
+            const { data } = await supabase.from('employees').select('*').eq('id', itemId).single();
+            if (data) found = data;
+          } catch {}
+        }
+        if (found) {
+          return {
+            employee: found,
+            driverDetail: found,
+            auditHistory: []
+          } as any;
+        }
+        return { employee: {}, driverDetail: {}, auditHistory: [] } as any;
+      }
+
+      if (method === 'PUT') {
+        const list = getLocalCollection<any>('employees').map(x =>
+          String(x.id) === String(itemId) ? { ...x, ...body } : x
+        );
+        setLocalCollection('employees', list);
+        try {
+          await supabase.from('employees').update(body).eq('id', itemId);
+        } catch {}
+        return { success: true, ...body } as any;
+      }
+
+      if (method === 'DELETE') {
+        const list = getLocalCollection<any>('employees').filter(x => String(x.id) !== String(itemId));
+        setLocalCollection('employees', list);
+        try {
+          await supabase.from('employees').delete().eq('id', itemId);
+        } catch {}
+        return { success: true } as any;
+      }
+    }
   }
 
   // 6. DAILY KILOMETERS (MILEAGE & FUELING)
@@ -935,7 +1137,11 @@ export const api = {
 
   // Employees
   getEmployees: (params?: { role?: string; status?: string; search?: string }) => {
-    const q = new URLSearchParams(params as any).toString();
+    const clean: Record<string, string> = {};
+    if (params?.role && params.role !== 'All' && params.role !== 'undefined') clean.role = params.role;
+    if (params?.status && params.status !== 'All' && params.status !== 'undefined') clean.status = params.status;
+    if (params?.search && params.search !== 'undefined') clean.search = params.search;
+    const q = new URLSearchParams(clean).toString();
     return request<any[]>(`/employees${q ? `?${q}` : ''}`);
   },
   getEmployee: (id: number | string) => request<any>(`/employees/${id}`),

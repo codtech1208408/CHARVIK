@@ -348,12 +348,14 @@ export const EmployeeManagement: React.FC = () => {
     }
   };
 
-  const filteredEmployees = employees.filter((e) => {
-    const s = searchTerm.toLowerCase();
+  const filteredEmployees = (employees || []).filter((e) => {
+    if (!e) return false;
+    const s = searchTerm.trim().toLowerCase();
+    if (!s) return true;
     return (
-      e.full_name.toLowerCase().includes(s) ||
-      e.employee_code.toLowerCase().includes(s) ||
-      e.phone_number.includes(s)
+      (e.full_name || '').toLowerCase().includes(s) ||
+      (e.employee_code || '').toLowerCase().includes(s) ||
+      (e.phone_number || '').includes(s)
     );
   });
 
