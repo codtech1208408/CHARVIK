@@ -63,3 +63,10 @@ CREATE POLICY "anon_all_inspections" ON bus_condition_inspections FOR ALL TO ano
 ALTER TABLE administrators ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "anon_all_administrators" ON administrators;
 CREATE POLICY "anon_all_administrators" ON administrators FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- 13. Driver Details
+ALTER TABLE driver_details ADD COLUMN IF NOT EXISTS licence_verification_doc TEXT;
+ALTER TABLE driver_details ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon_all_driver_details" ON driver_details;
+CREATE POLICY "anon_all_driver_details" ON driver_details FOR ALL TO anon USING (true) WITH CHECK (true);
+

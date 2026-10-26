@@ -60,6 +60,7 @@ export const DriverRegistration: React.FC = () => {
     licence_experience_years: '',
     criminal_background_details: '',
     licence_verification_status: 'Pending Verification',
+    licence_verification_doc: '',
 
     // Step 4: Bank Details
     bank_name: '',
@@ -390,38 +391,60 @@ export const DriverRegistration: React.FC = () => {
                 </div>
               </div>
 
-              {/* Upload Photo File (Aadhaar front back ) & Upload Photo File (PAN Card) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              {/* Upload Photo Files: Aadhaar Front, Aadhaar Back, and PAN Card */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                {/* Aadhaar Card Front */}
                 <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                  <Upload className="w-6 h-6 text-slate-400 mb-2" />
-                  <p className="text-xs font-bold text-slate-700">Upload Photo File (Aadhaar front back )</p>
-                  <p className="text-[11px] text-slate-400 mb-2">Upload Front and/or Back side</p>
+                  <Upload className="w-6 h-6 text-blue-600 mb-2" />
+                  <p className="text-xs font-bold text-slate-700">Aadhaar Card (Front Side) *</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Upload Front side photo</p>
                   <div className="space-y-1.5 w-full">
                     <input
                       type="file"
                       accept="image/*,.pdf"
                       onChange={(e) => handleFileUpload('aadhaar_front_doc', e)}
-                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
                     />
                     {formData.aadhaar_front_doc && (
-                      <p className="text-[10px] text-emerald-600 font-bold">✓ Aadhaar file attached</p>
+                      <p className="text-[10px] text-emerald-600 font-bold">✓ Front side attached</p>
                     )}
                   </div>
                 </div>
 
+                {/* Aadhaar Card Back */}
+                <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
+                  <Upload className="w-6 h-6 text-blue-600 mb-2" />
+                  <p className="text-xs font-bold text-slate-700">Aadhaar Card (Back Side) *</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Upload Back side photo</p>
+                  <div className="space-y-1.5 w-full">
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileUpload('aadhaar_back_doc', e)}
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                    />
+                    {formData.aadhaar_back_doc && (
+                      <p className="text-[10px] text-emerald-600 font-bold">✓ Back side attached</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* PAN Card */}
                 <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
                   <Upload className="w-6 h-6 text-slate-400 mb-2" />
                   <p className="text-xs font-bold text-slate-700">Upload Photo File (PAN Card)</p>
                   <p className="text-[11px] text-slate-400 mb-2">Upload clear photo of PAN Card</p>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={(e) => handleFileUpload('pan_doc', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
-                  />
-                  {formData.pan_doc && (
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ PAN Card file attached</p>
-                  )}
+                  <div className="space-y-1.5 w-full">
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileUpload('pan_doc', e)}
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                    />
+                    {formData.pan_doc && (
+                      <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ PAN Card file attached</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -532,6 +555,24 @@ export const DriverRegistration: React.FC = () => {
                 </div>
               </div>
 
+              {/* Licence Verification Proof / Photo Upload */}
+              <div className="p-4 rounded-xl border border-dashed border-blue-200 bg-blue-50/40 flex flex-col items-center text-center">
+                <Upload className="w-6 h-6 text-blue-600 mb-1.5" />
+                <p className="text-xs font-bold text-slate-800">Upload Photo to Verify Licence (Sarathi Portal / Proof Photo)</p>
+                <p className="text-[11px] text-slate-500 mb-2">Upload screenshot from Sarathi Parivahan portal or verification certificate</p>
+                <div className="space-y-1.5 w-full max-w-md">
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => handleFileUpload('licence_verification_doc', e)}
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer w-full"
+                  />
+                  {formData.licence_verification_doc && (
+                    <p className="text-[10px] text-emerald-600 font-bold">✓ Licence verification proof photo attached</p>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Any Criminal Background As Per Licence
@@ -545,19 +586,41 @@ export const DriverRegistration: React.FC = () => {
                 />
               </div>
 
-              <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                <Upload className="w-6 h-6 text-slate-400 mb-2" />
-                <p className="text-xs font-bold text-slate-700">Upload Photo File (DL front back)</p>
-                <p className="text-[11px] text-slate-400 mb-2">Upload DL photo (Front & Back)</p>
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => handleFileUpload('licence_front_doc', e)}
-                  className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
-                />
-                {formData.licence_front_doc && (
-                  <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Driving Licence document attached</p>
-                )}
+              {/* Driving Licence Photos (Front & Back) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
+                  <Upload className="w-6 h-6 text-blue-600 mb-2" />
+                  <p className="text-xs font-bold text-slate-700">Driving Licence (Front Side) *</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Upload clear photo of DL Front</p>
+                  <div className="space-y-1.5 w-full">
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileUpload('licence_front_doc', e)}
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                    />
+                    {formData.licence_front_doc && (
+                      <p className="text-[10px] text-emerald-600 font-bold">✓ DL Front side attached</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
+                  <Upload className="w-6 h-6 text-blue-600 mb-2" />
+                  <p className="text-xs font-bold text-slate-700">Driving Licence (Back Side) *</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Upload clear photo of DL Back</p>
+                  <div className="space-y-1.5 w-full">
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileUpload('licence_back_doc', e)}
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                    />
+                    {formData.licence_back_doc && (
+                      <p className="text-[10px] text-emerald-600 font-bold">✓ DL Back side attached</p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1021,13 +1084,25 @@ export const DriverRegistration: React.FC = () => {
                   <td className="p-2.5 font-mono">{formData.aadhaar_number || '-'}</td>
                 </tr>
 
-                {/* 9. Upload Photo File (Aadhaar front back ) */}
+                {/* 9. Upload Aadhaar Front & Back */}
                 <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Upload Photo File (Aadhaar front back )</td>
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Card (Front Side)</td>
                   <td className="p-2.5">
                     {formData.aadhaar_front_doc ? (
                       <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Aadhaar File Uploaded
+                        ✓ Front Uploaded
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Uploaded</span>
+                    )}
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Card (Back Side)</td>
+                  <td className="p-2.5">
+                    {formData.aadhaar_back_doc ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ✓ Back Uploaded
                       </span>
                     ) : (
                       <span className="text-slate-400 italic">Not Uploaded</span>
@@ -1062,11 +1137,43 @@ export const DriverRegistration: React.FC = () => {
                   </td>
                 </tr>
                 <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Upload Photo File (DL front back)</td>
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Front Side)</td>
                   <td className="p-2.5">
                     {formData.licence_front_doc ? (
                       <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ DL File Uploaded
+                        ✓ Front Uploaded
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Uploaded</span>
+                    )}
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Back Side)</td>
+                  <td className="p-2.5">
+                    {formData.licence_back_doc ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ✓ Back Uploaded
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Uploaded</span>
+                    )}
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Licence Verification Status</td>
+                  <td className="p-2.5">
+                    <span className="px-2 py-0.5 rounded font-bold text-xs bg-blue-50 text-blue-700 border border-blue-200">
+                      {formData.licence_verification_status || 'Pending Verification'}
+                    </span>
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Licence Verification Photo / Proof</td>
+                  <td className="p-2.5">
+                    {formData.licence_verification_doc ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ✓ Verification Photo Attached
                       </span>
                     ) : (
                       <span className="text-slate-400 italic">Not Uploaded</span>

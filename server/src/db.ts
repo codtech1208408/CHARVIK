@@ -98,6 +98,7 @@ export function initDatabase() {
       licence_experience_years INTEGER DEFAULT 0,
       criminal_background_details TEXT,
       licence_verification_status TEXT DEFAULT 'Verified', -- 'Not Verified', 'Pending Verification', 'Verified', 'Rejected', 'Expired'
+      licence_verification_doc TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -437,6 +438,13 @@ export function initDatabase() {
   } catch (e) {}
   try {
     db.exec('ALTER TABLE buses ADD COLUMN aitp_valid_upto DATE;');
+  } catch (e) {}
+
+  try {
+    db.exec('ALTER TABLE driver_details ADD COLUMN licence_verification_doc TEXT;');
+  } catch (e) {}
+  try {
+    db.exec('ALTER TABLE employees ADD COLUMN licence_verification_doc TEXT;');
   } catch (e) {}
 
   try {

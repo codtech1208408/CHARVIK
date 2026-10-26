@@ -122,7 +122,8 @@ export const EmployeeManagement: React.FC = () => {
     licence_validity_date: '',
     licence_experience_years: 0,
     criminal_background_details: '',
-    licence_verification_status: 'Verified'
+    licence_verification_status: 'Verified',
+    licence_verification_doc: ''
   });
 
   useEffect(() => {
@@ -302,7 +303,8 @@ export const EmployeeManagement: React.FC = () => {
         licence_validity_date: d.licence_validity_date || '',
         licence_experience_years: d.licence_experience_years || 0,
         criminal_background_details: d.criminal_background_details || '',
-        licence_verification_status: d.licence_verification_status || 'Verified'
+        licence_verification_status: d.licence_verification_status || 'Verified',
+        licence_verification_doc: d.licence_verification_doc || ''
       });
       setEditTab('personal');
       setIsEditOpen(true);
@@ -1207,8 +1209,8 @@ export const EmployeeManagement: React.FC = () => {
                       </td>
                     </tr>
 
-                    {/* 12. If Driver: Driving Licence Details */}
-                    {viewingProfile.employee.role === 'Driver' && (
+                    {/* 12. If Driver or Captain or Licence provided */}
+                    {(viewingProfile.employee.role === 'Driver' || viewingProfile.driverDetail?.licence_number || viewingProfile.employee.licence_number) && (
                       <>
                         <tr className="bg-slate-100 font-black text-slate-800">
                           <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
@@ -1216,39 +1218,71 @@ export const EmployeeManagement: React.FC = () => {
                           </td>
                         </tr>
                         <tr className="hover:bg-slate-50">
-                          <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Upload Photo File (DL front back)</td>
+                          <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Front Side)</td>
                           <td className="p-2.5">
-                            {viewingProfile.driverDetail?.licence_front_doc || viewingProfile.driverDetail?.licence_back_doc ? (
-                              <div className="flex items-center gap-2">
-                                {viewingProfile.driverDetail?.licence_front_doc && (
-                                  <button
-                                    onClick={() =>
-                                      setViewingDocModal({
-                                        title: 'Driving Licence (Front)',
-                                        url: viewingProfile.driverDetail.licence_front_doc
-                                      })
-                                    }
-                                    className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                                  >
-                                    <Eye className="w-3 h-3" />
-                                    <span>DL Front</span>
-                                  </button>
-                                )}
-                                {viewingProfile.driverDetail?.licence_back_doc && (
-                                  <button
-                                    onClick={() =>
-                                      setViewingDocModal({
-                                        title: 'Driving Licence (Back)',
-                                        url: viewingProfile.driverDetail.licence_back_doc
-                                      })
-                                    }
-                                    className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                                  >
-                                    <Eye className="w-3 h-3" />
-                                    <span>DL Back</span>
-                                  </button>
-                                )}
-                              </div>
+                            {viewingProfile.driverDetail?.licence_front_doc ? (
+                              <button
+                                onClick={() =>
+                                  setViewingDocModal({
+                                    title: 'Driving Licence (Front)',
+                                    url: viewingProfile.driverDetail.licence_front_doc
+                                  })
+                                }
+                                className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>DL Front</span>
+                              </button>
+                            ) : (
+                              <span className="text-slate-400 italic">Not Uploaded</span>
+                            )}
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Back Side)</td>
+                          <td className="p-2.5">
+                            {viewingProfile.driverDetail?.licence_back_doc ? (
+                              <button
+                                onClick={() =>
+                                  setViewingDocModal({
+                                    title: 'Driving Licence (Back)',
+                                    url: viewingProfile.driverDetail.licence_back_doc
+                                  })
+                                }
+                                className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>DL Back</span>
+                              </button>
+                            ) : (
+                              <span className="text-slate-400 italic">Not Uploaded</span>
+                            )}
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Licence Verification Status</td>
+                          <td className="p-2.5">
+                            <span className="px-2 py-0.5 rounded font-bold text-xs bg-blue-50 text-blue-700 border border-blue-200">
+                              {viewingProfile.driverDetail?.licence_verification_status || 'Pending Verification'}
+                            </span>
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-slate-50">
+                          <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Photo to Verify Licence</td>
+                          <td className="p-2.5">
+                            {viewingProfile.driverDetail?.licence_verification_doc ? (
+                              <button
+                                onClick={() =>
+                                  setViewingDocModal({
+                                    title: 'Licence Verification Proof Photo',
+                                    url: viewingProfile.driverDetail.licence_verification_doc
+                                  })
+                                }
+                                className="px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>View Verification Photo</span>
+                              </button>
                             ) : (
                               <span className="text-slate-400 italic">Not Uploaded</span>
                             )}
@@ -1492,6 +1526,20 @@ export const EmployeeManagement: React.FC = () => {
                             <span>View Aadhaar Front</span>
                           </button>
                         )}
+                        {viewingProfile.employee.aadhaar_back_doc && (
+                          <button
+                            onClick={() =>
+                              setViewingDocModal({
+                                title: 'Aadhaar Card Back',
+                                url: viewingProfile.employee.aadhaar_back_doc
+                              })
+                            }
+                            className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-blue-700 font-bold flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>View Aadhaar Back</span>
+                          </button>
+                        )}
                         {viewingProfile.employee.pan_doc && (
                           <button
                             onClick={() =>
@@ -1511,15 +1559,61 @@ export const EmployeeManagement: React.FC = () => {
                   )}
 
                   {activeTab === 'licence' && viewingProfile.driverDetail && (
-                    <div className="grid grid-cols-2 gap-3 leading-relaxed">
-                      <div><strong>Licence Number:</strong> {viewingProfile.driverDetail.licence_number}</div>
-                      <div><strong>Issuing State:</strong> {viewingProfile.driverDetail.issuing_state}</div>
-                      <div><strong>Issued RTO:</strong> {viewingProfile.driverDetail.issuing_rto_office}</div>
-                      <div><strong>Issue Date:</strong> {viewingProfile.driverDetail.licence_issue_date || '-'}</div>
-                      <div><strong>Validity Date (TRANS):</strong> <span className="font-bold text-blue-700">{viewingProfile.driverDetail.licence_validity_date}</span></div>
-                      <div><strong>Total Driving Experience:</strong> {viewingProfile.driverDetail.licence_experience_years} Years</div>
-                      <div><strong>Verification Status:</strong> <Badge status={viewingProfile.driverDetail.licence_verification_status} /></div>
-                      <div className="col-span-2"><strong>Background Check:</strong> {viewingProfile.driverDetail.criminal_background_details || 'Clean'}</div>
+                    <div className="space-y-3 leading-relaxed">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div><strong>Licence Number:</strong> {viewingProfile.driverDetail.licence_number}</div>
+                        <div><strong>Issuing State:</strong> {viewingProfile.driverDetail.issuing_state}</div>
+                        <div><strong>Issued RTO:</strong> {viewingProfile.driverDetail.issuing_rto_office}</div>
+                        <div><strong>Issue Date:</strong> {viewingProfile.driverDetail.licence_issue_date || '-'}</div>
+                        <div><strong>Validity Date (TRANS):</strong> <span className="font-bold text-blue-700">{viewingProfile.driverDetail.licence_validity_date}</span></div>
+                        <div><strong>Total Driving Experience:</strong> {viewingProfile.driverDetail.licence_experience_years} Years</div>
+                        <div><strong>Verification Status:</strong> <Badge status={viewingProfile.driverDetail.licence_verification_status} /></div>
+                        <div className="col-span-2"><strong>Background Check:</strong> {viewingProfile.driverDetail.criminal_background_details || 'Clean'}</div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                        {viewingProfile.driverDetail.licence_front_doc && (
+                          <button
+                            onClick={() =>
+                              setViewingDocModal({
+                                title: 'Driving Licence Front',
+                                url: viewingProfile.driverDetail.licence_front_doc
+                              })
+                            }
+                            className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-blue-700 font-bold flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>View DL Front</span>
+                          </button>
+                        )}
+                        {viewingProfile.driverDetail.licence_back_doc && (
+                          <button
+                            onClick={() =>
+                              setViewingDocModal({
+                                title: 'Driving Licence Back',
+                                url: viewingProfile.driverDetail.licence_back_doc
+                              })
+                            }
+                            className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-blue-700 font-bold flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>View DL Back</span>
+                          </button>
+                        )}
+                        {viewingProfile.driverDetail.licence_verification_doc && (
+                          <button
+                            onClick={() =>
+                              setViewingDocModal({
+                                title: 'Licence Verification Proof Photo',
+                                url: viewingProfile.driverDetail.licence_verification_doc
+                              })
+                            }
+                            className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-emerald-700 font-bold flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>View Verification Photo</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -1597,7 +1691,7 @@ export const EmployeeManagement: React.FC = () => {
             {[
               { id: 'personal', label: '1. Personal & Photo' },
               { id: 'identity', label: '2. Identity & Documents' },
-              ...(editingEmployee?.role === 'Driver' ? [{ id: 'licence', label: '3. Driving Licence' }] : []),
+              ...(editingEmployee?.role === 'Driver' || editingEmployee?.role === 'Captain' || editFormData.licence_number ? [{ id: 'licence', label: '3. Driving Licence' }] : []),
               { id: 'bank', label: 'Bank Details' },
               { id: 'nominee', label: 'Nominee' },
               { id: 'references', label: 'References' },
@@ -1812,8 +1906,8 @@ export const EmployeeManagement: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 3: Driving Licence (Drivers only) */}
-          {editTab === 'licence' && editingEmployee?.role === 'Driver' && (
+          {/* TAB 3: Driving Licence */}
+          {editTab === 'licence' && (editingEmployee?.role === 'Driver' || editingEmployee?.role === 'Captain' || editFormData.licence_number) && (
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                 <h4 className="text-xs font-bold text-[#142B4A] uppercase tracking-wider">Driving Licence Details</h4>
@@ -1829,10 +1923,26 @@ export const EmployeeManagement: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Upload Photo File (DL front back)</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Licence Verification Status</label>
+                    <select
+                      value={editFormData.licence_verification_status}
+                      onChange={(e) => setEditFormData({ ...editFormData, licence_verification_status: e.target.value })}
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none font-medium"
+                    >
+                      <option value="Verified (Official Sarathi Portal)">Verified (Official Sarathi Portal)</option>
+                      <option value="Pending Verification">Pending Verification</option>
+                      <option value="Not Verified">Not Verified</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* DL Front, DL Back, and Licence Verification Photo Uploads */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Driving Licence (Front Side)</label>
                     <label className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 cursor-pointer flex items-center gap-1.5 justify-center">
                       <Upload className="w-3.5 h-3.5 text-blue-600" />
-                      <span>{editFormData.licence_front_doc ? 'DL File Uploaded ✓' : 'Upload DL Document'}</span>
+                      <span>{editFormData.licence_front_doc ? 'Front Uploaded ✓' : 'Upload DL Front'}</span>
                       <input
                         type="file"
                         accept="image/*,application/pdf"
@@ -1844,6 +1954,43 @@ export const EmployeeManagement: React.FC = () => {
                       />
                     </label>
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Driving Licence (Back Side)</label>
+                    <label className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 cursor-pointer flex items-center gap-1.5 justify-center">
+                      <Upload className="w-3.5 h-3.5 text-blue-600" />
+                      <span>{editFormData.licence_back_doc ? 'Back Uploaded ✓' : 'Upload DL Back'}</span>
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleUploadEditFile('licence_back_doc', f);
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#142B4A] mb-1">Photo to Verify Licence</label>
+                    <label className="w-full px-3 py-2 rounded-lg bg-blue-50 border border-blue-300 text-xs font-bold text-blue-700 hover:bg-blue-100 cursor-pointer flex items-center gap-1.5 justify-center">
+                      <Upload className="w-3.5 h-3.5 text-blue-600" />
+                      <span>{editFormData.licence_verification_doc ? 'Photo Uploaded ✓' : 'Upload Verification Photo'}</span>
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleUploadEditFile('licence_verification_doc', f);
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Issued By State</label>

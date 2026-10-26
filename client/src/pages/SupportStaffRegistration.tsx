@@ -48,6 +48,19 @@ export const SupportStaffRegistration: React.FC = () => {
     pan_number: '',
     pan_doc: '',
 
+    // Driving Licence Details & Verification Photo (Required for Captain, optional for Helper)
+    licence_number: '',
+    licence_front_doc: '',
+    licence_back_doc: '',
+    licence_verification_status: 'Pending Verification',
+    licence_verification_doc: '',
+    issuing_state: '',
+    issuing_rto_office: '',
+    licence_issue_date: '',
+    licence_validity_date: '',
+    licence_experience_years: 0,
+    criminal_background_details: '',
+
     // Bank Details
     bank_name: '',
     bank_proof_doc: '',
@@ -407,36 +420,169 @@ export const SupportStaffRegistration: React.FC = () => {
                 </div>
               </div>
 
-              {/* 9. Upload Photo File (Aadhaar front back ) & 11. Upload Photo File (PAN Card) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              {/* Identity Documents Upload (Aadhaar Front, Aadhaar Back, PAN Card) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                {/* Aadhaar Front */}
                 <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                  <Upload className="w-6 h-6 text-slate-400 mb-2" />
-                  <p className="text-xs font-bold text-slate-700">Upload Photo File (Aadhaar front back )</p>
-                  <p className="text-[11px] text-slate-400 mb-2">Upload Front and/or Back side</p>
+                  <Upload className="w-6 h-6 text-slate-400 mb-1" />
+                  <p className="text-xs font-bold text-slate-700">Aadhaar Card (Front Side)</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Upload Front photo</p>
                   <input
                     type="file"
                     accept="image/*,.pdf"
                     onChange={(e) => handleFileUpload('aadhaar_front_doc', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
                   />
                   {formData.aadhaar_front_doc && (
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Aadhaar file attached</p>
+                    <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Front side attached</p>
                   )}
                 </div>
 
+                {/* Aadhaar Back */}
                 <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                  <Upload className="w-6 h-6 text-slate-400 mb-2" />
+                  <Upload className="w-6 h-6 text-slate-400 mb-1" />
+                  <p className="text-xs font-bold text-slate-700">Aadhaar Card (Back Side)</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Upload Back photo</p>
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => handleFileUpload('aadhaar_back_doc', e)}
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                  />
+                  {formData.aadhaar_back_doc && (
+                    <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Back side attached</p>
+                  )}
+                </div>
+
+                {/* PAN Card */}
+                <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
+                  <Upload className="w-6 h-6 text-slate-400 mb-1" />
                   <p className="text-xs font-bold text-slate-700">Upload Photo File (PAN Card)</p>
-                  <p className="text-[11px] text-slate-400 mb-2">Upload clear photo of PAN Card</p>
+                  <p className="text-[11px] text-slate-400 mb-2">Clear photo of PAN</p>
                   <input
                     type="file"
                     accept="image/*,.pdf"
                     onChange={(e) => handleFileUpload('pan_doc', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
                   />
                   {formData.pan_doc && (
                     <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ PAN Card file attached</p>
                   )}
+                </div>
+              </div>
+
+              {/* Driving Licence & Verification Photo Section */}
+              <div className="mt-6 pt-5 border-t border-slate-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="text-xs font-bold text-[#142B4A] uppercase tracking-wider">
+                      Driving Licence &amp; Verification Details
+                    </h4>
+                    <p className="text-[11px] text-slate-500">
+                      {formData.role === 'Captain' ? 'Required for Bus Captain registration' : 'Optional for Helper (if licence available)'}
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                    {formData.role === 'Captain' ? 'Recommended for Captain' : 'Optional'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Driving Licence Number</label>
+                    <input
+                      type="text"
+                      value={formData.licence_number}
+                      onChange={(e) => handleInputChange('licence_number', e.target.value.toUpperCase())}
+                      placeholder="e.g. TS0920210012345"
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono uppercase"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Licence Verification Status</label>
+                    <select
+                      value={formData.licence_verification_status}
+                      onChange={(e) => handleInputChange('licence_verification_status', e.target.value)}
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-medium"
+                    >
+                      <option value="Verified (Official Sarathi Portal)">Verified (Official Sarathi Portal)</option>
+                      <option value="Pending Verification">Pending Verification</option>
+                      <option value="Not Verified">Not Verified</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Issued By State</label>
+                    <input
+                      type="text"
+                      value={formData.issuing_state}
+                      onChange={(e) => handleInputChange('issuing_state', e.target.value)}
+                      placeholder="e.g. Telangana / AP"
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Validity Date (TRANS)</label>
+                    <input
+                      type="date"
+                      value={formData.licence_validity_date}
+                      onChange={(e) => handleInputChange('licence_validity_date', e.target.value)}
+                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-bold text-blue-700"
+                    />
+                  </div>
+                </div>
+
+                {/* DL Front, DL Back, and Licence Verification Photo Proof */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                  {/* Driving Licence Front */}
+                  <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
+                    <Upload className="w-6 h-6 text-slate-400 mb-1" />
+                    <p className="text-xs font-bold text-slate-700">Driving Licence (Front Side)</p>
+                    <p className="text-[11px] text-slate-400 mb-2">Upload DL front</p>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileUpload('licence_front_doc', e)}
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                    />
+                    {formData.licence_front_doc && (
+                      <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ DL Front attached</p>
+                    )}
+                  </div>
+
+                  {/* Driving Licence Back */}
+                  <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
+                    <Upload className="w-6 h-6 text-slate-400 mb-1" />
+                    <p className="text-xs font-bold text-slate-700">Driving Licence (Back Side)</p>
+                    <p className="text-[11px] text-slate-400 mb-2">Upload DL back</p>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileUpload('licence_back_doc', e)}
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                    />
+                    {formData.licence_back_doc && (
+                      <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ DL Back attached</p>
+                    )}
+                  </div>
+
+                  {/* Upload Photo to Verify Licence */}
+                  <div className="p-4 rounded-xl border border-dashed border-blue-300 bg-blue-50/40 flex flex-col items-center text-center">
+                    <Upload className="w-6 h-6 text-blue-500 mb-1" />
+                    <p className="text-xs font-bold text-[#142B4A]">Photo to Verify Licence</p>
+                    <p className="text-[11px] text-slate-500 mb-2">Sarathi Portal / Proof Photo</p>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileUpload('licence_verification_doc', e)}
+                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer w-full"
+                    />
+                    {formData.licence_verification_doc && (
+                      <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Verification Photo attached</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -900,13 +1046,25 @@ export const SupportStaffRegistration: React.FC = () => {
                   <td className="p-2.5 font-mono">{formData.aadhaar_number || '-'}</td>
                 </tr>
 
-                {/* 9. Upload Photo File (Aadhaar front back ) */}
+                {/* 9. Upload Aadhaar Front & Back */}
                 <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Upload Photo File (Aadhaar front back )</td>
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Card (Front Side)</td>
                   <td className="p-2.5">
                     {formData.aadhaar_front_doc ? (
                       <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Aadhaar File Uploaded
+                        ✓ Front Uploaded
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Not Uploaded</span>
+                    )}
+                  </td>
+                </tr>
+                <tr className="hover:bg-slate-50">
+                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Card (Back Side)</td>
+                  <td className="p-2.5">
+                    {formData.aadhaar_back_doc ? (
+                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ✓ Back Uploaded
                       </span>
                     ) : (
                       <span className="text-slate-400 italic">Not Uploaded</span>
@@ -933,6 +1091,69 @@ export const SupportStaffRegistration: React.FC = () => {
                     )}
                   </td>
                 </tr>
+
+                {/* Driving Licence & Verification (if provided) */}
+                {(formData.licence_number || formData.role === 'Captain') && (
+                  <>
+                    <tr className="bg-slate-100 font-black text-slate-800">
+                      <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
+                        Driving Licence Details
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Front Side)</td>
+                      <td className="p-2.5">
+                        {formData.licence_front_doc ? (
+                          <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            ✓ Front Uploaded
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">Not Uploaded</span>
+                        )}
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Back Side)</td>
+                      <td className="p-2.5">
+                        {formData.licence_back_doc ? (
+                          <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            ✓ Back Uploaded
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">Not Uploaded</span>
+                        )}
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Licence Verification Status</td>
+                      <td className="p-2.5">
+                        <span className="px-2 py-0.5 rounded font-bold text-xs bg-blue-50 text-blue-700 border border-blue-200">
+                          {formData.licence_verification_status || 'Pending Verification'}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Photo to Verify Licence</td>
+                      <td className="p-2.5">
+                        {formData.licence_verification_doc ? (
+                          <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            ✓ Verification Proof Attached
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">Not Uploaded</span>
+                        )}
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence Number</td>
+                      <td className="p-2.5 font-mono font-bold text-blue-700 uppercase">{formData.licence_number || '-'}</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Issued By State</td>
+                      <td className="p-2.5">{formData.issuing_state || '-'}</td>
+                    </tr>
+                  </>
+                )}
 
                 {/* 12. Bank Name ( passbook cheque ) */}
                 <tr className="bg-slate-100 font-black text-slate-800">

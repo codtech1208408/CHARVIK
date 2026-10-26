@@ -120,9 +120,12 @@ CREATE TABLE IF NOT EXISTS driver_details (
   licence_experience_years INT DEFAULT 0,
   criminal_background_details TEXT,
   licence_verification_status TEXT DEFAULT 'Verified',
+  licence_verification_doc TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE driver_details ADD COLUMN IF NOT EXISTS licence_verification_doc TEXT;
 
 ALTER TABLE driver_details ENABLE ROW LEVEL SECURITY;
 

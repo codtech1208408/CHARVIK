@@ -1950,7 +1950,8 @@ app.get('/api/employees', (req: Request, res: Response) => {
   const { role, status, search } = req.query;
   let query = `
     SELECT e.*, b.bus_number, b.registration_number,
-      d.licence_number, d.licence_validity_date, d.licence_verification_status
+      d.licence_number, d.licence_validity_date, d.licence_verification_status,
+      d.licence_verification_doc, d.licence_front_doc, d.licence_back_doc
     FROM employees e
     LEFT JOIN buses b ON e.assigned_bus_id = b.id
     LEFT JOIN driver_details d ON e.id = d.employee_id
@@ -2069,14 +2070,14 @@ app.post('/api/employees', (req: Request, res: Response) => {
 
   const empId = Number(info.lastInsertRowid);
 
-  // If driver, insert licence details
-  if (e.role === 'Driver' && e.licence_number) {
+  // If driver or licence provided (Driver, Captain, Helper), insert licence details
+  if (e.licence_number) {
     db.prepare(`
       INSERT INTO driver_details (
         employee_id, licence_number, licence_front_doc, licence_back_doc, issuing_state,
         issuing_rto_office, licence_issue_date, licence_validity_date, licence_experience_years,
-        criminal_background_details, licence_verification_status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        criminal_background_details, licence_verification_status, licence_verification_doc
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       empId,
       e.licence_number,
@@ -2088,7 +2089,8 @@ app.post('/api/employees', (req: Request, res: Response) => {
       e.licence_validity_date || '2028-12-31',
       e.licence_experience_years || 0,
       e.criminal_background_details || '',
-      e.licence_verification_status || 'Verified'
+      e.licence_verification_status || 'Pending Verification',
+      e.licence_verification_doc || ''
     );
   }
 
@@ -2168,8 +2170,8 @@ app.put('/api/employees/:id', (req: Request, res: Response) => {
         employee_id, licence_number, issuing_state, issuing_rto_office,
         licence_issue_date, licence_validity_date, licence_experience_years,
         criminal_background_details, licence_verification_status,
-        licence_front_doc, licence_back_doc
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        licence_front_doc, licence_back_doc, licence_verification_doc
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(employee_id) DO UPDATE SET
         licence_number = excluded.licence_number,
         issuing_state = excluded.issuing_state,
@@ -2181,6 +2183,7 @@ app.put('/api/employees/:id', (req: Request, res: Response) => {
         licence_verification_status = excluded.licence_verification_status,
         licence_front_doc = COALESCE(excluded.licence_front_doc, driver_details.licence_front_doc),
         licence_back_doc = COALESCE(excluded.licence_back_doc, driver_details.licence_back_doc),
+        licence_verification_doc = COALESCE(excluded.licence_verification_doc, driver_details.licence_verification_doc),
         updated_at = CURRENT_TIMESTAMP
     `).run(
       id,
@@ -2193,7 +2196,8 @@ app.put('/api/employees/:id', (req: Request, res: Response) => {
       e.criminal_background_details || '',
       e.licence_verification_status || 'Verified',
       e.licence_front_doc || null,
-      e.licence_back_doc || null
+      e.licence_back_doc || null,
+      e.licence_verification_doc || null
     );
   }
 

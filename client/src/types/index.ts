@@ -70,8 +70,11 @@ export interface Employee {
   registration_number?: string;
   internal_remarks?: string;
   licence_number?: string;
+  licence_front_doc?: string;
+  licence_back_doc?: string;
   licence_validity_date?: string;
   licence_verification_status?: string;
+  licence_verification_doc?: string;
   is_archived?: number;
 }
 
@@ -81,6 +84,7 @@ export interface DriverDetail {
   licence_number: string;
   licence_front_doc?: string;
   licence_back_doc?: string;
+  licence_verification_doc?: string;
   issuing_state?: string;
   issuing_rto_office?: string;
   licence_issue_date?: string;
