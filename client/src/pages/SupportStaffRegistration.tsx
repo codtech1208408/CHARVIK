@@ -14,7 +14,8 @@ import {
   Save,
   ArrowRight,
   ArrowLeft,
-  ShieldCheck
+  ShieldCheck,
+  AlertCircle
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
@@ -29,6 +30,7 @@ export const SupportStaffRegistration: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [stepError, setStepError] = useState<string | null>(null);
 
   // Form State for Helper / Captain matching Reference Image 4
   const [formData, setFormData] = useState<any>({
@@ -105,7 +107,8 @@ export const SupportStaffRegistration: React.FC = () => {
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setStepError(null);
+    setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
   const handleFileUpload = async (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,37 +117,94 @@ export const SupportStaffRegistration: React.FC = () => {
     try {
       const res = await api.uploadFile(file);
       handleInputChange(field, res.fileUrl);
+      setStepError(null);
       success(`${file.name} uploaded successfully!`);
     } catch (err: any) {
       error(err.message || 'File upload failed');
     }
   };
 
+  const validateStep = (stepNumber: number): string | null => {
+    if (stepNumber === 1) {
+      if (!formData.full_name?.trim()) return 'Please enter Full Name as per Aadhaar';
+      if (!formData.date_of_birth) return 'Please select Date of Birth (DOB)';
+      if (!formData.phone_number?.trim()) return 'Please enter 10-digit Phone Number';
+      if (formData.phone_number.trim().length < 10) return 'Please enter a valid 10-digit Phone Number';
+    } else if (stepNumber === 2) {
+      if (!formData.aadhaar_number?.trim()) return 'Please enter Aadhaar Number';
+      if (formData.aadhaar_number.replace(/\D/g, '').length < 12) return 'Please enter a valid 12-digit Aadhaar Number';
+      if (!formData.aadhaar_front_doc) return 'Please upload Aadhaar Card (Front Side) photo';
+      if (!formData.aadhaar_back_doc) return 'Please upload Aadhaar Card (Back Side) photo';
+      if (formData.role === 'Captain') {
+        if (!formData.licence_number?.trim()) return 'Please enter Driving Licence Number for Captain';
+        if (!formData.licence_front_doc) return 'Please upload Driving Licence (Front Side) photo for Captain';
+        if (!formData.licence_back_doc) return 'Please upload Driving Licence (Back Side) photo for Captain';
+        if (!formData.licence_verification_doc) return 'Please upload Photo to Verify Licence (Sarathi Portal / Proof Photo)';
+      }
+    } else if (stepNumber === 3) {
+      if (!formData.bank_name?.trim()) return 'Please enter Bank Name';
+      if (!formData.account_number?.trim()) return 'Please enter Bank Account Number';
+      if (!formData.ifsc_code?.trim()) return 'Please enter Bank IFSC Code';
+      if (!formData.bank_proof_doc) return 'Please upload Bank Passbook / Cheque photo';
+    } else if (stepNumber === 4) {
+      if (!formData.nominee_name?.trim()) return 'Please enter Nominee Full Name';
+      if (!formData.nominee_relationship?.trim()) return 'Please select Relationship with Nominee';
+      if (!formData.nominee_phone?.trim()) return 'Please enter Nominee Contact Number';
+    } else if (stepNumber === 5) {
+      if (!formData.reference_name?.trim()) return 'Please enter Reference Person Name';
+      if (!formData.reference_phone?.trim()) return 'Please enter Reference Contact Number';
+    } else if (stepNumber === 6) {
+      if (!formData.employment_type?.trim()) return 'Please select Worker Type';
+      if (!formData.salary || Number(formData.salary) <= 0) return 'Please enter Worker Salary / Wage amount';
+    }
+    return null;
+  };
+
   const handleNext = () => {
-    if (currentStep === 1) {
-      if (!formData.full_name || !formData.phone_number) {
-        error('Please enter Full Name as per Aadhaar and Phone Number');
-        return;
-      }
+    const err = validateStep(currentStep);
+    if (err) {
+      setStepError(err);
+      error(err);
+      return;
     }
-    if (currentStep === 2) {
-      if (!formData.aadhaar_number) {
-        error('Please enter Aadhaar Number');
-        return;
-      }
-    }
+    setStepError(null);
     setCurrentStep((prev) => Math.min(prev + 1, 6));
   };
 
+  const handleStepClick = (targetStep: number) => {
+    if (targetStep <= currentStep) {
+      setStepError(null);
+      setCurrentStep(targetStep);
+      return;
+    }
+    for (let s = currentStep; s < targetStep; s++) {
+      const err = validateStep(s);
+      if (err) {
+        setStepError(err);
+        error(`Step ${s} is incomplete: ${err}`);
+        setCurrentStep(s);
+        return;
+      }
+    }
+    setStepError(null);
+    setCurrentStep(targetStep);
+  };
+
   const handlePrev = () => {
+    setStepError(null);
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.full_name || !formData.phone_number || !formData.employee_code) {
-      error('Please complete required personal and employment fields.');
-      return;
+    for (let s = 1; s <= 6; s++) {
+      const err = validateStep(s);
+      if (err) {
+        setStepError(err);
+        error(`Step ${s} is incomplete: ${err}`);
+        setCurrentStep(s);
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -242,7 +302,7 @@ export const SupportStaffRegistration: React.FC = () => {
             return (
               <div
                 key={st.number}
-                onClick={() => setCurrentStep(st.number)}
+                onClick={() => handleStepClick(st.number)}
                 className="flex flex-col items-center relative z-10 cursor-pointer group"
               >
                 <div
@@ -908,6 +968,17 @@ export const SupportStaffRegistration: React.FC = () => {
                   onChange={(e) => handleInputChange('internal_remarks', e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                 />
+              </div>
+            </div>
+          )}
+
+          {/* Validation Alert Banner */}
+          {stepError && (
+            <div className="flex items-center gap-3 p-3.5 bg-rose-50 border-2 border-rose-300 rounded-xl text-rose-800 text-xs font-bold animate-in fade-in">
+              <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
+              <div>
+                <p className="font-extrabold text-rose-900">Please fill the required detail to proceed:</p>
+                <p className="font-medium text-rose-700 mt-0.5">{stepError}</p>
               </div>
             </div>
           )}
