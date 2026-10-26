@@ -544,7 +544,8 @@ export const Dashboard: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
-                <th className="py-2.5 px-3 font-semibold rounded-l-lg">Bus Number</th>
+                <th className="py-2.5 px-3 font-semibold rounded-l-lg text-center w-12">S.NO</th>
+                <th className="py-2.5 px-3 font-semibold">Bus Number</th>
                 <th className="py-2.5 px-3 font-semibold">Service Type</th>
                 <th className="py-2.5 px-3 font-semibold">Due Km</th>
                 <th className="py-2.5 px-3 font-semibold">Due Date</th>
@@ -556,14 +557,15 @@ export const Dashboard: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredUpcoming.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400">
+                  <td colSpan={8} className="py-8 text-center text-slate-400">
                     <p className="text-xs font-semibold text-slate-600">No upcoming maintenance scheduled</p>
                     <p className="text-[11px] text-slate-400 mt-0.5">All fleet vehicles are operating up to date.</p>
                   </td>
                 </tr>
               ) : (
-                filteredUpcoming.slice(0, 5).map((m: any) => (
+                filteredUpcoming.slice(0, 5).map((m: any, idx: number) => (
                   <tr key={m.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
                     <td className="py-3 px-3 font-bold text-slate-900">
                       <div className="flex items-center gap-2">
                         <Bus className="w-4 h-4 text-blue-600 shrink-0" />
@@ -658,6 +660,7 @@ export const Dashboard: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                  <th className="py-2 px-3 font-semibold text-center w-12">S.NO</th>
                   <th className="py-2 px-3 font-semibold">Service Name</th>
                   <th className="py-2 px-3 font-semibold">Standard Interval</th>
                   <th className="py-2 px-3 font-semibold">Operational Scope</th>
@@ -667,6 +670,7 @@ export const Dashboard: React.FC = () => {
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {(data?.kmBasedSchedules || []).map((kItem: any, idx: number) => (
                   <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
                     <td className="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                       <span>{kItem.service}</span>
@@ -844,6 +848,7 @@ export const Dashboard: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold text-center w-12">S.NO</th>
                     <th className="py-2 px-3 font-semibold">Ref #</th>
                     <th className="py-2 px-3 font-semibold">Bus</th>
                     <th className="py-2 px-3 font-semibold">Category</th>
@@ -853,8 +858,9 @@ export const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {(data?.recentComplaints || []).map((c: any) => (
+                  {(data?.recentComplaints || []).map((c: any, idx: number) => (
                     <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
                       <td className="py-2.5 px-3 font-mono font-bold text-slate-800">{c.complaint_ref}</td>
                       <td className="py-2.5 px-3 font-bold text-blue-600">{c.bus_number}</td>
                       <td className="py-2.5 px-3">
@@ -871,7 +877,7 @@ export const Dashboard: React.FC = () => {
                   ))}
                   {(data?.recentComplaints || []).length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                      <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
                         No recent complaints recorded. Fleet operating smoothly.
                       </td>
                     </tr>
@@ -887,6 +893,7 @@ export const Dashboard: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold text-center w-12">S.NO</th>
                     <th className="py-2 px-3 font-semibold">Bus</th>
                     <th className="py-2 px-3 font-semibold">Serial #</th>
                     <th className="py-2 px-3 font-semibold">Position</th>
@@ -896,8 +903,9 @@ export const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {(data?.recentTyres || []).map((t: any) => (
+                  {(data?.recentTyres || []).map((t: any, idx: number) => (
                     <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
                       <td className="py-2.5 px-3 font-bold text-blue-600">{t.bus_number}</td>
                       <td className="py-2.5 px-3 font-mono text-slate-700">{t.tyre_serial_number}</td>
                       <td className="py-2.5 px-3 text-slate-600">{t.tyre_position}</td>
@@ -912,7 +920,7 @@ export const Dashboard: React.FC = () => {
                   ))}
                   {(data?.recentTyres || []).length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                      <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
                         No tyre maintenance records logged yet.
                       </td>
                     </tr>
@@ -928,6 +936,7 @@ export const Dashboard: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold text-center w-12">S.NO</th>
                     <th className="py-2 px-3 font-semibold">Bus</th>
                     <th className="py-2 px-3 font-semibold">Working Status</th>
                     <th className="py-2 px-3 font-semibold">Cooling Performance</th>
@@ -936,8 +945,9 @@ export const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {(data?.recentAc || []).map((a: any) => (
+                  {(data?.recentAc || []).map((a: any, idx: number) => (
                     <tr key={a.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
                       <td className="py-2.5 px-3 font-bold text-blue-600">{a.bus_number}</td>
                       <td className="py-2.5 px-3">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
@@ -951,7 +961,7 @@ export const Dashboard: React.FC = () => {
                   ))}
                   {(data?.recentAc || []).length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
                         No AC maintenance records logged yet.
                       </td>
                     </tr>
@@ -967,6 +977,7 @@ export const Dashboard: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold text-center w-12">S.NO</th>
                     <th className="py-2 px-3 font-semibold">Bus</th>
                     <th className="py-2 px-3 font-semibold">Oil Type & Brand</th>
                     <th className="py-2 px-3 font-semibold">Filter Replaced</th>
@@ -975,8 +986,9 @@ export const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {(data?.recentOil || []).map((o: any) => (
+                  {(data?.recentOil || []).map((o: any, idx: number) => (
                     <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
                       <td className="py-2.5 px-3 font-bold text-blue-600">{o.bus_number}</td>
                       <td className="py-2.5 px-3 text-slate-800 font-medium">{o.oil_type} ({o.oil_brand})</td>
                       <td className="py-2.5 px-3 text-slate-600">{o.oil_filter_details}</td>
@@ -986,7 +998,7 @@ export const Dashboard: React.FC = () => {
                   ))}
                   {(data?.recentOil || []).length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
                         No oil & filter replacement records logged yet.
                       </td>
                     </tr>
@@ -1002,6 +1014,7 @@ export const Dashboard: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
+                    <th className="py-2 px-3 font-semibold text-center w-12">S.NO</th>
                     <th className="py-2 px-3 font-semibold">Bus</th>
                     <th className="py-2 px-3 font-semibold">Battery Brand</th>
                     <th className="py-2 px-3 font-semibold">Measured Voltage</th>
@@ -1010,8 +1023,9 @@ export const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {(data?.recentBattery || []).map((b: any) => (
+                  {(data?.recentBattery || []).map((b: any, idx: number) => (
                     <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
                       <td className="py-2.5 px-3 font-bold text-blue-600">{b.bus_number}</td>
                       <td className="py-2.5 px-3 text-slate-800 font-medium">{b.battery_brand}</td>
                       <td className="py-2.5 px-3 font-bold text-purple-600">{b.measured_voltage}V</td>
@@ -1025,7 +1039,7 @@ export const Dashboard: React.FC = () => {
                   ))}
                   {(data?.recentBattery || []).length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
                         No battery maintenance records logged yet.
                       </td>
                     </tr>

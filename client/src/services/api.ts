@@ -689,6 +689,7 @@ export const api = {
   },
   createTyreRecord: (data: any) => request<any>('/tyre-maintenance', { method: 'POST', body: JSON.stringify(data) }),
   updateTyreRecord: (id: number | string, data: any) => request<any>(`/tyre-maintenance/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteTyreRecord: (id: number | string) => request<any>(`/tyre-maintenance/${id}`, { method: 'DELETE' }),
 
   // AC Maintenance
   getAcRecords: (params?: { bus_id?: number | string }) => {
@@ -696,6 +697,8 @@ export const api = {
     return request<any[]>(`/ac-maintenance${q ? `?${q}` : ''}`);
   },
   createAcRecord: (data: any) => request<any>('/ac-maintenance', { method: 'POST', body: JSON.stringify(data) }),
+  updateAcRecord: (id: number | string, data: any) => request<any>(`/ac-maintenance/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteAcRecord: (id: number | string) => request<any>(`/ac-maintenance/${id}`, { method: 'DELETE' }),
 
   // Oil and Filter
   getOilRecords: (params?: { bus_id?: number | string }) => {
@@ -703,6 +706,8 @@ export const api = {
     return request<any[]>(`/oil-filter-maintenance${q ? `?${q}` : ''}`);
   },
   createOilRecord: (data: any) => request<any>('/oil-filter-maintenance', { method: 'POST', body: JSON.stringify(data) }),
+  updateOilRecord: (id: number | string, data: any) => request<any>(`/oil-filter-maintenance/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteOilRecord: (id: number | string) => request<any>(`/oil-filter-maintenance/${id}`, { method: 'DELETE' }),
 
   // Battery
   getBatteryRecords: (params?: { bus_id?: number | string }) => {
@@ -710,6 +715,8 @@ export const api = {
     return request<any[]>(`/battery-maintenance${q ? `?${q}` : ''}`);
   },
   createBatteryRecord: (data: any) => request<any>('/battery-maintenance', { method: 'POST', body: JSON.stringify(data) }),
+  updateBatteryRecord: (id: number | string, data: any) => request<any>(`/battery-maintenance/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteBatteryRecord: (id: number | string) => request<any>(`/battery-maintenance/${id}`, { method: 'DELETE' }),
 
   // Complaints
   getComplaints: (params?: { status?: string; priority?: string; bus_id?: number | string }) => {
@@ -718,6 +725,7 @@ export const api = {
   },
   createComplaint: (data: any) => request<any>('/complaints', { method: 'POST', body: JSON.stringify(data) }),
   updateComplaint: (id: number | string, data: any) => request<any>(`/complaints/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteComplaint: (id: number | string) => request<any>(`/complaints/${id}`, { method: 'DELETE' }),
 
   // Repairs
   getRepairs: (params?: { status?: string; bus_id?: number | string }) => {
@@ -726,6 +734,7 @@ export const api = {
   },
   createRepair: (data: any) => request<any>('/repairs', { method: 'POST', body: JSON.stringify(data) }),
   updateRepair: (id: number | string, data: any) => request<any>(`/repairs/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteRepair: (id: number | string) => request<any>(`/repairs/${id}`, { method: 'DELETE' }),
 
   // Bus Condition
   getBusConditions: (params?: { bus_id?: number | string; roadworthiness?: string }) => {
@@ -733,6 +742,8 @@ export const api = {
     return request<any[]>(`/bus-condition${q ? `?${q}` : ''}`);
   },
   createBusCondition: (data: any) => request<any>('/bus-condition', { method: 'POST', body: JSON.stringify(data) }),
+  updateBusCondition: (id: number | string, data: any) => request<any>(`/bus-condition/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteBusCondition: (id: number | string) => request<any>(`/bus-condition/${id}`, { method: 'DELETE' }),
 
   // Employees
   getEmployees: (params?: { role?: string; status?: string; search?: string }) => {

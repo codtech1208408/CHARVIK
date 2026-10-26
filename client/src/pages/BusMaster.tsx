@@ -23,7 +23,9 @@ import {
   Bell,
   AlertCircle,
   XCircle,
-  Check
+  Check,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
@@ -69,6 +71,44 @@ export const checkDocExpiry = (expiryDate?: string) => {
   return { daysRemaining: days, status: 'valid' as const, label: `Valid (${days} days left)` };
 };
 
+export const renderExpiryWarning = (dateValue?: string) => {
+  if (!dateValue) return null;
+  const { status, daysRemaining } = checkDocExpiry(dateValue);
+  if (status === 'one_day') {
+    return (
+      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-300 rounded-lg px-2.5 py-1.5 animate-pulse">
+        <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+        <span>⚠️ Urgent Notice: Expiring in 1 day (Tomorrow)! Renewal required.</span>
+      </div>
+    );
+  }
+  if (status === 'today') {
+    return (
+      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-red-800 bg-red-50 border border-red-300 rounded-lg px-2.5 py-1.5 animate-pulse">
+        <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
+        <span>🚨 Alert: Expires Today! Urgent renewal required.</span>
+      </div>
+    );
+  }
+  if (status === 'expired') {
+    return (
+      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-300 rounded-lg px-2.5 py-1.5">
+        <XCircle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+        <span>❌ Notice: Expired ({Math.abs(daysRemaining || 0)} days ago)! Overdue.</span>
+      </div>
+    );
+  }
+  if (status === 'due_soon') {
+    return (
+      <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-amber-700 bg-amber-50/60 rounded-lg px-2 py-1">
+        <Clock className="w-3 h-3 shrink-0 text-amber-600" />
+        <span>Due in {daysRemaining} days</span>
+      </div>
+    );
+  }
+  return null;
+};
+
 export const BusMaster: React.FC = () => {
   const { success, error } = useToast();
   const { user } = useAuth();
@@ -79,6 +119,7 @@ export const BusMaster: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   // Document 1-Day Expiry Alert States
   const [dismissAlertBanner, setDismissAlertBanner] = useState(false);
@@ -101,19 +142,9 @@ export const BusMaster: React.FC = () => {
 
   // Form State
   const [formData, setFormData] = useState<any>({
-    bus_number: '',
     registration_number: '',
-    make: '',
-    model: '',
-    bus_type: 'Staff Bus',
-    manufacturing_year: new Date().getFullYear(),
-    purchase_date: '',
-    chassis_number: '',
-    engine_number: '',
-    fuel_type: 'Diesel',
-    seating_capacity: '',
-    current_odometer_km: '',
-    operational_status: 'Active',
+    bus_type: '',
+    operational_status: '',
     registration_date: '',
     tax_valid_upto: '',
     insurance_expiry: '',
@@ -121,8 +152,6 @@ export const BusMaster: React.FC = () => {
     permit_expiry: '',
     puc_expiry: '',
     aitp_valid_upto: '',
-    assigned_driver_id: '',
-    assigned_helper_id: '',
     notes: ''
   });
 
@@ -149,19 +178,9 @@ export const BusMaster: React.FC = () => {
   const handleOpenAdd = () => {
     setEditingBus(null);
     setFormData({
-      bus_number: `BUS-${String(buses.length + 1).padStart(2, '0')}`,
       registration_number: '',
-      make: '',
-      model: '',
-      bus_type: 'Staff Bus',
-      manufacturing_year: new Date().getFullYear(),
-      purchase_date: '',
-      chassis_number: '',
-      engine_number: '',
-      fuel_type: 'Diesel',
-      seating_capacity: '',
-      current_odometer_km: '',
-      operational_status: 'Active',
+      bus_type: '',
+      operational_status: '',
       registration_date: '',
       tax_valid_upto: '',
       insurance_expiry: '',
@@ -169,8 +188,6 @@ export const BusMaster: React.FC = () => {
       permit_expiry: '',
       puc_expiry: '',
       aitp_valid_upto: '',
-      assigned_driver_id: '',
-      assigned_helper_id: '',
       notes: ''
     });
     setIsAddEditOpen(true);
@@ -179,19 +196,9 @@ export const BusMaster: React.FC = () => {
   const handleOpenEdit = (bus: BusType) => {
     setEditingBus(bus);
     setFormData({
-      bus_number: bus.bus_number,
       registration_number: bus.registration_number,
-      make: bus.make || '',
-      model: bus.model || '',
-      bus_type: bus.bus_type || 'Staff Bus',
-      manufacturing_year: bus.manufacturing_year || 2021,
-      purchase_date: bus.purchase_date || '',
-      chassis_number: bus.chassis_number || '',
-      engine_number: bus.engine_number || '',
-      fuel_type: bus.fuel_type || 'Diesel',
-      seating_capacity: bus.seating_capacity || 45,
-      current_odometer_km: bus.current_odometer_km || 0,
-      operational_status: bus.operational_status || 'Active',
+      bus_type: bus.bus_type || '',
+      operational_status: bus.operational_status || '',
       registration_date: bus.registration_date || '',
       tax_valid_upto: bus.tax_valid_upto || '',
       insurance_expiry: bus.insurance_expiry || '',
@@ -199,8 +206,6 @@ export const BusMaster: React.FC = () => {
       permit_expiry: bus.permit_expiry || '',
       puc_expiry: bus.puc_expiry || '',
       aitp_valid_upto: bus.aitp_valid_upto || '',
-      assigned_driver_id: bus.assigned_driver_id ? String(bus.assigned_driver_id) : '',
-      assigned_helper_id: bus.assigned_helper_id ? String(bus.assigned_helper_id) : '',
       notes: bus.notes || ''
     });
     setIsAddEditOpen(true);
@@ -208,13 +213,31 @@ export const BusMaster: React.FC = () => {
 
   const handleSaveBus = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.registration_number.trim()) {
+      error('Please enter Registration Number');
+      return;
+    }
+    if (!formData.bus_type) {
+      error('Please select Bus Type');
+      return;
+    }
+    if (!formData.operational_status) {
+      error('Please select Status');
+      return;
+    }
+    const cleanReg = formData.registration_number.trim().toUpperCase();
+    const payload = {
+      ...formData,
+      registration_number: cleanReg,
+      bus_number: cleanReg
+    };
     try {
       if (editingBus) {
-        await api.updateBus(editingBus.id, formData);
-        success(`Bus ${formData.bus_number} updated successfully!`);
+        await api.updateBus(editingBus.id, payload);
+        success(`Bus ${cleanReg} updated successfully!`);
       } else {
-        await api.createBus(formData);
-        success(`Bus ${formData.bus_number} added to fleet!`);
+        await api.createBus(payload);
+        success(`Bus ${cleanReg} added to fleet!`);
       }
       setIsAddEditOpen(false);
       loadData();
@@ -237,7 +260,7 @@ export const BusMaster: React.FC = () => {
     if (!busToArchive) return;
     try {
       await api.archiveBus(busToArchive.id);
-      success(`Bus ${busToArchive.bus_number} archived safely.`);
+      success(`Bus ${busToArchive.registration_number || busToArchive.bus_number} archived safely.`);
       setIsArchiveConfirmOpen(false);
       setBusToArchive(null);
       loadData();
@@ -275,11 +298,9 @@ export const BusMaster: React.FC = () => {
   const filteredBuses = buses.filter((b) => {
     const s = searchTerm.toLowerCase();
     const matchesSearch =
-      b.bus_number.toLowerCase().includes(s) ||
       b.registration_number.toLowerCase().includes(s) ||
-      (b.make && b.make.toLowerCase().includes(s)) ||
-      (b.model && b.model.toLowerCase().includes(s)) ||
-      (b.driver_name && b.driver_name.toLowerCase().includes(s));
+      (b.bus_number && b.bus_number.toLowerCase().includes(s)) ||
+      (b.bus_type && b.bus_type.toLowerCase().includes(s));
 
     if (!matchesSearch) return false;
 
@@ -311,7 +332,7 @@ export const BusMaster: React.FC = () => {
 
     return `🚨 URGENT FLEET COMPLIANCE NOTICE
 Company: Charvik Staffing Consultancy
-Vehicle: ${alertItem.bus.bus_number} (${alertItem.bus.registration_number})
+Vehicle: ${alertItem.bus.registration_number}
 Document: ${alertItem.docLabel}
 Status: ${urgency}
 ${alertItem.bus.driver_name ? `Assigned Driver: ${alertItem.bus.driver_name} (${alertItem.bus.driver_phone || 'N/A'})` : ''}
@@ -380,12 +401,14 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
       {/* Header and Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
-          <h2 className="text-xl font-bold text-[#142B4A] flex items-center gap-2">
-            <Bus className="w-5 h-5 text-blue-600" />
-            <span>Bus Master Directory</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage fleet specifications, odometer readings, assigned drivers, and compliance documents.
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl font-bold text-[#142B4A]">Vehicle Management</h2>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+              {buses.length} Total
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Manage vehicle numbers for task assignment dropdown. Active vehicles appear in task management.
           </p>
         </div>
 
@@ -394,8 +417,30 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
           className="inline-flex items-center px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow gap-1.5 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Add New Bus</span>
+          <span>Add Vehicle</span>
         </button>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-center">
+          <p className="text-3xl font-black text-slate-900 tracking-tight">{buses.length}</p>
+          <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">Total Vehicles</p>
+        </div>
+
+        <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-200 shadow-xs flex flex-col justify-center">
+          <p className="text-3xl font-black text-emerald-600 tracking-tight">
+            {buses.filter((b) => b.operational_status === 'Active').length}
+          </p>
+          <p className="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wider">Active</p>
+        </div>
+
+        <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 shadow-xs flex flex-col justify-center">
+          <p className="text-3xl font-black text-rose-600 tracking-tight">
+            {buses.filter((b) => b.operational_status === 'Inactive').length}
+          </p>
+          <p className="text-xs font-bold text-rose-700 mt-1 uppercase tracking-wider">Inactive</p>
+        </div>
       </div>
 
       {/* 1-Day Document Expiry Urgent Alert Banner */}
@@ -416,7 +461,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                   </span>
                 </div>
                 <p className="text-xs text-rose-800 mt-1">
-                  Compliance documents for the following vehicle(s) are <strong>expiring in 1 day (tomorrow)</strong> or require immediate renewal to avoid police fines and vehicle grounding.
+                  Compliance documents for the following vehicle(s) are <strong>expiring in 1 day (tomorrow)</strong> or require immediate renewal to avoid transport penalties and vehicle grounding.
                 </p>
               </div>
             </div>
@@ -452,8 +497,8 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-extrabold text-slate-900 text-xs">{al.bus.bus_number}</span>
-                    <span className="font-bold text-blue-700 text-xs">({al.bus.registration_number})</span>
+                    <span className="font-extrabold text-[#142B4A] text-xs font-mono">{al.bus.registration_number}</span>
+                    <span className="text-slate-500 text-xs">({al.bus.bus_type || 'Fleet Bus'})</span>
                     <span
                       className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
                         al.status === 'expired'
@@ -471,8 +516,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-700 font-medium truncate mt-0.5">
-                    <strong className="text-slate-900">{al.docLabel}:</strong> {al.expiryDate}{' '}
-                    {al.bus.driver_name ? `• Driver: ${al.bus.driver_name}` : ''}
+                    <strong className="text-slate-900">{al.docLabel}:</strong> {al.expiryDate}
                   </p>
                 </div>
 
@@ -496,14 +540,14 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by bus no, registration, make..."
+            placeholder="Search vehicle number..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+            className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
           />
         </div>
 
-        <div className="flex items-center space-x-2 w-full md:w-auto overflow-x-auto">
+        <div className="flex items-center space-x-2.5 w-full md:w-auto overflow-x-auto justify-between md:justify-end">
           {urgentOneDayAlerts.length > 0 && (
             <button
               onClick={() => setOnlyExpiringFilter(!onlyExpiringFilter)}
@@ -518,326 +562,426 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
             </button>
           )}
 
-          <span className="text-xs font-semibold text-slate-500 shrink-0 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> Status:
-          </span>
-          {['All', 'Active', 'Under Maintenance', 'Inactive', 'Out of Service'].map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-colors cursor-pointer ${
-                statusFilter === st
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-              }`}
+          <div className="flex items-center gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="text-xs font-bold py-2 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 outline-none cursor-pointer"
             >
-              {st}
-            </button>
-          ))}
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'grid'
+                    ? 'bg-white shadow-xs text-blue-600 font-bold'
+                    : 'text-slate-400 hover:text-slate-700'
+                }`}
+                title="Grid Card View"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'table'
+                    ? 'bg-white shadow-xs text-blue-600 font-bold'
+                    : 'text-slate-400 hover:text-slate-700'
+                }`}
+                title="Table View (S.NO)"
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Buses Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
-              <tr>
-                <th className="py-3 px-4">Bus ID</th>
-                <th className="py-3 px-4">Registration No.</th>
-                <th className="py-3 px-4">Make & Model</th>
-                <th className="py-3 px-4">Type</th>
-                <th className="py-3 px-4">Current KM</th>
-                <th className="py-3 px-4">Assigned Driver</th>
-                <th className="py-3 px-4">Compliance & 1-Day Alerts</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                    Loading fleet records...
-                  </td>
-                </tr>
-              ) : filteredBuses.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
-                    No buses found matching your filter criteria.
-                  </td>
-                </tr>
-              ) : (
-                filteredBuses.map((b) => (
-                  <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900">{b.bus_number}</td>
-                    <td className="py-3 px-4 font-bold text-blue-700">{b.registration_number}</td>
-                    <td className="py-3 px-4 font-medium">
-                      {b.make} {b.model}
-                    </td>
-                    <td className="py-3 px-4 text-slate-600">{b.bus_type}</td>
-                    <td className="py-3 px-4 font-semibold text-slate-900">
-                      {b.current_odometer_km?.toLocaleString()} km
-                    </td>
-                    <td className="py-3 px-4">
-                      {b.driver_name ? (
-                        <div>
-                          <p className="font-semibold text-slate-900">{b.driver_name}</p>
-                          <p className="text-[10px] text-slate-400">{b.driver_phone}</p>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 italic">Unassigned</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      {(() => {
-                        const busAlerts = getBusAlerts(b);
-                        const topAlert = busAlerts[0];
-                        if (!topAlert) {
-                          return (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                              <span>6/6 Docs Valid</span>
-                            </span>
-                          );
-                        }
+      {/* Vehicle Cards Grid View */}
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {loading ? (
+            <div className="col-span-full py-16 text-center text-slate-400">
+              <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+              Loading vehicles...
+            </div>
+          ) : filteredBuses.length === 0 ? (
+            <div className="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+              No vehicles found matching your criteria.
+            </div>
+          ) : (
+            filteredBuses.map((b) => {
+              const isActive = b.operational_status === 'Active';
+              const busAlerts = getBusAlerts(b);
+              const topAlert = busAlerts[0];
+              const isUrgent = topAlert && (topAlert.status === 'one_day' || topAlert.status === 'today');
 
-                        const isOneDay = topAlert.status === 'one_day' || topAlert.status === 'today';
-                        const isExpired = topAlert.status === 'expired';
-
-                        return (
-                          <div className="flex flex-col gap-1 items-start">
-                            <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                isExpired
-                                  ? 'bg-rose-100 text-rose-800 border border-rose-300'
-                                  : isOneDay
-                                  ? 'bg-amber-100 text-amber-900 border border-amber-300 animate-pulse'
-                                  : 'bg-blue-50 text-blue-800 border border-blue-200'
-                              }`}
-                            >
-                              <AlertTriangle className="w-3 h-3 shrink-0" />
-                              <span>
-                                {topAlert.docLabel}:{' '}
-                                {isExpired
-                                  ? 'Expired'
-                                  : isOneDay
-                                  ? topAlert.status === 'today'
-                                    ? 'Expires Today!'
-                                    : 'Expires Tomorrow (1d)!'
-                                  : `${topAlert.daysRemaining}d left`}
-                              </span>
-                            </span>
-
-                            <button
-                              type="button"
-                              onClick={() => handleOpenAlertModal(topAlert)}
-                              className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5 hover:underline cursor-pointer"
-                            >
-                              <Send className="w-2.5 h-2.5" />
-                              <span>Send Alert Message</span>
-                            </button>
-                          </div>
-                        );
-                      })()}
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge status={b.operational_status} />
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
-                        <button
-                          onClick={() => handleViewProfile(b)}
-                          className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
-                          title="View Full Bus Operational Profile"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleOpenEdit(b)}
-                          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-                          title="Edit Bus Details"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        {isAdmin && (
-                          <button
-                            onClick={() => {
-                              setBusToArchive(b);
-                              setIsArchiveConfirmOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Archive Bus"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+              return (
+                <div
+                  key={b.id}
+                  className={`bg-white rounded-2xl border p-4 transition-all duration-200 hover:shadow-md flex flex-col justify-between ${
+                    isActive
+                      ? isUrgent
+                        ? 'border-amber-300 ring-1 ring-amber-300'
+                        : 'border-emerald-200/90 hover:border-emerald-400'
+                      : 'border-slate-200 bg-slate-50/40'
+                  }`}
+                >
+                  <div>
+                    {/* Card Top: Icon & Big Registration Number */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                          isActive
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                            : 'bg-slate-100 text-slate-400 border-slate-200'
+                        }`}
+                      >
+                        <Bus className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-mono font-black text-slate-900 text-sm tracking-wider uppercase truncate">
+                          {b.registration_number}
+                        </h3>
+                        {b.bus_type && (
+                          <span className="text-[10px] text-slate-500 font-semibold block truncate">
+                            {b.bus_type}
+                          </span>
                         )}
                       </div>
+                    </div>
+
+                    {/* Document Validity Matrix */}
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-2 py-2 border-t border-b border-slate-100 text-[11px]">
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                          REGISTRATION
+                        </span>
+                        <span className="font-mono font-bold text-slate-700">
+                          {b.registration_date || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                          FITNESS
+                        </span>
+                        <span
+                          className={`font-mono font-bold ${
+                            b.fitness_expiry && checkDocExpiry(b.fitness_expiry).status === 'one_day'
+                              ? 'text-amber-600 font-black'
+                              : 'text-slate-700'
+                          }`}
+                        >
+                          {b.fitness_expiry || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                          TAX
+                        </span>
+                        <span
+                          className={`font-mono font-bold ${
+                            b.tax_valid_upto && checkDocExpiry(b.tax_valid_upto).status === 'one_day'
+                              ? 'text-amber-600 font-black'
+                              : 'text-slate-700'
+                          }`}
+                        >
+                          {b.tax_valid_upto || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                          INSURANCE
+                        </span>
+                        <span
+                          className={`font-mono font-bold ${
+                            b.insurance_expiry && checkDocExpiry(b.insurance_expiry).status === 'one_day'
+                              ? 'text-amber-600 font-black'
+                              : 'text-slate-700'
+                          }`}
+                        >
+                          {b.insurance_expiry || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                          PUCC
+                        </span>
+                        <span
+                          className={`font-mono font-bold ${
+                            b.puc_expiry && checkDocExpiry(b.puc_expiry).status === 'one_day'
+                              ? 'text-amber-600 font-black'
+                              : 'text-slate-700'
+                          }`}
+                        >
+                          {b.puc_expiry || '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                          PERMIT
+                        </span>
+                        <span
+                          className={`font-mono font-bold ${
+                            b.permit_expiry && checkDocExpiry(b.permit_expiry).status === 'one_day'
+                              ? 'text-amber-600 font-black'
+                              : 'text-slate-700'
+                          }`}
+                        >
+                          {b.permit_expiry || '—'}
+                        </span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                          AITP
+                        </span>
+                        <span
+                          className={`font-mono font-bold ${
+                            b.aitp_valid_upto && checkDocExpiry(b.aitp_valid_upto).status === 'one_day'
+                              ? 'text-amber-600 font-black'
+                              : 'text-slate-700'
+                          }`}
+                        >
+                          {b.aitp_valid_upto || '—'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Footer: Status & Actions */}
+                  <div className="flex items-center justify-between pt-3 mt-1">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                        isActive
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                          : 'bg-rose-50 text-rose-700 border-rose-300'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          isActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                        }`}
+                      ></span>
+                      <span>{b.operational_status || 'Inactive'}</span>
+                    </span>
+
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => handleViewProfile(b)}
+                        className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="View Vehicle Profile"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleOpenEdit(b)}
+                        className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Edit Vehicle"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => {
+                            setBusToArchive(b);
+                            setIsArchiveConfirmOpen(true);
+                          }}
+                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete / Archive"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      ) : (
+        /* Table View */
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+                <tr>
+                  <th className="py-3 px-4 w-16 text-center">S.NO</th>
+                  <th className="py-3 px-4">Registration No.</th>
+                  <th className="py-3 px-4">Bus Type</th>
+                  <th className="py-3 px-4">Compliance & 1-Day Alerts</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-slate-400">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                      Loading fleet records...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filteredBuses.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-slate-400">
+                      No buses found matching your filter criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredBuses.map((b, index) => (
+                    <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
+                      <td className="py-3 px-4 font-mono font-bold text-[#142B4A] text-sm">{b.registration_number}</td>
+                      <td className="py-3 px-4 font-medium text-slate-800">{b.bus_type || '—'}</td>
+                      <td className="py-3 px-4">
+                        {(() => {
+                          const busAlerts = getBusAlerts(b);
+                          const topAlert = busAlerts[0];
+                          if (!topAlert) {
+                            return (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                <span>6/6 Docs Valid</span>
+                              </span>
+                            );
+                          }
+
+                          const isOneDay = topAlert.status === 'one_day' || topAlert.status === 'today';
+                          const isExpired = topAlert.status === 'expired';
+
+                          return (
+                            <div className="flex flex-col gap-1 items-start">
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  isExpired
+                                    ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                                    : isOneDay
+                                    ? 'bg-amber-100 text-amber-900 border border-amber-300 animate-pulse'
+                                    : 'bg-blue-50 text-blue-800 border border-blue-200'
+                                }`}
+                              >
+                                <AlertTriangle className="w-3 h-3 shrink-0" />
+                                <span>
+                                  {topAlert.docLabel}:{' '}
+                                  {isExpired
+                                    ? 'Expired'
+                                    : isOneDay
+                                    ? topAlert.status === 'today'
+                                      ? 'Expires Today!'
+                                      : 'Expires Tomorrow (1d)!'
+                                    : `${topAlert.daysRemaining}d left`}
+                                </span>
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => handleOpenAlertModal(topAlert)}
+                                className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-0.5 hover:underline cursor-pointer"
+                              >
+                                <Send className="w-2.5 h-2.5" />
+                                <span>Send Alert Message</span>
+                              </button>
+                            </div>
+                          );
+                        })()}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge status={b.operational_status} />
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <button
+                            onClick={() => handleViewProfile(b)}
+                            className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                            title="View Full Bus Operational Profile"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleOpenEdit(b)}
+                            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                            title="Edit Bus Details"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={() => {
+                                setBusToArchive(b);
+                                setIsArchiveConfirmOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Archive Bus"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Add / Edit Bus Modal */}
       <Modal
         isOpen={isAddEditOpen}
         onClose={() => setIsAddEditOpen(false)}
-        title={editingBus ? `Edit Bus ${editingBus.bus_number}` : 'Register New Fleet Bus'}
-        subtitle="Ensure vehicle specifications and registration details are normalized"
-        maxWidth="max-w-3xl"
+        title={editingBus ? `Edit Vehicle (${editingBus.registration_number})` : 'Add Vehicle'}
+        subtitle="Manage fleet vehicle registration, bus type, status, and compliance documents"
+        maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSaveBus} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Bus Number *</label>
-              <input
-                type="text"
-                value={formData.bus_number}
-                onChange={(e) => setFormData({ ...formData, bus_number: e.target.value })}
-                placeholder="BUS-01"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
-                required
-              />
-            </div>
-
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Registration No. *</label>
               <input
                 type="text"
                 value={formData.registration_number}
-                onChange={(e) => setFormData({ ...formData, registration_number: e.target.value })}
-                placeholder="AP 16 TC 2080"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                onChange={(e) => setFormData({ ...formData, registration_number: e.target.value.toUpperCase() })}
+                placeholder="e.g. AP 16 TC 2080"
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none uppercase font-semibold font-mono"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Bus Type</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Bus Type *</label>
               <select
                 value={formData.bus_type}
                 onChange={(e) => setFormData({ ...formData, bus_type: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                required
               >
-                <option value="School Bus">School Bus</option>
-                <option value="Staff Bus">Staff Bus</option>
-                <option value="Contract Bus">Contract Bus</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Manufacturer (Make)</label>
-              <input
-                type="text"
-                value={formData.make}
-                onChange={(e) => setFormData({ ...formData, make: e.target.value })}
-                placeholder="Ashok Leyland"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Model</label>
-              <input
-                type="text"
-                value={formData.model}
-                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                placeholder="Viking 222"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Mfg Year</label>
-              <input
-                type="number"
-                value={formData.manufacturing_year}
-                onChange={(e) => setFormData({ ...formData, manufacturing_year: Number(e.target.value) })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Fuel Type</label>
-              <select
-                value={formData.fuel_type}
-                onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
-              >
-                <option value="Diesel">Diesel</option>
-                <option value="CNG">CNG</option>
-                <option value="Electric">Electric</option>
-                <option value="Petrol">Petrol</option>
+                <option value="">-- Select Bus Type --</option>
+                <option value="Full Sleeper">Full Sleeper</option>
+                <option value="Seating/Sleeper">Seating/Sleeper</option>
+                <option value="Seater">Seater</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Current Odometer (KM)</label>
-              <input
-                type="number"
-                value={formData.current_odometer_km}
-                onChange={(e) => setFormData({ ...formData, current_odometer_km: Number(e.target.value) })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Operational Status *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Status *</label>
               <select
                 value={formData.operational_status}
                 onChange={(e: any) => setFormData({ ...formData, operational_status: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
                 required
               >
+                <option value="">-- Select Status --</option>
                 <option value="Active">Active</option>
-                <option value="Under Maintenance">Under Maintenance</option>
                 <option value="Inactive">Inactive</option>
-                <option value="Out of Service">Out of Service</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Assigned Staff */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Assigned Driver</label>
-              <select
-                value={formData.assigned_driver_id}
-                onChange={(e) => setFormData({ ...formData, assigned_driver_id: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
-              >
-                <option value="">-- No Assigned Driver --</option>
-                {drivers.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.full_name} ({d.employee_code})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Assigned Helper</label>
-              <select
-                value={formData.assigned_helper_id}
-                onChange={(e) => setFormData({ ...formData, assigned_helper_id: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none"
-              >
-                <option value="">-- No Assigned Helper --</option>
-                {helpers.map((h) => (
-                  <option key={h.id} value={h.id}>
-                    {h.full_name} ({h.employee_code})
-                  </option>
-                ))}
               </select>
             </div>
           </div>
@@ -872,6 +1016,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                     onChange={(e) => setFormData({ ...formData, tax_valid_upto: e.target.value })}
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                   />
+                  {renderExpiryWarning(formData.tax_valid_upto)}
                 </div>
 
                 <div>
@@ -882,6 +1027,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                     onChange={(e) => setFormData({ ...formData, puc_expiry: e.target.value })}
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                   />
+                  {renderExpiryWarning(formData.puc_expiry)}
                 </div>
 
                 <div>
@@ -892,6 +1038,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                     onChange={(e) => setFormData({ ...formData, aitp_valid_upto: e.target.value })}
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                   />
+                  {renderExpiryWarning(formData.aitp_valid_upto)}
                 </div>
               </div>
 
@@ -905,6 +1052,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                     onChange={(e) => setFormData({ ...formData, fitness_expiry: e.target.value })}
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                   />
+                  {renderExpiryWarning(formData.fitness_expiry)}
                 </div>
 
                 <div>
@@ -915,6 +1063,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                     onChange={(e) => setFormData({ ...formData, insurance_expiry: e.target.value })}
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                   />
+                  {renderExpiryWarning(formData.insurance_expiry)}
                 </div>
 
                 <div>
@@ -925,6 +1074,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                     onChange={(e) => setFormData({ ...formData, permit_expiry: e.target.value })}
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                   />
+                  {renderExpiryWarning(formData.permit_expiry)}
                 </div>
               </div>
             </div>
@@ -934,10 +1084,10 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
             <label className="block text-xs font-bold text-slate-700 mb-1">Remarks & Notes</label>
             <textarea
               rows={2}
-              value={formData.notes}
+              value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              placeholder="Contract or operational notes..."
+              placeholder="Operational or compliance notes..."
             />
           </div>
 
@@ -964,24 +1114,20 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
         <Modal
           isOpen={isViewOpen}
           onClose={() => setIsViewOpen(false)}
-          title={`Bus Profile: ${viewingBusDetails.bus.bus_number} (${viewingBusDetails.bus.registration_number})`}
-          subtitle={`${viewingBusDetails.bus.make} ${viewingBusDetails.bus.model} • Current Odometer: ${viewingBusDetails.bus.current_odometer_km?.toLocaleString()} KM`}
+          title={`Bus Profile: ${viewingBusDetails.bus.registration_number}`}
+          subtitle={`Bus Type: ${viewingBusDetails.bus.bus_type || 'Fleet Bus'} • Status: ${viewingBusDetails.bus.operational_status}`}
           maxWidth="max-w-4xl"
         >
           <div className="space-y-4">
             {/* Top specs summary */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Status</span>
                 <Badge status={viewingBusDetails.bus.operational_status} />
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">Assigned Driver</span>
-                <span className="font-bold text-slate-800">{viewingBusDetails.bus.driver_name || 'None'}</span>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold">Seating</span>
-                <span className="font-bold text-slate-800">{viewingBusDetails.bus.seating_capacity} Seats</span>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Bus Type</span>
+                <span className="font-bold text-slate-800">{viewingBusDetails.bus.bus_type || 'Standard'}</span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Insurance Valid Till</span>
@@ -1103,6 +1249,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                     <table className="w-full text-left text-xs">
                       <thead>
                         <tr className="text-slate-400 border-b border-slate-100">
+                          <th className="py-1 px-2 text-center w-12">S.NO</th>
                           <th className="py-1">Date</th>
                           <th className="py-1">Opening</th>
                           <th className="py-1">Closing</th>
@@ -1111,8 +1258,9 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
-                        {viewingBusDetails.kmHistory.map((k: any) => (
+                        {viewingBusDetails.kmHistory.map((k: any, idx: number) => (
                           <tr key={k.id}>
+                            <td className="py-1 px-2 font-bold text-slate-500 text-center">{idx + 1}</td>
                             <td className="py-1 font-medium">{k.entry_date}</td>
                             <td className="py-1 text-slate-500">{k.opening_km}</td>
                             <td className="py-1 font-semibold text-slate-900">{k.closing_km}</td>

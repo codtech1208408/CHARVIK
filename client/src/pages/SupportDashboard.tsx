@@ -417,6 +417,7 @@ export const SupportDashboard: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
                   <tr>
+                    <th className="py-2.5 px-3 font-semibold text-center w-14">S.NO</th>
                     <th className="py-2.5 px-3 font-semibold">Ref ID</th>
                     <th className="py-2.5 px-3 font-semibold">Bus No</th>
                     <th className="py-2.5 px-3 font-semibold">Category</th>
@@ -427,8 +428,9 @@ export const SupportDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {complaints.slice(0, 6).map((c) => (
+                  {complaints.slice(0, 6).map((c, index) => (
                     <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
                       <td className="py-3 px-3 font-mono font-bold text-slate-800">{c.complaint_ref}</td>
                       <td className="py-3 px-3 font-bold text-blue-700">{c.bus_number}</td>
                       <td className="py-3 px-3 text-slate-600">{c.category}</td>
@@ -475,7 +477,7 @@ export const SupportDashboard: React.FC = () => {
                   ))}
                   {complaints.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="text-center py-8 text-slate-400">
+                      <td colSpan={8} className="text-center py-8 text-slate-400">
                         No active complaints reported. Fleet operating smoothly!
                       </td>
                     </tr>
@@ -602,6 +604,7 @@ export const SupportDashboard: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
                   <tr>
+                    <th className="py-2.5 px-3 font-semibold text-center w-14">S.NO</th>
                     <th className="py-2.5 px-3 font-semibold">Date</th>
                     <th className="py-2.5 px-3 font-semibold">Bus No</th>
                     <th className="py-2.5 px-3 font-semibold">Driver</th>
@@ -611,8 +614,9 @@ export const SupportDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {recentKm.slice(0, 6).map((k: any) => (
+                  {recentKm.slice(0, 6).map((k: any, index: number) => (
                     <tr key={k.id} className="hover:bg-slate-50/70">
+                      <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
                       <td className="py-2.5 px-3 font-medium text-slate-700">{k.entry_date}</td>
                       <td className="py-2.5 px-3 font-bold text-[#142B4A]">{k.bus_number}</td>
                       <td className="py-2.5 px-3 text-slate-600">{k.driver_name || 'Assigned Driver'}</td>

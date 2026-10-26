@@ -10,7 +10,9 @@ import {
   Eye,
   Camera,
   FileCheck,
-  AlertCircle
+  AlertCircle,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { BusConditionInspection, Bus as BusType } from '../types';
@@ -29,6 +31,7 @@ export const BusCondition: React.FC = () => {
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingInspection, setEditingInspection] = useState<BusConditionInspection | null>(null);
   const [viewingInspection, setViewingInspection] = useState<BusConditionInspection | null>(null);
 
   // Form State
@@ -83,6 +86,7 @@ export const BusCondition: React.FC = () => {
   };
 
   const handleOpenAdd = () => {
+    setEditingInspection(null);
     const firstBus = buses[0];
     const currentKm = firstBus ? firstBus.current_odometer_km : '';
     setFormData({
@@ -114,6 +118,48 @@ export const BusCondition: React.FC = () => {
     setIsAddOpen(true);
   };
 
+  const handleOpenEdit = (item: BusConditionInspection) => {
+    setEditingInspection(item);
+    setFormData({
+      bus_id: String(item.bus_id),
+      inspection_date: item.inspection_date || new Date().toISOString().split('T')[0],
+      inspection_time: item.inspection_time || '10:00',
+      odometer_km: item.odometer_km ?? '',
+      inspector_name: item.inspector_name || '',
+      exterior_body: item.exterior_body || 'Good',
+      tyre_condition: item.tyre_condition || 'Good',
+      brake_condition: item.brake_condition || 'Good',
+      engine_condition: item.engine_condition || 'Good',
+      battery_condition: item.battery_condition || 'Good',
+      ac_condition: item.ac_condition || 'Good',
+      lights_condition: item.lights_condition || 'Good',
+      mirrors_condition: item.mirrors_condition || 'Good',
+      windshield_condition: item.windshield_condition || 'Good',
+      wiper_condition: item.wiper_condition || 'Good',
+      doors_emergency_exits: item.doors_emergency_exits || 'Good',
+      seat_condition: item.seat_condition || 'Good',
+      safety_equipment: item.safety_equipment || 'Good',
+      fluid_levels: item.fluid_levels || 'Good',
+      visible_leaks: item.visible_leaks || 'Good',
+      roadworthiness_status: item.roadworthiness_status || 'Fit for Service',
+      defects_found: item.defects_found || '',
+      corrective_action_required: item.corrective_action_required || '',
+      inspector_remarks: item.inspector_remarks || ''
+    });
+    setIsAddOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this inspection checklist?')) return;
+    try {
+      await api.deleteBusCondition(id);
+      success('Inspection checklist deleted successfully!');
+      loadData();
+    } catch (err: any) {
+      error(err.message || 'Failed to delete inspection');
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.bus_id || !formData.inspector_name) {
@@ -121,9 +167,15 @@ export const BusCondition: React.FC = () => {
       return;
     }
     try {
-      await api.createBusCondition(formData);
-      success('Bus condition inspection checklist recorded!');
+      if (editingInspection) {
+        await api.updateBusCondition(editingInspection.id, formData);
+        success('Inspection checklist updated successfully!');
+      } else {
+        await api.createBusCondition(formData);
+        success('Bus condition inspection checklist recorded!');
+      }
       setIsAddOpen(false);
+      setEditingInspection(null);
       loadData();
     } catch (err: any) {
       error(err.message || 'Failed to save inspection');
@@ -211,6 +263,7 @@ export const BusCondition: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Ref. No.</th>
                 <th className="py-3 px-4">Bus</th>
                 <th className="py-3 px-4">Inspection Date & Time</th>
@@ -224,20 +277,21 @@ export const BusCondition: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading inspection records...
                   </td>
                 </tr>
               ) : inspections.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     No inspection checklists found.
                   </td>
                 </tr>
               ) : (
-                inspections.map((item) => (
+                inspections.map((item, index) => (
                   <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4 font-mono font-bold text-slate-900">{item.inspection_ref}</td>
                     <td className="py-3 px-4">
                       <span className="font-bold text-slate-900">{item.bus_number}</span>
@@ -255,14 +309,30 @@ export const BusCondition: React.FC = () => {
                       {item.defects_found || <span className="text-emerald-600 font-semibold">None reported (Clean)</span>}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => setViewingInspection(item)}
-                        className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors cursor-pointer gap-1"
-                        title="View Full 15-Point Checklist"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Checklist</span>
-                      </button>
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => setViewingInspection(item)}
+                          className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors cursor-pointer gap-1"
+                          title="View Full 15-Point Checklist"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View</span>
+                        </button>
+                        <button
+                          onClick={() => handleOpenEdit(item)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="Edit Inspection Record"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete Inspection Record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -272,12 +342,15 @@ export const BusCondition: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Modal */}
+      {/* Add / Edit Modal */}
       <Modal
         isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        title="Conduct 15-Point Bus Safety Inspection"
-        subtitle="Verify mechanical integrity, safety accessories, and cabin cleanliness"
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditingInspection(null);
+        }}
+        title={editingInspection ? `Edit Inspection (${editingInspection.inspection_ref})` : 'Conduct 15-Point Bus Safety Inspection'}
+        subtitle={editingInspection ? 'Update condition points, defects, and roadworthiness' : 'Verify mechanical integrity, safety accessories, and cabin cleanliness'}
         maxWidth="max-w-3xl"
       >
         <form onSubmit={handleSave} className="space-y-4">

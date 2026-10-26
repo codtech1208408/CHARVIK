@@ -54,11 +54,11 @@ export const ProductManagement: React.FC = () => {
     category: 'Lubricants',
     sku: '',
     stock_quantity: 0,
-    min_stock_level: 5,
+    min_stock_level: 0,
     unit_price: 0,
     supplier: '',
     unit: 'Units',
-    location: 'Main Garage Shelf A'
+    location: ''
   });
 
   useEffect(() => {
@@ -83,12 +83,12 @@ export const ProductManagement: React.FC = () => {
       name: '',
       category: 'Lubricants',
       sku: `PRD-${Date.now().toString().slice(-4)}`,
-      stock_quantity: 10,
-      min_stock_level: 5,
-      unit_price: 1500,
-      supplier: 'Fleet Spares Hub',
+      stock_quantity: 0,
+      min_stock_level: 0,
+      unit_price: 0,
+      supplier: '',
       unit: 'Units',
-      location: 'Central Depot Shelf 1'
+      location: ''
     });
     setIsAddOpen(true);
   };
@@ -163,7 +163,7 @@ export const ProductManagement: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Package className="w-5 h-5 text-amber-500" />
+            <Package className="w-5 h-5 text-blue-600" />
             <span>Product & Spare Parts Management</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -173,7 +173,7 @@ export const ProductManagement: React.FC = () => {
 
         <button
           onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Add New Product</span>
@@ -188,7 +188,7 @@ export const ProductManagement: React.FC = () => {
             <h3 className="text-2xl font-black text-slate-800 mt-1">{products.length} Products</h3>
             <p className="text-[11px] text-slate-400 mt-0.5">Spares & consumables catalog</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
             <Package className="w-5 h-5" />
           </div>
         </div>
@@ -266,6 +266,7 @@ export const ProductManagement: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Product Details</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4">SKU / Code</th>
@@ -280,13 +281,14 @@ export const ProductManagement: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     No product inventory records found. Click &quot;Add New Product&quot; to begin.
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((p) => (
+                filteredProducts.map((p, index) => (
                   <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4">
                       <p className="font-bold text-slate-900">{p.name}</p>
                       <p className="text-[11px] text-slate-400">{p.location}</p>
@@ -461,7 +463,7 @@ export const ProductManagement: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 transition-colors shadow-xs cursor-pointer"
+              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-colors shadow-sm cursor-pointer"
             >
               {editingProduct ? 'Update Product' : 'Add to Inventory'}
             </button>

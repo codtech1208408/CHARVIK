@@ -10,6 +10,7 @@ import {
   Wrench,
   Bus,
   Edit,
+  Trash2,
   ShieldAlert,
   ArrowRight
 } from 'lucide-react';
@@ -33,6 +34,7 @@ export const Complaints: React.FC = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isResolveOpen, setIsResolveOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [editingComplaint, setEditingComplaint] = useState<Complaint | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -80,6 +82,7 @@ export const Complaints: React.FC = () => {
   };
 
   const handleOpenAdd = () => {
+    setEditingComplaint(null);
     const firstBus = buses[0];
     setFormData({
       bus_id: firstBus ? String(firstBus.id) : '',
@@ -96,6 +99,34 @@ export const Complaints: React.FC = () => {
     setIsAddOpen(true);
   };
 
+  const handleOpenEdit = (comp: Complaint) => {
+    setEditingComplaint(comp);
+    setFormData({
+      bus_id: String(comp.bus_id || ''),
+      category: comp.category || 'AC',
+      description: comp.description || '',
+      priority: comp.priority || 'Medium',
+      reported_by: comp.reported_by || '',
+      contact_number: comp.contact_number || '',
+      assigned_staff: comp.assigned_staff || '',
+      assigned_vendor: comp.assigned_vendor || '',
+      expected_resolution_date: comp.expected_resolution_date ? comp.expected_resolution_date.slice(0, 10) : '',
+      remarks: comp.remarks || ''
+    });
+    setIsAddOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this complaint record?')) return;
+    try {
+      await api.deleteComplaint(id);
+      success('Complaint deleted successfully');
+      loadData();
+    } catch (err: any) {
+      error(err.message || 'Failed to delete complaint');
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.bus_id || !formData.description) {
@@ -103,12 +134,21 @@ export const Complaints: React.FC = () => {
       return;
     }
     try {
-      await api.createComplaint(formData);
-      success('Complaint registered successfully!');
+      if (editingComplaint) {
+        await api.updateComplaint(editingComplaint.id, {
+          ...editingComplaint,
+          ...formData
+        });
+        success('Complaint updated successfully!');
+      } else {
+        await api.createComplaint(formData);
+        success('Complaint registered successfully!');
+      }
       setIsAddOpen(false);
+      setEditingComplaint(null);
       loadData();
     } catch (err: any) {
-      error(err.message || 'Failed to register complaint');
+      error(err.message || 'Failed to save complaint');
     }
   };
 
@@ -116,7 +156,7 @@ export const Complaints: React.FC = () => {
     setSelectedComplaint(comp);
     setResolveData({
       status: 'Resolved',
-      resolution_description: comp.resolution_description || 'Root cause identified and corrective mechanical action completed.',
+      resolution_description: comp.resolution_description || '',
       remarks: comp.remarks || ''
     });
     setIsResolveOpen(true);
@@ -217,6 +257,7 @@ export const Complaints: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Ref. No.</th>
                 <th className="py-3 px-4">Bus</th>
                 <th className="py-3 px-4">Category</th>
@@ -231,20 +272,21 @@ export const Complaints: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading complaints...
                   </td>
                 </tr>
               ) : complaints.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     No complaints registered matching this filter.
                   </td>
                 </tr>
               ) : (
-                complaints.map((c) => (
+                complaints.map((c, index) => (
                   <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4 font-mono font-bold text-slate-900">{c.complaint_ref}</td>
                     <td className="py-3 px-4">
                       <span className="font-bold text-slate-900">{c.bus_number}</span>
@@ -273,14 +315,29 @@ export const Complaints: React.FC = () => {
                       <Badge status={c.status} />
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => handleOpenResolve(c)}
-                        className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors cursor-pointer gap-1"
-                        title="Update Status / Resolve"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                        <span>Update</span>
-                      </button>
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEdit(c)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                          title="Edit Complaint"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenResolve(c)}
+                          className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                          title="Update Status / Resolve"
+                        >
+                          <span>Status</span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(c.id)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete Complaint"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -290,12 +347,15 @@ export const Complaints: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Modal */}
+      {/* Add / Edit Modal */}
       <Modal
         isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        title="Register Vehicle Complaint"
-        subtitle="Report defect or operational anomaly for fleet engineering resolution"
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditingComplaint(null);
+        }}
+        title={editingComplaint ? `Edit Complaint ${editingComplaint.complaint_ref}` : "Register Vehicle Complaint"}
+        subtitle={editingComplaint ? "Update vehicle defect report or technician assignment" : "Report defect or operational anomaly for fleet engineering resolution"}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSave} className="space-y-4">

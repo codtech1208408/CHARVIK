@@ -501,6 +501,7 @@ export const Settings: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-100">
+                    <th className="py-2 w-14 text-center">S.NO</th>
                     <th className="py-2">Timestamp</th>
                     <th className="py-2">Action</th>
                     <th className="py-2">Module</th>
@@ -509,8 +510,9 @@ export const Settings: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {auditLogs.map((log) => (
+                  {auditLogs.map((log, idx) => (
                     <tr key={log.id}>
+                      <td className="py-2 font-bold text-slate-500 text-center">{idx + 1}</td>
                       <td className="py-2 font-mono text-[11px] text-slate-500">{log.created_at}</td>
                       <td className="py-2 font-bold text-slate-900">{log.action}</td>
                       <td className="py-2 font-semibold text-blue-700">{log.module}</td>
@@ -563,6 +565,7 @@ export const Settings: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-100">
+                    <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
                     <th className="py-2.5 px-3">Name</th>
                     <th className="py-2.5 px-3">Username / Email</th>
                     <th className="py-2.5 px-3">Assigned Role</th>
@@ -571,8 +574,9 @@ export const Settings: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {staffCredentials.map((staff) => (
+                  {staffCredentials.map((staff, idx) => (
                     <tr key={staff.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-3 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
                       <td className="py-3 px-3 font-bold text-slate-900">{staff.name}</td>
                       <td className="py-3 px-3 font-mono text-xs text-slate-700">
                         {staff.role === 'Captain' ? (

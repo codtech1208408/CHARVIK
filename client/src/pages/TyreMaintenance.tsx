@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   RotateCw,
   Edit,
+  Trash2,
   Bus,
   Save,
   CheckCircle2
@@ -27,6 +28,7 @@ export const TyreMaintenance: React.FC = () => {
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingTyre, setEditingTyre] = useState<TyreRecord | null>(null);
   const [isRotateModalOpen, setIsRotateModalOpen] = useState(false);
   const [selectedTyre, setSelectedTyre] = useState<TyreRecord | null>(null);
 
@@ -76,6 +78,7 @@ export const TyreMaintenance: React.FC = () => {
   };
 
   const handleOpenAdd = () => {
+    setEditingTyre(null);
     const firstBus = buses[0];
     setFormData({
       bus_id: firstBus ? String(firstBus.id) : '',
@@ -96,6 +99,38 @@ export const TyreMaintenance: React.FC = () => {
     setIsAddOpen(true);
   };
 
+  const handleOpenEdit = (t: TyreRecord) => {
+    setEditingTyre(t);
+    setFormData({
+      bus_id: String(t.bus_id),
+      tyre_serial_number: t.tyre_serial_number,
+      brand: t.brand || '',
+      size: t.size || '',
+      tyre_position: t.tyre_position || 'Front Left',
+      installation_date: t.installation_date || new Date().toISOString().split('T')[0],
+      installation_km: t.installation_km || '',
+      last_inspection_date: t.last_inspection_date || new Date().toISOString().split('T')[0],
+      tread_depth_mm: t.tread_depth_mm ?? '',
+      tyre_pressure_psi: t.tyre_pressure_psi ?? '',
+      condition: t.condition || 'Good',
+      supplier: t.supplier || '',
+      cost: t.cost ?? '',
+      remarks: t.remarks || ''
+    });
+    setIsAddOpen(true);
+  };
+
+  const handleDeleteTyre = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this tyre record?')) return;
+    try {
+      await api.deleteTyreRecord(id);
+      success('Tyre record deleted successfully!');
+      loadData();
+    } catch (err: any) {
+      error(err.message || 'Failed to delete tyre record');
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.bus_id || !formData.tyre_serial_number) {
@@ -103,9 +138,15 @@ export const TyreMaintenance: React.FC = () => {
       return;
     }
     try {
-      await api.createTyreRecord(formData);
-      success('Tyre record saved successfully!');
+      if (editingTyre) {
+        await api.updateTyreRecord(editingTyre.id, formData);
+        success('Tyre record updated successfully!');
+      } else {
+        await api.createTyreRecord(formData);
+        success('Tyre record saved successfully!');
+      }
       setIsAddOpen(false);
+      setEditingTyre(null);
       loadData();
     } catch (err: any) {
       error(err.message || 'Failed to save tyre record');
@@ -198,6 +239,7 @@ export const TyreMaintenance: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Bus</th>
                 <th className="py-3 px-4">Tyre Serial</th>
                 <th className="py-3 px-4">Brand & Size</th>
@@ -212,20 +254,21 @@ export const TyreMaintenance: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading tyre records...
                   </td>
                 </tr>
               ) : tyres.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     No tyre maintenance records found.
                   </td>
                 </tr>
               ) : (
-                tyres.map((t) => (
+                tyres.map((t, index) => (
                   <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4">
                       <span className="font-bold text-slate-900">{t.bus_number}</span>
                       <span className="block text-[11px] text-blue-700 font-semibold">{t.registration_number}</span>
@@ -251,14 +294,30 @@ export const TyreMaintenance: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-slate-500">{t.last_inspection_date || '-'}</td>
                     <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => handleOpenRotate(t)}
-                        className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors cursor-pointer gap-1"
-                        title="Rotate Tyre Position"
-                      >
-                        <RotateCw className="w-3.5 h-3.5" />
-                        <span>Rotate</span>
-                      </button>
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenRotate(t)}
+                          className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors cursor-pointer gap-1"
+                          title="Rotate Tyre Position"
+                        >
+                          <RotateCw className="w-3.5 h-3.5" />
+                          <span>Rotate</span>
+                        </button>
+                        <button
+                          onClick={() => handleOpenEdit(t)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="Edit Tyre Details"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTyre(t.id)}
+                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete Tyre Record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -268,12 +327,15 @@ export const TyreMaintenance: React.FC = () => {
         </div>
       </div>
 
-      {/* Mount New Tyre Modal */}
+      {/* Mount / Edit Tyre Modal */}
       <Modal
         isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        title="Register & Mount Tyre"
-        subtitle="Track tyre serial number, installation date and axle position"
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditingTyre(null);
+        }}
+        title={editingTyre ? `Edit Tyre Record (${editingTyre.tyre_serial_number})` : 'Register & Mount Tyre'}
+        subtitle={editingTyre ? 'Update inspection stats, tread depth, and condition' : 'Track tyre serial number, installation date and axle position'}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSave} className="space-y-4">

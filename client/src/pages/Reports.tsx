@@ -270,6 +270,7 @@ export const Reports: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
                 <tr>
+                  <th className="py-2.5 px-3 whitespace-nowrap w-14 text-center">S.NO</th>
                   {Object.keys(reportData.results[0]).map((col) => (
                     <th key={col} className="py-2.5 px-3 whitespace-nowrap">
                       {col.replace(/_/g, ' ')}
@@ -280,6 +281,7 @@ export const Reports: React.FC = () => {
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {reportData.results.map((row: any, idx: number) => (
                   <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-3 whitespace-nowrap font-bold text-slate-500 text-center">{idx + 1}</td>
                     {Object.keys(row).map((col) => {
                       const val = row[col];
                       const isCost = col.toLowerCase().includes('cost') || col.toLowerCase().includes('expense');

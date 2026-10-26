@@ -34,6 +34,7 @@ interface SidebarProps {
   setIsCollapsed: (val: boolean) => void;
   isMobileOpen: boolean;
   setIsMobileOpen: (val: boolean) => void;
+  isPinned?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -41,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setIsCollapsed,
   isMobileOpen,
   setIsMobileOpen,
+  isPinned = true,
 }) => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
@@ -97,10 +99,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Mobile/Drawer Backdrop */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/60 z-40 lg:hidden backdrop-blur-xs transition-opacity"
+          className={`fixed inset-0 bg-slate-900/60 z-40 ${isPinned ? 'lg:hidden' : 'block'} backdrop-blur-xs transition-opacity`}
           onClick={() => setIsMobileOpen(false)}
         />
       )}
@@ -109,7 +111,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl ${
           isCollapsed ? 'w-20' : 'w-72'
-        } ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        } ${
+          isPinned
+            ? isMobileOpen
+              ? 'translate-x-0'
+              : '-translate-x-full lg:translate-x-0'
+            : isMobileOpen
+            ? 'translate-x-0'
+            : '-translate-x-full'
+        }`}
       >
         {/* Header / Brand Area */}
         <div className="p-4 border-b border-slate-100 flex flex-col items-center justify-between">
@@ -120,22 +130,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
             )}
             <div className="flex items-center gap-1 ml-auto">
-              {/* Mobile Close Button */}
+              {/* Close Button */}
               <button
                 onClick={() => setIsMobileOpen(false)}
-                className="lg:hidden p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+                className={`${isPinned ? 'lg:hidden' : 'flex'} p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer`}
+                title="Close Menu"
               >
                 <X className="w-4 h-4" />
               </button>
 
               {/* Desktop Collapse Button */}
-              <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              >
-                {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-              </button>
+              {isPinned && (
+                <button
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                  title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                >
+                  {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                </button>
+              )}
             </div>
           </div>
 

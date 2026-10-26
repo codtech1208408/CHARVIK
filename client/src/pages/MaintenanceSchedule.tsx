@@ -249,6 +249,7 @@ export const MaintenanceSchedule: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Bus Details</th>
                 <th className="py-3 px-4">Service Type</th>
                 <th className="py-3 px-4">Interval</th>
@@ -263,20 +264,21 @@ export const MaintenanceSchedule: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading schedule...
                   </td>
                 </tr>
               ) : schedules.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     No maintenance schedules found.
                   </td>
                 </tr>
               ) : (
-                schedules.map((s) => (
+                schedules.map((s, index) => (
                   <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4">
                       <span className="font-bold text-slate-900">{s.bus_number}</span>
                       <span className="block text-[11px] text-blue-700 font-semibold">{s.registration_number}</span>

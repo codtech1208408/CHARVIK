@@ -101,7 +101,7 @@ export const WebsiteInquiries: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-amber-500" />
+            <Bell className="w-5 h-5 text-blue-600" />
             <span>Website Inquiries & Customer Leads</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -193,6 +193,7 @@ export const WebsiteInquiries: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-4">Prospect Name</th>
                 <th className="py-3 px-4">Contact Phone & Email</th>
@@ -205,18 +206,19 @@ export const WebsiteInquiries: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <td colSpan={8} className="py-12 text-center text-slate-400">
                     No website inquiries found matching your filters.
                   </td>
                 </tr>
               ) : (
-                filtered.map((item) => (
+                filtered.map((item, index) => (
                   <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4 font-semibold text-slate-800">{item.date}</td>
                     <td className="py-3 px-4 font-bold text-slate-900">{item.name}</td>
                     <td className="py-3 px-4">
                       <p className="font-bold text-slate-800 flex items-center gap-1.5">
-                        <Phone className="w-3 h-3 text-amber-500" />
+                        <Phone className="w-3 h-3 text-blue-600" />
                         <a href={`tel:${item.phone}`} className="hover:underline">
                           {item.phone}
                         </a>
@@ -228,7 +230,7 @@ export const WebsiteInquiries: React.FC = () => {
                         </a>
                       </p>
                     </td>
-                    <td className="py-3 px-4 font-semibold text-amber-700">{item.service_type}</td>
+                    <td className="py-3 px-4 font-semibold text-blue-700">{item.service_type}</td>
                     <td className="py-3 px-4 text-slate-600 max-w-[260px]">
                       <p className="line-clamp-2">{item.message}</p>
                     </td>

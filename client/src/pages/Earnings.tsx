@@ -11,7 +11,9 @@ import {
   ArrowDownRight,
   FileText,
   CreditCard,
-  Download
+  Download,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
@@ -47,15 +49,16 @@ export const Earnings: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<EarningRecord | null>(null);
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    source: 'Corporate IT Transport',
-    bus_number: 'Bus #101',
-    client_or_route: 'Infosys SEZ Corridor',
-    gross_amount: 85000,
-    fuel_expense: 18000,
-    maintenance_expense: 4000,
+    source: '',
+    bus_number: '',
+    client_or_route: '',
+    gross_amount: '' as any,
+    fuel_expense: '' as any,
+    maintenance_expense: '' as any,
     payment_mode: 'Bank Transfer' as EarningRecord['payment_mode'],
     status: 'Received' as EarningRecord['status']
   });
@@ -67,18 +70,41 @@ export const Earnings: React.FC = () => {
   }, [records]);
 
   const handleOpenAdd = () => {
+    setEditingRecord(null);
     setFormData({
       date: new Date().toISOString().split('T')[0],
-      source: 'Monthly Contract Billing',
-      bus_number: 'Bus #102',
-      client_or_route: 'Oakridge School Route',
-      gross_amount: 110000,
-      fuel_expense: 22000,
-      maintenance_expense: 5000,
+      source: '',
+      bus_number: '',
+      client_or_route: '',
+      gross_amount: '' as any,
+      fuel_expense: '' as any,
+      maintenance_expense: '' as any,
       payment_mode: 'Bank Transfer',
       status: 'Received'
     });
     setIsAddOpen(true);
+  };
+
+  const handleOpenEdit = (r: EarningRecord) => {
+    setEditingRecord(r);
+    setFormData({
+      date: r.date,
+      source: r.source,
+      bus_number: r.bus_number,
+      client_or_route: r.client_or_route,
+      gross_amount: r.gross_amount,
+      fuel_expense: r.fuel_expense,
+      maintenance_expense: r.maintenance_expense,
+      payment_mode: r.payment_mode,
+      status: r.status
+    });
+    setIsAddOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this revenue entry?')) return;
+    setRecords(records.filter((r) => r.id !== id));
+    success('Earnings record deleted successfully.');
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -88,23 +114,42 @@ export const Earnings: React.FC = () => {
     const maint = Number(formData.maintenance_expense) || 0;
     const net = gross - fuel - maint;
 
-    const newRecord: EarningRecord = {
-      id: Date.now(),
-      date: formData.date,
-      source: formData.source,
-      bus_number: formData.bus_number,
-      client_or_route: formData.client_or_route,
-      gross_amount: gross,
-      fuel_expense: fuel,
-      maintenance_expense: maint,
-      net_earning: net,
-      payment_mode: formData.payment_mode,
-      status: formData.status
-    };
+    if (editingRecord) {
+      const updated: EarningRecord = {
+        ...editingRecord,
+        date: formData.date,
+        source: formData.source,
+        bus_number: formData.bus_number,
+        client_or_route: formData.client_or_route,
+        gross_amount: gross,
+        fuel_expense: fuel,
+        maintenance_expense: maint,
+        net_earning: net,
+        payment_mode: formData.payment_mode,
+        status: formData.status
+      };
+      setRecords(records.map((r) => (r.id === editingRecord.id ? updated : r)));
+      success('Earnings entry updated.');
+    } else {
+      const newRecord: EarningRecord = {
+        id: Date.now(),
+        date: formData.date,
+        source: formData.source,
+        bus_number: formData.bus_number,
+        client_or_route: formData.client_or_route,
+        gross_amount: gross,
+        fuel_expense: fuel,
+        maintenance_expense: maint,
+        net_earning: net,
+        payment_mode: formData.payment_mode,
+        status: formData.status
+      };
+      setRecords([newRecord, ...records]);
+      success('Earnings entry recorded.');
+    }
 
-    setRecords([newRecord, ...records]);
-    success('Earnings entry recorded.');
     setIsAddOpen(false);
+    setEditingRecord(null);
   };
 
   const filtered = records.filter((r) => {
@@ -126,7 +171,7 @@ export const Earnings: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-amber-500" />
+            <TrendingUp className="w-5 h-5 text-blue-600" />
             <span>Earnings & Financial Overview</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -136,7 +181,7 @@ export const Earnings: React.FC = () => {
 
         <button
           onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Record New Revenue</span>
@@ -212,6 +257,7 @@ export const Earnings: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-4">Client / Route</th>
                 <th className="py-3 px-4">Bus</th>
@@ -220,18 +266,20 @@ export const Earnings: React.FC = () => {
                 <th className="py-3 px-4">Net Profit</th>
                 <th className="py-3 px-4">Payment Mode</th>
                 <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     No earnings entries recorded yet. Click &quot;Record New Revenue&quot; to log fleet income.
                   </td>
                 </tr>
               ) : (
-                filtered.map((r) => (
+                filtered.map((r, index) => (
                   <tr key={r.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4 font-semibold text-slate-800">{r.date}</td>
                     <td className="py-3 px-4">
                       <p className="font-bold text-slate-900">{r.client_or_route}</p>
@@ -255,6 +303,24 @@ export const Earnings: React.FC = () => {
                         {r.status}
                       </span>
                     </td>
+                    <td className="py-3 px-4 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEdit(r)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                          title="Edit Revenue Entry"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(r.id)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete Revenue Entry"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -263,12 +329,15 @@ export const Earnings: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Modal */}
+      {/* Add / Edit Modal */}
       <Modal
         isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        title="Record Fleet Earnings & Revenue"
-        subtitle="Log income from contracted routes, charters, and client billing"
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditingRecord(null);
+        }}
+        title={editingRecord ? "Edit Fleet Earnings & Revenue" : "Record Fleet Earnings & Revenue"}
+        subtitle={editingRecord ? "Modify revenue, expenses, or client billing details" : "Log income from contracted routes, charters, and client billing"}
         maxWidth="max-w-md"
       >
         <form onSubmit={handleSave} className="space-y-4">
@@ -383,7 +452,7 @@ export const Earnings: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 transition-colors shadow-xs cursor-pointer"
+              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-colors shadow-sm cursor-pointer"
             >
               Save Earnings Entry
             </button>

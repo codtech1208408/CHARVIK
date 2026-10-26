@@ -8,7 +8,9 @@ import {
   Wrench,
   Bus,
   Save,
-  Check
+  Check,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { OilFilterRecord, Bus as BusType } from '../types';
@@ -25,6 +27,7 @@ export const OilFilterMaintenance: React.FC = () => {
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<OilFilterRecord | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<any>({
@@ -71,6 +74,7 @@ export const OilFilterMaintenance: React.FC = () => {
   };
 
   const handleOpenAdd = () => {
+    setEditingRecord(null);
     const firstBus = buses[0];
     const currentKm = firstBus ? firstBus.current_odometer_km : '';
     setFormData({
@@ -98,6 +102,44 @@ export const OilFilterMaintenance: React.FC = () => {
     setIsAddOpen(true);
   };
 
+  const handleOpenEdit = (r: OilFilterRecord) => {
+    setEditingRecord(r);
+    setFormData({
+      bus_id: String(r.bus_id),
+      replacement_date: r.replacement_date || new Date().toISOString().split('T')[0],
+      odometer_km: r.odometer_km ?? '',
+      oil_type: r.oil_type || '',
+      oil_brand: r.oil_brand || '',
+      oil_quantity_liters: r.oil_quantity_liters ?? '',
+      oil_cost: r.oil_cost ?? '',
+      oil_filter_replaced: Boolean(r.oil_filter_replaced),
+      oil_filter_details: r.oil_filter_details || '',
+      air_filter_replaced: Boolean(r.air_filter_replaced),
+      air_filter_details: r.air_filter_details || '',
+      fuel_filter_replaced: Boolean(r.fuel_filter_replaced),
+      fuel_filter_details: r.fuel_filter_details || '',
+      other_filter_details: r.other_filter_details || '',
+      labour_cost: r.labour_cost ?? '',
+      service_provider: r.service_provider || '',
+      next_due_date: r.next_due_date || '',
+      next_due_km: r.next_due_km ?? '',
+      performed_by: r.performed_by || '',
+      remarks: r.remarks || ''
+    });
+    setIsAddOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this oil and filter record?')) return;
+    try {
+      await api.deleteOilRecord(id);
+      success('Oil & filter record deleted successfully!');
+      loadData();
+    } catch (err: any) {
+      error(err.message || 'Failed to delete record');
+    }
+  };
+
   const totalCalculated = Number(formData.oil_cost || 0) + Number(formData.labour_cost || 0);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -107,12 +149,21 @@ export const OilFilterMaintenance: React.FC = () => {
       return;
     }
     try {
-      await api.createOilRecord({
-        ...formData,
-        total_cost: totalCalculated
-      });
-      success('Oil & Filter replacement record logged!');
+      if (editingRecord) {
+        await api.updateOilRecord(editingRecord.id, {
+          ...formData,
+          total_cost: totalCalculated
+        });
+        success('Oil & filter record updated successfully!');
+      } else {
+        await api.createOilRecord({
+          ...formData,
+          total_cost: totalCalculated
+        });
+        success('Oil & Filter replacement record logged!');
+      }
       setIsAddOpen(false);
+      setEditingRecord(null);
       loadData();
     } catch (err: any) {
       error(err.message || 'Failed to save record');
@@ -171,6 +222,7 @@ export const OilFilterMaintenance: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Bus</th>
                 <th className="py-3 px-4">Replacement Date</th>
                 <th className="py-3 px-4">Odometer (KM)</th>
@@ -180,25 +232,27 @@ export const OilFilterMaintenance: React.FC = () => {
                 <th className="py-3 px-4">Total Cost (₹)</th>
                 <th className="py-3 px-4">Next Due KM</th>
                 <th className="py-3 px-4">Mechanic</th>
+                <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={11} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading oil records...
                   </td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={11} className="py-12 text-center text-slate-400">
                     No oil and filter records found.
                   </td>
                 </tr>
               ) : (
-                records.map((r) => (
+                records.map((r, index) => (
                   <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4">
                       <span className="font-bold text-slate-900">{r.bus_number}</span>
                       <span className="block text-[11px] text-blue-700 font-semibold">{r.registration_number}</span>
@@ -229,6 +283,24 @@ export const OilFilterMaintenance: React.FC = () => {
                       {r.next_due_km?.toLocaleString()} km
                     </td>
                     <td className="py-3 px-4 text-slate-600">{r.performed_by || r.service_provider}</td>
+                    <td className="py-3 px-4 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEdit(r)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="Edit Record"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(r.id)}
+                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete Record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -237,12 +309,15 @@ export const OilFilterMaintenance: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Modal */}
+      {/* Add / Edit Modal */}
       <Modal
         isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        title="Record Oil & Filter Service"
-        subtitle="Log engine lubricant specifications and filter replacements"
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditingRecord(null);
+        }}
+        title={editingRecord ? 'Edit Oil & Filter Service Record' : 'Record Oil & Filter Service'}
+        subtitle={editingRecord ? 'Update lubricants, filters and costs' : 'Log engine lubricant specifications and filter replacements'}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSave} className="space-y-4">

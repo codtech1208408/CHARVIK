@@ -462,6 +462,7 @@ export const EmployeeManagement: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Code</th>
                 <th className="py-3 px-4">Employee Name</th>
                 <th className="py-3 px-4">Role</th>
@@ -477,20 +478,21 @@ export const EmployeeManagement: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
+                  <td colSpan={11} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading employee records...
                   </td>
                 </tr>
               ) : filteredEmployees.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
+                  <td colSpan={11} className="py-12 text-center text-slate-400">
                     No employees found matching the filters.
                   </td>
                 </tr>
               ) : (
-                filteredEmployees.map((e) => (
+                filteredEmployees.map((e, index) => (
                   <tr key={e.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4 font-mono font-bold text-slate-900">{e.employee_code}</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center space-x-2.5">
@@ -659,6 +661,7 @@ export const EmployeeManagement: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="bg-slate-50/75 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
+                    <th className="py-3 px-4 w-14 text-center">S.NO</th>
                     <th className="py-3 px-4">Staff Member</th>
                     <th className="py-3 px-4">Assigned Role</th>
                     <th className="py-3 px-4">Login Identifier</th>
@@ -670,20 +673,21 @@ export const EmployeeManagement: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {loadingStaff ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-slate-400">
+                      <td colSpan={7} className="py-12 text-center text-slate-400">
                         <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent mb-2"></div>
                         <p>Loading staff credentials...</p>
                       </td>
                     </tr>
                   ) : staffCredentials.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-slate-400">
+                      <td colSpan={7} className="py-12 text-center text-slate-400">
                         No staff accounts created yet.
                       </td>
                     </tr>
                   ) : (
-                    staffCredentials.map((s) => (
+                    staffCredentials.map((s, index) => (
                       <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs">

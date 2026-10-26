@@ -342,6 +342,7 @@ export const DailyKilometers: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-4">Bus Details</th>
                 <th className="py-3 px-4">Driver</th>
@@ -355,20 +356,21 @@ export const DailyKilometers: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading entries...
                   </td>
                 </tr>
               ) : !Array.isArray(entries) || entries.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     No daily kilometer records found matching the criteria.
                   </td>
                 </tr>
               ) : (
-                entries.map((item) => (
+                entries.map((item, index) => (
                   <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4 font-semibold text-slate-800">{item.entry_date || '-'}</td>
                     <td className="py-3 px-4">
                       <span className="font-bold text-slate-900">{item.bus_number || '-'}</span>

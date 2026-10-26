@@ -8,6 +8,7 @@ import {
   Clock,
   Bus,
   Edit,
+  Trash2,
   DollarSign,
   ShieldCheck,
   Check
@@ -176,6 +177,17 @@ export const Repairs: React.FC = () => {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this repair work order?')) return;
+    try {
+      await api.deleteRepair(id);
+      success('Repair work order deleted successfully!');
+      loadData();
+    } catch (err: any) {
+      error(err.message || 'Failed to delete repair work order');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -239,6 +251,7 @@ export const Repairs: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Work Order</th>
                 <th className="py-3 px-4">Bus</th>
                 <th className="py-3 px-4">Category</th>
@@ -253,20 +266,21 @@ export const Repairs: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading repair work orders...
                   </td>
                 </tr>
               ) : repairs.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     No repair work orders found matching the criteria.
                   </td>
                 </tr>
               ) : (
-                repairs.map((r) => (
+                repairs.map((r, index) => (
                   <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4 font-mono font-bold text-slate-900">{r.work_order_number}</td>
                     <td className="py-3 px-4">
                       <span className="font-bold text-slate-900">{r.bus_number}</span>
@@ -293,14 +307,22 @@ export const Repairs: React.FC = () => {
                       <Badge status={r.status} />
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => handleOpenEdit(r)}
-                        className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors cursor-pointer gap-1"
-                        title="Update Work Order / Return to Service"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                        <span>Manage</span>
-                      </button>
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEdit(r)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                          title="Edit / Manage Work Order"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(r.id)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete Work Order"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ClipboardList,
   Plus,
@@ -12,62 +12,115 @@ import {
   Edit,
   Trash2,
   Calendar,
-  Check
+  Check,
+  Eye,
+  AlertTriangle,
+  ChevronRight,
+  ShieldAlert,
+  Users,
+  MapPin,
+  TrendingUp,
+  DollarSign,
+  ArrowRight,
+  Sparkles,
+  Layers,
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 
-interface TaskItem {
-  id: number;
-  title: string;
-  category: 'Preventive Maintenance' | 'Urgent Repair' | 'Cleaning & Sanitization' | 'Compliance & Documents' | 'Route Duty';
-  priority: 'Urgent' | 'High' | 'Medium' | 'Low';
-  assigned_to: string;
-  bus_number: string;
-  due_date: string;
-  status: 'To Do' | 'In Progress' | 'Completed';
-  notes: string;
+export interface CrewFinancial {
+  employee_id?: number | string;
+  employee_name: string;
+  role: 'Driver' | 'Helper' | 'Captain';
+  salary_amount: number;
+  advance_amount: number;
+  balance_due: number;
+  work_remarks?: string;
 }
 
-const STORAGE_KEY = 'charvik_task_management_data';
+export interface TripDutyItem {
+  id: number;
+  trip_start_date: string; // YYYY-MM-DD
+  vehicle_number: string; // registration_number
+  vehicle_status: 'RUN' | 'HOLD (Low Occupancy)' | 'HOLD (Maintenance)';
+  route_corridor: string;
+  operator_organizer: string;
+  driver1: CrewFinancial;
+  driver2?: CrewFinancial;
+  helper?: CrewFinancial;
+  captain?: CrewFinancial;
+  trip_remarks: string;
+  duty_status: 'Scheduled' | 'In Progress' | 'Completed';
+  created_at: string;
+}
+
+const STORAGE_KEY = 'charvik_trip_duty_management_v2';
 
 export const TaskManagement: React.FC = () => {
   const { success, error } = useToast();
 
-  const [tasks, setTasks] = useState<TaskItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
 
   const [buses, setBuses] = useState<any[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
+  const [routes, setRoutes] = useState<any[]>([]);
+  const [organizers, setOrganizers] = useState<any[]>([]);
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [priorityFilter, setPriorityFilter] = useState('All');
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<TaskItem | null>(null);
+  const [activeTab, setActiveTab] = useState<'assigned' | 'pending' | 'all_trips'>('assigned');
 
-  const [formData, setFormData] = useState<Partial<TaskItem>>({
-    title: '',
-    category: 'Preventive Maintenance',
-    priority: 'Medium',
-    assigned_to: '',
-    bus_number: '',
-    due_date: new Date().toISOString().split('T')[0],
-    status: 'To Do',
-    notes: ''
+  // Modals
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingTrip, setEditingTrip] = useState<TripDutyItem | null>(null);
+  const [isViewTripsOpen, setIsViewTripsOpen] = useState(false);
+  const [selectedBusForView, setSelectedBusForView] = useState<string | null>(null);
+
+  // Trips Store
+  const [trips, setTrips] = useState<TripDutyItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+
+  // Form State
+  const [formData, setFormData] = useState<Partial<TripDutyItem>>({
+    trip_start_date: todayStr,
+    vehicle_number: '',
+    vehicle_status: 'RUN',
+    route_corridor: '',
+    operator_organizer: '',
+    driver1: {
+      employee_name: '',
+      role: 'Driver',
+      salary_amount: '' as any,
+      advance_amount: 0,
+      balance_due: 0
+    },
+    driver2: {
+      employee_name: '',
+      role: 'Driver',
+      salary_amount: '' as any,
+      advance_amount: 0,
+      balance_due: 0
+    },
+    helper: undefined,
+    captain: undefined,
+    trip_remarks: '',
+    duty_status: 'Scheduled'
   });
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
     } catch {}
-  }, [tasks]);
+  }, [trips]);
 
   useEffect(() => {
     async function loadAux() {
@@ -79,438 +132,1569 @@ export const TaskManagement: React.FC = () => {
         setBuses(Array.isArray(bData) ? bData : []);
         setEmployees(Array.isArray(eData) ? eData : []);
       } catch {}
+
+      // Load routes & organizers from local storage caches
+      try {
+        const rSaved = localStorage.getItem('charvik_route_management_data');
+        if (rSaved) setRoutes(JSON.parse(rSaved));
+        const oSaved = localStorage.getItem('charvik_organizer_management_data');
+        if (oSaved) setOrganizers(JSON.parse(oSaved));
+      } catch {}
     }
     loadAux();
   }, []);
 
-  const handleOpenAdd = () => {
-    setEditingTask(null);
+  const drivers = useMemo(() => employees.filter((e) => e.role === 'Driver'), [employees]);
+  const helpers = useMemo(() => employees.filter((e) => e.role === 'Helper'), [employees]);
+  const captains = useMemo(() => employees.filter((e) => e.role === 'Captain'), [employees]);
+
+  // Trips strictly on the selected date
+  const dateTrips = useMemo(() => {
+    return trips.filter((t) => t.trip_start_date === selectedDate);
+  }, [trips, selectedDate]);
+
+  // Group trips by vehicle number on selected date
+  const busGroupMap = useMemo(() => {
+    const map = new Map<string, TripDutyItem[]>();
+    dateTrips.forEach((t) => {
+      const reg = t.vehicle_number;
+      if (!map.has(reg)) map.set(reg, []);
+      map.get(reg)!.push(t);
+    });
+    return map;
+  }, [dateTrips]);
+
+  const assignedBusNumbers = useMemo(() => Array.from(busGroupMap.keys()), [busGroupMap]);
+
+  // Unassigned buses on selected date
+  const pendingBusesList = useMemo(() => {
+    const assignedSet = new Set(assignedBusNumbers.map((s) => s.toUpperCase()));
+    return buses.filter((b) => !assignedSet.has(b.registration_number.toUpperCase()));
+  }, [buses, assignedBusNumbers]);
+
+  // Metrics for selected date
+  const totalFleetCount = buses.length;
+  const activeAssignedCount = assignedBusNumbers.length;
+  const pendingBusesCount = pendingBusesList.length;
+
+  const completedBusesCount = useMemo(() => {
+    return assignedBusNumbers.filter((busNo) => {
+      const bTrips = busGroupMap.get(busNo) || [];
+      return bTrips.length > 0 && bTrips.every((t) => t.duty_status === 'Completed');
+    }).length;
+  }, [assignedBusNumbers, busGroupMap]);
+
+  const holdBusesCount = useMemo(() => {
+    return assignedBusNumbers.filter((busNo) => {
+      const bTrips = busGroupMap.get(busNo) || [];
+      return bTrips.some((t) => t.vehicle_status.startsWith('HOLD'));
+    }).length;
+  }, [assignedBusNumbers, busGroupMap]);
+
+  // Open Add Modal
+  const handleOpenAdd = (preselectedBusNumber?: string) => {
+    setEditingTrip(null);
+    const defaultBus = preselectedBusNumber || buses[0]?.registration_number || '';
+    const defaultRoute = routes[0] ? `${routes[0].starting_city} → ${routes[0].ending_city}` : '';
+    const defaultOrg = organizers[0]?.organization_name || '';
+
     setFormData({
-      title: '',
-      category: 'Preventive Maintenance',
-      priority: 'Medium',
-      assigned_to: employees[0]?.full_name || 'Fleet Mechanic',
-      bus_number: buses[0]?.bus_number || 'Bus #101',
-      due_date: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-      status: 'To Do',
-      notes: ''
+      trip_start_date: selectedDate,
+      vehicle_number: defaultBus,
+      vehicle_status: 'RUN',
+      route_corridor: defaultRoute,
+      operator_organizer: defaultOrg,
+      driver1: {
+        employee_name: '',
+        role: 'Driver',
+        salary_amount: '' as any,
+        advance_amount: 0,
+        balance_due: 0
+      },
+      driver2: {
+        employee_name: '',
+        role: 'Driver',
+        salary_amount: '' as any,
+        advance_amount: 0,
+        balance_due: 0
+      },
+      helper: undefined,
+      captain: undefined,
+      trip_remarks: '',
+      duty_status: 'Scheduled'
     });
     setIsAddOpen(true);
   };
 
-  const handleOpenEdit = (task: TaskItem) => {
-    setEditingTask(task);
-    setFormData({ ...task });
+  const handleOpenEdit = (trip: TripDutyItem) => {
+    setEditingTrip(trip);
+    setFormData({
+      ...trip,
+      driver2: trip.driver2 || {
+        employee_name: '',
+        role: 'Driver',
+        salary_amount: '' as any,
+        advance_amount: 0,
+        balance_due: 0
+      }
+    });
     setIsAddOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  // Status Change Rule: If Vehicle Status is HOLD, Driver 1 & Driver 2 salary auto-sets to 500 and advance resets to 0.
+  // If RUN, it is in admin's hand to enter manually.
+  const handleVehicleStatusChange = (newStatus: 'RUN' | 'HOLD (Low Occupancy)' | 'HOLD (Maintenance)') => {
+    setFormData((prev) => {
+      const isHold = newStatus.startsWith('HOLD');
+      const d1Adv = isHold ? 0 : Number(prev.driver1?.advance_amount || 0);
+      const d2Adv = isHold ? 0 : Number(prev.driver2?.advance_amount || 0);
+
+      const d1Salary = isHold ? 500 : (prev.driver1?.salary_amount === 500 ? ('' as any) : prev.driver1?.salary_amount);
+      const d2Salary = isHold ? 500 : (prev.driver2?.salary_amount === 500 ? ('' as any) : prev.driver2?.salary_amount);
+
+      return {
+        ...prev,
+        vehicle_status: newStatus,
+        driver1: {
+          employee_name: prev.driver1?.employee_name || '',
+          role: 'Driver',
+          salary_amount: d1Salary,
+          advance_amount: d1Adv,
+          balance_due: Math.max(0, Number(d1Salary || 0) - d1Adv)
+        },
+        driver2: {
+          employee_name: prev.driver2?.employee_name || '',
+          role: 'Driver',
+          salary_amount: d2Salary,
+          advance_amount: d2Adv,
+          balance_due: Math.max(0, Number(d2Salary || 0) - d2Adv)
+        }
+      };
+    });
+  };
+
+  // Driver 1 Selection
+  const handleDriver1Select = (empName: string) => {
+    const isHold = formData.vehicle_status?.startsWith('HOLD');
+    const emp = drivers.find((d) => d.full_name === empName);
+    const adv = isHold ? 0 : Number(formData.driver1?.advance_amount || 0);
+    const salary = isHold ? 500 : (formData.driver1?.salary_amount ?? ('' as any));
+
+    setFormData((prev) => ({
+      ...prev,
+      driver1: {
+        employee_id: emp?.id,
+        employee_name: empName,
+        role: 'Driver',
+        salary_amount: salary,
+        advance_amount: adv,
+        balance_due: Math.max(0, Number(salary || 0) - adv)
+      }
+    }));
+  };
+
+  // Driver 2 Selection
+  const handleDriver2Select = (empName: string) => {
+    const isHold = formData.vehicle_status?.startsWith('HOLD');
+    const emp = drivers.find((d) => d.full_name === empName);
+    const adv = isHold ? 0 : Number(formData.driver2?.advance_amount || 0);
+    const salary = isHold ? 500 : (formData.driver2?.salary_amount ?? ('' as any));
+
+    setFormData((prev) => ({
+      ...prev,
+      driver2: {
+        employee_id: emp?.id,
+        employee_name: empName,
+        role: 'Driver',
+        salary_amount: salary,
+        advance_amount: adv,
+        balance_due: Math.max(0, Number(salary || 0) - adv)
+      }
+    }));
+  };
+
+  // Helper Selection
+  const handleHelperSelect = (empName: string) => {
+    if (!empName) {
+      setFormData((prev) => ({ ...prev, helper: undefined }));
+      return;
+    }
+    const emp = helpers.find((h) => h.full_name === empName);
+    const existingSalary = formData.helper?.salary_amount;
+
+    setFormData((prev) => ({
+      ...prev,
+      helper: {
+        employee_id: emp?.id,
+        employee_name: empName,
+        role: 'Helper',
+        salary_amount: existingSalary ?? ('' as any),
+        advance_amount: prev.helper?.advance_amount || 0,
+        balance_due: Math.max(0, Number(existingSalary || 0) - Number(prev.helper?.advance_amount || 0))
+      }
+    }));
+  };
+
+  // Captain Selection
+  const handleCaptainSelect = (empName: string) => {
+    if (!empName) {
+      setFormData((prev) => ({ ...prev, captain: undefined }));
+      return;
+    }
+    const emp = captains.find((c) => c.full_name === empName);
+
+    setFormData((prev) => ({
+      ...prev,
+      captain: {
+        employee_id: emp?.id,
+        employee_name: empName,
+        role: 'Captain',
+        salary_amount: prev.captain?.salary_amount || 0,
+        advance_amount: prev.captain?.advance_amount || 0,
+        balance_due: 0,
+        work_remarks: prev.captain?.work_remarks || 'Supervise route stops, passenger comfort & safety'
+      }
+    }));
+  };
+
+  // Financial Tally Calculation
+  const tally = useMemo(() => {
+    let totalSalary = 0;
+    let totalAdv = 0;
+
+    if (formData.driver1?.employee_name) {
+      totalSalary += Number(formData.driver1.salary_amount || 0);
+      totalAdv += Number(formData.driver1.advance_amount || 0);
+    }
+    if (formData.driver2?.employee_name) {
+      totalSalary += Number(formData.driver2.salary_amount || 0);
+      totalAdv += Number(formData.driver2.advance_amount || 0);
+    }
+    if (formData.helper?.employee_name) {
+      totalSalary += Number(formData.helper.salary_amount || 0);
+      totalAdv += Number(formData.helper.advance_amount || 0);
+    }
+    if (formData.captain?.employee_name) {
+      totalSalary += Number(formData.captain.salary_amount || 0);
+      totalAdv += Number(formData.captain.advance_amount || 0);
+    }
+
+    const totalDue = Math.max(0, totalSalary - totalAdv);
+    return { totalSalary, totalAdv, totalDue };
+  }, [formData]);
+
+  const handleSaveTrip = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title) {
-      error('Please enter task title.');
+    if (!formData.vehicle_number) {
+      error('Please select a vehicle number.');
+      return;
+    }
+    if (!formData.driver1?.employee_name) {
+      error('Please select Driver 1 (Lead Driver).');
       return;
     }
 
-    if (editingTask) {
-      const updated = tasks.map((t) =>
-        t.id === editingTask.id ? ({ ...t, ...formData } as TaskItem) : t
+    if (editingTrip) {
+      const updated = trips.map((t) =>
+        t.id === editingTrip.id
+          ? ({
+              ...t,
+              ...formData,
+              driver2: formData.driver2?.employee_name ? formData.driver2 : undefined
+            } as TripDutyItem)
+          : t
       );
-      setTasks(updated);
-      success('Task updated successfully.');
+      setTrips(updated);
+      success(`Trip duty for ${formData.vehicle_number} updated.`);
     } else {
-      const newItem: TaskItem = {
+      const newTrip: TripDutyItem = {
         id: Date.now(),
-        title: formData.title!,
-        category: (formData.category as any) || 'Preventive Maintenance',
-        priority: (formData.priority as any) || 'Medium',
-        assigned_to: formData.assigned_to || 'Assigned Staff',
-        bus_number: formData.bus_number || 'General Depot',
-        due_date: formData.due_date || new Date().toISOString().split('T')[0],
-        status: (formData.status as any) || 'To Do',
-        notes: formData.notes || ''
+        trip_start_date: formData.trip_start_date || selectedDate,
+        vehicle_number: formData.vehicle_number,
+        vehicle_status: formData.vehicle_status || 'RUN',
+        route_corridor: formData.route_corridor || 'Direct Corridor',
+        operator_organizer: formData.operator_organizer || 'Charvik Fleet',
+        driver1: formData.driver1!,
+        driver2: formData.driver2?.employee_name ? formData.driver2 : undefined,
+        helper: formData.helper?.employee_name ? formData.helper : undefined,
+        captain: formData.captain?.employee_name ? formData.captain : undefined,
+        trip_remarks: formData.trip_remarks || '',
+        duty_status: formData.duty_status || 'Scheduled',
+        created_at: new Date().toISOString()
       };
-      setTasks([newItem, ...tasks]);
-      success('New task created.');
+      setTrips([newTrip, ...trips]);
+      success(`Trip duty for ${newTrip.vehicle_number} logged successfully!`);
     }
     setIsAddOpen(false);
   };
 
-  const handleToggleComplete = (id: number) => {
-    const updated = tasks.map((t) => {
-      if (t.id === id) {
-        const nextStatus: TaskItem['status'] = t.status === 'Completed' ? 'To Do' : 'Completed';
-        return { ...t, status: nextStatus };
+  const handleDeleteTrip = (id: number) => {
+    if (!confirm('Are you sure you want to delete this trip record?')) return;
+    setTrips(trips.filter((t) => t.id !== id));
+    success('Trip record deleted.');
+  };
+
+  const handleToggleBusCompleted = (busNumber: string) => {
+    const updated = trips.map((t) => {
+      if (t.trip_start_date === selectedDate && t.vehicle_number === busNumber) {
+        const nextStatus: TripDutyItem['duty_status'] =
+          t.duty_status === 'Completed' ? 'In Progress' : 'Completed';
+        return { ...t, duty_status: nextStatus };
       }
       return t;
     });
-    setTasks(updated);
-    success('Task status updated.');
+    setTrips(updated);
+    success(`Trip status updated for ${busNumber}`);
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm('Are you sure you want to delete this task?')) return;
-    setTasks(tasks.filter((t) => t.id !== id));
-    success('Task deleted.');
-  };
+  // Filtered assigned buses
+  const filteredAssignedBuses = useMemo(() => {
+    return assignedBusNumbers.filter((busNo) => {
+      const bTrips = busGroupMap.get(busNo) || [];
+      const matchSearch =
+        busNo.toLowerCase().includes(search.toLowerCase()) ||
+        bTrips.some(
+          (t) =>
+            t.route_corridor.toLowerCase().includes(search.toLowerCase()) ||
+            t.driver1.employee_name.toLowerCase().includes(search.toLowerCase()) ||
+            (t.driver2 && t.driver2.employee_name.toLowerCase().includes(search.toLowerCase())) ||
+            (t.captain && t.captain.employee_name.toLowerCase().includes(search.toLowerCase()))
+        );
 
-  const filteredTasks = tasks.filter((t) => {
-    const matchesSearch =
-      t.title.toLowerCase().includes(search.toLowerCase()) ||
-      t.assigned_to.toLowerCase().includes(search.toLowerCase()) ||
-      t.bus_number.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || t.status === statusFilter;
-    const matchesPriority = priorityFilter === 'All' || t.priority === priorityFilter;
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+      if (!matchSearch) return false;
 
-  const urgentCount = tasks.filter((t) => t.priority === 'Urgent' && t.status !== 'Completed').length;
-  const inProgressCount = tasks.filter((t) => t.status === 'In Progress').length;
-  const completedCount = tasks.filter((t) => t.status === 'Completed').length;
+      if (statusFilter === 'Active') {
+        return bTrips.some((t) => t.duty_status !== 'Completed');
+      }
+      if (statusFilter === 'Completed') {
+        return bTrips.every((t) => t.duty_status === 'Completed');
+      }
+      if (statusFilter === 'Hold') {
+        return bTrips.some((t) => t.vehicle_status.startsWith('HOLD'));
+      }
+      return true;
+    });
+  }, [assignedBusNumbers, busGroupMap, search, statusFilter]);
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Header and Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-amber-500" />
-            <span>Task Management</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Operational action items, preventive service duties, inspections, and assigned team tasks.
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl font-bold text-[#142B4A]">Task Management & Multi-Staff Duty</h2>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+              Trip Dispatch Portal
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
+            Trip dispatch, multi-staff duty allocation (Driver 1, Driver 2, Helper, Captain), and fleet operation tracking.
           </p>
         </div>
 
         <button
-          onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+          onClick={() => handleOpenAdd()}
+          className="inline-flex items-center px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow gap-1.5 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Create New Task</span>
+          <span>Log New Task & Duty</span>
         </button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Urgent Action Items</p>
-            <h3 className="text-2xl font-black text-rose-600 mt-1">{urgentCount} Tasks</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">High priority fleet tasks</p>
+      {/* Date Selector & Operational Fleet Overview Bar */}
+      <div className="bg-gradient-to-r from-blue-900 via-[#142B4A] to-slate-900 text-white p-5 rounded-2xl shadow-sm space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div className="flex items-center gap-2.5">
+            <Calendar className="w-5 h-5 text-blue-400" />
+            <div>
+              <span className="text-xs font-bold text-blue-200 uppercase tracking-wider block">
+                Select Operational Date
+              </span>
+              <p className="text-sm font-black text-white">Daily Fleet Dispatch & Duty Status</p>
+            </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-            <AlertCircle className="w-5 h-5" />
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => {
+                const y = new Date();
+                y.setDate(y.getDate() - 1);
+                setSelectedDate(y.toISOString().split('T')[0]);
+              }}
+              className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
+            >
+              Yesterday
+            </button>
+            <button
+              onClick={() => setSelectedDate(todayStr)}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                selectedDate === todayStr ? 'bg-blue-600 text-white shadow-xs' : 'bg-white/10 hover:bg-white/20'
+              }`}
+            >
+              Today
+            </button>
+            <button
+              onClick={() => {
+                const t = new Date();
+                t.setDate(t.getDate() + 1);
+                setSelectedDate(t.toISOString().split('T')[0]);
+              }}
+              className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
+            >
+              Tomorrow
+            </button>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-white/15 border border-white/25 text-white font-mono font-bold text-xs px-3 py-1.5 rounded-xl outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
+            />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">In Progress</p>
-            <h3 className="text-2xl font-black text-amber-600 mt-1">{inProgressCount} Tasks</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Currently being executed</p>
+        {/* Fleet KPI Metrics for Selected Date */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1 text-center sm:text-left">
+          <div className="bg-white/10 p-3.5 rounded-xl border border-white/10">
+            <span className="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">
+              Total Fleet Buses
+            </span>
+            <p className="text-2xl font-black text-white mt-0.5">{totalFleetCount}</p>
+            <span className="text-[10px] text-blue-300">Registered Vehicles</span>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-            <Clock className="w-5 h-5" />
-          </div>
-        </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Completed</p>
-            <h3 className="text-2xl font-black text-emerald-600 mt-1">{completedCount} Tasks</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Closed out successfully</p>
+          <div className="bg-emerald-500/20 p-3.5 rounded-xl border border-emerald-400/30">
+            <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider block">
+              Active Assigned
+            </span>
+            <p className="text-2xl font-black text-emerald-400 mt-0.5">{activeAssignedCount}</p>
+            <span className="text-[10px] text-emerald-200">On Duty Today</span>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5" />
+
+          <div className="bg-amber-500/20 p-3.5 rounded-xl border border-amber-400/30">
+            <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">
+              Pending / Unassigned
+            </span>
+            <p className="text-2xl font-black text-amber-400 mt-0.5">{pendingBusesCount}</p>
+            <span className="text-[10px] text-amber-200">Awaiting Allocation</span>
+          </div>
+
+          <div className="bg-blue-500/20 p-3.5 rounded-xl border border-blue-400/30">
+            <span className="text-[10px] font-bold text-blue-300 uppercase tracking-wider block">
+              Completed Buses
+            </span>
+            <p className="text-2xl font-black text-white mt-0.5">{completedBusesCount}</p>
+            <span className="text-[10px] text-blue-200">Trips Finished</span>
+          </div>
+
+          <div className="bg-rose-500/20 p-3.5 rounded-xl border border-rose-400/30">
+            <span className="text-[10px] font-bold text-rose-300 uppercase tracking-wider block">
+              On Hold Buses
+            </span>
+            <p className="text-2xl font-black text-rose-300 mt-0.5">{holdBusesCount}</p>
+            <span className="text-[10px] text-rose-200">Low Occ / Maint</span>
           </div>
         </div>
       </div>
 
-      {/* Filter Strip */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search tasks by title, assigned staff, bus..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-          />
+      {/* Tabs and Filter Bar */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('assigned')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+              activeTab === 'assigned'
+                ? 'bg-[#142B4A] text-white shadow-xs'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            <Bus className="w-3.5 h-3.5" />
+            <span>Assigned Fleet Buses ({activeAssignedCount})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+              activeTab === 'pending'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
+            <span>Pending Buses ({pendingBusesCount})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('all_trips')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
+              activeTab === 'all_trips'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>All Individual Trips ({dateTrips.length})</span>
+          </button>
         </div>
 
-        <div className="w-full md:w-44">
+        {/* Search & Status Filters */}
+        <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+          <div className="relative flex-1 md:w-60">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search vehicle, driver, route..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+            />
+          </div>
+
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 outline-none font-medium"
+            className="text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 outline-none cursor-pointer"
           >
-            <option value="All">All Statuses</option>
-            <option value="To Do">To Do</option>
-            <option value="In Progress">In Progress</option>
+            <option value="All">All Status</option>
+            <option value="Active">Active Duty</option>
             <option value="Completed">Completed</option>
-          </select>
-        </div>
-
-        <div className="w-full md:w-44">
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 outline-none font-medium"
-          >
-            <option value="All">All Priorities</option>
-            <option value="Urgent">Urgent</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
+            <option value="Hold">On Hold</option>
           </select>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
-              <tr>
-                <th className="py-3 px-4">Done</th>
-                <th className="py-3 px-4">Task Title</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Priority</th>
-                <th className="py-3 px-4">Bus</th>
-                <th className="py-3 px-4">Assigned Person</th>
-                <th className="py-3 px-4">Due Date</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              {filteredTasks.length === 0 ? (
+      {/* Main Table View (Grouped by Bus - 1 Bus shows as Active even with 3 Trips!) */}
+      {activeTab === 'assigned' && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
-                    No task management items found. Click &quot;Create New Task&quot; to add.
-                  </td>
+                  <th className="py-3 px-4 w-14 text-center">S.NO</th>
+                  <th className="py-3 px-4">Vehicle Number</th>
+                  <th className="py-3 px-4 text-center">Trip Count Today</th>
+                  <th className="py-3 px-4">Route Corridor(s)</th>
+                  <th className="py-3 px-4">Vehicle Status</th>
+                  <th className="py-3 px-4">Assigned Crew</th>
+                  <th className="py-3 px-4">Total Payout Tally</th>
+                  <th className="py-3 px-4">Duty Status</th>
+                  <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
-              ) : (
-                filteredTasks.map((t) => (
-                  <tr
-                    key={t.id}
-                    className={`hover:bg-slate-50/70 transition-colors ${
-                      t.status === 'Completed' ? 'bg-slate-50/40 opacity-75' : ''
-                    }`}
-                  >
-                    <td className="py-3 px-4">
-                      <button
-                        onClick={() => handleToggleComplete(t.id)}
-                        className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all cursor-pointer ${
-                          t.status === 'Completed'
-                            ? 'bg-emerald-600 border-emerald-600 text-white'
-                            : 'border-slate-300 hover:border-amber-500 text-transparent hover:text-amber-500'
-                        }`}
-                      >
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
-                      </button>
-                    </td>
-                    <td className="py-3 px-4 font-bold text-slate-900">
-                      <span className={t.status === 'Completed' ? 'line-through text-slate-500' : ''}>
-                        {t.title}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-medium text-slate-600">{t.category}</td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          t.priority === 'Urgent'
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                            : t.priority === 'High'
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                            : 'bg-blue-50 text-blue-700 border border-blue-200'
-                        }`}
-                      >
-                        {t.priority}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-semibold text-slate-800">{t.bus_number}</td>
-                    <td className="py-3 px-4 text-slate-700">{t.assigned_to}</td>
-                    <td className="py-3 px-4 font-medium text-slate-600">{t.due_date}</td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          t.status === 'Completed'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : t.status === 'In Progress'
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                            : 'bg-slate-100 text-slate-700 border border-slate-200'
-                        }`}
-                      >
-                        {t.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
-                        <button
-                          onClick={() => handleOpenEdit(t)}
-                          className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                          title="Edit Task"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(t.id)}
-                          className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {filteredAssignedBuses.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="py-14 text-center text-slate-400">
+                      <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                      <p className="font-semibold text-slate-600">No buses assigned for {selectedDate}.</p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Click &quot;Log New Task & Duty&quot; above or choose from Pending Buses below.
+                      </p>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                ) : (
+                  filteredAssignedBuses.map((busNo, index) => {
+                    const busTrips = busGroupMap.get(busNo) || [];
+                    const tripCount = busTrips.length;
+                    const primaryTrip = busTrips[0];
+                    const allCompleted = busTrips.every((t) => t.duty_status === 'Completed');
+                    const hasHold = busTrips.some((t) => t.vehicle_status.startsWith('HOLD'));
 
-      {/* Add / Edit Modal */}
+                    // Aggregate financials across all trips for this bus
+                    let busTotalSalary = 0;
+                    let busTotalAdv = 0;
+                    busTrips.forEach((t) => {
+                      if (t.driver1) {
+                        busTotalSalary += Number(t.driver1.salary_amount || 0);
+                        busTotalAdv += Number(t.driver1.advance_amount || 0);
+                      }
+                      if (t.driver2) {
+                        busTotalSalary += Number(t.driver2.salary_amount || 0);
+                        busTotalAdv += Number(t.driver2.advance_amount || 0);
+                      }
+                      if (t.helper) {
+                        busTotalSalary += Number(t.helper.salary_amount || 0);
+                        busTotalAdv += Number(t.helper.advance_amount || 0);
+                      }
+                    });
+                    const busTotalDue = busTotalSalary - busTotalAdv;
+
+                    return (
+                      <tr key={busNo} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
+                        <td className="py-3.5 px-4">
+                          <span className="font-mono font-black text-[#142B4A] text-sm tracking-wider uppercase block">
+                            {busNo}
+                          </span>
+                          <span className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>Active in Fleet</span>
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="inline-flex flex-col items-center">
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-100 text-blue-800 border border-blue-200">
+                              {tripCount} {tripCount === 1 ? 'Trip' : 'Trips'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedBusForView(busNo);
+                                setIsViewTripsOpen(true);
+                              }}
+                              className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline mt-1 cursor-pointer flex items-center gap-0.5"
+                            >
+                              <Eye className="w-3 h-3" />
+                              <span>View Trips ({tripCount})</span>
+                            </button>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <div className="space-y-1 max-w-[220px]">
+                            {busTrips.slice(0, 2).map((t, idx) => (
+                              <p key={t.id} className="text-xs font-semibold text-slate-800 truncate">
+                                <span className="text-[10px] text-slate-400 font-bold mr-1">#{idx + 1}</span>
+                                {t.route_corridor}
+                              </p>
+                            ))}
+                            {tripCount > 2 && (
+                              <p className="text-[10px] text-slate-400 font-bold italic">
+                                +{tripCount - 2} more trips scheduled
+                              </p>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                              hasHold
+                                ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                hasHold ? 'bg-amber-500' : 'bg-emerald-500'
+                              }`}
+                            ></span>
+                            <span>{primaryTrip?.vehicle_status || 'RUN'}</span>
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <div className="space-y-0.5 text-[11px]">
+                            <p className="font-semibold text-slate-800">
+                              <span className="text-slate-400 font-bold">D1:</span> {primaryTrip?.driver1.employee_name}
+                            </p>
+                            {primaryTrip?.driver2?.employee_name && (
+                              <p className="text-slate-600">
+                                <span className="text-slate-400 font-bold">D2:</span> {primaryTrip.driver2.employee_name}
+                              </p>
+                            )}
+                            {primaryTrip?.captain?.employee_name && (
+                              <p className="text-indigo-700 font-bold">
+                                <span className="text-indigo-400 font-bold">CPT:</span> {primaryTrip.captain.employee_name}
+                              </p>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <p className="font-bold text-slate-900 text-xs">₹{busTotalSalary.toLocaleString()}</p>
+                          <p className="text-[10px] text-slate-500">
+                            Adv: <strong className="text-slate-700">₹{busTotalAdv}</strong> • Due:{' '}
+                            <strong className="text-rose-600">₹{busTotalDue}</strong>
+                          </p>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                              allCompleted
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                                : 'bg-blue-50 text-blue-700 border border-blue-200'
+                            }`}
+                          >
+                            {allCompleted ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                            <span>{allCompleted ? 'Completed' : 'Active Run'}</span>
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex items-center justify-center space-x-1.5">
+                            <button
+                              onClick={() => {
+                                setSelectedBusForView(busNo);
+                                setIsViewTripsOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                              title="View all trips for this bus"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleOpenAdd(busNo)}
+                              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                              title="Add another trip for this bus"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleToggleBusCompleted(busNo)}
+                              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                allCompleted
+                                  ? 'text-amber-600 hover:bg-amber-50'
+                                  : 'text-emerald-600 hover:bg-emerald-50'
+                              }`}
+                              title={allCompleted ? 'Re-open Trips' : 'Mark All Completed'}
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Pending / Unassigned Buses Tab */}
+      {activeTab === 'pending' && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-bold text-slate-900">
+                Unassigned Fleet Vehicles for {selectedDate} ({pendingBusesList.length} Buses Available)
+              </h3>
+              <p className="text-xs text-slate-500">
+                These vehicles do not have any trips or staff duties scheduled for the selected date.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pt-2">
+            {pendingBusesList.length === 0 ? (
+              <p className="text-xs text-slate-400 py-8 text-center col-span-full">
+                All fleet vehicles have active trips scheduled for this date!
+              </p>
+            ) : (
+              pendingBusesList.map((b) => (
+                <div
+                  key={b.id}
+                  className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-blue-400 transition-all flex items-center justify-between"
+                >
+                  <div>
+                    <span className="font-mono font-black text-slate-900 text-sm">{b.registration_number}</span>
+                    <span className="text-[10px] text-amber-600 font-bold block">{b.bus_type || 'Fleet Bus'}</span>
+                  </div>
+
+                  <button
+                    onClick={() => handleOpenAdd(b.registration_number)}
+                    className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-[#142B4A] hover:bg-[#1E3A5F] text-white flex items-center gap-1 cursor-pointer shadow-xs"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Assign</span>
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* All Individual Trips Flat Tab */}
+      {activeTab === 'all_trips' && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+                <tr>
+                  <th className="py-3 px-4 w-14 text-center">S.NO</th>
+                  <th className="py-3 px-4">Vehicle</th>
+                  <th className="py-3 px-4">Route Corridor</th>
+                  <th className="py-3 px-4">Organizer</th>
+                  <th className="py-3 px-4">Vehicle Status</th>
+                  <th className="py-3 px-4">Driver 1</th>
+                  <th className="py-3 px-4">Driver 2</th>
+                  <th className="py-3 px-4">Helper</th>
+                  <th className="py-3 px-4">Captain</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {dateTrips.length === 0 ? (
+                  <tr>
+                    <td colSpan={11} className="py-12 text-center text-slate-400">
+                      No individual trip logs on this date.
+                    </td>
+                  </tr>
+                ) : (
+                  dateTrips.map((t, idx) => (
+                    <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4 font-bold text-slate-500 text-center">{idx + 1}</td>
+                      <td className="py-3 px-4 font-mono font-bold text-slate-900">{t.vehicle_number}</td>
+                      <td className="py-3 px-4 font-semibold text-slate-800">{t.route_corridor}</td>
+                      <td className="py-3 px-4 text-slate-600">{t.operator_organizer}</td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            t.vehicle_status.startsWith('HOLD')
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-emerald-100 text-emerald-800'
+                          }`}
+                        >
+                          {t.vehicle_status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <p className="font-bold text-slate-900">{t.driver1.employee_name}</p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="text-[10px] font-bold text-slate-700">₹{t.driver1.salary_amount}</span>
+                          {t.vehicle_status.startsWith('HOLD') && (
+                            <span className="text-[9px] font-black px-1 rounded bg-amber-100 text-amber-800">
+                              HOLD ₹500
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        {t.driver2?.employee_name ? (
+                          <div>
+                            <p className="font-semibold text-slate-900">{t.driver2.employee_name}</p>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <span className="text-[10px] font-bold text-slate-700">₹{t.driver2.salary_amount}</span>
+                              {t.vehicle_status.startsWith('HOLD') && (
+                                <span className="text-[9px] font-black px-1 rounded bg-amber-100 text-amber-800">
+                                  HOLD ₹500
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {t.helper?.employee_name ? (
+                          <div>
+                            <p className="font-semibold text-slate-900">{t.helper.employee_name}</p>
+                            <p className="text-[10px] text-slate-500">₹{t.helper.salary_amount}</p>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {t.captain?.employee_name ? (
+                          <p className="font-bold text-indigo-700">{t.captain.employee_name}</p>
+                        ) : (
+                          <span className="text-slate-400 italic">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            t.duty_status === 'Completed'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-blue-100 text-blue-800'
+                          }`}
+                        >
+                          {t.duty_status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <button
+                            onClick={() => handleOpenEdit(t)}
+                            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                            title="Edit Trip"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTrip(t.id)}
+                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Log New Task / Trip Duty Modal (Matching Reference Image) */}
       <Modal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        title={editingTask ? 'Edit Action Task' : 'Create Operational Task'}
-        subtitle="Assign tasks to drivers, mechanics, or support staff with priority and due dates"
-        maxWidth="max-w-lg"
+        title={editingTrip ? 'Edit Task & Multi-Staff Duty' : 'Log New Task & Multi-Staff Duty'}
+        subtitle="Assign up to 4 crew members (Driver 1, Driver 2, Helper, Captain) with independent advance & salary records."
+        maxWidth="max-w-4xl"
       >
-        <form onSubmit={handleSave} className="space-y-4">
+        <form onSubmit={handleSaveTrip} className="space-y-5">
+          {/* Section 1: Trip Details & Operational Route */}
+          <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-black text-slate-900 uppercase tracking-wider">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              <span>1. Trip Details & Operational Route</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Trip Start Date *</label>
+                <input
+                  type="date"
+                  required
+                  value={formData.trip_start_date || selectedDate}
+                  onChange={(e) => setFormData({ ...formData, trip_start_date: e.target.value })}
+                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Number *</label>
+                <select
+                  required
+                  value={formData.vehicle_number || ''}
+                  onChange={(e) => setFormData({ ...formData, vehicle_number: e.target.value })}
+                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
+                >
+                  <option value="">-- Select Vehicle --</option>
+                  {buses.map((b) => (
+                    <option key={b.id} value={b.registration_number}>
+                      {b.registration_number} {b.bus_type ? `(${b.bus_type})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Status *</label>
+                <select
+                  required
+                  value={formData.vehicle_status || 'RUN'}
+                  onChange={(e: any) => handleVehicleStatusChange(e.target.value)}
+                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none"
+                >
+                  <option value="RUN">🟢 RUN</option>
+                  <option value="HOLD (Low Occupancy)">🟡 HOLD (Low Occupancy)</option>
+                  <option value="HOLD (Maintenance)">🔴 HOLD (Maintenance)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Route Corridor *</label>
+                <select
+                  required
+                  value={formData.route_corridor || ''}
+                  onChange={(e) => setFormData({ ...formData, route_corridor: e.target.value })}
+                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                >
+                  <option value="">-- Choose Route Corridor --</option>
+                  {routes.map((r) => (
+                    <option key={r.id} value={`${r.starting_city} → ${r.ending_city}`}>
+                      {r.starting_city} → {r.ending_city} ({r.service_number})
+                    </option>
+                  ))}
+                  <option value="Direct Express Line">Direct Express Line</option>
+                  <option value="Local Depot Transfer">Local Depot Transfer</option>
+                  <option value="Special Chartered Duty">Special Chartered Duty</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator / Organizer *</label>
+                <select
+                  required
+                  value={formData.operator_organizer || ''}
+                  onChange={(e) => setFormData({ ...formData, operator_organizer: e.target.value })}
+                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                >
+                  <option value="">-- Choose Organizer --</option>
+                  {organizers.map((o) => (
+                    <option key={o.id} value={o.organization_name}>
+                      {o.organization_name}
+                    </option>
+                  ))}
+                  <option value="Charvik Internal Fleet">Charvik Internal Fleet</option>
+                  <option value="Direct Passenger Service">Direct Passenger Service</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Crew Assignment & Separate Financial Split (Up to 4 Members) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-black text-slate-900 uppercase tracking-wider">
+                <Users className="w-4 h-4 text-blue-600" />
+                <span>2. Crew Assignment & Separate Financial Split (Up to 4 Members)</span>
+              </div>
+              <span className="text-[11px] text-slate-500 font-semibold bg-slate-100 px-2 py-0.5 rounded-full">
+                Individual Advance & Salary Records
+              </span>
+            </div>
+
+            {/* Hold Status Auto-Rate Banner */}
+            {formData.vehicle_status?.startsWith('HOLD') && (
+              <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-between text-amber-900 text-xs animate-in fade-in">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">⚠️</span>
+                  <div>
+                    <span className="font-extrabold block">HOLD STATUS ACTIVE ({formData.vehicle_status})</span>
+                    <span className="text-[11px] text-amber-800">
+                      Flat hold duty pay of <strong>₹500</strong> is automatically assigned for Driver 1 and Driver 2.
+                    </span>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-lg bg-amber-600 text-white font-black text-[11px] shadow-xs">
+                  ₹500 Hold Allowance
+                </span>
+              </div>
+            )}
+
+            {/* Crew Member 1: Driver 1 (Lead Driver / Captain) */}
+            <div className="p-4 rounded-2xl border-2 border-amber-300/80 bg-amber-50/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 uppercase">
+                  <span>🚗 1. Driver 1 (Lead Driver)</span>
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
+                    Required
+                  </span>
+                </span>
+
+                {formData.vehicle_status?.startsWith('HOLD') && (
+                  <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
+                    ⚡ Hold Duty: ₹500
+                  </span>
+                )}
+              </div>
+
+              <div className={`grid grid-cols-1 ${formData.vehicle_status?.startsWith('HOLD') ? 'sm:grid-cols-2' : 'sm:grid-cols-4'} gap-3`}>
+                <div className={formData.vehicle_status?.startsWith('HOLD') ? 'sm:col-span-1' : 'sm:col-span-2'}>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Driver 1 Employee *</label>
+                  <select
+                    required
+                    value={formData.driver1?.employee_name || ''}
+                    onChange={(e) => handleDriver1Select(e.target.value)}
+                    className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                  >
+                    <option value="">-- Select Driver 1 --</option>
+                    {drivers.map((d) => (
+                      <option key={d.id} value={d.full_name}>
+                        {d.full_name} ({d.employee_code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={formData.vehicle_status?.startsWith('HOLD') ? 'sm:col-span-1' : ''}>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Salary Amount ₹ *{' '}
+                    {formData.vehicle_status?.startsWith('HOLD') && (
+                      <span className="text-[10px] text-amber-700 font-black">(Hold: ₹500)</span>
+                    )}
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    readOnly={formData.vehicle_status?.startsWith('HOLD')}
+                    placeholder="Enter salary ₹"
+                    value={formData.driver1?.salary_amount !== undefined && formData.driver1?.salary_amount !== null ? formData.driver1.salary_amount : ''}
+                    onChange={(e) => {
+                      if (formData.vehicle_status?.startsWith('HOLD')) return;
+                      const val = e.target.value;
+                      const sal = val === '' ? ('' as any) : Number(val);
+                      const adv = Number(formData.driver1?.advance_amount || 0);
+                      setFormData({
+                        ...formData,
+                        driver1: {
+                          ...formData.driver1!,
+                          salary_amount: sal,
+                          balance_due: Math.max(0, Number(sal || 0) - adv)
+                        }
+                      });
+                    }}
+                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') ? 'bg-amber-100/60 text-amber-900 border-amber-300 cursor-not-allowed' : 'bg-white'}`}
+                  />
+                </div>
+
+                {!formData.vehicle_status?.startsWith('HOLD') && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Advance Paid ₹</label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={formData.driver1?.advance_amount !== undefined && formData.driver1?.advance_amount !== null ? formData.driver1.advance_amount : ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const adv = val === '' ? 0 : Number(val);
+                        const sal = Number(formData.driver1?.salary_amount || 0);
+                        setFormData({
+                          ...formData,
+                          driver1: {
+                            ...formData.driver1!,
+                            advance_amount: adv,
+                            balance_due: Math.max(0, sal - adv)
+                          }
+                        });
+                      }}
+                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-amber-200/50">
+                {formData.vehicle_status?.startsWith('HOLD') ? (
+                  <span className="text-amber-800 font-bold flex items-center gap-1">
+                    <span>⚡</span> Bus on Hold: Driver 1 receives ₹500 flat pay
+                  </span>
+                ) : (
+                  <span className="text-slate-500">
+                    Driver 1 Balance Due:{' '}
+                    <strong className="text-slate-900 font-bold">
+                      ₹{Math.max(0, Number(formData.driver1?.salary_amount || 0) - Number(formData.driver1?.advance_amount || 0))}
+                    </strong>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Crew Member 2: Driver 2 (Secondary / Reliever Driver) */}
+            <div className="p-4 rounded-2xl border border-blue-200 bg-blue-50/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 uppercase">
+                  <span>🚗 2. Driver 2 (Secondary / Reliever Driver)</span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">
+                    Optional
+                  </span>
+                </span>
+
+                {formData.vehicle_status?.startsWith('HOLD') && (
+                  <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
+                    ⚡ Hold Duty: ₹500
+                  </span>
+                )}
+              </div>
+
+              <div className={`grid grid-cols-1 ${formData.vehicle_status?.startsWith('HOLD') ? 'sm:grid-cols-2' : 'sm:grid-cols-4'} gap-3`}>
+                <div className={formData.vehicle_status?.startsWith('HOLD') ? 'sm:col-span-1' : 'sm:col-span-2'}>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Driver 2 Employee</label>
+                  <select
+                    value={formData.driver2?.employee_name || ''}
+                    onChange={(e) => handleDriver2Select(e.target.value)}
+                    className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                  >
+                    <option value="">-- None (Single Driver Duty) --</option>
+                    {drivers
+                      .filter((d) => d.full_name !== formData.driver1?.employee_name)
+                      .map((d) => (
+                        <option key={d.id} value={d.full_name}>
+                          {d.full_name} ({d.employee_code})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div className={formData.vehicle_status?.startsWith('HOLD') ? 'sm:col-span-1' : ''}>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Salary Amount ₹{' '}
+                    {formData.vehicle_status?.startsWith('HOLD') && (
+                      <span className="text-[10px] text-amber-700 font-black">(Hold: ₹500)</span>
+                    )}
+                  </label>
+                  <input
+                    type="number"
+                    readOnly={formData.vehicle_status?.startsWith('HOLD')}
+                    placeholder="Enter salary ₹"
+                    value={formData.driver2?.salary_amount !== undefined && formData.driver2?.salary_amount !== null ? formData.driver2.salary_amount : ''}
+                    onChange={(e) => {
+                      if (formData.vehicle_status?.startsWith('HOLD')) return;
+                      const val = e.target.value;
+                      const sal = val === '' ? ('' as any) : Number(val);
+                      const adv = Number(formData.driver2?.advance_amount || 0);
+                      setFormData({
+                        ...formData,
+                        driver2: {
+                          employee_name: formData.driver2?.employee_name || '',
+                          role: 'Driver',
+                          salary_amount: sal,
+                          advance_amount: Number(formData.driver2?.advance_amount || 0),
+                          balance_due: Math.max(0, Number(sal || 0) - adv)
+                        }
+                      });
+                    }}
+                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') ? 'bg-amber-100/60 text-amber-900 border-amber-300 cursor-not-allowed' : 'bg-white'}`}
+                  />
+                </div>
+
+                {!formData.vehicle_status?.startsWith('HOLD') && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Advance Paid ₹</label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={formData.driver2?.advance_amount !== undefined && formData.driver2?.advance_amount !== null ? formData.driver2.advance_amount : ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const adv = val === '' ? 0 : Number(val);
+                        const sal = Number(formData.driver2?.salary_amount || 0);
+                        setFormData({
+                          ...formData,
+                          driver2: {
+                            employee_name: formData.driver2?.employee_name || '',
+                            role: 'Driver',
+                            salary_amount: Number(formData.driver2?.salary_amount || 0),
+                            advance_amount: adv,
+                            balance_due: Math.max(0, sal - adv)
+                          }
+                        });
+                      }}
+                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-blue-200/50">
+                {formData.vehicle_status?.startsWith('HOLD') ? (
+                  <span className="text-amber-800 font-bold flex items-center gap-1">
+                    <span>⚡</span> Bus on Hold: Driver 2 receives ₹500 flat pay
+                  </span>
+                ) : (
+                  <span className="text-slate-500">
+                    Driver 2 Balance Due:{' '}
+                    <strong className="text-slate-900 font-bold">
+                      ₹{Math.max(0, Number(formData.driver2?.salary_amount || 0) - Number(formData.driver2?.advance_amount || 0))}
+                    </strong>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Crew Member 3: Helper (Loading Assistant / Cleaner) */}
+            <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 uppercase">
+                  <span>🛠️ 3. Helper (Loading Assistant / Cleaner)</span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                    Optional
+                  </span>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Helper Employee</label>
+                  <select
+                    value={formData.helper?.employee_name || ''}
+                    onChange={(e) => handleHelperSelect(e.target.value)}
+                    className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                  >
+                    <option value="">-- None (No Helper Required) --</option>
+                    {helpers.map((h) => (
+                      <option key={h.id} value={h.full_name}>
+                        {h.full_name} ({h.employee_code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {formData.helper?.employee_name && (
+                  <>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Salary Amount ₹
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Enter salary ₹"
+                        value={formData.helper?.salary_amount !== undefined && formData.helper?.salary_amount !== null ? formData.helper.salary_amount : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const sal = val === '' ? ('' as any) : Number(val);
+                          const adv = Number(formData.helper?.advance_amount || 0);
+                          setFormData({
+                            ...formData,
+                            helper: {
+                              ...formData.helper!,
+                              salary_amount: sal,
+                              balance_due: Math.max(0, Number(sal || 0) - adv)
+                            }
+                          });
+                        }}
+                        className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Advance Paid ₹</label>
+                      <input
+                        type="number"
+                        value={formData.helper?.advance_amount || 0}
+                        onChange={(e) => {
+                          const adv = Number(e.target.value);
+                          const sal = Number(formData.helper?.salary_amount || 0);
+                          setFormData({
+                            ...formData,
+                            helper: {
+                              ...formData.helper!,
+                              advance_amount: adv,
+                              balance_due: Math.max(0, sal - adv)
+                            }
+                          });
+                        }}
+                        className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Crew Member 4: Captain (Route Supervisor / Duty Captain) */}
+            <div className="p-4 rounded-2xl border border-purple-200 bg-purple-50/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 uppercase">
+                  <span>⚓ 4. Captain (Route Supervisor / Duty Captain)</span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">
+                    Optional
+                  </span>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Captain Employee</label>
+                  <select
+                    value={formData.captain?.employee_name || ''}
+                    onChange={(e) => handleCaptainSelect(e.target.value)}
+                    className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                  >
+                    <option value="">-- None (No Captain Assigned) --</option>
+                    {captains.map((c) => (
+                      <option key={c.id} value={c.full_name}>
+                        {c.full_name} ({c.employee_code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {formData.captain?.employee_name && (
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Assigned Work & Duty Instructions
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.captain?.work_remarks || ''}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          captain: {
+                            ...formData.captain!,
+                            work_remarks: e.target.value
+                          }
+                        })
+                      }
+                      placeholder="e.g. Passenger onboarding check, luggage tagging, AC regulation"
+                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Trip Remarks */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Task Title *</label>
-            <input
-              type="text"
-              required
-              value={formData.title || ''}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="e.g. Replace front brake liners on Bus #104"
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Category *</label>
-              <select
-                value={formData.category || 'Preventive Maintenance'}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              >
-                <option value="Preventive Maintenance">Preventive Maintenance</option>
-                <option value="Urgent Repair">Urgent Repair</option>
-                <option value="Cleaning & Sanitization">Cleaning & Sanitization</option>
-                <option value="Compliance & Documents">Compliance & Documents</option>
-                <option value="Route Duty">Route Duty</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Priority Level *</label>
-              <select
-                value={formData.priority || 'Medium'}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              >
-                <option value="Urgent">Urgent (Immediate)</option>
-                <option value="High">High Priority</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low / Routine</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Assign To Staff</label>
-              <select
-                value={formData.assigned_to || ''}
-                onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              >
-                <option value="">-- Select Person --</option>
-                {employees.map((e) => (
-                  <option key={e.id} value={e.full_name}>
-                    {e.full_name} ({e.role})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Related Fleet Bus</label>
-              <select
-                value={formData.bus_number || ''}
-                onChange={(e) => setFormData({ ...formData, bus_number: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              >
-                <option value="">General / Depot</option>
-                {buses.map((b) => (
-                  <option key={b.id} value={b.bus_number}>
-                    {b.bus_number} ({b.registration_number})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Target Due Date</label>
-              <input
-                type="date"
-                value={formData.due_date || ''}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Current Status</label>
-              <select
-                value={formData.status || 'To Do'}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              >
-                <option value="To Do">To Do</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Task Instructions & Notes</label>
+            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+              Trip Remarks (Admin Notes / Experience / Performance)
+            </label>
             <textarea
               rows={2}
-              value={formData.notes || ''}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Provide specific instructions for the mechanic or driver..."
+              value={formData.trip_remarks || ''}
+              onChange={(e) => setFormData({ ...formData, trip_remarks: e.target.value })}
+              placeholder="e.g. Completed route on time, disciplined behavior, good vehicle maintenance..."
               className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
             />
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              These remarks will be permanently preserved in all assigned crew members&apos; dossiers.
+            </p>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => setIsAddOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 transition-colors shadow-xs cursor-pointer"
-            >
-              {editingTask ? 'Update Task' : 'Create Task'}
-            </button>
+          {/* Bottom Tally Bar & Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
+            <div className="text-xs font-bold text-slate-700 flex items-center gap-2">
+              <span className="uppercase tracking-wider text-slate-400 text-[10px]">TALLY:</span>
+              <span className="font-black text-slate-900">₹{tally.totalSalary} Total</span>
+              <span>•</span>
+              <span className="text-amber-700 font-bold">₹{tally.totalAdv} Adv</span>
+              <span>•</span>
+              <span className="text-emerald-700 font-bold">₹{tally.totalDue} Due</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-colors shadow-sm cursor-pointer"
+              >
+                {editingTrip ? 'Update Task Record' : 'Save Task Record'}
+              </button>
+            </div>
           </div>
         </form>
       </Modal>
+
+      {/* View Trips Modal for a Bus */}
+      {selectedBusForView && (
+        <Modal
+          isOpen={isViewTripsOpen}
+          onClose={() => setIsViewTripsOpen(false)}
+          title={`All Trips for ${selectedBusForView} (${selectedDate})`}
+          subtitle={`${busGroupMap.get(selectedBusForView)?.length || 0} Trip(s) Allocated on this date`}
+          maxWidth="max-w-3xl"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Vehicle: <strong className="text-blue-900 font-mono text-sm">{selectedBusForView}</strong>
+              </span>
+
+              <button
+                onClick={() => {
+                  setIsViewTripsOpen(false);
+                  handleOpenAdd(selectedBusForView);
+                }}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#142B4A] text-white flex items-center gap-1 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Another Trip</span>
+              </button>
+            </div>
+
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+              {(busGroupMap.get(selectedBusForView) || []).map((t, idx) => (
+                <div key={t.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center">
+                        {idx + 1}
+                      </span>
+                      <h4 className="font-bold text-slate-900 text-xs">{t.route_corridor}</h4>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          t.vehicle_status.startsWith('HOLD')
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-emerald-100 text-emerald-800'
+                        }`}
+                      >
+                        {t.vehicle_status}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setIsViewTripsOpen(false);
+                          handleOpenEdit(t);
+                        }}
+                        className="p-1 rounded text-slate-500 hover:text-blue-600 cursor-pointer"
+                        title="Edit Trip"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTrip(t.id)}
+                        className="p-1 rounded text-slate-500 hover:text-rose-600 cursor-pointer"
+                        title="Delete Trip"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500">
+                    Organizer: <strong className="text-slate-800">{t.operator_organizer}</strong> • Date:{' '}
+                    <strong className="text-slate-800">{t.trip_start_date}</strong>
+                  </p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pt-1">
+                    <div className="p-2 bg-white rounded-lg border border-slate-100">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase block">Driver 1</span>
+                      <p className="font-bold text-slate-900 truncate">{t.driver1.employee_name}</p>
+                      <div className="flex items-center gap-1">
+                        <p className="text-[10px] text-slate-500">
+                          ₹{t.driver1.salary_amount} (Adv: ₹{t.driver1.advance_amount})
+                        </p>
+                        {t.vehicle_status.startsWith('HOLD') && (
+                          <span className="text-[8px] font-black px-1 rounded bg-amber-100 text-amber-800">
+                            HOLD ₹500
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-2 bg-white rounded-lg border border-slate-100">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase block">Driver 2</span>
+                      <p className="font-bold text-slate-900 truncate">{t.driver2?.employee_name || 'None'}</p>
+                      {t.driver2?.employee_name && (
+                        <div className="flex items-center gap-1">
+                          <p className="text-[10px] text-slate-500">
+                            ₹{t.driver2.salary_amount} (Adv: ₹{t.driver2.advance_amount})
+                          </p>
+                          {t.vehicle_status.startsWith('HOLD') && (
+                            <span className="text-[8px] font-black px-1 rounded bg-amber-100 text-amber-800">
+                              HOLD ₹500
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-2 bg-white rounded-lg border border-slate-100">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase block">Helper</span>
+                      <p className="font-bold text-slate-900 truncate">{t.helper?.employee_name || 'None'}</p>
+                      {t.helper?.employee_name && (
+                        <p className="text-[10px] text-slate-500">₹{t.helper.salary_amount}</p>
+                      )}
+                    </div>
+
+                    <div className="p-2 bg-white rounded-lg border border-slate-100">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase block">Captain</span>
+                      <p className="font-bold text-indigo-700 truncate">{t.captain?.employee_name || 'None'}</p>
+                      {t.captain?.work_remarks && (
+                        <p className="text-[9px] text-slate-500 truncate">{t.captain.work_remarks}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {t.trip_remarks && (
+                    <p className="text-[11px] text-slate-600 bg-white p-2 rounded-lg border border-slate-100 italic">
+                      Remarks: {t.trip_remarks}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

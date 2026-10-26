@@ -798,15 +798,18 @@ app.get('/api/buses/:id', (req: Request, res: Response) => {
 
 app.post('/api/buses', (req: Request, res: Response) => {
   const b = req.body;
-  if (!b.bus_number || !b.registration_number) {
-    return res.status(400).json({ error: 'Bus number and registration number are required' });
+  if (!b.bus_number && b.registration_number) {
+    b.bus_number = b.registration_number;
+  }
+  if (!b.registration_number) {
+    return res.status(400).json({ error: 'Registration number is required' });
   }
 
   // Check unique constraints
   const dup = db.prepare('SELECT id FROM buses WHERE (bus_number = ? OR registration_number = ?) AND is_archived = 0')
     .get(b.bus_number, b.registration_number);
   if (dup) {
-    return res.status(400).json({ error: 'A bus with this Bus Number or Registration Number already exists' });
+    return res.status(400).json({ error: 'A bus with this Registration Number already exists' });
   }
 
   const stmt = db.prepare(`
@@ -852,6 +855,9 @@ app.post('/api/buses', (req: Request, res: Response) => {
 app.put('/api/buses/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   const b = req.body;
+  if (!b.bus_number && b.registration_number) {
+    b.bus_number = b.registration_number;
+  }
 
   const stmt = db.prepare(`
     UPDATE buses SET
@@ -1193,6 +1199,17 @@ app.put('/api/tyre-maintenance/:id', (req: Request, res: Response) => {
   return res.json({ message: 'Tyre record updated' });
 });
 
+app.delete('/api/tyre-maintenance/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM tyre_records WHERE id = ?').run(id);
+    logAudit('TYRE_DELETE', 'Tyre Maintenance', id, `Deleted tyre record ID ${id}`);
+    return res.json({ success: true, message: 'Tyre record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= AC MAINTENANCE =================
 app.get('/api/ac-maintenance', (req: Request, res: Response) => {
   const { bus_id } = req.query;
@@ -1247,6 +1264,59 @@ app.post('/api/ac-maintenance', (req: Request, res: Response) => {
 
   logAudit('AC_SERVICE_ADD', 'AC Maintenance', info.lastInsertRowid, `Logged AC service for bus ID ${a.bus_id}`);
   return res.status(201).json({ id: info.lastInsertRowid, message: 'AC maintenance record saved successfully' });
+});
+
+app.put('/api/ac-maintenance/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const a = req.body;
+  try {
+    db.prepare(`
+      UPDATE ac_maintenance_records SET
+        bus_id = ?, inspection_date = ?, current_km = ?, ac_working_status = ?,
+        cooling_performance = ?, refrigerant_check = ?, filter_cleaning_replacement = ?,
+        compressor_condition = ?, leak_inspection = ?, electrical_check = ?,
+        issue_description = ?, work_performed = ?, service_provider = ?,
+        next_service_date = ?, next_service_km = ?, service_cost = ?,
+        technician = ?, status = ?, remarks = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      a.bus_id,
+      a.inspection_date || new Date().toISOString().split('T')[0],
+      a.current_km || 0,
+      a.ac_working_status || 'Working',
+      a.cooling_performance || 'Good',
+      a.refrigerant_check || 'Normal',
+      a.filter_cleaning_replacement || 'Cleaned',
+      a.compressor_condition || 'Good',
+      a.leak_inspection || 'No Leaks',
+      a.electrical_check || 'Normal',
+      a.issue_description || '',
+      a.work_performed || '',
+      a.service_provider || '',
+      a.next_service_date || null,
+      a.next_service_km || null,
+      a.service_cost || 0,
+      a.technician || '',
+      a.status || 'Completed',
+      a.remarks || '',
+      id
+    );
+    logAudit('AC_SERVICE_UPDATE', 'AC Maintenance', id, `Updated AC service record ID ${id}`);
+    return res.json({ message: 'AC maintenance record updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/ac-maintenance/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM ac_maintenance_records WHERE id = ?').run(id);
+    logAudit('AC_SERVICE_DELETE', 'AC Maintenance', id, `Deleted AC service record ID ${id}`);
+    return res.json({ success: true, message: 'AC record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 // ================= OIL AND FILTER MAINTENANCE =================
@@ -1311,6 +1381,66 @@ app.post('/api/oil-filter-maintenance', (req: Request, res: Response) => {
   return res.status(201).json({ id: info.lastInsertRowid, message: 'Oil and filter record saved successfully' });
 });
 
+app.put('/api/oil-filter-maintenance/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const o = req.body;
+  const oilCost = Number(o.oil_cost || 0);
+  const labourCost = Number(o.labour_cost || 0);
+  const totalCost = Number(o.total_cost || oilCost + labourCost);
+  try {
+    db.prepare(`
+      UPDATE oil_filter_records SET
+        bus_id = ?, replacement_date = ?, odometer_km = ?, oil_type = ?,
+        oil_brand = ?, oil_quantity_liters = ?, oil_cost = ?,
+        oil_filter_replaced = ?, oil_filter_details = ?,
+        air_filter_replaced = ?, air_filter_details = ?,
+        fuel_filter_replaced = ?, fuel_filter_details = ?,
+        other_filter_details = ?, labour_cost = ?, total_cost = ?,
+        service_provider = ?, next_due_date = ?, next_due_km = ?,
+        performed_by = ?, remarks = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      o.bus_id,
+      o.replacement_date || new Date().toISOString().split('T')[0],
+      o.odometer_km || 0,
+      o.oil_type || '15W-40',
+      o.oil_brand || 'Castrol',
+      o.oil_quantity_liters || 15,
+      oilCost,
+      o.oil_filter_replaced ? 1 : 0,
+      o.oil_filter_details || '',
+      o.air_filter_replaced ? 1 : 0,
+      o.air_filter_details || '',
+      o.fuel_filter_replaced ? 1 : 0,
+      o.fuel_filter_details || '',
+      o.other_filter_details || '',
+      labourCost,
+      totalCost,
+      o.service_provider || '',
+      o.next_due_date || null,
+      o.next_due_km || null,
+      o.performed_by || '',
+      o.remarks || '',
+      id
+    );
+    logAudit('OIL_FILTER_UPDATE', 'Oil & Filter', id, `Updated oil filter record ID ${id}`);
+    return res.json({ message: 'Oil & filter record updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/oil-filter-maintenance/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM oil_filter_records WHERE id = ?').run(id);
+    logAudit('OIL_FILTER_DELETE', 'Oil & Filter', id, `Deleted oil filter record ID ${id}`);
+    return res.json({ success: true, message: 'Oil filter record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= BATTERY MAINTENANCE =================
 app.get('/api/battery-maintenance', (req: Request, res: Response) => {
   const { bus_id } = req.query;
@@ -1365,6 +1495,59 @@ app.post('/api/battery-maintenance', (req: Request, res: Response) => {
 
   logAudit('BATTERY_CHECK_ADD', 'Battery Maintenance', info.lastInsertRowid, `Logged battery check for bus ID ${bat.bus_id}`);
   return res.status(201).json({ id: info.lastInsertRowid, message: 'Battery check record saved successfully' });
+});
+
+app.put('/api/battery-maintenance/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const bat = req.body;
+  try {
+    db.prepare(`
+      UPDATE battery_records SET
+        bus_id = ?, inspection_date = ?, current_km = ?, battery_brand = ?,
+        serial_number = ?, battery_type = ?, battery_voltage = ?,
+        measured_voltage = ?, battery_health = ?, terminal_condition = ?,
+        charging_system_status = ?, installation_date = ?, warranty_expiry_date = ?,
+        replacement_date = ?, battery_cost = ?, technician = ?,
+        next_check_date = ?, status = ?, remarks = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      bat.bus_id,
+      bat.inspection_date || new Date().toISOString().split('T')[0],
+      bat.current_km || 0,
+      bat.battery_brand || '',
+      bat.serial_number || '',
+      bat.battery_type || 'Lead Acid',
+      bat.battery_voltage || 24.0,
+      bat.measured_voltage || 24.8,
+      bat.battery_health || 'Good',
+      bat.terminal_condition || 'Clean',
+      bat.charging_system_status || 'Normal',
+      bat.installation_date || null,
+      bat.warranty_expiry_date || null,
+      bat.replacement_date || null,
+      bat.battery_cost || 0,
+      bat.technician || '',
+      bat.next_check_date || null,
+      bat.status || 'Active',
+      bat.remarks || '',
+      id
+    );
+    logAudit('BATTERY_CHECK_UPDATE', 'Battery Maintenance', id, `Updated battery check record ID ${id}`);
+    return res.json({ message: 'Battery record updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/battery-maintenance/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM battery_records WHERE id = ?').run(id);
+    logAudit('BATTERY_CHECK_DELETE', 'Battery Maintenance', id, `Deleted battery record ID ${id}`);
+    return res.json({ success: true, message: 'Battery record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 // ================= COMPLAINTS =================
@@ -1466,6 +1649,17 @@ app.put('/api/complaints/:id', (req: Request, res: Response) => {
 
   logAudit('COMPLAINT_UPDATE', 'Complaints', id, `Updated complaint status to ${c.status}`);
   return res.json({ message: 'Complaint updated successfully' });
+});
+
+app.delete('/api/complaints/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM complaints WHERE id = ?').run(id);
+    logAudit('COMPLAINT_DELETE', 'Complaints', id, `Deleted complaint ID ${id}`);
+    return res.json({ success: true, message: 'Complaint deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 // ================= REPAIRS AND SERVICE (WORK ORDERS) =================
@@ -1600,6 +1794,17 @@ app.put('/api/repairs/:id', (req: Request, res: Response) => {
   return res.json({ message: 'Repair work order updated' });
 });
 
+app.delete('/api/repairs/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM repair_work_orders WHERE id = ?').run(id);
+    logAudit('REPAIR_DELETE', 'Repairs', id, `Deleted repair work order ID ${id}`);
+    return res.json({ success: true, message: 'Repair work order deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= BUS CONDITION INSPECTION =================
 app.get('/api/bus-condition', (req: Request, res: Response) => {
   const { bus_id, roadworthiness } = req.query;
@@ -1678,6 +1883,66 @@ app.post('/api/bus-condition', (req: Request, res: Response) => {
 
   logAudit('INSPECTION_ADD', 'Bus Condition', info.lastInsertRowid, `Logged inspection ${inspectionRef} (${c.roadworthiness_status})`);
   return res.status(201).json({ id: info.lastInsertRowid, inspectionRef, message: 'Inspection checklist recorded successfully' });
+});
+
+app.put('/api/bus-condition/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const c = req.body;
+  try {
+    db.prepare(`
+      UPDATE bus_condition_inspections SET
+        bus_id = ?, inspection_date = ?, inspection_time = ?, odometer_km = ?,
+        inspector_name = ?, exterior_body = ?, tyre_condition = ?, brake_condition = ?,
+        engine_condition = ?, battery_condition = ?, ac_condition = ?, lights_condition = ?,
+        mirrors_condition = ?, windshield_condition = ?, wiper_condition = ?,
+        doors_emergency_exits = ?, seat_condition = ?, safety_equipment = ?,
+        fluid_levels = ?, visible_leaks = ?, roadworthiness_status = ?,
+        defects_found = ?, corrective_action_required = ?, inspector_remarks = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      c.bus_id,
+      c.inspection_date || new Date().toISOString().split('T')[0],
+      c.inspection_time || '10:00',
+      c.odometer_km || 0,
+      c.inspector_name,
+      c.exterior_body || 'Good',
+      c.tyre_condition || 'Good',
+      c.brake_condition || 'Good',
+      c.engine_condition || 'Good',
+      c.battery_condition || 'Good',
+      c.ac_condition || 'Good',
+      c.lights_condition || 'Good',
+      c.mirrors_condition || 'Good',
+      c.windshield_condition || 'Good',
+      c.wiper_condition || 'Good',
+      c.doors_emergency_exits || 'Good',
+      c.seat_condition || 'Good',
+      c.safety_equipment || 'Good',
+      c.fluid_levels || 'Good',
+      c.visible_leaks || 'Good',
+      c.roadworthiness_status || 'Fit for Service',
+      c.defects_found || '',
+      c.corrective_action_required || '',
+      c.inspector_remarks || '',
+      id
+    );
+    logAudit('INSPECTION_UPDATE', 'Bus Condition', id, `Updated inspection ID ${id}`);
+    return res.json({ message: 'Inspection checklist updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/bus-condition/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM bus_condition_inspections WHERE id = ?').run(id);
+    logAudit('INSPECTION_DELETE', 'Bus Condition', id, `Deleted inspection ID ${id}`);
+    return res.json({ success: true, message: 'Inspection record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 // ================= EMPLOYEE MANAGEMENT & REGISTRATION =================

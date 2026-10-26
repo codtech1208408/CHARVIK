@@ -109,20 +109,30 @@ export const AdminLayout: React.FC = () => {
     return isCaptainPortal ? 'Captain Portal' : isSupporterPortal ? 'Supporter Portal' : 'Admin Panel';
   };
 
+  const isDashboard =
+    location.pathname.endsWith('/dashboard') ||
+    location.pathname === '/admin' ||
+    location.pathname === '/admin/' ||
+    location.pathname === '/captain' ||
+    location.pathname === '/captain/' ||
+    location.pathname === '/supporter' ||
+    location.pathname === '/supporter/';
+
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
-      {/* Sidebar */}
+      {/* Sidebar - Pinned only on Dashboard; hidden into off-canvas drawer on any tab page */}
       <Sidebar
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
         isMobileOpen={isMobileOpen}
         setIsMobileOpen={setIsMobileOpen}
+        isPinned={isDashboard}
       />
 
-      {/* Main Content Area */}
+      {/* Main Content Area - Full screen width (pl-0) when on any tab */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          isCollapsed ? 'lg:pl-20' : 'lg:pl-72'
+          isDashboard ? (isCollapsed ? 'lg:pl-20' : 'lg:pl-72') : 'pl-0 lg:pl-0'
         }`}
       >
         <Navbar
@@ -130,7 +140,7 @@ export const AdminLayout: React.FC = () => {
           pageTitle={getPageTitle()}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-24 lg:pb-8">
+        <main className={`flex-1 p-4 sm:p-6 lg:p-8 w-full ${isDashboard ? 'max-w-7xl' : 'max-w-[1920px]'} mx-auto pb-24 lg:pb-8`}>
           <ErrorBoundary fallbackTitle="Unable to Load Dashboard View">
             <Outlet />
           </ErrorBoundary>

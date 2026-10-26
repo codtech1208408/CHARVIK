@@ -43,7 +43,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
   const isCaptain = location.pathname.startsWith('/captain');
   const isSupporter = location.pathname.startsWith('/supporter');
   const basePrefix = isCaptain ? '/captain' : isSupporter ? '/supporter' : '/admin';
-  const isDashboard = location.pathname.endsWith('/dashboard');
+  const isDashboard =
+    location.pathname.endsWith('/dashboard') ||
+    location.pathname === '/admin' ||
+    location.pathname === '/admin/' ||
+    location.pathname === '/captain' ||
+    location.pathname === '/captain/' ||
+    location.pathname === '/supporter' ||
+    location.pathname === '/supporter/';
 
   // Handle outside clicks to close dropdowns
   useEffect(() => {
@@ -67,30 +74,29 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
 
   return (
     <header className="h-16 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
-      {/* Left: Mobile Toggle & Back Button & Page Title */}
+      {/* Left: Menu Drawer Toggle & Back to Dashboard & Page Title */}
       <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         <button
           onClick={onMobileToggle}
-          className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+          className={`p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer ${
+            isDashboard ? 'lg:hidden' : 'flex'
+          }`}
+          title="Open Navigation Menu"
         >
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
 
-        {/* Universal Back Navigation Option */}
+        {/* Universal Back to Dashboard Option */}
         {!isDashboard && (
           <button
             onClick={() => {
-              if (window.history.state && window.history.state.idx > 0) {
-                navigate(-1);
-              } else {
-                navigate(`${basePrefix}/dashboard`);
-              }
+              navigate(`${basePrefix}/dashboard`);
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-[#142B4A] hover:border-blue-300 border border-slate-200 transition-all cursor-pointer shadow-2xs group shrink-0"
-            title="Go back to previous screen"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-all cursor-pointer shadow-xs group shrink-0"
+            title="Return to Dashboard"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-blue-600 group-hover:-translate-x-0.5 transition-transform" />
-            <span className="hidden sm:inline">Back</span>
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Dashboard</span>
           </button>
         )}
 

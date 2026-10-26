@@ -9,7 +9,9 @@ import {
   Wrench,
   Bus,
   Save,
-  ThermometerSnowflake
+  ThermometerSnowflake,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { AcRecord, Bus as BusType } from '../types';
@@ -27,6 +29,7 @@ export const AcMaintenance: React.FC = () => {
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<AcRecord | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<any>({
@@ -72,6 +75,7 @@ export const AcMaintenance: React.FC = () => {
   };
 
   const handleOpenAdd = () => {
+    setEditingRecord(null);
     const firstBus = buses[0];
     const currentKm = firstBus ? firstBus.current_odometer_km : '';
     setFormData({
@@ -98,6 +102,43 @@ export const AcMaintenance: React.FC = () => {
     setIsAddOpen(true);
   };
 
+  const handleOpenEdit = (r: AcRecord) => {
+    setEditingRecord(r);
+    setFormData({
+      bus_id: String(r.bus_id),
+      inspection_date: r.inspection_date || new Date().toISOString().split('T')[0],
+      current_km: r.current_km ?? '',
+      ac_working_status: r.ac_working_status || 'Working',
+      cooling_performance: r.cooling_performance || 'Good',
+      refrigerant_check: r.refrigerant_check || 'Normal',
+      filter_cleaning_replacement: r.filter_cleaning_replacement || '',
+      compressor_condition: r.compressor_condition || 'Good',
+      leak_inspection: r.leak_inspection || 'None',
+      electrical_check: r.electrical_check || 'Normal',
+      issue_description: r.issue_description || '',
+      work_performed: r.work_performed || '',
+      service_provider: r.service_provider || '',
+      next_service_date: r.next_service_date || '',
+      next_service_km: r.next_service_km ?? '',
+      service_cost: r.service_cost ?? '',
+      technician: r.technician || '',
+      status: r.status || 'Completed',
+      remarks: r.remarks || ''
+    });
+    setIsAddOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this AC service record?')) return;
+    try {
+      await api.deleteAcRecord(id);
+      success('AC maintenance record deleted successfully!');
+      loadData();
+    } catch (err: any) {
+      error(err.message || 'Failed to delete record');
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.bus_id) {
@@ -105,9 +146,15 @@ export const AcMaintenance: React.FC = () => {
       return;
     }
     try {
-      await api.createAcRecord(formData);
-      success('AC maintenance inspection saved!');
+      if (editingRecord) {
+        await api.updateAcRecord(editingRecord.id, formData);
+        success('AC maintenance record updated successfully!');
+      } else {
+        await api.createAcRecord(formData);
+        success('AC maintenance inspection saved!');
+      }
       setIsAddOpen(false);
+      setEditingRecord(null);
       loadData();
     } catch (err: any) {
       error(err.message || 'Failed to save AC service record');
@@ -167,6 +214,7 @@ export const AcMaintenance: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
+                <th className="py-3 px-4 w-14 text-center">S.NO</th>
                 <th className="py-3 px-4">Bus</th>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-4">Working Status</th>
@@ -176,25 +224,27 @@ export const AcMaintenance: React.FC = () => {
                 <th className="py-3 px-4">Technician / Vendor</th>
                 <th className="py-3 px-4">Cost (₹)</th>
                 <th className="py-3 px-4">Next Due</th>
+                <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={11} className="py-12 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading AC service records...
                   </td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <td colSpan={11} className="py-12 text-center text-slate-400">
                     No AC maintenance records found.
                   </td>
                 </tr>
               ) : (
-                records.map((r) => (
+                records.map((r, index) => (
                   <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                     <td className="py-3 px-4">
                       <span className="font-bold text-slate-900">{r.bus_number}</span>
                       <span className="block text-[11px] text-blue-700 font-semibold">{r.registration_number}</span>
@@ -218,6 +268,24 @@ export const AcMaintenance: React.FC = () => {
                     <td className="py-3 px-4 text-blue-600 font-semibold">
                       {r.next_service_km ? `${r.next_service_km.toLocaleString()} km` : r.next_service_date || '-'}
                     </td>
+                    <td className="py-3 px-4 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEdit(r)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="Edit Record"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(r.id)}
+                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete Record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -226,12 +294,15 @@ export const AcMaintenance: React.FC = () => {
         </div>
       </div>
 
-      {/* Add AC Service Modal */}
+      {/* Add / Edit AC Service Modal */}
       <Modal
         isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        title="Record AC Maintenance Service"
-        subtitle="Log refrigerant charge, filter status and cabin cooling efficiency"
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditingRecord(null);
+        }}
+        title={editingRecord ? 'Edit AC Maintenance Record' : 'Record AC Maintenance Service'}
+        subtitle={editingRecord ? 'Update refrigerant charge, cooling status and cost' : 'Log refrigerant charge, filter status and cabin cooling efficiency'}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSave} className="space-y-4">
