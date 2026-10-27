@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { BASE_FLEET_BUSES, BASE_FLEET_EMPLOYEES, BASE_FLEET_ROUTES } from './seedData';
+import { BASE_FLEET_BUSES, BASE_FLEET_EMPLOYEES, BASE_FLEET_ROUTES, BASE_FLEET_ORGANIZERS, BASE_FLEET_TASKS } from './seedData';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -1271,11 +1271,55 @@ export const api = {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch {}
-    return [];
+    return BASE_FLEET_ROUTES;
   },
   createRoute: (data: any) => request<any>('/routes', { method: 'POST', body: JSON.stringify(data) }),
   updateRoute: (id: number | string, data: any) => request<any>(`/routes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteRoute: (id: number | string) => request<any>(`/routes/${id}`, { method: 'DELETE' }),
+
+  // Organizers (Partner Institutions)
+  getOrganizers: async () => {
+    try {
+      const remote = await request<any[]>('/organizers');
+      if (Array.isArray(remote) && remote.length > 0) {
+        localStorage.setItem('charvik_organizer_management_data', JSON.stringify(remote));
+        return remote;
+      }
+    } catch {}
+    try {
+      const saved = localStorage.getItem('charvik_organizer_management_data');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return BASE_FLEET_ORGANIZERS;
+  },
+  createOrganizer: (data: any) => request<any>('/organizers', { method: 'POST', body: JSON.stringify(data) }),
+  updateOrganizer: (id: number | string, data: any) => request<any>(`/organizers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteOrganizer: (id: number | string) => request<any>(`/organizers/${id}`, { method: 'DELETE' }),
+
+  // Tasks (Trip Duties)
+  getTasks: async () => {
+    try {
+      const remote = await request<any[]>('/tasks');
+      if (Array.isArray(remote) && remote.length > 0) {
+        localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(remote));
+        return remote;
+      }
+    } catch {}
+    try {
+      const saved = localStorage.getItem('charvik_trip_duty_management_v2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return BASE_FLEET_TASKS;
+  },
+  createTask: (data: any) => request<any>('/tasks', { method: 'POST', body: JSON.stringify(data) }),
+  updateTask: (id: number | string, data: any) => request<any>(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteTask: (id: number | string) => request<any>(`/tasks/${id}`, { method: 'DELETE' }),
 
   // Daily Kilometers
   getDailyKm: (params?: { date?: string; bus_id?: number | string; driver_id?: number | string }) => {

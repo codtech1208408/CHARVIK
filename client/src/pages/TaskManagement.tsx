@@ -30,6 +30,7 @@ import {
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
+import { BASE_FLEET_TASKS, BASE_FLEET_ORGANIZERS, BASE_FLEET_ROUTES } from '../services/seedData';
 
 export interface CrewFinancial {
   employee_id?: number | string;
@@ -84,9 +85,13 @@ export const TaskManagement: React.FC = () => {
   const [trips, setTrips] = useState<TripDutyItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return BASE_FLEET_TASKS;
     } catch {}
-    return [];
+    return BASE_FLEET_TASKS;
   });
 
   // Form State
@@ -133,13 +138,27 @@ export const TaskManagement: React.FC = () => {
         setEmployees(Array.isArray(eData) ? eData : []);
       } catch {}
 
-      // Load routes & organizers from local storage caches
+      // Sync tasks from API
       try {
-        const rSaved = localStorage.getItem('charvik_route_management_data');
-        if (rSaved) setRoutes(JSON.parse(rSaved));
-        const oSaved = localStorage.getItem('charvik_organizer_management_data');
-        if (oSaved) setOrganizers(JSON.parse(oSaved));
+        const remoteTasks = await api.getTasks().catch(() => []);
+        if (Array.isArray(remoteTasks) && remoteTasks.length > 0) {
+          setTrips(remoteTasks);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteTasks));
+        }
       } catch {}
+
+      // Load routes & organizers with seed fallbacks
+      try {
+        const [rData, oData] = await Promise.all([
+          api.getRoutes().catch(() => BASE_FLEET_ROUTES),
+          api.getOrganizers().catch(() => BASE_FLEET_ORGANIZERS)
+        ]);
+        setRoutes(Array.isArray(rData) && rData.length > 0 ? rData : BASE_FLEET_ROUTES);
+        setOrganizers(Array.isArray(oData) && oData.length > 0 ? oData : BASE_FLEET_ORGANIZERS);
+      } catch {
+        setRoutes(BASE_FLEET_ROUTES);
+        setOrganizers(BASE_FLEET_ORGANIZERS);
+      }
     }
     loadAux();
   }, []);
@@ -417,16 +436,14 @@ export const TaskManagement: React.FC = () => {
     }
 
     if (editingTrip) {
-      const updated = trips.map((t) =>
-        t.id === editingTrip.id
-          ? ({
-              ...t,
-              ...formData,
-              driver2: formData.driver2?.employee_name ? formData.driver2 : undefined
-            } as TripDutyItem)
-          : t
-      );
+      const updatedItem: TripDutyItem = {
+        ...editingTrip,
+        ...formData,
+        driver2: formData.driver2?.employee_name ? formData.driver2 : undefined
+      } as TripDutyItem;
+      const updated = trips.map((t) => (t.id === editingTrip.id ? updatedItem : t));
       setTrips(updated);
+      api.updateTask(editingTrip.id, updatedItem).catch(() => {});
       success(`Trip duty for ${formData.vehicle_number} updated.`);
     } else {
       const newTrip: TripDutyItem = {
@@ -445,6 +462,7 @@ export const TaskManagement: React.FC = () => {
         created_at: new Date().toISOString()
       };
       setTrips([newTrip, ...trips]);
+      api.createTask(newTrip).catch(() => {});
       success(`Trip duty for ${newTrip.vehicle_number} logged successfully!`);
     }
     setIsAddOpen(false);
@@ -453,6 +471,7 @@ export const TaskManagement: React.FC = () => {
   const handleDeleteTrip = (id: number) => {
     if (!confirm('Are you sure you want to delete this trip record?')) return;
     setTrips(trips.filter((t) => t.id !== id));
+    api.deleteTask(id).catch(() => {});
     success('Trip record deleted.');
   };
 
@@ -461,7 +480,9 @@ export const TaskManagement: React.FC = () => {
       if (t.trip_start_date === selectedDate && t.vehicle_number === busNumber) {
         const nextStatus: TripDutyItem['duty_status'] =
           t.duty_status === 'Completed' ? 'In Progress' : 'Completed';
-        return { ...t, duty_status: nextStatus };
+        const updatedItem = { ...t, duty_status: nextStatus };
+        api.updateTask(t.id, updatedItem).catch(() => {});
+        return updatedItem;
       }
       return t;
     });

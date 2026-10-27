@@ -1,5 +1,5 @@
 // Auto-generated seed data from localhost fleet database
-// Ensures that Vercel and fresh browsers immediately show the exact registered fleet, crew, and transit routes.
+// Ensures that Vercel and fresh browsers immediately show the exact registered fleet, crew, transit routes, organizers, and tasks.
 
 export const BASE_FLEET_BUSES: any[] = [
   {
@@ -304,5 +304,78 @@ export const BASE_FLEET_ROUTES: any[] = [
     "operator_commission": 4000,
     "created_at": "2026-10-27 05:49:24",
     "updated_at": "2026-10-27 05:49:24"
+  }
+];
+
+export const BASE_FLEET_ORGANIZERS: any[] = [
+  {
+    "id": 1793080098293,
+    "organization_name": "sri krishna",
+    "gst_number": "36RRHHT879IK",
+    "contact_person": "karthik",
+    "phone_number": "8519821491",
+    "email": "admin1@gmail.com",
+    "office_address": "dzxgtfrhydt",
+    "created_at": "2026-10-27 06:37:55",
+    "updated_at": "2026-10-27 06:37:55"
+  },
+  {
+    "id": 1793078889857,
+    "organization_name": "charvik",
+    "gst_number": "36GGGGG0000WG6G",
+    "contact_person": "ramya",
+    "phone_number": "8519821491",
+    "email": "harishneela060@gmail.com",
+    "office_address": "hyd",
+    "created_at": "2026-10-27 06:37:55",
+    "updated_at": "2026-10-27 06:37:55"
+  }
+];
+
+export const BASE_FLEET_TASKS: any[] = [
+  {
+    "id": 1793080778699,
+    "trip_start_date": "2026-10-27",
+    "vehicle_number": "AP16TV1234",
+    "vehicle_status": "RUN",
+    "route_corridor": "hyderabad → vijayawada",
+    "operator_organizer": "sri krishna",
+    "driver1": {
+      "employee_id": 1,
+      "employee_name": "akhil",
+      "role": "Driver",
+      "salary_amount": 1200,
+      "advance_amount": 0,
+      "balance_due": 1200
+    },
+    "driver2": {
+      "employee_id": 4,
+      "employee_name": "kittu",
+      "role": "Driver",
+      "salary_amount": 900,
+      "advance_amount": 0,
+      "balance_due": 900
+    },
+    "helper": {
+      "employee_id": 2,
+      "employee_name": "santhu",
+      "role": "Helper",
+      "salary_amount": 0,
+      "advance_amount": 0,
+      "balance_due": 0
+    },
+    "captain": {
+      "employee_id": 3,
+      "employee_name": "hari",
+      "role": "Captain",
+      "salary_amount": 0,
+      "advance_amount": 0,
+      "balance_due": 0,
+      "work_remarks": "Supervise route stops, passenger comfort & safety"
+    },
+    "trip_remarks": "zvh,nmnbvxz",
+    "duty_status": "In Progress",
+    "created_at": "2026-10-27T05:59:38.699Z",
+    "updated_at": "2026-10-27 06:37:55"
   }
 ];

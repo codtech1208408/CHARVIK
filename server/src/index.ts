@@ -1003,6 +1003,172 @@ app.delete('/api/routes/:id', (req: Request, res: Response) => {
   }
 });
 
+// ================= ORGANIZERS CRUD =================
+app.get('/api/organizers', (req: Request, res: Response) => {
+  try {
+    const list = db.prepare('SELECT * FROM organizers ORDER BY id DESC').all();
+    return res.json(list);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/organizers', (req: Request, res: Response) => {
+  const o = req.body;
+  if (!o.organization_name) {
+    return res.status(400).json({ error: 'Organization name is required' });
+  }
+  try {
+    const id = o.id || Date.now();
+    db.prepare(`
+      INSERT INTO organizers (id, organization_name, gst_number, contact_person, phone_number, email, office_address)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      o.organization_name.trim(),
+      o.gst_number?.trim() || '',
+      o.contact_person?.trim() || '',
+      o.phone_number?.trim() || '',
+      o.email?.trim() || '',
+      o.office_address?.trim() || ''
+    );
+    const created = { id, ...o };
+    logAudit('CREATE_ORGANIZER', 'Organizer Management', id, `Created organizer ${o.organization_name}`);
+    return res.status(201).json(created);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/organizers/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const o = req.body;
+  try {
+    db.prepare(`
+      UPDATE organizers SET
+        organization_name = ?, gst_number = ?, contact_person = ?, phone_number = ?,
+        email = ?, office_address = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      o.organization_name?.trim() || '',
+      o.gst_number?.trim() || '',
+      o.contact_person?.trim() || '',
+      o.phone_number?.trim() || '',
+      o.email?.trim() || '',
+      o.office_address?.trim() || '',
+      id
+    );
+    logAudit('UPDATE_ORGANIZER', 'Organizer Management', id, `Updated organizer ${o.organization_name}`);
+    return res.json({ message: 'Organizer updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/organizers/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM organizers WHERE id = ?').run(id);
+    logAudit('DELETE_ORGANIZER', 'Organizer Management', id, `Deleted organizer ID ${id}`);
+    return res.json({ message: 'Organizer deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ================= TASK MANAGEMENT (TRIP DUTIES) CRUD =================
+app.get('/api/tasks', (req: Request, res: Response) => {
+  try {
+    const list = db.prepare('SELECT * FROM trip_duties ORDER BY id DESC').all() as any[];
+    const parsed = list.map((t) => ({
+      ...t,
+      driver1: typeof t.driver1 === 'string' ? JSON.parse(t.driver1 || '{}') : t.driver1,
+      driver2: typeof t.driver2 === 'string' ? JSON.parse(t.driver2 || '{}') : t.driver2,
+      helper: typeof t.helper === 'string' && t.helper ? JSON.parse(t.helper) : t.helper,
+      captain: typeof t.captain === 'string' && t.captain ? JSON.parse(t.captain) : t.captain
+    }));
+    return res.json(parsed);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/tasks', (req: Request, res: Response) => {
+  const t = req.body;
+  if (!t.vehicle_number || !t.trip_start_date) {
+    return res.status(400).json({ error: 'Vehicle number and trip start date are required' });
+  }
+  try {
+    const id = t.id || Date.now();
+    db.prepare(`
+      INSERT INTO trip_duties (
+        id, trip_start_date, vehicle_number, vehicle_status, route_corridor, operator_organizer,
+        driver1, driver2, helper, captain, trip_remarks, duty_status, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `).run(
+      id,
+      t.trip_start_date,
+      t.vehicle_number,
+      t.vehicle_status || 'RUN',
+      t.route_corridor || '',
+      t.operator_organizer || '',
+      JSON.stringify(t.driver1 || {}),
+      JSON.stringify(t.driver2 || {}),
+      t.helper ? JSON.stringify(t.helper) : null,
+      t.captain ? JSON.stringify(t.captain) : null,
+      t.trip_remarks || '',
+      t.duty_status || 'Scheduled'
+    );
+    const created = { id, ...t };
+    logAudit('CREATE_TASK', 'Task Management', id, `Created task for bus ${t.vehicle_number}`);
+    return res.status(201).json(created);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/tasks/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const t = req.body;
+  try {
+    db.prepare(`
+      UPDATE trip_duties SET
+        trip_start_date = ?, vehicle_number = ?, vehicle_status = ?, route_corridor = ?,
+        operator_organizer = ?, driver1 = ?, driver2 = ?, helper = ?, captain = ?,
+        trip_remarks = ?, duty_status = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      t.trip_start_date,
+      t.vehicle_number,
+      t.vehicle_status || 'RUN',
+      t.route_corridor || '',
+      t.operator_organizer || '',
+      JSON.stringify(t.driver1 || {}),
+      JSON.stringify(t.driver2 || {}),
+      t.helper ? JSON.stringify(t.helper) : null,
+      t.captain ? JSON.stringify(t.captain) : null,
+      t.trip_remarks || '',
+      t.duty_status || 'Scheduled',
+      id
+    );
+    logAudit('UPDATE_TASK', 'Task Management', id, `Updated task ${id}`);
+    return res.json({ message: 'Task updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/tasks/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM trip_duties WHERE id = ?').run(id);
+    logAudit('DELETE_TASK', 'Task Management', id, `Deleted task ID ${id}`);
+    return res.json({ message: 'Task deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= DAILY KILOMETER ENTRY =================
 app.get('/api/daily-kilometers', (req: Request, res: Response) => {
   const { date, bus_id, driver_id } = req.query;

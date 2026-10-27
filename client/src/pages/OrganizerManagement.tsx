@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { BASE_FLEET_ORGANIZERS } from '../services/seedData';
+import { api } from '../services/api';
 
 export interface OrganizerItem {
   id: number;
@@ -32,27 +34,39 @@ export const OrganizerManagement: React.FC = () => {
   const [organizers, setOrganizers] = useState<OrganizerItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return [];
-      const parsed = JSON.parse(saved);
-      if (!Array.isArray(parsed)) return [];
-      // Normalize existing stored data if any
-      return parsed.map((o: any, idx: number) => ({
-        id: o.id || idx + 1,
-        organization_name: o.organization_name || '',
-        gst_number: o.gst_number || '',
-        contact_person: o.contact_person || '',
-        phone_number: o.phone_number || '',
-        email: o.email || '',
-        office_address: o.office_address || o.billing_address || ''
-      }));
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((o: any, idx: number) => ({
+            id: o.id || idx + 1,
+            organization_name: o.organization_name || '',
+            gst_number: o.gst_number || '',
+            contact_person: o.contact_person || '',
+            phone_number: o.phone_number || '',
+            email: o.email || '',
+            office_address: o.office_address || o.billing_address || ''
+          }));
+        }
+      }
+      return BASE_FLEET_ORGANIZERS;
     } catch {
-      return [];
+      return BASE_FLEET_ORGANIZERS;
     }
   });
 
   const [search, setSearch] = useState('');
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingOrg, setEditingOrg] = useState<OrganizerItem | null>(null);
+
+  // Sync with API on mount
+  useEffect(() => {
+    api.getOrganizers().then((remote) => {
+      if (Array.isArray(remote) && remote.length > 0) {
+        setOrganizers(remote);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
+      }
+    }).catch(() => {});
+  }, []);
 
   const [formData, setFormData] = useState<Partial<OrganizerItem>>({
     organization_name: '',
@@ -116,20 +130,18 @@ export const OrganizerManagement: React.FC = () => {
     const trimmedGst = (formData.gst_number || '').trim().toUpperCase();
 
     if (editingOrg) {
-      const updated = organizers.map((o) =>
-        o.id === editingOrg.id
-          ? ({
-              ...o,
-              organization_name: formData.organization_name!.trim(),
-              gst_number: trimmedGst,
-              contact_person: formData.contact_person!.trim(),
-              phone_number: formData.phone_number!.trim(),
-              email: (formData.email || '').trim(),
-              office_address: (formData.office_address || '').trim()
-            } as OrganizerItem)
-          : o
-      );
+      const updatedItem: OrganizerItem = {
+        ...editingOrg,
+        organization_name: formData.organization_name!.trim(),
+        gst_number: trimmedGst,
+        contact_person: formData.contact_person!.trim(),
+        phone_number: formData.phone_number!.trim(),
+        email: (formData.email || '').trim(),
+        office_address: (formData.office_address || '').trim()
+      };
+      const updated = organizers.map((o) => (o.id === editingOrg.id ? updatedItem : o));
       setOrganizers(updated);
+      api.updateOrganizer(editingOrg.id, updatedItem).catch(() => {});
       success(`Organization "${formData.organization_name.trim()}" updated successfully.`);
     } else {
       const newItem: OrganizerItem = {
@@ -142,6 +154,7 @@ export const OrganizerManagement: React.FC = () => {
         office_address: (formData.office_address || '').trim()
       };
       setOrganizers([newItem, ...organizers]);
+      api.createOrganizer(newItem).catch(() => {});
       success(`Organization "${newItem.organization_name}" added successfully.`);
     }
 
@@ -153,6 +166,7 @@ export const OrganizerManagement: React.FC = () => {
     const targetName = target ? target.organization_name : 'this organization';
     if (!window.confirm(`Are you sure you want to delete "${targetName}"?`)) return;
     setOrganizers(organizers.filter((o) => o.id !== id));
+    api.deleteOrganizer(id).catch(() => {});
     success(`Organization "${targetName}" removed.`);
   };
 

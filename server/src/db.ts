@@ -467,6 +467,37 @@ export function initDatabase() {
     db.exec("UPDATE buses SET assigned_captain_id = (SELECT id FROM employees WHERE role = 'Captain' LIMIT 1) WHERE id = 1;");
     db.exec("UPDATE employees SET assigned_bus_id = 1 WHERE role = 'Captain' AND id = (SELECT id FROM employees WHERE role = 'Captain' LIMIT 1);");
 
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS organizers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        organization_name TEXT NOT NULL,
+        gst_number TEXT,
+        contact_person TEXT,
+        phone_number TEXT,
+        email TEXT,
+        office_address TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS trip_duties (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        trip_start_date DATE NOT NULL,
+        vehicle_number TEXT NOT NULL,
+        vehicle_status TEXT DEFAULT 'RUN',
+        route_corridor TEXT,
+        operator_organizer TEXT,
+        driver1 TEXT,
+        driver2 TEXT,
+        helper TEXT,
+        captain TEXT,
+        trip_remarks TEXT,
+        duty_status TEXT DEFAULT 'Scheduled',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Seed default transit routes if empty
     const routeCount = db.prepare('SELECT COUNT(*) as count FROM transit_routes').get() as any;
     if (!routeCount || routeCount.count === 0) {
@@ -477,6 +508,42 @@ export function initDatabase() {
           ('SRV-204', 'Hyderabad', 'Vijayawada', 275, 'Seating/Sleeper', 'Active', 14000, 2000),
           ('SRV-305', 'Bangalore', 'Chennai', 345, 'Full Sleeper', 'Active', 18000, 2500),
           ('SRV-412', 'Hyderabad', 'Visakhapatnam', 620, 'Seating/Sleeper', 'Active', 28000, 4000)
+      `).run();
+    }
+
+    // Seed organizers if empty
+    const orgCount = db.prepare('SELECT COUNT(*) as count FROM organizers').get() as any;
+    if (!orgCount || orgCount.count === 0) {
+      db.prepare(`
+        INSERT INTO organizers (id, organization_name, gst_number, contact_person, phone_number, email, office_address)
+        VALUES 
+          (1793080098293, 'sri krishna', '36RRHHT879IK', 'karthik', '8519821491', 'admin1@gmail.com', 'dzxgtfrhydt'),
+          (1793078889857, 'charvik', '36GGGGG0000WG6G', 'ramya', '8519821491', 'harishneela060@gmail.com', 'hyd')
+      `).run();
+    }
+
+    // Seed trip duties if empty
+    const tripCount = db.prepare('SELECT COUNT(*) as count FROM trip_duties').get() as any;
+    if (!tripCount || tripCount.count === 0) {
+      db.prepare(`
+        INSERT INTO trip_duties (
+          id, trip_start_date, vehicle_number, vehicle_status, route_corridor, operator_organizer,
+          driver1, driver2, helper, captain, trip_remarks, duty_status, created_at
+        ) VALUES (
+          1793080778699,
+          '2026-10-27',
+          'AP16TV1234',
+          'RUN',
+          'hyderabad → vijayawada',
+          'sri krishna',
+          '{"employee_id":1,"employee_name":"akhil","role":"Driver","salary_amount":1200,"advance_amount":0,"balance_due":1200}',
+          '{"employee_id":4,"employee_name":"kittu","role":"Driver","salary_amount":900,"advance_amount":0,"balance_due":900}',
+          '{"employee_id":2,"employee_name":"santhu","role":"Helper","salary_amount":0,"advance_amount":0,"balance_due":0}',
+          '{"employee_id":3,"employee_name":"hari","role":"Captain","salary_amount":0,"advance_amount":0,"balance_due":0,"work_remarks":"Supervise route stops, passenger comfort & safety"}',
+          'zvh,nmnbvxz',
+          'In Progress',
+          '2026-10-27T05:59:38.699Z'
+        )
       `).run();
     }
   } catch (e) {}
