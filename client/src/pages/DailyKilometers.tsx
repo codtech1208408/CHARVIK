@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Gauge,
   Plus,
@@ -28,10 +29,19 @@ export const DailyKilometers: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState({ totalDistance: 0, totalEntries: 0 });
 
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
+
   // Filters
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState<string>(() => dateParam || '');
   const [selectedBus, setSelectedBus] = useState('');
   const [selectedDriver, setSelectedDriver] = useState('');
+
+  useEffect(() => {
+    if (dateParam) {
+      setSelectedDate(dateParam);
+    }
+  }, [dateParam]);
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   ClipboardList,
   Plus,
@@ -62,9 +63,17 @@ const STORAGE_KEY = 'charvik_trip_duty_management_v2';
 
 export const TaskManagement: React.FC = () => {
   const { success, error } = useToast();
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
+  const [selectedDate, setSelectedDate] = useState<string>(() => dateParam || todayStr);
+
+  useEffect(() => {
+    if (dateParam) {
+      setSelectedDate(dateParam);
+    }
+  }, [dateParam]);
 
   const [buses, setBuses] = useState<any[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);

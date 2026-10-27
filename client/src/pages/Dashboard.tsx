@@ -56,9 +56,6 @@ export const Dashboard: React.FC = () => {
   const [data, setData] = useState<any>(null);
   const [buses, setBuses] = useState<any[]>([]);
 
-  // Search & Filter state
-  const [globalSearch, setGlobalSearch] = useState('');
-
   // Active operational table tab
   const [activeTab, setActiveTab] = useState<'complaints' | 'tyres' | 'ac' | 'oil' | 'battery'>('complaints');
 
@@ -182,33 +179,17 @@ export const Dashboard: React.FC = () => {
     count: item.dueSoonCount || 0
   }));
 
-  // Today's formatted live date
-  const todayFormatted = new Date().toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
-
-  // Filtered upcoming maintenance based on search
-  const filteredUpcoming = (data?.upcoming || []).filter((m: any) => {
-    if (!globalSearch) return true;
-    const q = globalSearch.toLowerCase();
-    return (
-      m.bus_number?.toLowerCase().includes(q) ||
-      m.registration_number?.toLowerCase().includes(q) ||
-      m.maintenance_type?.toLowerCase().includes(q) ||
-      m.status?.toLowerCase().includes(q)
-    );
-  });
+  // Upcoming maintenance items
+  const filteredUpcoming = data?.upcoming || [];
 
   return (
     <div className="space-y-6 pb-12">
       {/* =========================================================================
-          1. HEADER BAR: Welcome, Global Search, Live Date & Notifications
+          1. HEADER BAR: Welcome & Status
          ========================================================================= */}
       <div
         data-aos="fade-down"
-        className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+        className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-sm flex items-center justify-between"
       >
         <div className="flex items-center space-x-3.5">
           <div className="w-12 h-12 rounded-2xl bg-[#142B4A] flex items-center justify-center text-white shadow-md shrink-0">
@@ -228,40 +209,6 @@ export const Dashboard: React.FC = () => {
               Bus Fleet & Maintenance Management Platform • Section 3.1 Operations Dashboard
             </p>
           </div>
-        </div>
-
-        <div className="flex items-center flex-wrap gap-2.5 sm:gap-3">
-          {/* Global Search Bar */}
-          <div className="relative min-w-[220px] sm:min-w-[260px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search bus, service, driver..."
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none text-slate-700"
-            />
-          </div>
-
-          {/* Date Widget */}
-          <div className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 flex items-center gap-2">
-            <CalendarDays className="w-3.5 h-3.5 text-blue-600" />
-            <span>{todayFormatted}</span>
-          </div>
-
-          {/* Notification Bell with Badge */}
-          <button
-            onClick={() => navigate('/admin/complaints')}
-            className="relative p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors"
-            title="Operational Alerts"
-          >
-            <Bell className="w-4 h-4" />
-            {(s.pendingComplaints || s.scheduledMaintenance) > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-white animate-bounce">
-                {(s.pendingComplaints || 0) + (s.scheduledMaintenance || 0)}
-              </span>
-            )}
-          </button>
         </div>
       </div>
 

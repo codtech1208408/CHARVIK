@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, Wrench, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, AlertTriangle, Wrench, ShieldAlert, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { NavbarCalendar } from './NavbarCalendar';
 
 interface NavbarProps {
   onMobileToggle: () => void;
@@ -66,12 +67,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const todayStr = new Intl.DateTimeFormat('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  }).format(new Date());
-
   return (
     <header className="h-16 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
       {/* Left: Menu Drawer Toggle & Back to Dashboard & Page Title */}
@@ -127,11 +122,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
 
       {/* Right: Date, Notifications, Profile */}
       <div className="flex items-center space-x-2 sm:space-x-3">
-        {/* Date Display */}
-        <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
-          <Calendar className="w-3.5 h-3.5 text-[#2563EB]" />
-          <span className="font-semibold">{todayStr}</span>
-        </div>
+        {/* Interactive Fleet Calendar */}
+        <NavbarCalendar />
 
         {/* Notification Bell */}
         <div className="relative" ref={notifRef}>
