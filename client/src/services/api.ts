@@ -235,6 +235,36 @@ async function handleFallbackTableCrud(
       } catch {
         list = getLocalCollection<any>(tableKey).filter(x => x?.is_archived !== 1);
       }
+
+      if (tableKey === 'buses' && (!list || list.length === 0)) {
+        list = [
+          {
+            id: 1,
+            bus_number: 'AP16TV1234',
+            registration_number: 'AP16TV1234',
+            make: 'Tata',
+            model: 'Starbus',
+            bus_type: 'Seating/Sleeper',
+            seating_capacity: 36,
+            current_odometer_km: 45000,
+            operational_status: 'Active',
+            is_archived: 0
+          },
+          {
+            id: 2,
+            bus_number: 'AP16TC4567',
+            registration_number: 'AP16TC4567',
+            make: 'Ashok Leyland',
+            model: 'Viking',
+            bus_type: 'Full Sleeper',
+            seating_capacity: 30,
+            current_odometer_km: 32000,
+            operational_status: 'Active',
+            is_archived: 0
+          }
+        ];
+        setLocalCollection('buses', list);
+      }
       if (options?.enrich) list = options.enrich(list);
       if (options?.filter) list = options.filter(list, params);
       return list;
