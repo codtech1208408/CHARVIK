@@ -336,19 +336,13 @@ export const TaskManagement: React.FC = () => {
     }));
   };
 
-  // Helper Selection: Auto-populates registered salary if present
+  // Helper Selection (No trip salary needed)
   const handleHelperSelect = (empName: string) => {
     if (!empName) {
       setFormData((prev) => ({ ...prev, helper: undefined }));
       return;
     }
     const emp = helpers.find((h) => h.full_name === empName);
-    let salary: any = '';
-    if (emp && emp.salary !== undefined && emp.salary !== null && emp.salary !== '') {
-      salary = Number(emp.salary);
-    } else {
-      salary = formData.helper?.salary_amount ?? ('' as any);
-    }
 
     setFormData((prev) => ({
       ...prev,
@@ -356,9 +350,9 @@ export const TaskManagement: React.FC = () => {
         employee_id: emp?.id,
         employee_name: empName,
         role: 'Helper',
-        salary_amount: salary ?? ('' as any),
-        advance_amount: prev.helper?.advance_amount || 0,
-        balance_due: Math.max(0, Number(salary || 0) - Number(prev.helper?.advance_amount || 0))
+        salary_amount: 0,
+        advance_amount: 0,
+        balance_due: 0
       }
     }));
   };
@@ -1380,49 +1374,20 @@ export const TaskManagement: React.FC = () => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Helper Employee</label>
-                  <select
-                    value={formData.helper?.employee_name || ''}
-                    onChange={(e) => handleHelperSelect(e.target.value)}
-                    className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
-                  >
-                    <option value="">-- None (No Helper Required) --</option>
-                    {helpers.map((h) => (
-                      <option key={h.id} value={h.full_name}>
-                        {h.full_name} ({h.employee_code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {formData.helper?.employee_name && (
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Salary Amount ₹
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="Enter salary ₹"
-                      value={formData.helper?.salary_amount !== undefined && formData.helper?.salary_amount !== null ? formData.helper.salary_amount : ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const sal = val === '' ? ('' as any) : Number(val);
-                        setFormData({
-                          ...formData,
-                          helper: {
-                            ...formData.helper!,
-                            salary_amount: sal,
-                            advance_amount: 0,
-                            balance_due: Number(sal || 0)
-                          }
-                        });
-                      }}
-                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none"
-                    />
-                  </div>
-                )}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Helper Employee</label>
+                <select
+                  value={formData.helper?.employee_name || ''}
+                  onChange={(e) => handleHelperSelect(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                >
+                  <option value="">-- None (No Helper Required) --</option>
+                  {helpers.map((h) => (
+                    <option key={h.id} value={h.full_name}>
+                      {h.full_name} ({h.employee_code})
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
