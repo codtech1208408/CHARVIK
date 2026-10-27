@@ -384,6 +384,21 @@ export function initDatabase() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Transit Routes
+    CREATE TABLE IF NOT EXISTS transit_routes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      service_number TEXT UNIQUE NOT NULL,
+      starting_city TEXT NOT NULL,
+      ending_city TEXT NOT NULL,
+      destination_km REAL NOT NULL,
+      vehicle_type TEXT NOT NULL DEFAULT 'Full Sleeper',
+      status TEXT NOT NULL DEFAULT 'Active',
+      trip_amount REAL,
+      operator_commission REAL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Indexes for high-performance filtering & search
     CREATE INDEX IF NOT EXISTS idx_buses_bus_number ON buses(bus_number);
     CREATE INDEX IF NOT EXISTS idx_buses_status ON buses(operational_status);
@@ -451,5 +466,18 @@ export function initDatabase() {
     db.exec("UPDATE administrators SET phone_number = '9701055555' WHERE role = 'Captain' AND (phone_number IS NULL OR phone_number = '');");
     db.exec("UPDATE buses SET assigned_captain_id = (SELECT id FROM employees WHERE role = 'Captain' LIMIT 1) WHERE id = 1;");
     db.exec("UPDATE employees SET assigned_bus_id = 1 WHERE role = 'Captain' AND id = (SELECT id FROM employees WHERE role = 'Captain' LIMIT 1);");
+
+    // Seed default transit routes if empty
+    const routeCount = db.prepare('SELECT COUNT(*) as count FROM transit_routes').get() as any;
+    if (!routeCount || routeCount.count === 0) {
+      db.prepare(`
+        INSERT INTO transit_routes (service_number, starting_city, ending_city, destination_km, vehicle_type, status, trip_amount, operator_commission)
+        VALUES 
+          ('SRV-101', 'Hyderabad', 'Bangalore', 570, 'Full Sleeper', 'Active', 25000, 3500),
+          ('SRV-204', 'Hyderabad', 'Vijayawada', 275, 'Seating/Sleeper', 'Active', 14000, 2000),
+          ('SRV-305', 'Bangalore', 'Chennai', 345, 'Full Sleeper', 'Active', 18000, 2500),
+          ('SRV-412', 'Hyderabad', 'Visakhapatnam', 620, 'Seating/Sleeper', 'Active', 28000, 4000)
+      `).run();
+    }
   } catch (e) {}
 }

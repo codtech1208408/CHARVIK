@@ -356,9 +356,9 @@ export const TaskManagement: React.FC = () => {
         employee_id: emp?.id,
         employee_name: empName,
         role: 'Helper',
-        salary_amount: existingSalary ?? ('' as any),
+        salary_amount: salary ?? ('' as any),
         advance_amount: prev.helper?.advance_amount || 0,
-        balance_due: Math.max(0, Number(existingSalary || 0) - Number(prev.helper?.advance_amount || 0))
+        balance_due: Math.max(0, Number(salary || 0) - Number(prev.helper?.advance_amount || 0))
       }
     }));
   };

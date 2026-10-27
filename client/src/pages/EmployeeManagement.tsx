@@ -535,7 +535,7 @@ export const EmployeeManagement: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-slate-500">{e.joining_date || '-'}</td>
                     <td className="py-3 px-4">
-                      {e.role === 'Driver' && e.licence_validity_date ? (
+                      {e.licence_validity_date ? (
                         <span className="font-semibold text-slate-800 font-mono">
                           {e.licence_validity_date}
                         </span>

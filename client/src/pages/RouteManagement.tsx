@@ -10,11 +10,13 @@ import {
   ArrowRight,
   IndianRupee,
   Activity,
-  Layers
+  Layers,
+  RotateCcw
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 
 export type VehicleType = 'Full Sleeper' | 'Seating/Sleeper' | 'Seater';
 
@@ -32,11 +34,16 @@ export interface RouteItem {
 
 const STORAGE_KEY = 'charvik_route_management_data';
 
-const DEFAULT_ROUTES: RouteItem[] = [];
+const DEFAULT_ROUTES: RouteItem[] = [
+  { id: 1, service_number: 'SRV-101', starting_city: 'Hyderabad', ending_city: 'Bangalore', destination_km: 570, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 25000, operator_commission: 3500 },
+  { id: 2, service_number: 'SRV-204', starting_city: 'Hyderabad', ending_city: 'Vijayawada', destination_km: 275, vehicle_type: 'Seating/Sleeper', status: 'Active', trip_amount: 14000, operator_commission: 2000 },
+  { id: 3, service_number: 'SRV-305', starting_city: 'Bangalore', ending_city: 'Chennai', destination_km: 345, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 18000, operator_commission: 2500 },
+  { id: 4, service_number: 'SRV-412', starting_city: 'Hyderabad', ending_city: 'Visakhapatnam', destination_km: 620, vehicle_type: 'Seating/Sleeper', status: 'Active', trip_amount: 28000, operator_commission: 4000 }
+];
 
 const normalizeRoute = (item: any, idx: number): RouteItem => {
   return {
-    id: item.id || idx + 1,
+    id: Number(item.id || idx + 1),
     service_number: item.service_number || item.route_code || `SRV-${100 + idx}`,
     starting_city: item.starting_city || item.origin || '',
     ending_city: item.ending_city || item.destination || '',
@@ -60,25 +67,13 @@ export const RouteManagement: React.FC = () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          // Remove all previous hardcoded seed/mock routes
-          const userOnly = parsed.filter((r: any) => {
-            const num = (r.service_number || r.route_code || '').trim();
-            const from = (r.starting_city || r.origin || '').trim();
-            const to = (r.ending_city || r.destination || '').trim();
-            const isMock1 = num === 'SRV-101' && from === 'Hyderabad' && to === 'Bangalore';
-            const isMock2 = num === 'SRV-204' && from === 'Hyderabad' && to === 'Vijayawada';
-            const isMock3 = num === 'SRV-305' && from === 'Bangalore' && to === 'Chennai';
-            const isMock4 = num === 'SRV-412' && from === 'Hyderabad' && to === 'Visakhapatnam';
-            const isOldMock = num.startsWith('RT-') && (to.includes('HITEC') || to.includes('Gachibowli') || to.includes('Madhapur'));
-            return !(isMock1 || isMock2 || isMock3 || isMock4 || isOldMock);
-          });
-          return userOnly.map((item, idx) => normalizeRoute(item, idx));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((item, idx) => normalizeRoute(item, idx));
         }
       }
-      return [];
+      return DEFAULT_ROUTES;
     } catch {
-      return [];
+      return DEFAULT_ROUTES;
     }
   });
 
@@ -87,6 +82,17 @@ export const RouteManagement: React.FC = () => {
   const [vehicleTypeFilter, setVehicleTypeFilter] = useState('All');
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingRoute, setEditingRoute] = useState<RouteItem | null>(null);
+
+  // Sync with backend API on mount
+  useEffect(() => {
+    api.getRoutes().then((remoteRoutes) => {
+      if (Array.isArray(remoteRoutes) && remoteRoutes.length > 0) {
+        const normalized = remoteRoutes.map((item, idx) => normalizeRoute(item, idx));
+        setRoutes(normalized);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+      }
+    }).catch(() => {});
+  }, []);
 
   const [formData, setFormData] = useState<{
     service_number: string;
@@ -177,37 +183,31 @@ export const RouteManagement: React.FC = () => {
       return;
     }
 
+    const payload = {
+      service_number: formData.service_number.trim(),
+      starting_city: formData.starting_city.trim(),
+      ending_city: formData.ending_city.trim(),
+      destination_km: Number(formData.destination_km),
+      vehicle_type: formData.vehicle_type as VehicleType,
+      status: formData.status as 'Active' | 'Inactive',
+      trip_amount: formData.trip_amount !== undefined && formData.trip_amount !== '' ? Number(formData.trip_amount) : undefined,
+      operator_commission: formData.operator_commission !== undefined && formData.operator_commission !== '' ? Number(formData.operator_commission) : undefined
+    };
+
     if (editingRoute) {
       const updated = routes.map((r) =>
-        r.id === editingRoute.id
-          ? ({
-              ...r,
-              service_number: formData.service_number.trim(),
-              starting_city: formData.starting_city.trim(),
-              ending_city: formData.ending_city.trim(),
-              destination_km: Number(formData.destination_km),
-              vehicle_type: formData.vehicle_type as VehicleType,
-              status: formData.status as 'Active' | 'Inactive',
-              trip_amount: formData.trip_amount !== undefined && formData.trip_amount !== '' ? Number(formData.trip_amount) : undefined,
-              operator_commission: formData.operator_commission !== undefined && formData.operator_commission !== '' ? Number(formData.operator_commission) : undefined
-            } as RouteItem)
-          : r
+        r.id === editingRoute.id ? ({ ...r, ...payload } as RouteItem) : r
       );
       setRoutes(updated);
+      api.updateRoute(editingRoute.id, payload).catch(() => {});
       success(`Service ${formData.service_number.trim()} updated successfully.`);
     } else {
       const newItem: RouteItem = {
         id: Date.now(),
-        service_number: formData.service_number.trim(),
-        starting_city: formData.starting_city.trim(),
-        ending_city: formData.ending_city.trim(),
-        destination_km: Number(formData.destination_km),
-        vehicle_type: formData.vehicle_type as VehicleType,
-        status: formData.status as 'Active' | 'Inactive',
-        trip_amount: formData.trip_amount !== undefined && formData.trip_amount !== '' ? Number(formData.trip_amount) : undefined,
-        operator_commission: formData.operator_commission !== undefined && formData.operator_commission !== '' ? Number(formData.operator_commission) : undefined
+        ...payload
       };
       setRoutes([newItem, ...routes]);
+      api.createRoute(payload).catch(() => {});
       success(`New service ${newItem.service_number} created successfully.`);
     }
 
@@ -219,6 +219,7 @@ export const RouteManagement: React.FC = () => {
     const targetName = target ? target.service_number : 'this route';
     if (!window.confirm(`Are you sure you want to delete service "${targetName}"?`)) return;
     setRoutes(routes.filter((r) => r.id !== id));
+    api.deleteRoute(id).catch(() => {});
     success(`Service ${targetName} deleted successfully.`);
   };
 
@@ -385,10 +386,32 @@ export const RouteManagement: React.FC = () => {
                       <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                         <Navigation className="w-6 h-6" />
                       </div>
-                      <p className="font-bold text-sm text-slate-700">No transit routes found</p>
-                      <p className="text-xs text-slate-400 max-w-sm">
-                        No service routes configured yet. Use the &quot;+ Add New Route&quot; button above to create one.
+                      <p className="font-bold text-sm text-slate-700">
+                        {routes.length > 0 ? 'No transit routes match current filter' : 'No transit routes found'}
                       </p>
+                      <p className="text-xs text-slate-400 max-w-sm text-center">
+                        {routes.length > 0 ? (
+                          <span>
+                            {routes.length} total route(s) configured. None match {vehicleTypeFilter !== 'All' ? `"${vehicleTypeFilter}"` : ''} {statusFilter !== 'All' ? `"${statusFilter}"` : ''} {search ? `"${search}"` : ''}.
+                          </span>
+                        ) : (
+                          <span>No service routes configured yet. Use the &quot;+ Add New Route&quot; button above to create one.</span>
+                        )}
+                      </p>
+                      {routes.length > 0 && (vehicleTypeFilter !== 'All' || statusFilter !== 'All' || search) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearch('');
+                            setStatusFilter('All');
+                            setVehicleTypeFilter('All');
+                          }}
+                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Reset All Filters</span>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

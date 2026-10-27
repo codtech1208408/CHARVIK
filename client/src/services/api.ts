@@ -1221,6 +1221,17 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   return handleCloudFallback<T>(endpoint, options);
 }
 
+function cleanQueryParams(params?: Record<string, any>): string {
+  if (!params) return '';
+  const clean: Record<string, string> = {};
+  for (const [key, val] of Object.entries(params)) {
+    if (val !== undefined && val !== null && val !== '' && val !== 'undefined' && val !== 'null' && val !== 'All') {
+      clean[key] = String(val);
+    }
+  }
+  return new URLSearchParams(clean).toString();
+}
+
 export const api = {
   // Auth
   login: (data: any) => request<any>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
@@ -1231,7 +1242,7 @@ export const api = {
 
   // Buses
   getBuses: (params?: { search?: string; status?: string }) => {
-    const q = new URLSearchParams(params as any).toString();
+    const q = cleanQueryParams(params);
     return request<any[]>(`/buses${q ? `?${q}` : ''}`);
   },
   getBus: (id: number | string) => request<any>(`/buses/${id}`),
@@ -1240,6 +1251,28 @@ export const api = {
   archiveBus: (id: number | string) => request<any>(`/buses/${id}`, { method: 'DELETE' }),
   sendExpiryAlert: (busId: number | string, data: { doc_name: string; expiry_date: string; recipient?: string; message?: string }) =>
     request<any>(`/buses/${busId}/send-expiry-alert`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Transit Routes
+  getRoutes: async () => {
+    try {
+      const remote = await request<any[]>('/routes');
+      if (Array.isArray(remote) && remote.length > 0) {
+        localStorage.setItem('charvik_route_management_data', JSON.stringify(remote));
+        return remote;
+      }
+    } catch {}
+    try {
+      const saved = localStorage.getItem('charvik_route_management_data');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return [];
+  },
+  createRoute: (data: any) => request<any>('/routes', { method: 'POST', body: JSON.stringify(data) }),
+  updateRoute: (id: number | string, data: any) => request<any>(`/routes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteRoute: (id: number | string) => request<any>(`/routes/${id}`, { method: 'DELETE' }),
 
   // Daily Kilometers
   getDailyKm: (params?: { date?: string; bus_id?: number | string; driver_id?: number | string }) => {

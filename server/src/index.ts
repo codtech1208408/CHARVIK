@@ -742,11 +742,11 @@ app.get('/api/buses', (req: Request, res: Response) => {
   `;
   const params: any[] = [];
 
-  if (status && status !== 'All') {
+  if (status && status !== 'All' && status !== 'undefined' && status !== 'null') {
     query += ' AND b.operational_status = ?';
     params.push(status);
   }
-  if (search) {
+  if (search && search !== 'undefined' && search !== 'null') {
     query += ' AND (b.bus_number LIKE ? OR b.registration_number LIKE ? OR b.make LIKE ? OR b.model LIKE ?)';
     const s = `%${search}%`;
     params.push(s, s, s, s);
@@ -906,6 +906,101 @@ app.delete('/api/buses/:id', requireAdmin, (req: Request, res: Response) => {
   db.prepare('UPDATE buses SET is_archived = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
   logAudit('ARCHIVE_BUS', 'Bus Master', id, `Archived bus ID ${id}`);
   return res.json({ message: 'Bus archived successfully' });
+});
+
+// ================= TRANSIT ROUTES CRUD =================
+app.get('/api/routes', (req: Request, res: Response) => {
+  try {
+    const routes = db.prepare('SELECT * FROM transit_routes ORDER BY id ASC').all();
+    return res.json(routes);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/routes', (req: Request, res: Response) => {
+  const r = req.body;
+  if (!r.service_number || !r.starting_city || !r.ending_city) {
+    return res.status(400).json({ error: 'Service number, starting city, and ending city are required' });
+  }
+
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO transit_routes (
+        service_number, starting_city, ending_city, destination_km,
+        vehicle_type, status, trip_amount, operator_commission
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const info = stmt.run(
+      r.service_number.trim(),
+      r.starting_city.trim(),
+      r.ending_city.trim(),
+      Number(r.destination_km || 0),
+      r.vehicle_type || 'Full Sleeper',
+      r.status || 'Active',
+      r.trip_amount ? Number(r.trip_amount) : null,
+      r.operator_commission ? Number(r.operator_commission) : null
+    );
+
+    const created = {
+      id: Number(info.lastInsertRowid),
+      service_number: r.service_number.trim(),
+      starting_city: r.starting_city.trim(),
+      ending_city: r.ending_city.trim(),
+      destination_km: Number(r.destination_km || 0),
+      vehicle_type: r.vehicle_type || 'Full Sleeper',
+      status: r.status || 'Active',
+      trip_amount: r.trip_amount ? Number(r.trip_amount) : undefined,
+      operator_commission: r.operator_commission ? Number(r.operator_commission) : undefined
+    };
+
+    logAudit('CREATE_ROUTE', 'Route Management', info.lastInsertRowid, `Created transit route ${r.service_number}`);
+    return res.status(201).json(created);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/routes/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const r = req.body;
+
+  try {
+    db.prepare(`
+      UPDATE transit_routes SET
+        service_number = ?, starting_city = ?, ending_city = ?, destination_km = ?,
+        vehicle_type = ?, status = ?, trip_amount = ?, operator_commission = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      r.service_number?.trim() || '',
+      r.starting_city?.trim() || '',
+      r.ending_city?.trim() || '',
+      Number(r.destination_km || 0),
+      r.vehicle_type || 'Full Sleeper',
+      r.status || 'Active',
+      r.trip_amount ? Number(r.trip_amount) : null,
+      r.operator_commission ? Number(r.operator_commission) : null,
+      id
+    );
+
+    logAudit('UPDATE_ROUTE', 'Route Management', id, `Updated route ID ${id}`);
+    return res.json({ message: 'Route updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/routes/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM transit_routes WHERE id = ?').run(id);
+    logAudit('DELETE_ROUTE', 'Route Management', id, `Deleted route ID ${id}`);
+    return res.json({ message: 'Route deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 // ================= DAILY KILOMETER ENTRY =================
