@@ -20,6 +20,97 @@ function getStoredUser() {
   }
 }
 
+// Image compression helper (shrinks 5MB-10MB camera photos to ~40KB-70KB so quota is never exceeded)
+function compressImageFile(file: File, maxDim = 800, quality = 0.65): Promise<string> {
+  return new Promise((resolve) => {
+    if (!file.type || !file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string) || '');
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } else {
+          resolve((reader.result as string) || '');
+        }
+      };
+      img.onerror = () => resolve((reader.result as string) || '');
+      img.src = (e.target?.result as string) || '';
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+}
+
+// IndexedDB unlimited store (no 5MB localStorage limit)
+const IDB_NAME = 'charvik_fleet_storage_db';
+const IDB_STORE = 'collections';
+
+function openCharvikIDB(): Promise<IDBDatabase | null> {
+  if (typeof window === 'undefined' || !window.indexedDB) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    try {
+      const req = window.indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          db.createObjectStore(IDB_STORE);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+async function setIdbCollection<T>(key: string, items: T[]): Promise<void> {
+  try {
+    const db = await openCharvikIDB();
+    if (!db) return;
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(items, key);
+  } catch {}
+}
+
+async function getIdbCollection<T>(key: string): Promise<T[] | null> {
+  try {
+    const db = await openCharvikIDB();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).get(key);
+      req.onsuccess = () => resolve(Array.isArray(req.result) ? req.result : null);
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
+
 // Local cache helper for offline/cloud resilience
 function getLocalCollection<T>(key: string): T[] {
   try {
@@ -30,10 +121,46 @@ function getLocalCollection<T>(key: string): T[] {
   }
 }
 
+async function getReliableCollection<T>(key: string): Promise<T[]> {
+  try {
+    const idb = await getIdbCollection<T>(key);
+    const local = getLocalCollection<T>(key);
+    if (Array.isArray(idb) && idb.length > 0) {
+      if (!local || local.length < idb.length) {
+        setLocalCollection(key, idb);
+        return idb;
+      }
+      return idb;
+    }
+    return local;
+  } catch {
+    return getLocalCollection<T>(key);
+  }
+}
+
 function setLocalCollection<T>(key: string, items: T[]) {
+  // 1. Always persist to IndexedDB (unlimited quota, stores full images)
+  setIdbCollection(key, items);
+
+  // 2. Save to localStorage with graceful fallback if quota is exceeded
   try {
     localStorage.setItem(`charvik_cache_${key}`, JSON.stringify(items));
-  } catch {}
+  } catch {
+    try {
+      // Strip heavy base64 strings for localStorage backup so metadata is NEVER lost
+      const stripped = items.map((item: any) => {
+        if (!item || typeof item !== 'object') return item;
+        const copy: any = { ...item };
+        for (const k of Object.keys(copy)) {
+          if (typeof copy[k] === 'string' && copy[k].startsWith('data:image/')) {
+            copy[k] = '[stored_in_idb]';
+          }
+        }
+        return copy;
+      });
+      localStorage.setItem(`charvik_cache_${key}`, JSON.stringify(stripped));
+    } catch {}
+  }
 }
 
 /**
@@ -77,6 +204,7 @@ function mergeWithLocal<T extends { id?: any; is_archived?: number; registration
   setLocalCollection(key, merged);
   return merged;
 }
+
 
 /**
  * Helper to handle full CRUD on any fleet management table in fallback/cloud mode
@@ -483,14 +611,26 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       if (method === 'GET') {
         let list: any[] = [];
         try {
-          const { data, error } = await supabase.from('employees').select('*').order('id', { ascending: false });
-          list = mergeWithLocal('employees', !error && Array.isArray(data) ? data : []);
+          // Instant load from reliable local + IndexedDB store (no spinner freeze)
+          const reliable = await getReliableCollection<any>('employees');
+          list = (reliable || []).filter(x => x?.is_archived !== 1 && !isDummySeedEmployee(x));
+
+          // Non-blocking background sync with Supabase (max 1000ms timeout)
+          try {
+            const timeoutPromise = new Promise<any>((_, reject) =>
+              setTimeout(() => reject(new Error('timeout')), 1000)
+            );
+            const supabasePromise = supabase.from('employees').select('*').order('id', { ascending: false });
+            const { data, error } = await Promise.race([supabasePromise, timeoutPromise]);
+            if (!error && Array.isArray(data) && data.length > 0) {
+              list = mergeWithLocal('employees', data);
+              list = (list || []).filter(e => !isDummySeedEmployee(e));
+            }
+          } catch {}
         } catch {
-          list = getLocalCollection<any>('employees').filter(x => x?.is_archived !== 1);
+          list = getLocalCollection<any>('employees').filter(x => x?.is_archived !== 1 && !isDummySeedEmployee(x));
         }
 
-        // Active cleanup: Purge any hardcoded dummy seed employees so user data is strictly shown
-        list = (list || []).filter(e => !isDummySeedEmployee(e));
         setLocalCollection('employees', list);
 
         // Enrich & standardize
@@ -535,7 +675,8 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
           created_at: new Date().toISOString()
         };
 
-        const list = getLocalCollection<any>('employees').filter(x => String(x.id) !== String(newId) && !isDummySeedEmployee(x));
+        const existing = await getReliableCollection<any>('employees');
+        const list = existing.filter(x => String(x.id) !== String(newId) && !isDummySeedEmployee(x));
         list.unshift(record);
         setLocalCollection('employees', list);
 
@@ -604,8 +745,8 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       }
     } else if (itemId) {
       if (method === 'GET') {
-        const list = getLocalCollection<any>('employees');
-        let found = list.find(x => String(x.id) === String(itemId));
+        const list = await getReliableCollection<any>('employees');
+        let found = list.find(x => String(x.id) === String(itemId) || String(x.employee_code) === String(itemId));
         if (!found) {
           try {
             const { data } = await supabase.from('employees').select('*').eq('id', itemId).single();
@@ -1219,19 +1360,14 @@ export const api = {
       }
     }
 
-    // Direct Browser Fallback: encode as Data URL so document/photo preview works seamlessly across all devices
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        resolve({
-          fileUrl: reader.result as string,
-          provider: 'browser_storage',
-          originalName: file.name,
-          size: file.size,
-          mimeType: file.type
-        });
-      };
-      reader.readAsDataURL(file);
-    });
+    // Direct Browser Fallback: compress image to max 800px & 0.65 quality so it uses ~50KB instead of 5MB!
+    const compressedUrl = await compressImageFile(file, 800, 0.65);
+    return {
+      fileUrl: compressedUrl,
+      provider: 'browser_storage',
+      originalName: file.name,
+      size: compressedUrl.length,
+      mimeType: file.type || 'image/jpeg'
+    };
   }
 };
