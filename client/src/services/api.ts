@@ -309,13 +309,36 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       schedules = getLocalCollection('maintenance_schedules').filter(s => (s as any).is_archived !== 1);
     }
 
+    // Always ensure local buses and employees are loaded
+    if (!buses || buses.length === 0) {
+      buses = getLocalCollection('buses').filter(b => (b as any).is_archived !== 1);
+    }
+    if (!employees || employees.length === 0) {
+      employees = getLocalCollection('employees').filter(e => (e as any).is_archived !== 1);
+    }
+
+    // Purge any dummy seed employees
+    employees = employees.filter(e => !isDummySeedEmployee(e));
+
     const totalBuses = buses.length;
-    const activeBuses = buses.filter(b => b.operational_status === 'Active').length;
-    const maintenanceBuses = buses.filter(b => b.operational_status === 'Under Maintenance').length;
+    const activeBuses = buses.filter(b => (b.operational_status || 'Active').toLowerCase() === 'active').length;
+    const underMaintenance = buses.filter(b => (b.operational_status || '').toLowerCase().includes('maintenance')).length;
+    const scheduledMaintenance = schedules.filter(s => ['Scheduled', 'Due', 'Due Soon', 'Pending', 'In Progress'].includes(s.status)).length;
+    const pendingComplaints = complaints.filter(c => c.status !== 'Resolved' && c.status !== 'Closed').length;
+    const completedMonth = schedules.filter(s => s.status === 'Completed').length;
+
+    const todayDateStr = new Date().toISOString().split('T')[0];
+    const todayKm = dailyKm
+      .filter(k => k.entry_date === todayDateStr)
+      .reduce((acc, row) => acc + (Number(row.distance_travelled_km) || 0), 0);
+
     const driversCount = employees.filter(e => e.role === 'Driver').length;
     const captainsCount = employees.filter(e => e.role === 'Captain').length;
     const helpersCount = employees.filter(e => e.role === 'Helper').length;
-    const openComplaintsCount = complaints.filter(c => c.status !== 'Resolved' && c.status !== 'Closed').length;
+    const operatorsCount = new Set(buses.map(b => b.make).filter(Boolean)).size || (totalBuses > 0 ? 1 : 0);
+    const unassignedBusesCount = buses.filter(b => !b.assigned_driver_id && !b.driver_name).length;
+    const unassignedStaffCount = employees.filter(e => !e.assigned_bus_id).length;
+    const runningProjectsCount = new Set(buses.filter(b => (b.operational_status || 'Active').toLowerCase() === 'active').map(b => b.bus_type || 'Fleet')).size || activeBuses;
 
     const kmBasedSchedules = [
       { service: 'Tyre Rotation / Check', interval_km: 10000, notes: 'Tyre position, action (Rotation / Check / Replace), condition', status: 'Active', dueSoonCount: 0 },
@@ -325,33 +348,74 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       { service: 'Battery Check', interval_km: 10000, notes: 'Last checked, next due, status', status: 'Active', dueSoonCount: 0 }
     ];
 
+    const statusCounts: Record<string, number> = {};
+    for (const b of buses) {
+      const st = b.operational_status || 'Active';
+      statusCounts[st] = (statusCounts[st] || 0) + 1;
+    }
+    const statusDistribution = Object.entries(statusCounts).map(([status, count]) => ({ status, count }));
+
+    const liveRunningBuses = buses.map((b, idx) => ({
+      id: b.id,
+      bus_number: b.bus_number || b.registration_number,
+      route: b.make ? `${b.make} ${b.model || 'Bus'} Transit` : `${b.bus_number || b.registration_number} Transit`,
+      driver: b.driver_name || 'Unassigned',
+      speed: (b.operational_status || 'Active').toLowerCase() === 'active' ? 40 : 0,
+      status: (b.operational_status || 'Active').toLowerCase() === 'active' ? 'Running' : b.operational_status,
+      lat: 16.5062 + (idx * 0.005),
+      lng: 80.6480 + (idx * 0.005),
+      battery: 'Good',
+      ac: 'Working'
+    }));
+
     return {
+      summary: {
+        totalBuses,
+        activeBuses,
+        underMaintenance,
+        scheduledMaintenance,
+        pendingComplaints,
+        completedThisMonth: completedMonth,
+        todayKm
+      },
+      additionalKpis: {
+        totalCaptains: captainsCount,
+        totalDrivers: driversCount,
+        totalHelpers: helpersCount,
+        totalOperators: operatorsCount,
+        runningProjects: runningProjectsCount,
+        unassignedBuses: unassignedBusesCount,
+        unassignedStaff: unassignedStaffCount
+      },
       kpis: {
         totalBuses,
         activeBuses,
-        maintenanceBuses,
-        inactiveBuses: Math.max(0, totalBuses - activeBuses - maintenanceBuses),
-        totalKmToday: dailyKm.reduce((acc, row) => acc + (Number(row.distance_travelled_km) || 0), 0),
+        maintenanceBuses: underMaintenance,
+        inactiveBuses: Math.max(0, totalBuses - activeBuses - underMaintenance),
+        totalKmToday: todayKm,
         totalExpensesMonth: 0,
-        openComplaints: openComplaintsCount,
+        openComplaints: pendingComplaints,
         pendingRepairs: 0,
         fuelEfficiency: 4.8,
         totalDrivers: driversCount,
         totalCaptains: captainsCount,
         totalHelpers: helpersCount,
-        unassignedBuses: buses.filter(b => !b.assigned_driver_id).length,
-        unassignedStaff: employees.filter(e => !e.assigned_bus_id).length,
-        runningProjects: 0
+        unassignedBuses: unassignedBusesCount,
+        unassignedStaff: unassignedStaffCount,
+        runningProjects: runningProjectsCount
       },
       upcoming: schedules,
       kmBasedSchedules,
-      recentKm: dailyKm.slice(0, 5),
+      recentKm: dailyKm.slice(0, 6),
       recentComplaints: complaints.slice(0, 5),
       recentRepairs: [],
-      recentTyres: [],
-      recentAc: [],
-      recentOil: [],
-      recentBattery: [],
+      recentTyres: getLocalCollection('tyres').slice(0, 5),
+      recentAc: getLocalCollection('ac').slice(0, 5),
+      recentOil: getLocalCollection('oil').slice(0, 5),
+      recentBattery: getLocalCollection('battery').slice(0, 5),
+      statusDistribution,
+      recentCondition: getLocalCollection('bus_condition').slice(0, 3),
+      liveRunningBuses,
       notifications: []
     } as any;
   }
