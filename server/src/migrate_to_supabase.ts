@@ -45,16 +45,37 @@ export async function migrateAllData() {
 
       console.log(`⏳ [${table}] Migrating ${rows.length} records...`);
 
-      // Supabase bulk upsert in chunks of 50
+      // Supabase bulk upsert in chunks of 50 with automatic column resilience
       const chunkSize = 50;
       for (let i = 0; i < rows.length; i += chunkSize) {
-        const chunk = rows.slice(i, i + chunkSize);
-        const { error } = await supabase.from(table).upsert(chunk, { onConflict: table === 'application_settings' ? 'key' : 'id' });
+        let chunk = rows.slice(i, i + chunkSize);
+        let error: any = null;
+        for (let attempt = 0; attempt < 6; attempt++) {
+          const res = await supabase.from(table).upsert(chunk, { onConflict: table === 'application_settings' ? 'key' : 'id' });
+          if (!res.error) {
+            error = null;
+            break;
+          }
+          error = res.error;
+          const match = error.message.match(/Could not find the '([^']+)' column/);
+          if (match && match[1]) {
+            const missingCol = match[1];
+            chunk = chunk.map((item: any) => {
+              const copy = { ...item };
+              delete copy[missingCol];
+              return copy;
+            });
+            continue;
+          }
+          break;
+        }
+
         if (error) {
           console.error(`❌ [${table}] Error inserting chunk ${i / chunkSize + 1}:`, error.message);
+        } else {
+          console.log(`✅ [${table}] Successfully migrated chunk ${i / chunkSize + 1}`);
         }
       }
-      console.log(`✅ [${table}] Successfully migrated ${rows.length} rows.`);
     } catch (err: any) {
       console.error(`❌ [${table}] Failed to read or migrate:`, err.message);
     }

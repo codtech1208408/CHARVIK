@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { BASE_FLEET_BUSES, BASE_FLEET_EMPLOYEES, BASE_FLEET_ROUTES } from './seedData';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -237,33 +238,12 @@ async function handleFallbackTableCrud(
       }
 
       if (tableKey === 'buses' && (!list || list.length === 0)) {
-        list = [
-          {
-            id: 1,
-            bus_number: 'AP16TV1234',
-            registration_number: 'AP16TV1234',
-            make: 'Tata',
-            model: 'Starbus',
-            bus_type: 'Seating/Sleeper',
-            seating_capacity: 36,
-            current_odometer_km: 45000,
-            operational_status: 'Active',
-            is_archived: 0
-          },
-          {
-            id: 2,
-            bus_number: 'AP16TC4567',
-            registration_number: 'AP16TC4567',
-            make: 'Ashok Leyland',
-            model: 'Viking',
-            bus_type: 'Full Sleeper',
-            seating_capacity: 30,
-            current_odometer_km: 32000,
-            operational_status: 'Active',
-            is_archived: 0
-          }
-        ];
+        list = [...BASE_FLEET_BUSES];
         setLocalCollection('buses', list);
+      }
+      if (tableKey === 'routes' && (!list || list.length === 0)) {
+        list = [...BASE_FLEET_ROUTES];
+        setLocalCollection('routes', list);
       }
       if (options?.enrich) list = options.enrich(list);
       if (options?.filter) list = options.filter(list, params);
@@ -467,12 +447,20 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       schedules = getLocalCollection('maintenance_schedules').filter(s => (s as any).is_archived !== 1);
     }
 
-    // Always ensure local buses and employees are loaded
+    // Always ensure base fleet buses and employees are loaded
     if (!buses || buses.length === 0) {
       buses = getLocalCollection('buses').filter(b => (b as any).is_archived !== 1);
+      if (!buses || buses.length === 0) {
+        buses = [...BASE_FLEET_BUSES];
+        setLocalCollection('buses', buses);
+      }
     }
     if (!employees || employees.length === 0) {
       employees = getLocalCollection('employees').filter(e => (e as any).is_archived !== 1);
+      if (!employees || employees.length === 0) {
+        employees = [...BASE_FLEET_EMPLOYEES];
+        setLocalCollection('employees', employees);
+      }
     }
 
     // Purge any dummy seed employees
@@ -659,6 +647,11 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
           } catch {}
         } catch {
           list = getLocalCollection<any>('employees').filter(x => x?.is_archived !== 1 && !isDummySeedEmployee(x));
+        }
+
+        if (!list || list.length === 0) {
+          list = [...BASE_FLEET_EMPLOYEES];
+          setLocalCollection('employees', list);
         }
 
         setLocalCollection('employees', list);
@@ -1150,7 +1143,17 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     }
   }
 
-  // 17. NOTIFICATIONS, SETTINGS, AUDIT LOGS, REPORTS
+  // 17. TRANSIT ROUTES FALLBACK
+  if (path === '/routes' || path.startsWith('/routes/')) {
+    const res = await handleFallbackTableCrud('routes', 'transit_routes', path, method, body, params);
+    if (!res || (Array.isArray(res) && res.length === 0)) {
+      setLocalCollection('routes', BASE_FLEET_ROUTES);
+      return BASE_FLEET_ROUTES as any;
+    }
+    return res as any;
+  }
+
+  // 18. NOTIFICATIONS, SETTINGS, AUDIT LOGS, REPORTS
   if (path === '/notifications') return [] as any;
   if (path === '/settings') {
     if (method === 'POST') {
