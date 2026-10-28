@@ -923,7 +923,7 @@ export const DriverRegistration: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    {formData.employment_type === 'Temporary' ? 'Temporary Worker Salary / Wage (₹) *' : 'Permanent Worker Salary (₹) *'}
+                    {formData.employment_type === 'Temporary' ? 'Temporary Worker (Per Day Salary) (₹) *' : 'Permanent Worker (Per Day Salary) (₹) *'}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
@@ -933,7 +933,7 @@ export const DriverRegistration: React.FC = () => {
                       step="any"
                       value={formData.salary || ''}
                       onChange={(e) => handleInputChange('salary', e.target.value)}
-                      placeholder={formData.employment_type === 'Temporary' ? 'Enter temporary wage amount (₹)' : 'Enter permanent salary amount (₹)'}
+                      placeholder="Enter per day salary amount (₹)"
                       className="w-full text-xs pl-7 pr-3 p-2.5 rounded-xl border border-blue-300 bg-white font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
@@ -1088,142 +1088,83 @@ export const DriverRegistration: React.FC = () => {
           </div>
 
           {/* Biodata Driver Official Table Format */}
-          <div className="border-2 border-black overflow-hidden font-sans">
+          <div className="border-2 border-black overflow-hidden font-sans printable-sheet">
+            {/* Company Print Header */}
+            <div className="p-3 bg-white border-b-2 border-black flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#142B4A] text-white flex items-center justify-center font-black text-sm">
+                  C
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 tracking-tight uppercase">CHARVIK STAFFING CONSULTANCY</h3>
+                  <p className="text-[10px] text-slate-600 font-semibold">Driver Fleet Staffing Verification Record</p>
+                </div>
+              </div>
+              <div className="text-right text-[10px] text-slate-600">
+                <p><strong className="text-slate-900">Role:</strong> <span className="font-bold">Driver</span></p>
+                <p><strong className="text-slate-900">Status:</strong> <span className="font-bold text-emerald-700">Verified Preview</span></p>
+              </div>
+            </div>
+
             {/* Yellow Header */}
-            <div className="bg-[#FFFF00] text-black font-black text-center py-2.5 text-sm uppercase tracking-wider border-b-2 border-black">
+            <div className="bg-[#FFFF00] text-black font-black text-center py-2 text-sm uppercase tracking-wider border-b-2 border-black">
               Biodata Driver
             </div>
 
             <table className="w-full text-xs border-collapse">
               <tbody className="divide-y divide-black">
-                {/* 1. Profile Photo */}
+                {/* Gender */}
                 <tr className="hover:bg-slate-50">
-                  <td className="w-1/2 p-2.5 font-bold border-r border-black bg-slate-50/50">Profile Photo</td>
-                  <td className="w-1/2 p-2.5">
-                    {formData.profile_photo ? (
-                      <img src={formData.profile_photo} alt="Profile" className="w-16 h-16 object-cover rounded-lg border border-slate-300" />
-                    ) : (
-                      <span className="text-slate-400 italic">No Photo Uploaded</span>
-                    )}
-                  </td>
+                  <td className="w-1/2 p-2.5 font-bold border-r border-black bg-slate-50/50">Gender</td>
+                  <td className="w-1/2 p-2.5">{formData.gender || 'Male'}</td>
                 </tr>
 
-                {/* 2. Gender */}
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Gender</td>
-                  <td className="p-2.5">{formData.gender || 'Male'}</td>
-                </tr>
-
-                {/* 3. Name (As per Aadhaar) */}
+                {/* Name (As per Aadhaar) */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Name (As per Aadhaar)</td>
                   <td className="p-2.5 font-bold text-slate-900">{formData.full_name || '-'}</td>
                 </tr>
 
-                {/* 4. DOB */}
+                {/* DOB */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">DOB</td>
                   <td className="p-2.5 font-mono">{formData.date_of_birth || '-'}</td>
                 </tr>
 
-                {/* 5. E MAIL */}
+                {/* E MAIL */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">E MAIL</td>
                   <td className="p-2.5">{formData.email || '-'}</td>
                 </tr>
 
-                {/* 6. Phone Number * */}
+                {/* Phone Number * */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Phone Number *</td>
                   <td className="p-2.5 font-mono font-bold text-blue-700">{formData.phone_number || '-'}</td>
                 </tr>
 
-                {/* 7. Alternative Number */}
+                {/* Alternative Number */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Alternative Number</td>
                   <td className="p-2.5 font-mono">{formData.alternative_phone_number || '-'}</td>
                 </tr>
 
-                {/* 8. Aadhaar Number */}
+                {/* Aadhaar Number */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Number</td>
                   <td className="p-2.5 font-mono">{formData.aadhaar_number || '-'}</td>
                 </tr>
 
-                {/* 9. Upload Aadhaar Front & Back */}
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Card (Front Side)</td>
-                  <td className="p-2.5">
-                    {formData.aadhaar_front_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Front Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Card (Back Side)</td>
-                  <td className="p-2.5">
-                    {formData.aadhaar_back_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Back Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
-                  </td>
-                </tr>
-
-                {/* 10. PAN Card Number */}
+                {/* PAN Card Number */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">PAN Card Number</td>
                   <td className="p-2.5 font-mono uppercase">{formData.pan_number || '-'}</td>
                 </tr>
 
-                {/* 11. Upload Photo File (PAN Card) */}
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Upload Photo File (PAN Card)</td>
-                  <td className="p-2.5">
-                    {formData.pan_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ PAN Card File Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
-                  </td>
-                </tr>
-
-                {/* 12. Driving Licence Details (Header) */}
+                {/* Driving Licence Details (Header) */}
                 <tr className="bg-slate-100 font-black text-slate-800">
                   <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
                     Driving Licence Details
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Front Side)</td>
-                  <td className="p-2.5">
-                    {formData.licence_front_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Front Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Back Side)</td>
-                  <td className="p-2.5">
-                    {formData.licence_back_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Back Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
                   </td>
                 </tr>
                 <tr className="hover:bg-slate-50">
@@ -1232,18 +1173,6 @@ export const DriverRegistration: React.FC = () => {
                     <span className="px-2 py-0.5 rounded font-bold text-xs bg-blue-50 text-blue-700 border border-blue-200">
                       {formData.licence_verification_status || 'Pending Verification'}
                     </span>
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Licence Verification Photo / Proof</td>
-                  <td className="p-2.5">
-                    {formData.licence_verification_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Verification Photo Attached
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
                   </td>
                 </tr>
                 <tr className="hover:bg-slate-50">
@@ -1268,34 +1197,22 @@ export const DriverRegistration: React.FC = () => {
                 </tr>
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Total Experience as Per Licence</td>
-                  <td className="p-2.5">{formData.licence_experience_years ? `${formData.licence_experience_years} Years` : '-'}</td>
+                  <td className="p-2.5">{formData.licence_experience_years != null ? `${formData.licence_experience_years} Years` : '-'}</td>
                 </tr>
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Any Criminal Background As Per Licence</td>
                   <td className="p-2.5">{formData.criminal_background_details || 'Clean Record / None'}</td>
                 </tr>
 
-                {/* 13. Bank Name (Header) */}
+                {/* Bank Details */}
                 <tr className="bg-slate-100 font-black text-slate-800">
                   <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
-                    Bank Name
+                    Bank Details
                   </td>
                 </tr>
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Bank Name</td>
                   <td className="p-2.5 font-bold">{formData.bank_name || '-'}</td>
-                </tr>
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Upload Photo File (passbook check )</td>
-                  <td className="p-2.5">
-                    {formData.bank_proof_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Passbook / Cheque File Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
-                  </td>
                 </tr>
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Account Holder Name</td>
@@ -1314,7 +1231,7 @@ export const DriverRegistration: React.FC = () => {
                   <td className="p-2.5">{formData.branch || '-'}</td>
                 </tr>
 
-                {/* 14. Nominee Details (Header) */}
+                {/* Nominee Details (Header) */}
                 <tr className="bg-slate-100 font-black text-slate-800">
                   <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
                     Nominee Details (Beneficiary)
@@ -1341,7 +1258,7 @@ export const DriverRegistration: React.FC = () => {
                   <td className="p-2.5 font-mono">{formData.nominee_aadhaar || '-'}</td>
                 </tr>
 
-                {/* 15. Reference Details (Header) */}
+                {/* Reference Details (Header) */}
                 <tr className="bg-slate-100 font-black text-slate-800">
                   <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
                     Reference Details (Verification)
@@ -1360,7 +1277,7 @@ export const DriverRegistration: React.FC = () => {
                   <td className="p-2.5 font-mono">{formData.reference_alt_phone || '-'}</td>
                 </tr>
 
-                {/* 16. Employment Details (Header) */}
+                {/* Employment Details (Header) */}
                 <tr className="bg-slate-100 font-black text-slate-800">
                   <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
                     Employment & Salary Details
@@ -1380,7 +1297,9 @@ export const DriverRegistration: React.FC = () => {
                 </tr>
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">
-                    {formData.employment_type === 'Temporary' ? 'Temporary Wage / Salary' : 'Permanent Monthly Salary'}
+                    {formData.employment_type === 'Temporary'
+                      ? 'Temporary Worker (Per Day Salary)'
+                      : 'Permanent Worker (Per Day Salary)'}
                   </td>
                   <td className="p-2.5 font-bold text-slate-900">
                     {formData.salary ? `₹${Number(formData.salary).toLocaleString('en-IN')}` : '₹0'}
@@ -1400,6 +1319,41 @@ export const DriverRegistration: React.FC = () => {
                 </tr>
               </tbody>
             </table>
+
+            {/* Official Declaration */}
+            <div className="border-t-2 border-black bg-slate-50/60 p-3 text-[11px] text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Declaration: </span>
+              <span>
+                I hereby declare that all the information and particulars provided in this biodata sheet are true, complete, and accurate to the best of my knowledge and belief.
+              </span>
+            </div>
+
+            {/* Signature Section */}
+            <div className="border-t-2 border-black grid grid-cols-2 divide-x-2 divide-black bg-white">
+              {/* Left: Employee Signature */}
+              <div className="p-4 flex flex-col justify-between min-h-[120px]">
+                <div>
+                  <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Driver Signature</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Signature of {formData.full_name || 'Driver'}</p>
+                </div>
+                <div className="mt-10 pt-2 border-t border-dashed border-slate-500 flex items-center justify-between text-[11px] font-semibold text-slate-700">
+                  <span>Sign: ___________________</span>
+                  <span>Date: ____________</span>
+                </div>
+              </div>
+
+              {/* Right: Authorized Signatory */}
+              <div className="p-4 flex flex-col justify-between min-h-[120px]">
+                <div>
+                  <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Authorized Signatory & Seal</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Charvik Staffing Consultancy</p>
+                </div>
+                <div className="mt-10 pt-2 border-t border-dashed border-slate-500 flex items-center justify-between text-[11px] font-semibold text-slate-700">
+                  <span>Sign & Seal: _____________</span>
+                  <span>Date: ____________</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </Modal>

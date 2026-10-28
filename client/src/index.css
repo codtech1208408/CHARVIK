@@ -30,14 +30,30 @@
 
 /* Printable media styling */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
   body {
     background: white !important;
     color: black !important;
   }
-  .no-print {
+
+  .no-print,
+  nav,
+  header,
+  aside,
+  footer {
     display: none !important;
   }
+
   .print-only {
     display: block !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

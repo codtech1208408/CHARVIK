@@ -9,10 +9,18 @@ import {
   Trash2,
   FileText,
   MapPin,
-  CheckCircle2
+  CheckCircle2,
+  IndianRupee,
+  Upload,
+  Eye,
+  X,
+  Printer,
+  AlertCircle
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { PrintButton } from '../components/common/PrintButton';
+import { printSheet } from '../utils/printSheet';
 import { BASE_FLEET_ORGANIZERS } from '../services/seedData';
 import { api } from '../services/api';
 
@@ -58,12 +66,40 @@ export const OrganizerManagement: React.FC = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingOrg, setEditingOrg] = useState<OrganizerItem | null>(null);
 
+  // Organizer Record Payment Modal State
+  const [organizerPayments, setOrganizerPayments] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('charvik_organizer_payments_data');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+  const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  const [targetOrg, setTargetOrg] = useState<OrganizerItem | null>(null);
+  const [paymentForm, setPaymentForm] = useState({
+    period_month: 'Oct',
+    period_year: '2026',
+    amount: '',
+    received_date: new Date().toISOString().split('T')[0],
+    payment_mode: 'Cash' as 'Cash' | 'Bank' | 'UPI',
+    payment_proof: '',
+    notes: ''
+  });
+  const [previewProofModal, setPreviewProofModal] = useState<string | null>(null);
+
   // Sync with API on mount
   useEffect(() => {
     api.getOrganizers().then((remote) => {
       if (Array.isArray(remote) && remote.length > 0) {
         setOrganizers(remote);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
+      }
+    }).catch(() => {});
+
+    api.getOrganizerPayments().then((data) => {
+      if (Array.isArray(data) && data.length > 0) {
+        setOrganizerPayments(data);
+        localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(data));
       }
     }).catch(() => {});
   }, []);
@@ -170,6 +206,130 @@ export const OrganizerManagement: React.FC = () => {
     success(`Organization "${targetName}" removed.`);
   };
 
+  const handleOpenRecordPayment = (org: OrganizerItem) => {
+    setTargetOrg(org);
+    const now = new Date();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    setPaymentForm({
+      period_month: months[now.getMonth()],
+      period_year: String(now.getFullYear()),
+      amount: '',
+      received_date: now.toISOString().split('T')[0],
+      payment_mode: 'Cash',
+      payment_proof: '',
+      notes: ''
+    });
+    setIsRecordModalOpen(true);
+  };
+
+  const handleDeleteOrganizerPayment = (payId: number | string) => {
+    if (!window.confirm('Are you sure you want to delete this payment record?')) return;
+    const updated = organizerPayments.filter((p) => p.id !== payId);
+    setOrganizerPayments(updated);
+    try {
+      localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(updated));
+    } catch {}
+    success('Payment record removed.');
+  };
+
+  const handleSaveOrganizerPayment = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!targetOrg) {
+      error('Please select an organization.');
+      return;
+    }
+    const amt = Number(paymentForm.amount);
+    if (!amt || amt <= 0) {
+      error('Please enter a valid received amount.');
+      return;
+    }
+
+    try {
+      const receiptNo = 'ORG-REC-' + Date.now().toString().slice(-6);
+      const newPayment = {
+        id: Date.now(),
+        receipt_no: receiptNo,
+        organizer_name: targetOrg.organization_name,
+        period: `${paymentForm.period_month} ${paymentForm.period_year}`,
+        amount: amt,
+        received_date: paymentForm.received_date,
+        payment_mode: paymentForm.payment_mode,
+        payment_proof: paymentForm.payment_proof || undefined,
+        notes: paymentForm.notes || undefined,
+        created_at: new Date().toISOString()
+      };
+
+      const created = await api.createOrganizerPayment(newPayment).catch(() => newPayment);
+      const updated = [created, ...organizerPayments];
+      setOrganizerPayments(updated);
+      try {
+        localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(updated));
+      } catch {}
+
+      success(`Recorded payment of ₹${amt.toLocaleString('en-IN')} for ${targetOrg.organization_name}!`);
+      setPaymentForm((prev) => ({
+        ...prev,
+        amount: '',
+        notes: '',
+        payment_proof: ''
+      }));
+
+      if (shouldPrint) {
+        printSheet({
+          title: 'CHARVIK FLEET MANAGEMENT - ORGANIZER RECEIPT',
+          subtitle: `Receipt No: ${receiptNo} | Organization: ${targetOrg.organization_name}`,
+          orientation: 'portrait',
+          htmlContent: `
+            <div style="font-family: sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px;">
+              <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 16px; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #142B4A; font-size: 22px;">CHARVIK FLEET MANAGEMENT</h2>
+                <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Official Organization Revenue / Payment Receipt</p>
+              </div>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b;">Receipt Number:</td>
+                  <td style="padding: 8px 0; font-weight: bold; font-family: monospace; text-align: right;">${receiptNo}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b;">Receipt Date:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${paymentForm.received_date}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b;">Organization Name:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${targetOrg.organization_name}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b;">Contact Person:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${targetOrg.contact_person} (${targetOrg.phone_number})</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b;">Payment Mode:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${paymentForm.payment_mode}</td>
+                </tr>
+                ${paymentForm.notes ? `
+                <tr>
+                  <td style="padding: 8px 0; color: #64748b;">Notes / Ref:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${paymentForm.notes}</td>
+                </tr>` : ''}
+                <tr style="border-top: 2px dashed #cbd5e1; border-bottom: 2px dashed #cbd5e1;">
+                  <td style="padding: 14px 0; font-size: 15px; font-weight: bold; color: #142B4A;">Total Received:</td>
+                  <td style="padding: 14px 0; font-size: 18px; font-weight: 900; color: #047857; text-align: right;">₹${amt.toLocaleString('en-IN')}</td>
+                </tr>
+              </table>
+              ${paymentForm.payment_proof ? `
+              <div style="text-align: center; margin-top: 15px;">
+                <p style="font-size: 11px; color: #64748b; margin-bottom: 6px;">Payment Verification Proof Attached:</p>
+                <img src="${paymentForm.payment_proof}" style="max-height: 180px; max-width: 100%; border-radius: 8px; border: 1px solid #e2e8f0;" />
+              </div>` : ''}
+            </div>
+          `
+        });
+      }
+    } catch {
+      error('Failed to record organizer payment.');
+    }
+  };
+
   const filteredOrganizers = organizers.filter((o) => {
     const query = search.toLowerCase();
     return (
@@ -198,13 +358,20 @@ export const OrganizerManagement: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Organization</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <PrintButton
+            title="Registered Organizations & Operator Directory"
+            subtitle={`Total: ${filteredOrganizers.length} Organizations`}
+            targetId="organizers-table-wrap"
+          />
+          <button
+            onClick={handleOpenAdd}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Organization</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -260,7 +427,7 @@ export const OrganizerManagement: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div id="organizers-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
@@ -346,6 +513,14 @@ export const OrganizerManagement: React.FC = () => {
 
                     <td className="py-3 px-4 text-center">
                       <div className="flex items-center justify-center space-x-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenRecordPayment(o)}
+                          className="p-1.5 rounded-lg bg-[#EAFBF3] text-[#00875A] border border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer shadow-2xs"
+                          title={`Record Payment from ${o.organization_name}`}
+                        >
+                          <IndianRupee className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleOpenEdit(o)}
                           className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
@@ -480,6 +655,348 @@ export const OrganizerManagement: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Monthly Income Record Payment Modal (Exact Match to User Reference Screenshot) */}
+      {isRecordModalOpen && targetOrg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-3xl overflow-hidden max-h-[92vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-[#EAFBF3] text-[#00A86B] flex items-center justify-center shrink-0">
+                  <span className="text-2xl font-black text-[#00A86B]">₹</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                    Monthly Income: {targetOrg.organization_name}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Track monthly payments received from this organizer.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsRecordModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6 overflow-y-auto flex-1">
+              {/* SECTION 1: LOG NEW PAYMENT */}
+              <div className="space-y-2.5">
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                  LOG NEW PAYMENT
+                </h4>
+
+                <form
+                  onSubmit={handleSaveOrganizerPayment}
+                  className="p-5 rounded-2xl border border-slate-200/90 bg-white shadow-2xs space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    {/* Period (Month & Year) */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Period (Month &amp; Year) *
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          value={paymentForm.period_month}
+                          onChange={(e) => setPaymentForm({ ...paymentForm, period_month: e.target.value })}
+                          className="w-1/2 p-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none cursor-pointer focus:border-[#00B074]"
+                        >
+                          {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m) => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                        <input
+                          type="text"
+                          required
+                          value={paymentForm.period_year}
+                          onChange={(e) => setPaymentForm({ ...paymentForm, period_year: e.target.value })}
+                          placeholder="2026"
+                          className="w-1/2 p-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none text-center font-mono focus:border-[#00B074]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Amount (₹) */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Amount (₹) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        step="any"
+                        placeholder="0.00"
+                        value={paymentForm.amount}
+                        onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-900 outline-none font-mono focus:border-[#00B074]"
+                      />
+                    </div>
+
+                    {/* Payment Mode */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Payment Mode *
+                      </label>
+                      <select
+                        value={paymentForm.payment_mode}
+                        onChange={(e) =>
+                          setPaymentForm({
+                            ...paymentForm,
+                            payment_mode: e.target.value as 'Cash' | 'Bank' | 'UPI'
+                          })
+                        }
+                        className="w-full p-2.5 rounded-xl border-2 border-[#00B074] bg-white text-xs font-bold text-slate-900 outline-none cursor-pointer shadow-2xs focus:ring-1 focus:ring-[#00B074]"
+                      >
+                        <option value="Cash">Cash</option>
+                        <option value="Bank">Bank</option>
+                        <option value="UPI">UPI</option>
+                      </select>
+                    </div>
+
+                    {/* Date Received */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Date Received *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={paymentForm.received_date}
+                        onChange={(e) => setPaymentForm({ ...paymentForm, received_date: e.target.value })}
+                        className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 outline-none cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Notes
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Transaction ID, remarks..."
+                      value={paymentForm.notes}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none placeholder:text-slate-400"
+                    />
+                  </div>
+
+                  {/* Photo Proof Upload for Bank / UPI */}
+                  {paymentForm.payment_mode !== 'Cash' && (
+                    <div className="pt-1">
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1.5">
+                        Payment Proof (Photo Upload)
+                      </label>
+                      {paymentForm.payment_proof ? (
+                        <div className="rounded-xl border border-slate-200 p-2.5 bg-slate-50 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={paymentForm.payment_proof}
+                              alt="Proof preview"
+                              className="w-12 h-12 rounded-lg object-cover border border-slate-200 cursor-pointer"
+                              onClick={() => setPreviewProofModal(paymentForm.payment_proof)}
+                            />
+                            <div>
+                              <p className="text-xs font-bold text-slate-800">Proof photo attached</p>
+                              <p className="text-[10px] text-slate-500">Click image to enlarge</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setPreviewProofModal(paymentForm.payment_proof)}
+                              className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPaymentForm({ ...paymentForm, payment_proof: '' })}
+                              className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50/70 cursor-pointer transition-all">
+                          <Upload className="w-4 h-4 text-slate-400" />
+                          <span className="text-xs font-bold text-slate-600">
+                            Upload Bank Slip / UPI Screenshot (Optional)
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  error('File size must be under 5MB');
+                                  return;
+                                }
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                  setPaymentForm((prev) => ({
+                                    ...prev,
+                                    payment_proof: reader.result as string
+                                  }));
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Add Record Button */}
+                  <div className="flex items-center justify-end pt-2">
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 rounded-xl font-bold text-xs bg-[#00B074] hover:bg-[#009A65] text-white flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Add Record</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* SECTION 2: PAYMENT HISTORY */}
+              <div className="space-y-2.5">
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                  PAYMENT HISTORY
+                </h4>
+
+                {(() => {
+                  const orgRecords = organizerPayments.filter(
+                    (p) => p.organizer_name?.toLowerCase() === targetOrg.organization_name.toLowerCase()
+                  );
+
+                  if (orgRecords.length === 0) {
+                    return (
+                      <div className="rounded-2xl border-2 border-dashed border-slate-200/90 p-10 flex flex-col items-center justify-center text-center">
+                        <span className="text-3xl text-slate-300 font-bold mb-2">₹</span>
+                        <p className="text-xs text-slate-400 font-medium">
+                          No income records found for this organizer.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+                            <tr>
+                              <th className="py-3 px-4">#</th>
+                              <th className="py-3 px-4">PERIOD</th>
+                              <th className="py-3 px-4">DATE</th>
+                              <th className="py-3 px-4">AMOUNT</th>
+                              <th className="py-3 px-4">MODE</th>
+                              <th className="py-3 px-4">PROOF</th>
+                              <th className="py-3 px-4">NOTES</th>
+                              <th className="py-3 px-4 text-center">ACTIONS</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 text-slate-700">
+                            {orgRecords.map((rec, idx) => (
+                              <tr key={rec.id || idx} className="hover:bg-slate-50 transition-colors">
+                                <td className="py-3 px-4 font-bold text-slate-400">{idx + 1}</td>
+                                <td className="py-3 px-4 font-bold text-slate-800">{rec.period || '-'}</td>
+                                <td className="py-3 px-4 text-slate-600 font-medium">{rec.received_date}</td>
+                                <td className="py-3 px-4 font-mono font-bold text-emerald-600">
+                                  ₹{Number(rec.amount || 0).toLocaleString('en-IN')}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                    {rec.payment_mode || 'Cash'}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4">
+                                  {rec.payment_proof ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => setPreviewProofModal(rec.payment_proof)}
+                                      className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:underline"
+                                    >
+                                      <Eye className="w-3.5 h-3.5" />
+                                      <span>View</span>
+                                    </button>
+                                  ) : (
+                                    <span className="text-slate-300">—</span>
+                                  )}
+                                </td>
+                                <td className="py-3 px-4 text-slate-500 max-w-[160px] truncate">
+                                  {rec.notes || '—'}
+                                </td>
+                                <td className="py-3 px-4 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteOrganizerPayment(rec.id)}
+                                    className="p-1 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="Delete Payment Record"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Proof Photo Fullscreen Modal */}
+      {previewProofModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setPreviewProofModal(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full bg-white rounded-3xl p-4 shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="text-xs font-bold text-slate-700">Payment Verification Photo</span>
+              <button
+                onClick={() => setPreviewProofModal(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="pt-3 flex items-center justify-center">
+              <img
+                src={previewProofModal}
+                alt="Payment proof full"
+                className="max-h-[70vh] w-auto rounded-xl object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -35,21 +35,21 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto print:static print:overflow-visible print:z-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity no-print"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
-      <div className="min-h-full flex items-center justify-center p-4 text-center sm:p-6">
+      <div className="min-h-full flex items-center justify-center p-4 text-center sm:p-6 print:p-0 print:block print:min-h-0">
         <div
-          className={`relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full ${maxWidth} border border-slate-100 flex flex-col max-h-[90vh]`}
+          className={`relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full ${maxWidth} border border-slate-100 flex flex-col max-h-[90vh] print:max-h-none print:overflow-visible print:shadow-none print:border-none print:my-0 print:w-full print:max-w-none`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="px-6 py-4 bg-gradient-to-r from-[#142B4A] to-[#1E3A5F] text-white flex items-center justify-between shrink-0">
+          <div className="px-6 py-4 bg-gradient-to-r from-[#142B4A] to-[#1E3A5F] text-white flex items-center justify-between shrink-0 no-print">
             <div>
               <h3 className="text-lg font-bold tracking-tight text-white">{title}</h3>
               {subtitle && <p className="text-xs text-blue-200 mt-0.5">{subtitle}</p>}
@@ -63,7 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
 
           {/* Body */}
-          <div className="px-6 py-5 overflow-y-auto flex-1">
+          <div className="px-6 py-5 overflow-y-auto flex-1 print:p-0 print:overflow-visible">
             {children}
           </div>
         </div>

@@ -890,7 +890,13 @@ export const SupportStaffRegistration: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    {formData.employment_type === 'Temporary' ? `Temporary Worker ${formData.role} Salary / Wage (₹) *` : `Permanent Worker ${formData.role} Salary (₹) *`}
+                    {formData.role === 'Captain'
+                      ? formData.employment_type === 'Temporary'
+                        ? 'Temporary Monthly Salary (₹) *'
+                        : 'Permanent Monthly Salary (₹) *'
+                      : formData.employment_type === 'Temporary'
+                        ? 'Temporary Worker (Per Day Salary) (₹) *'
+                        : 'Permanent Worker (Per Day Salary) (₹) *'}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
@@ -900,7 +906,11 @@ export const SupportStaffRegistration: React.FC = () => {
                       step="any"
                       value={formData.salary || ''}
                       onChange={(e) => handleInputChange('salary', e.target.value)}
-                      placeholder={formData.employment_type === 'Temporary' ? 'Enter temporary wage amount (₹)' : 'Enter permanent salary amount (₹)'}
+                      placeholder={
+                        formData.role === 'Captain'
+                          ? 'Enter monthly salary amount (₹)'
+                          : 'Enter per day salary amount (₹)'
+                      }
                       className="w-full text-xs pl-7 pr-3 p-2.5 rounded-xl border border-blue-300 bg-white font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
@@ -1063,104 +1073,52 @@ export const SupportStaffRegistration: React.FC = () => {
 
             <table className="w-full text-xs border-collapse">
               <tbody className="divide-y divide-black">
-                {/* 1. Profile Photo */}
+                {/* Gender */}
                 <tr className="hover:bg-slate-50">
-                  <td className="w-1/2 p-2.5 font-bold border-r border-black bg-slate-50/50">Profile Photo</td>
-                  <td className="w-1/2 p-2.5">
-                    {formData.profile_photo ? (
-                      <img src={formData.profile_photo} alt="Profile" className="w-16 h-16 object-cover rounded-lg border border-slate-300" />
-                    ) : (
-                      <span className="text-slate-400 italic">No Photo Uploaded</span>
-                    )}
-                  </td>
+                  <td className="w-1/2 p-2.5 font-bold border-r border-black bg-slate-50/50">Gender</td>
+                  <td className="w-1/2 p-2.5">{formData.gender || 'Male'}</td>
                 </tr>
 
-                {/* 2. Gender */}
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Gender</td>
-                  <td className="p-2.5">{formData.gender || 'Male'}</td>
-                </tr>
-
-                {/* 3. Name (As per Aadhaar) */}
+                {/* Name (As per Aadhaar) */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Name (As per Aadhaar)</td>
                   <td className="p-2.5 font-bold text-slate-900">{formData.full_name || '-'}</td>
                 </tr>
 
-                {/* 4. DOB */}
+                {/* DOB */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">DOB</td>
                   <td className="p-2.5 font-mono">{formData.date_of_birth || '-'}</td>
                 </tr>
 
-                {/* 5. E MAIL */}
+                {/* E MAIL */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">E MAIL</td>
                   <td className="p-2.5">{formData.email || '-'}</td>
                 </tr>
 
-                {/* 6. Phone Number * */}
+                {/* Phone Number * */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Phone Number *</td>
                   <td className="p-2.5 font-mono font-bold text-blue-700">{formData.phone_number || '-'}</td>
                 </tr>
 
-                {/* 7. Alternative Number */}
+                {/* Alternative Number */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Alternative Number</td>
                   <td className="p-2.5 font-mono">{formData.alternative_phone_number || '-'}</td>
                 </tr>
 
-                {/* 8. Aadhaar Number */}
+                {/* Aadhaar Number */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Number</td>
                   <td className="p-2.5 font-mono">{formData.aadhaar_number || '-'}</td>
                 </tr>
 
-                {/* 9. Upload Aadhaar Front & Back */}
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Card (Front Side)</td>
-                  <td className="p-2.5">
-                    {formData.aadhaar_front_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Front Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
-                  </td>
-                </tr>
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Card (Back Side)</td>
-                  <td className="p-2.5">
-                    {formData.aadhaar_back_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Back Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
-                  </td>
-                </tr>
-
-                {/* 10. PAN Card Number */}
+                {/* PAN Card Number */}
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">PAN Card Number</td>
                   <td className="p-2.5 font-mono uppercase">{formData.pan_number || '-'}</td>
-                </tr>
-
-                {/* 11. Upload Photo File (PAN Card) */}
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Upload Photo File (PAN Card)</td>
-                  <td className="p-2.5">
-                    {formData.pan_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ PAN Card File Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
-                  </td>
                 </tr>
 
                 {/* Driving Licence & Verification (if provided) */}
@@ -1204,18 +1162,6 @@ export const SupportStaffRegistration: React.FC = () => {
                       </td>
                     </tr>
                     <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Photo to Verify Licence</td>
-                      <td className="p-2.5">
-                        {formData.licence_verification_doc ? (
-                          <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            ✓ Verification Proof Attached
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 italic">Not Uploaded</span>
-                        )}
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence Number</td>
                       <td className="p-2.5 font-mono font-bold text-blue-700 uppercase">{formData.licence_number || '-'}</td>
                     </tr>
@@ -1226,27 +1172,15 @@ export const SupportStaffRegistration: React.FC = () => {
                   </>
                 )}
 
-                {/* 12. Bank Name ( passbook cheque ) */}
+                {/* Bank Details */}
                 <tr className="bg-slate-100 font-black text-slate-800">
                   <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
-                    Bank Name ( passbook cheque )
+                    Bank Details
                   </td>
                 </tr>
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Bank Name</td>
                   <td className="p-2.5 font-bold">{formData.bank_name || '-'}</td>
-                </tr>
-                <tr className="hover:bg-slate-50">
-                  <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Upload Photo File</td>
-                  <td className="p-2.5">
-                    {formData.bank_proof_doc ? (
-                      <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        ✓ Passbook / Cheque File Uploaded
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 italic">Not Uploaded</span>
-                    )}
-                  </td>
                 </tr>
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Account Holder Name</td>
@@ -1331,7 +1265,13 @@ export const SupportStaffRegistration: React.FC = () => {
                 </tr>
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">
-                    {formData.employment_type === 'Temporary' ? 'Temporary Wage / Salary' : 'Permanent Monthly Salary'}
+                    {formData.role === 'Captain'
+                      ? formData.employment_type === 'Temporary'
+                        ? 'Temporary Monthly Salary'
+                        : 'Permanent Monthly Salary'
+                      : formData.employment_type === 'Temporary'
+                        ? 'Temporary Worker (Per Day Salary)'
+                        : 'Permanent Worker (Per Day Salary)'}
                   </td>
                   <td className="p-2.5 font-bold text-slate-900">
                     {formData.salary ? `₹${Number(formData.salary).toLocaleString('en-IN')}` : '₹0'}
@@ -1355,6 +1295,41 @@ export const SupportStaffRegistration: React.FC = () => {
                 </tr>
               </tbody>
             </table>
+
+            {/* Official Declaration */}
+            <div className="border-t-2 border-black bg-slate-50/60 p-3 text-[11px] text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Declaration: </span>
+              <span>
+                I hereby declare that all the information and particulars provided in this biodata sheet are true, complete, and accurate to the best of my knowledge and belief.
+              </span>
+            </div>
+
+            {/* Signature Section */}
+            <div className="border-t-2 border-black grid grid-cols-2 divide-x-2 divide-black bg-white">
+              {/* Left: Employee Signature */}
+              <div className="p-4 flex flex-col justify-between min-h-[120px]">
+                <div>
+                  <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">{formData.role} Signature</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Signature of {formData.full_name || formData.role}</p>
+                </div>
+                <div className="mt-10 pt-2 border-t border-dashed border-slate-500 flex items-center justify-between text-[11px] font-semibold text-slate-700">
+                  <span>Sign: ___________________</span>
+                  <span>Date: ____________</span>
+                </div>
+              </div>
+
+              {/* Right: Authorized Signatory */}
+              <div className="p-4 flex flex-col justify-between min-h-[120px]">
+                <div>
+                  <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Authorized Signatory & Seal</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Charvik Staffing Consultancy</p>
+                </div>
+                <div className="mt-10 pt-2 border-t border-dashed border-slate-500 flex items-center justify-between text-[11px] font-semibold text-slate-700">
+                  <span>Sign & Seal: _____________</span>
+                  <span>Date: ____________</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </Modal>

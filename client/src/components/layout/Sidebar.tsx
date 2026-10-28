@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   LayoutGrid,
+  ArrowLeft,
   Truck,
   Fuel,
   CircleDot,
@@ -26,9 +27,17 @@ import {
   BatteryCharging,
   AlertTriangle,
   Wrench,
-  Users
+  Users,
+  IndianRupee
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+
+export interface NavSubItem {
+  label: string;
+  route: string;
+  icon: any;
+  activeRoutes?: string[];
+}
 
 export interface NavItemLeaf {
   label: string;
@@ -36,6 +45,7 @@ export interface NavItemLeaf {
   icon: any;
   hasLiveBadge?: boolean;
   activeRoutes?: string[];
+  subItems?: NavSubItem[];
 }
 
 interface SidebarProps {
@@ -59,6 +69,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const isCaptain = location.pathname.startsWith('/captain');
   const isSupporter = location.pathname.startsWith('/supporter');
+  const isDashboard =
+    location.pathname.endsWith('/dashboard') ||
+    location.pathname === '/admin' ||
+    location.pathname === '/admin/' ||
+    location.pathname === '/captain' ||
+    location.pathname === '/captain/' ||
+    location.pathname === '/supporter' ||
+    location.pathname === '/supporter/';
 
   const handleLogout = () => {
     logout();
@@ -66,6 +84,66 @@ export const Sidebar: React.FC<SidebarProps> = ({
     else if (isSupporter) navigate('/supporter/login');
     else navigate('/admin/login');
   };
+
+  const vehicleManagementTabs: NavItemLeaf[] = [
+    {
+      label: 'Vehicle Registration',
+      route: '/admin/vehicles',
+      icon: Bus,
+      activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management']
+    },
+    {
+      label: 'Route Management',
+      route: '/admin/routes',
+      icon: Navigation,
+      activeRoutes: ['/admin/routes']
+    },
+    {
+      label: 'Task Management',
+      route: '/admin/tasks',
+      icon: ClipboardList,
+      activeRoutes: ['/admin/tasks']
+    },
+    {
+      label: 'Organizer Management',
+      route: '/admin/organizers',
+      icon: Building2,
+      activeRoutes: ['/admin/organizers']
+    },
+    {
+      label: 'Employee Registration',
+      route: '/admin/employee-registration',
+      icon: UserPlus,
+      activeRoutes: ['/admin/employee-registration', '/admin/employees', '/admin/drivers', '/admin/support-staff']
+    },
+  ];
+
+  const vehicleMaintenanceTabs: NavItemLeaf[] = [
+    {
+      label: 'Mileage & Fueling',
+      route: '/admin/mileage-fueling',
+      icon: Fuel,
+      activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers']
+    },
+    {
+      label: 'Tyre Maintenance',
+      route: '/admin/tyre-maintenance',
+      icon: CircleDot,
+      activeRoutes: ['/admin/tyre-maintenance']
+    },
+    {
+      label: 'Product Management',
+      route: '/admin/products',
+      icon: Package,
+      activeRoutes: ['/admin/products']
+    },
+    {
+      label: 'Cleaning Management',
+      route: '/admin/cleaning',
+      icon: Droplets,
+      activeRoutes: ['/admin/cleaning', '/admin/bus-condition']
+    },
+  ];
 
   // Structured top-level navigation tabs
   const adminNavItems: NavItemLeaf[] = [
@@ -77,13 +155,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       activeRoutes: ['/admin/dashboard']
     },
     {
-      label: 'Vehicle Registration',
+      label: 'Employee Payments',
+      route: '/admin/employee-payments',
+      icon: IndianRupee,
+      activeRoutes: ['/admin/employee-payments']
+    },
+    {
+      label: 'Vehicle Management',
       route: '/admin/vehicles',
-      icon: Bus,
+      icon: Truck,
       activeRoutes: [
         '/admin/vehicles',
         '/admin/buses',
         '/admin/vehicle-registration',
+        '/admin/vehicle-management',
         '/admin/routes',
         '/admin/tasks',
         '/admin/organizers',
@@ -139,7 +224,49 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Vehicle Fleet', route: '/supporter/buses', icon: Truck },
   ];
 
-  const navItems = isCaptain ? captainNavItems : isSupporter ? supporterNavItems : adminNavItems;
+  const isVehicleManagementModule =
+    !isDashboard &&
+    !isCaptain &&
+    !isSupporter &&
+    (location.pathname.startsWith('/admin/vehicles') ||
+      location.pathname.startsWith('/admin/buses') ||
+      location.pathname.startsWith('/admin/vehicle-registration') ||
+      location.pathname.startsWith('/admin/vehicle-management') ||
+      location.pathname.startsWith('/admin/routes') ||
+      location.pathname.startsWith('/admin/tasks') ||
+      location.pathname.startsWith('/admin/organizers') ||
+      location.pathname.startsWith('/admin/employee-registration') ||
+      location.pathname.startsWith('/admin/employees') ||
+      location.pathname.startsWith('/admin/drivers') ||
+      location.pathname.startsWith('/admin/support-staff'));
+
+  const isVehicleMaintenanceModule =
+    !isDashboard &&
+    !isCaptain &&
+    !isSupporter &&
+    (location.pathname.startsWith('/admin/mileage-fueling') ||
+      location.pathname.startsWith('/admin/daily-kilometers') ||
+      location.pathname.startsWith('/admin/vehicle-maintenance') ||
+      location.pathname.startsWith('/admin/tyre-maintenance') ||
+      location.pathname.startsWith('/admin/products') ||
+      location.pathname.startsWith('/admin/cleaning') ||
+      location.pathname.startsWith('/admin/maintenance-schedule') ||
+      location.pathname.startsWith('/admin/ac-maintenance') ||
+      location.pathname.startsWith('/admin/oil-filter-maintenance') ||
+      location.pathname.startsWith('/admin/battery-maintenance') ||
+      location.pathname.startsWith('/admin/complaints') ||
+      location.pathname.startsWith('/admin/repairs') ||
+      location.pathname.startsWith('/admin/bus-condition'));
+
+  const navItems = isCaptain
+    ? captainNavItems
+    : isSupporter
+    ? supporterNavItems
+    : isVehicleManagementModule
+    ? vehicleManagementTabs
+    : isVehicleMaintenanceModule
+    ? vehicleMaintenanceTabs
+    : adminNavItems;
 
   return (
     <>
@@ -240,11 +367,54 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation Items List */}
         <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200">
+          {/* Dedicated Sub-Dashboard Back Button & Module Indicator */}
+          {isVehicleManagementModule && (
+            <div className="mb-2 space-y-1.5">
+              <NavLink
+                to="/admin/dashboard"
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-[13px] font-bold text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-[#142B4A] transition-colors group border border-slate-200/60"
+                title="Return to Dashboard"
+              >
+                <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
+                {!isCollapsed && <span>Dashboard Overview</span>}
+              </NavLink>
+
+              {!isCollapsed && (
+                <div className="px-3.5 py-2 flex items-center gap-2 rounded-2xl bg-blue-50/80 border border-blue-200/90 text-[#142B4A]">
+                  <Truck className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span className="text-xs font-black uppercase tracking-wider">Vehicle Management</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {isVehicleMaintenanceModule && (
+            <div className="mb-2 space-y-1.5">
+              <NavLink
+                to="/admin/dashboard"
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-[13px] font-bold text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-[#142B4A] transition-colors group border border-slate-200/60"
+                title="Return to Dashboard"
+              >
+                <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
+                {!isCollapsed && <span>Dashboard Overview</span>}
+              </NavLink>
+
+              {!isCollapsed && (
+                <div className="px-3.5 py-2 flex items-center gap-2 rounded-2xl bg-blue-50/80 border border-blue-200/90 text-[#142B4A]">
+                  <Wrench className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span className="text-xs font-black uppercase tracking-wider">Vehicle Maintenance</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {navItems.map((item) => {
             const Icon = item.icon;
             const isItemActive = item.activeRoutes
               ? item.activeRoutes.some((r) => location.pathname === r || location.pathname.startsWith(r + '/'))
-              : location.pathname === item.route;
+              : location.pathname === item.route || location.pathname.startsWith(item.route + '/');
 
             return (
               <NavLink

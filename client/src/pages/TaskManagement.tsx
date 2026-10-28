@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { PrintButton } from '../components/common/PrintButton';
 import { api } from '../services/api';
 import { BASE_FLEET_TASKS, BASE_FLEET_ORGANIZERS, BASE_FLEET_ROUTES } from '../services/seedData';
 
@@ -47,15 +48,19 @@ export interface TripDutyItem {
   id: number;
   trip_start_date: string; // YYYY-MM-DD
   vehicle_number: string; // registration_number
+  service_number?: string; // service / route number
   vehicle_status: 'RUN' | 'HOLD (Low Occupancy)' | 'HOLD (Maintenance)' | 'HOLD (Break Down)' | 'HOLD (Finance Side)';
   route_corridor: string;
   operator_organizer: string;
+  trip_amount?: number;
+  operator_commission?: number;
   driver1: CrewFinancial;
   driver2?: CrewFinancial;
   helper?: CrewFinancial;
   captain?: CrewFinancial;
   trip_remarks: string;
   duty_status: 'Scheduled' | 'In Progress' | 'Completed';
+  payment_status?: 'Pending' | 'Paid';
   created_at: string;
 }
 
@@ -107,6 +112,7 @@ export const TaskManagement: React.FC = () => {
   const [formData, setFormData] = useState<Partial<TripDutyItem>>({
     trip_start_date: todayStr,
     vehicle_number: '',
+    service_number: '',
     vehicle_status: 'RUN',
     route_corridor: '',
     operator_organizer: '',
@@ -223,15 +229,19 @@ export const TaskManagement: React.FC = () => {
   const handleOpenAdd = (preselectedBusNumber?: string) => {
     setEditingTrip(null);
     const defaultBus = preselectedBusNumber || buses[0]?.registration_number || '';
-    const defaultRoute = routes[0] ? `${routes[0].starting_city} → ${routes[0].ending_city}` : '';
+    const defaultRouteObj = routes[0];
+    const defaultRoute = defaultRouteObj ? `${defaultRouteObj.starting_city} → ${defaultRouteObj.ending_city}` : '';
     const defaultOrg = organizers[0]?.organization_name || '';
 
     setFormData({
       trip_start_date: selectedDate,
       vehicle_number: defaultBus,
+      service_number: defaultRouteObj?.service_number || '',
       vehicle_status: 'RUN',
       route_corridor: defaultRoute,
       operator_organizer: defaultOrg,
+      trip_amount: defaultRouteObj?.trip_amount,
+      operator_commission: defaultRouteObj?.operator_commission,
       driver1: {
         employee_name: '',
         role: 'Driver',
@@ -448,6 +458,8 @@ export const TaskManagement: React.FC = () => {
       const updatedItem: TripDutyItem = {
         ...editingTrip,
         ...formData,
+        trip_amount: formData.trip_amount !== undefined && formData.trip_amount !== ('' as any) ? Number(formData.trip_amount) : undefined,
+        operator_commission: formData.operator_commission !== undefined && formData.operator_commission !== ('' as any) ? Number(formData.operator_commission) : undefined,
         driver2: formData.driver2?.employee_name ? formData.driver2 : undefined
       } as TripDutyItem;
       const updated = trips.map((t) => (t.id === editingTrip.id ? updatedItem : t));
@@ -459,9 +471,12 @@ export const TaskManagement: React.FC = () => {
         id: Date.now(),
         trip_start_date: formData.trip_start_date || selectedDate,
         vehicle_number: formData.vehicle_number,
+        service_number: formData.service_number || '',
         vehicle_status: formData.vehicle_status || 'RUN',
         route_corridor: formData.route_corridor || 'Direct Corridor',
         operator_organizer: formData.operator_organizer || 'Charvik Fleet',
+        trip_amount: formData.trip_amount !== undefined && formData.trip_amount !== ('' as any) ? Number(formData.trip_amount) : undefined,
+        operator_commission: formData.operator_commission !== undefined && formData.operator_commission !== ('' as any) ? Number(formData.operator_commission) : undefined,
         driver1: formData.driver1!,
         driver2: formData.driver2?.employee_name ? formData.driver2 : undefined,
         helper: formData.helper?.employee_name ? formData.helper : undefined,
@@ -484,6 +499,25 @@ export const TaskManagement: React.FC = () => {
     success('Trip record deleted.');
   };
 
+  const handleToggleTripCompleted = (trip: TripDutyItem) => {
+    const nextStatus: TripDutyItem['duty_status'] =
+      trip.duty_status === 'Completed' ? 'Scheduled' : 'Completed';
+    const updatedItem = { ...trip, duty_status: nextStatus };
+    const updated = trips.map((t) => (t.id === trip.id ? updatedItem : t));
+    setTrips(updated);
+    api.updateTask(trip.id, updatedItem).catch(() => {});
+    success(`Trip ${trip.vehicle_number} marked as ${nextStatus}.`);
+  };
+
+  const handleToggleTripPaid = (trip: TripDutyItem) => {
+    const nextPaid: 'Pending' | 'Paid' = trip.payment_status === 'Paid' ? 'Pending' : 'Paid';
+    const updatedItem = { ...trip, payment_status: nextPaid };
+    const updated = trips.map((t) => (t.id === trip.id ? updatedItem : t));
+    setTrips(updated);
+    api.updateTask(trip.id, updatedItem).catch(() => {});
+    success(`Payment for ${trip.vehicle_number} marked as ${nextPaid}.`);
+  };
+
   const handleToggleBusCompleted = (busNumber: string) => {
     const updated = trips.map((t) => {
       if (t.trip_start_date === selectedDate && t.vehicle_number === busNumber) {
@@ -498,6 +532,36 @@ export const TaskManagement: React.FC = () => {
     setTrips(updated);
     success(`Trip status updated for ${busNumber}`);
   };
+
+  // Filtered date trips strictly for the selected date
+  const filteredDateTrips = useMemo(() => {
+    return dateTrips.filter((t) => {
+      const q = search.toLowerCase().trim();
+      const matchSearch =
+        !q ||
+        t.vehicle_number.toLowerCase().includes(q) ||
+        (t.service_number && t.service_number.toLowerCase().includes(q)) ||
+        t.route_corridor.toLowerCase().includes(q) ||
+        (t.operator_organizer && t.operator_organizer.toLowerCase().includes(q)) ||
+        t.driver1.employee_name.toLowerCase().includes(q) ||
+        (t.driver2?.employee_name && t.driver2.employee_name.toLowerCase().includes(q)) ||
+        (t.helper?.employee_name && t.helper.employee_name.toLowerCase().includes(q)) ||
+        (t.captain?.employee_name && t.captain.employee_name.toLowerCase().includes(q));
+
+      if (!matchSearch) return false;
+
+      if (statusFilter === 'Active') {
+        return t.duty_status !== 'Completed';
+      }
+      if (statusFilter === 'Completed') {
+        return t.duty_status === 'Completed';
+      }
+      if (statusFilter === 'Hold') {
+        return t.vehicle_status.startsWith('HOLD');
+      }
+      return true;
+    });
+  }, [dateTrips, search, statusFilter]);
 
   // Filtered assigned buses
   const filteredAssignedBuses = useMemo(() => {
@@ -661,31 +725,19 @@ export const TaskManagement: React.FC = () => {
             }`}
           >
             <Bus className="w-3.5 h-3.5" />
-            <span>Assigned Fleet Buses ({activeAssignedCount})</span>
+            <span>Assigned Fleet Duties ({filteredDateTrips.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('pending')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
               activeTab === 'pending'
-                ? 'bg-amber-600 text-white shadow-xs'
+                ? 'bg-[#142B4A] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
-            <Clock className="w-3.5 h-3.5 text-amber-600" />
+            <Clock className="w-3.5 h-3.5" />
             <span>Pending Buses ({pendingBusesCount})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('all_trips')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
-              activeTab === 'all_trips'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>All Individual Trips ({dateTrips.length})</span>
           </button>
         </div>
 
@@ -712,188 +764,262 @@ export const TaskManagement: React.FC = () => {
             <option value="Completed">Completed</option>
             <option value="Hold">On Hold</option>
           </select>
+
+          <PrintButton
+            title={
+              activeTab === 'assigned'
+                ? `Assigned Fleet Duties (${selectedDate})`
+                : activeTab === 'pending'
+                ? `Pending Unassigned Fleet Buses (${selectedDate})`
+                : `All Individual Trip Logs (${selectedDate})`
+            }
+            subtitle={`Date: ${selectedDate} • Status: ${statusFilter}`}
+            targetId={
+              activeTab === 'assigned'
+                ? 'assigned-duties-table-wrap'
+                : activeTab === 'pending'
+                ? 'pending-buses-table-wrap'
+                : 'all-trips-table-wrap'
+            }
+          />
         </div>
       </div>
 
-      {/* Main Table View (Grouped by Bus - 1 Bus shows as Active even with 3 Trips!) */}
+      {/* Main Table View (Exact User Sequence: S.NO, VEHICLE NUMBER, SERVICE NUMBER, ROUTE CORRIDOR, VEHICLE STATUS, ROUTE OPERATOR, DRIVER1, DRIVER2, HELPER, CAPTAIN, TOTAL, ACTIONS) */}
       {activeTab === 'assigned' && (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div id="assigned-duties-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs" style={{ minWidth: '1650px' }}>
               <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
                 <tr>
-                  <th className="py-3 px-4 w-14 text-center">S.NO</th>
-                  <th className="py-3 px-4">Vehicle Number</th>
-                  <th className="py-3 px-4 text-center">Trip Count Today</th>
-                  <th className="py-3 px-4">Route Corridor(s)</th>
-                  <th className="py-3 px-4">Vehicle Status</th>
-                  <th className="py-3 px-4">Assigned Crew</th>
-                  <th className="py-3 px-4">Total Payout Tally</th>
-                  <th className="py-3 px-4">Duty Status</th>
-                  <th className="py-3 px-4 text-center">Actions</th>
+                  <th className="py-3 px-3 w-12 text-center">S.NO</th>
+                  <th className="py-3 px-4 min-w-[130px]">VEHICLE NUMBER</th>
+                  <th className="py-3 px-4 min-w-[110px]">SERVICE NUMBER</th>
+                  <th className="py-3 px-4 min-w-[160px]">ROUTE CORRIDOR</th>
+                  <th className="py-3 px-4 min-w-[110px]">VEHICLE STATUS</th>
+                  <th className="py-3 px-4 min-w-[130px]">ROUTE OPERATOR</th>
+                  <th className="py-3 px-4 min-w-[150px]">TRIP AMOUNT & COMMISSION</th>
+                  <th className="py-3 px-4 min-w-[130px]">DRIVER1</th>
+                  <th className="py-3 px-4 min-w-[130px]">DRIVER2</th>
+                  <th className="py-3 px-4 min-w-[110px]">HELPER</th>
+                  <th className="py-3 px-4 min-w-[110px]">CAPTAIN</th>
+                  <th className="py-3 px-4 min-w-[100px]">TOTAL</th>
+                  <th className="py-3 px-4 text-center min-w-[340px]">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredAssignedBuses.length === 0 ? (
+                {filteredDateTrips.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-14 text-center text-slate-400">
+                    <td colSpan={13} className="py-14 text-center text-slate-400">
                       <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                       <p className="font-semibold text-slate-600">No buses assigned for {selectedDate}.</p>
                       <p className="text-xs text-slate-400 mt-1">
-                        Click &quot;Log New Task & Duty&quot; above or choose from Pending Buses below.
+                        Click &quot;Log New Task &amp; Duty&quot; above or choose from Pending Buses below.
                       </p>
                     </td>
                   </tr>
                 ) : (
-                  filteredAssignedBuses.map((busNo, index) => {
-                    const busTrips = busGroupMap.get(busNo) || [];
-                    const tripCount = busTrips.length;
-                    const primaryTrip = busTrips[0];
-                    const allCompleted = busTrips.every((t) => t.duty_status === 'Completed');
-                    const hasHold = busTrips.some((t) => t.vehicle_status.startsWith('HOLD'));
-
-                    // Aggregate financials across all trips for this bus
-                    let busTotalSalary = 0;
-                    let busTotalAdv = 0;
-                    busTrips.forEach((t) => {
-                      if (t.driver1) {
-                        busTotalSalary += Number(t.driver1.salary_amount || 0);
-                        busTotalAdv += Number(t.driver1.advance_amount || 0);
-                      }
-                      if (t.driver2) {
-                        busTotalSalary += Number(t.driver2.salary_amount || 0);
-                        busTotalAdv += Number(t.driver2.advance_amount || 0);
-                      }
-                      if (t.helper) {
-                        busTotalSalary += Number(t.helper.salary_amount || 0);
-                        busTotalAdv += Number(t.helper.advance_amount || 0);
-                      }
-                    });
-                    const busTotalDue = busTotalSalary - busTotalAdv;
+                  filteredDateTrips.map((t, index) => {
+                    const totalSalary =
+                      Number(t.driver1?.salary_amount || 0) +
+                      Number(t.driver2?.salary_amount || 0) +
+                      Number(t.helper?.salary_amount || 0) +
+                      Number(t.captain?.salary_amount || 0);
 
                     return (
-                      <tr key={busNo} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
+                      <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                        {/* 1. S.NO */}
+                        <td className="py-3.5 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+
+                        {/* 2. VEHICLE NUMBER */}
                         <td className="py-3.5 px-4">
                           <span className="font-mono font-black text-[#142B4A] text-sm tracking-wider uppercase block">
-                            {busNo}
+                            {t.vehicle_number}
                           </span>
                           <span className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-0.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                             <span>Active in Fleet</span>
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="inline-flex flex-col items-center">
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-100 text-blue-800 border border-blue-200">
-                              {tripCount} {tripCount === 1 ? 'Trip' : 'Trips'}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedBusForView(busNo);
-                                setIsViewTripsOpen(true);
-                              }}
-                              className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline mt-1 cursor-pointer flex items-center gap-0.5"
-                            >
-                              <Eye className="w-3 h-3" />
-                              <span>View Trips ({tripCount})</span>
-                            </button>
-                          </div>
-                        </td>
+
+                        {/* 3. SERVICE NUMBER */}
                         <td className="py-3.5 px-4">
-                          <div className="space-y-1 max-w-[220px]">
-                            {busTrips.slice(0, 2).map((t, idx) => (
-                              <p key={t.id} className="text-xs font-semibold text-slate-800 truncate">
-                                <span className="text-[10px] text-slate-400 font-bold mr-1">#{idx + 1}</span>
-                                {t.route_corridor}
-                              </p>
-                            ))}
-                            {tripCount > 2 && (
-                              <p className="text-[10px] text-slate-400 font-bold italic">
-                                +{tripCount - 2} more trips scheduled
-                              </p>
-                            )}
-                          </div>
+                          {t.service_number ? (
+                            <span className="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg text-xs">
+                              {t.service_number}
+                            </span>
+                          ) : (
+                            <span className="text-slate-300 text-xs">—</span>
+                          )}
                         </td>
+
+                        {/* 4. ROUTE CORRIDOR */}
+                        <td className="py-3.5 px-4">
+                          <p className="text-xs font-semibold text-slate-800">
+                            {t.route_corridor}
+                          </p>
+                        </td>
+
+                        {/* 5. VEHICLE STATUS */}
                         <td className="py-3.5 px-4">
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              hasHold
+                              t.vehicle_status.startsWith('HOLD')
                                 ? 'bg-amber-100 text-amber-800 border border-amber-300'
                                 : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                             }`}
                           >
                             <span
                               className={`w-1.5 h-1.5 rounded-full ${
-                                hasHold ? 'bg-amber-500' : 'bg-emerald-500'
+                                t.vehicle_status.startsWith('HOLD') ? 'bg-amber-500' : 'bg-emerald-500'
                               }`}
                             ></span>
-                            <span>{primaryTrip?.vehicle_status || 'RUN'}</span>
+                            <span>{t.vehicle_status || 'RUN'}</span>
                           </span>
                         </td>
+
+                        {/* 6. ROUTE OPERATOR */}
+                        <td className="py-3.5 px-4 text-slate-700 font-medium text-xs">
+                          {t.operator_organizer || 'Charvik Fleet'}
+                        </td>
+
+                        {/* TRIP AMOUNT & COMMISSION */}
                         <td className="py-3.5 px-4">
-                          <div className="space-y-0.5 text-[11px]">
-                            <p className="font-semibold text-slate-800">
-                              <span className="text-slate-400 font-bold">D1:</span> {primaryTrip?.driver1.employee_name}
-                            </p>
-                            {primaryTrip?.driver2?.employee_name && (
-                              <p className="text-slate-600">
-                                <span className="text-slate-400 font-bold">D2:</span> {primaryTrip.driver2.employee_name}
-                              </p>
-                            )}
-                            {primaryTrip?.captain?.employee_name && (
-                              <p className="text-indigo-700 font-bold">
-                                <span className="text-indigo-400 font-bold">CPT:</span> {primaryTrip.captain.employee_name}
-                              </p>
-                            )}
+                          {(() => {
+                            const matchedRoute = routes.find(
+                              (r: any) =>
+                                (t.service_number && (r.service_number === t.service_number || r.route_code === t.service_number)) ||
+                                (t.route_corridor && (
+                                  `${r.starting_city} → ${r.ending_city}`.toLowerCase() === t.route_corridor.toLowerCase() ||
+                                  `${r.starting_city} - ${r.ending_city}`.toLowerCase() === t.route_corridor.toLowerCase() ||
+                                  (t.route_corridor.toLowerCase().includes(r.starting_city?.toLowerCase()) &&
+                                   t.route_corridor.toLowerCase().includes(r.ending_city?.toLowerCase()))
+                                ))
+                            );
+                            const tAmt = t.trip_amount !== undefined ? t.trip_amount : matchedRoute?.trip_amount;
+                            const cAmt = t.operator_commission !== undefined ? t.operator_commission : matchedRoute?.operator_commission;
+
+                            return (
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[10px] font-semibold text-slate-500 uppercase">TRIP:</span>
+                                  <span className="font-mono font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                                    ₹{tAmt !== undefined ? Number(tAmt).toLocaleString('en-IN') : '0'}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[10px] font-semibold text-slate-500 uppercase">COMM:</span>
+                                  <span className="font-mono font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                                    ₹{cAmt !== undefined ? Number(cAmt).toLocaleString('en-IN') : '0'}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </td>
+
+                        {/* 7. DRIVER1 */}
+                        <td className="py-3.5 px-4">
+                          <div className="space-y-0.5 text-xs">
+                            <p className="font-bold text-slate-900">{t.driver1.employee_name}</p>
+                            <span className="text-[10px] font-semibold text-slate-500">₹{t.driver1.salary_amount}</span>
                           </div>
                         </td>
+
+                        {/* 8. DRIVER2 */}
                         <td className="py-3.5 px-4">
-                          <p className="font-bold text-slate-900 text-xs">₹{busTotalSalary.toLocaleString()}</p>
-                          <p className="text-[10px] text-slate-500">Total Payout</p>
+                          {t.driver2?.employee_name ? (
+                            <div className="space-y-0.5 text-xs">
+                              <p className="font-bold text-slate-900">{t.driver2.employee_name}</p>
+                              <span className="text-[10px] font-semibold text-slate-500">₹{t.driver2.salary_amount}</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-300 italic text-xs">—</span>
+                          )}
                         </td>
+
+                        {/* 9. HELPER */}
                         <td className="py-3.5 px-4">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              allCompleted
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
-                                : 'bg-blue-50 text-blue-700 border border-blue-200'
-                            }`}
-                          >
-                            {allCompleted ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                            <span>{allCompleted ? 'Completed' : 'Active Run'}</span>
-                          </span>
+                          {t.helper?.employee_name ? (
+                            <div className="space-y-0.5 text-xs">
+                              <p className="font-bold text-slate-900">{t.helper.employee_name}</p>
+                              <span className="text-[10px] font-semibold text-slate-500">₹{t.helper.salary_amount}</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-300 italic text-xs">—</span>
+                          )}
                         </td>
+
+                        {/* 10. CAPTAIN */}
+                        <td className="py-3.5 px-4">
+                          {t.captain?.employee_name ? (
+                            <div className="space-y-0.5 text-xs">
+                              <p className="font-bold text-indigo-700">{t.captain.employee_name}</p>
+                              <span className="text-[10px] font-semibold text-indigo-500">₹{t.captain.salary_amount}</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-300 italic text-xs">—</span>
+                          )}
+                        </td>
+
+                        {/* 11. TOTAL */}
+                        <td className="py-3.5 px-4">
+                          <p className="font-bold text-slate-900 text-xs">₹{totalSalary.toLocaleString('en-IN')}</p>
+                          <p className="text-[10px] text-slate-400">Total Payout</p>
+                        </td>
+
+                        {/* 12. ACTIONS (MATCHING IMAGE 2 EXACTLY) */}
                         <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-1.5">
+                          <div className="flex items-center justify-center gap-2">
+                            {/* Mark Completed Button */}
                             <button
-                              onClick={() => {
-                                setSelectedBusForView(busNo);
-                                setIsViewTripsOpen(true);
-                              }}
-                              className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                              title="View all trips for this bus"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleOpenAdd(busNo)}
-                              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
-                              title="Add another trip for this bus"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleToggleBusCompleted(busNo)}
-                              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                                allCompleted
-                                  ? 'text-amber-600 hover:bg-amber-50'
-                                  : 'text-emerald-600 hover:bg-emerald-50'
+                              type="button"
+                              onClick={() => handleToggleTripCompleted(t)}
+                              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
+                                t.duty_status === 'Completed'
+                                  ? 'border-blue-600 bg-blue-600 text-white'
+                                  : 'border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100'
                               }`}
-                              title={allCompleted ? 'Re-open Trips' : 'Mark All Completed'}
+                              title={t.duty_status === 'Completed' ? 'Trip Completed (Click to Re-open)' : 'Mark Trip as Completed'}
                             >
-                              <Check className="w-4 h-4" />
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>{t.duty_status === 'Completed' ? 'Completed' : 'Mark Completed'}</span>
+                            </button>
+
+                            {/* Mark Paid Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleTripPaid(t)}
+                              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
+                                t.payment_status === 'Paid'
+                                  ? 'border-emerald-600 bg-emerald-600 text-white'
+                                  : 'border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                              }`}
+                              title={t.payment_status === 'Paid' ? 'Payout Paid (Click to Mark Pending)' : 'Mark Payout as Paid'}
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>{t.payment_status === 'Paid' ? 'Paid' : 'Mark Paid'}</span>
+                            </button>
+
+                            {/* Edit Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEdit(t)}
+                              className="p-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                              title="Edit Trip Duty"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+
+                            {/* Delete Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTrip(t.id)}
+                              className="px-2.5 py-1.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
+                              title="Delete Trip Duty"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Delete</span>
                             </button>
                           </div>
                         </td>
@@ -909,7 +1035,7 @@ export const TaskManagement: React.FC = () => {
 
       {/* Pending / Unassigned Buses Tab */}
       {activeTab === 'pending' && (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+        <div id="pending-buses-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-slate-900">
@@ -951,133 +1077,7 @@ export const TaskManagement: React.FC = () => {
         </div>
       )}
 
-      {/* All Individual Trips Flat Tab */}
-      {activeTab === 'all_trips' && (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
-                <tr>
-                  <th className="py-3 px-4 w-14 text-center">S.NO</th>
-                  <th className="py-3 px-4">Vehicle</th>
-                  <th className="py-3 px-4">Route Corridor</th>
-                  <th className="py-3 px-4">Organizer</th>
-                  <th className="py-3 px-4">Vehicle Status</th>
-                  <th className="py-3 px-4">Driver 1</th>
-                  <th className="py-3 px-4">Driver 2</th>
-                  <th className="py-3 px-4">Helper</th>
-                  <th className="py-3 px-4">Captain</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {dateTrips.length === 0 ? (
-                  <tr>
-                    <td colSpan={11} className="py-12 text-center text-slate-400">
-                      No individual trip logs on this date.
-                    </td>
-                  </tr>
-                ) : (
-                  dateTrips.map((t, idx) => (
-                    <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-500 text-center">{idx + 1}</td>
-                      <td className="py-3 px-4 font-mono font-bold text-slate-900">{t.vehicle_number}</td>
-                      <td className="py-3 px-4 font-semibold text-slate-800">{t.route_corridor}</td>
-                      <td className="py-3 px-4 text-slate-600">{t.operator_organizer}</td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            t.vehicle_status.startsWith('HOLD')
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-emerald-100 text-emerald-800'
-                          }`}
-                        >
-                          {t.vehicle_status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <p className="font-bold text-slate-900">{t.driver1.employee_name}</p>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <span className="text-[10px] font-bold text-slate-700">₹{t.driver1.salary_amount}</span>
-                          {t.vehicle_status.startsWith('HOLD') && (
-                            <span className="text-[9px] font-black px-1 rounded bg-amber-100 text-amber-800">
-                              HOLD ₹500
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        {t.driver2?.employee_name ? (
-                          <div>
-                            <p className="font-semibold text-slate-900">{t.driver2.employee_name}</p>
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <span className="text-[10px] font-bold text-slate-700">₹{t.driver2.salary_amount}</span>
-                              {t.vehicle_status.startsWith('HOLD') && (
-                                <span className="text-[9px] font-black px-1 rounded bg-amber-100 text-amber-800">
-                                  HOLD ₹500
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic">—</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        {t.helper?.employee_name ? (
-                          <div>
-                            <p className="font-semibold text-slate-900">{t.helper.employee_name}</p>
-                            <p className="text-[10px] text-slate-500">₹{t.helper.salary_amount}</p>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic">—</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        {t.captain?.employee_name ? (
-                          <p className="font-bold text-indigo-700">{t.captain.employee_name}</p>
-                        ) : (
-                          <span className="text-slate-400 italic">—</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            t.duty_status === 'Completed'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}
-                        >
-                          {t.duty_status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center space-x-1.5">
-                          <button
-                            onClick={() => handleOpenEdit(t)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                            title="Edit Trip"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteTrip(t.id)}
-                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+
 
       {/* Log New Task / Trip Duty Modal (Matching Reference Image) */}
       <Modal
@@ -1095,7 +1095,8 @@ export const TaskManagement: React.FC = () => {
               <span>1. Trip Details & Operational Route</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Trip Start Date */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Trip Start Date *</label>
                 <input
@@ -1103,17 +1104,18 @@ export const TaskManagement: React.FC = () => {
                   required
                   value={formData.trip_start_date || selectedDate}
                   onChange={(e) => setFormData({ ...formData, trip_start_date: e.target.value })}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
 
+              {/* Vehicle Number */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Number *</label>
                 <select
                   required
                   value={formData.vehicle_number || ''}
                   onChange={(e) => setFormData({ ...formData, vehicle_number: e.target.value })}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
                 >
                   <option value="">-- Select Vehicle --</option>
                   {buses.map((b) => (
@@ -1124,13 +1126,25 @@ export const TaskManagement: React.FC = () => {
                 </select>
               </div>
 
+              {/* Service Number */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Service Number</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 555, SRV-001"
+                  value={formData.service_number || ''}
+                  onChange={(e) => setFormData({ ...formData, service_number: e.target.value })}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
+                />
+              </div>
+
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Status *</label>
                 <select
                   required
                   value={formData.vehicle_status || 'RUN'}
                   onChange={(e: any) => handleVehicleStatusChange(e.target.value)}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none"
                 >
                   <option value="RUN">🟢 RUN</option>
                   <option value="HOLD (Low Occupancy)">🟡 HOLD (Low Occupancy)</option>
@@ -1139,24 +1153,35 @@ export const TaskManagement: React.FC = () => {
                   <option value="HOLD (Finance Side)">🟣 HOLD (Finance Side)</option>
                 </select>
               </div>
+            </div>
 
+            {/* Row 2: Route Corridor + Organizer */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Route Corridor *</label>
                 <select
                   required
                   value={formData.route_corridor || ''}
-                  onChange={(e) => setFormData({ ...formData, route_corridor: e.target.value })}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                  onChange={(e) => {
+                    const selectedRoute = routes.find(
+                      (r: any) => `${r.starting_city} → ${r.ending_city}` === e.target.value
+                    );
+                    setFormData({
+                      ...formData,
+                      route_corridor: e.target.value,
+                      service_number: selectedRoute?.service_number || formData.service_number || '',
+                      trip_amount: selectedRoute?.trip_amount !== undefined ? selectedRoute.trip_amount : formData.trip_amount,
+                      operator_commission: selectedRoute?.operator_commission !== undefined ? selectedRoute.operator_commission : formData.operator_commission
+                    });
+                  }}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
                 >
                   <option value="">-- Choose Route Corridor --</option>
-                  {routes.map((r) => (
+                  {routes.map((r: any) => (
                     <option key={r.id} value={`${r.starting_city} → ${r.ending_city}`}>
                       {r.starting_city} → {r.ending_city} ({r.service_number})
                     </option>
                   ))}
-                  <option value="Direct Express Line">Direct Express Line</option>
-                  <option value="Local Depot Transfer">Local Depot Transfer</option>
-                  <option value="Special Chartered Duty">Special Chartered Duty</option>
                 </select>
               </div>
 
@@ -1166,10 +1191,10 @@ export const TaskManagement: React.FC = () => {
                   required
                   value={formData.operator_organizer || ''}
                   onChange={(e) => setFormData({ ...formData, operator_organizer: e.target.value })}
-                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
                 >
                   <option value="">-- Choose Organizer --</option>
-                  {organizers.map((o) => (
+                  {organizers.map((o: any) => (
                     <option key={o.id} value={o.organization_name}>
                       {o.organization_name}
                     </option>
@@ -1177,6 +1202,49 @@ export const TaskManagement: React.FC = () => {
                   <option value="Charvik Internal Fleet">Charvik Internal Fleet</option>
                   <option value="Direct Passenger Service">Direct Passenger Service</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Row 3: Trip Amount & Operator Commission */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Trip Amount (₹)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 25000"
+                    value={formData.trip_amount !== undefined ? formData.trip_amount : ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        trip_amount: e.target.value === '' ? undefined : Number(e.target.value)
+                      })
+                    }
+                    className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator Commission (₹)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 3500"
+                    value={formData.operator_commission !== undefined ? formData.operator_commission : ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        operator_commission: e.target.value === '' ? undefined : Number(e.target.value)
+                      })
+                    }
+                    className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1533,27 +1601,41 @@ export const TaskManagement: React.FC = () => {
                 Vehicle: <strong className="text-blue-900 font-mono text-sm">{selectedBusForView}</strong>
               </span>
 
-              <button
-                onClick={() => {
-                  setIsViewTripsOpen(false);
-                  handleOpenAdd(selectedBusForView);
-                }}
-                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#142B4A] text-white flex items-center gap-1 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Another Trip</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <PrintButton
+                  title={`Trip Allocation Sheet - Bus ${selectedBusForView}`}
+                  subtitle={`Operational Date: ${selectedDate}`}
+                  targetId="view-bus-trips-sheet-content"
+                />
+                <button
+                  onClick={() => {
+                    setIsViewTripsOpen(false);
+                    handleOpenAdd(selectedBusForView);
+                  }}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#142B4A] text-white flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Another Trip</span>
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+            <div id="view-bus-trips-sheet-content" className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
               {(busGroupMap.get(selectedBusForView) || []).map((t, idx) => (
-                <div key={t.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2.5">
+                <div key={t.id} className="p-5 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center">
+                    <div className="flex items-center gap-3">
+                      <span className="w-7 h-7 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center flex-shrink-0">
                         {idx + 1}
                       </span>
-                      <h4 className="font-bold text-slate-900 text-xs">{t.route_corridor}</h4>
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm">{t.route_corridor}</h4>
+                        {t.service_number && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md mt-0.5">
+                            Service No: {t.service_number}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -1586,37 +1668,37 @@ export const TaskManagement: React.FC = () => {
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-slate-500">
-                    Organizer: <strong className="text-slate-800">{t.operator_organizer}</strong> • Date:{' '}
+                  <p className="text-xs text-slate-500">
+                    Organizer: <strong className="text-slate-800">{t.operator_organizer}</strong> &nbsp;•&nbsp; Date:{' '}
                     <strong className="text-slate-800">{t.trip_start_date}</strong>
                   </p>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pt-1">
-                    <div className="p-2 bg-white rounded-lg border border-slate-100">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase block">Driver 1</span>
-                      <p className="font-bold text-slate-900 truncate">{t.driver1.employee_name}</p>
-                      <div className="flex items-center gap-1">
-                        <p className="text-[10px] text-slate-500">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Driver 1</span>
+                      <p className="font-bold text-slate-900 text-sm truncate">{t.driver1.employee_name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs text-emerald-700 font-bold">
                           ₹{t.driver1.salary_amount}
                         </p>
                         {t.vehicle_status.startsWith('HOLD') && (
-                          <span className="text-[8px] font-black px-1 rounded bg-amber-100 text-amber-800">
+                          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200">
                             HOLD ₹500
                           </span>
                         )}
                       </div>
                     </div>
 
-                    <div className="p-2 bg-white rounded-lg border border-slate-100">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase block">Driver 2</span>
-                      <p className="font-bold text-slate-900 truncate">{t.driver2?.employee_name || 'None'}</p>
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Driver 2</span>
+                      <p className="font-bold text-slate-900 text-sm truncate">{t.driver2?.employee_name || <span className="text-slate-300">None</span>}</p>
                       {t.driver2?.employee_name && (
-                        <div className="flex items-center gap-1">
-                          <p className="text-[10px] text-slate-500">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs text-emerald-700 font-bold">
                             ₹{t.driver2.salary_amount}
                           </p>
                           {t.vehicle_status.startsWith('HOLD') && (
-                            <span className="text-[8px] font-black px-1 rounded bg-amber-100 text-amber-800">
+                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200">
                               HOLD ₹500
                             </span>
                           )}
@@ -1624,19 +1706,19 @@ export const TaskManagement: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="p-2 bg-white rounded-lg border border-slate-100">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase block">Helper</span>
-                      <p className="font-bold text-slate-900 truncate">{t.helper?.employee_name || 'None'}</p>
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Helper</span>
+                      <p className="font-bold text-slate-900 text-sm truncate">{t.helper?.employee_name || <span className="text-slate-300">None</span>}</p>
                       {t.helper?.employee_name && (
-                        <p className="text-[10px] text-slate-500">₹{t.helper.salary_amount}</p>
+                        <p className="text-xs text-emerald-700 font-bold">₹{t.helper.salary_amount}</p>
                       )}
                     </div>
 
-                    <div className="p-2 bg-white rounded-lg border border-slate-100">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase block">Captain</span>
-                      <p className="font-bold text-indigo-700 truncate">{t.captain?.employee_name || 'None'}</p>
+                    <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100 space-y-1">
+                      <span className="text-[10px] font-black text-indigo-400 uppercase tracking-wide block">Captain</span>
+                      <p className="font-bold text-indigo-700 text-sm truncate">{t.captain?.employee_name || <span className="text-slate-300">None</span>}</p>
                       {t.captain?.work_remarks && (
-                        <p className="text-[9px] text-slate-500 truncate">{t.captain.work_remarks}</p>
+                        <p className="text-[10px] text-indigo-500 truncate">{t.captain.work_remarks}</p>
                       )}
                     </div>
                   </div>

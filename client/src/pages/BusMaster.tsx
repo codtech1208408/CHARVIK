@@ -4,6 +4,7 @@ import {
   Search,
   Filter,
   Bus,
+  Truck,
   Edit,
   Trash2,
   Eye,
@@ -32,6 +33,7 @@ import type { Bus as BusType } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { PrintButton } from '../components/common/PrintButton';
 import { useAuth } from '../context/AuthContext';
 
 export interface DocExpiryItem {
@@ -413,23 +415,24 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
 
   return (
     <div className="space-y-6">
-      {/* Header and Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+      {/* Page Header */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-xl font-bold text-[#142B4A]">Vehicle Management</h2>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+            <Truck className="w-5 h-5 text-blue-600" />
+            <span>Vehicle Management</span>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 ml-1">
               {buses.length} Total
             </span>
-          </div>
+          </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Manage vehicle numbers for task assignment dropdown. Active vehicles appear in task management.
+            Fleet vehicle registration records, bus type, operational status, and compliance documents.
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="inline-flex items-center px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow gap-1.5 cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Add Vehicle</span>
@@ -614,11 +617,18 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                 <List className="w-4 h-4" />
               </button>
             </div>
+
+            <PrintButton
+              title={`Fleet Vehicles Master Sheet (${statusFilter})`}
+              subtitle={`Total Vehicles: ${filteredBuses.length} • Filter: ${statusFilter}`}
+              targetId="bus-master-content-area"
+            />
           </div>
         </div>
       </div>
 
       {/* Vehicle Cards Grid View */}
+      <div id="bus-master-content-area">
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {loading ? (
@@ -948,6 +958,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
           </div>
         </div>
       )}
+      </div>
 
       {/* Add / Edit Bus Modal */}
       <Modal

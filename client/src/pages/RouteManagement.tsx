@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { PrintButton } from '../components/common/PrintButton';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 
@@ -168,8 +169,14 @@ export const RouteManagement: React.FC = () => {
       return;
     }
 
-    if (!formData.destination_km || Number(formData.destination_km) <= 0) {
-      error('Please enter a valid destination KM.');
+    if (
+      formData.destination_km === undefined ||
+      formData.destination_km === null ||
+      formData.destination_km === '' ||
+      isNaN(Number(formData.destination_km)) ||
+      Number(formData.destination_km) < 0
+    ) {
+      error('Please enter a valid destination KM (0 or greater).');
       return;
     }
 
@@ -254,13 +261,20 @@ export const RouteManagement: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Route</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <PrintButton
+            title="Transit Route Corridor & Dispatch Sheet"
+            subtitle={`Total Routes: ${filteredRoutes.length} • Active: ${activeRoutesCount}`}
+            targetId="route-management-table-wrap"
+          />
+          <button
+            onClick={handleOpenAdd}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Route</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -362,7 +376,7 @@ export const RouteManagement: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div id="route-management-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
@@ -579,10 +593,10 @@ export const RouteManagement: React.FC = () => {
               <input
                 type="number"
                 required
-                min="1"
+                min="0"
                 value={formData.destination_km ?? ''}
                 onChange={(e) => setFormData({ ...formData, destination_km: e.target.value })}
-                placeholder="e.g. 570"
+                placeholder="e.g. 570 or 0"
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
               />
             </div>

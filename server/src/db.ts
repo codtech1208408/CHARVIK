@@ -484,6 +484,7 @@ export function initDatabase() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         trip_start_date DATE NOT NULL,
         vehicle_number TEXT NOT NULL,
+        service_number TEXT DEFAULT '',
         vehicle_status TEXT DEFAULT 'RUN',
         route_corridor TEXT,
         operator_organizer TEXT,
@@ -493,10 +494,37 @@ export function initDatabase() {
         captain TEXT,
         trip_remarks TEXT,
         duty_status TEXT DEFAULT 'Scheduled',
+        payment_status TEXT DEFAULT 'Pending',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // Migrate: add service_number column to trip_duties if it doesn't exist
+    try {
+      db.prepare(`ALTER TABLE trip_duties ADD COLUMN service_number TEXT DEFAULT ''`).run();
+    } catch (_) {
+      // Column already exists — safe to ignore
+    }
+
+    // Migrate: add payment_status column to trip_duties if it doesn't exist
+    try {
+      db.prepare(`ALTER TABLE trip_duties ADD COLUMN payment_status TEXT DEFAULT 'Pending'`).run();
+    } catch (_) {
+      // Column already exists — safe to ignore
+    }
+
+    // Create organizer_payments table
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS organizer_payments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        organizer_name TEXT NOT NULL,
+        amount REAL NOT NULL,
+        received_date DATE NOT NULL,
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
 
     // Seed default transit routes if empty
     const routeCount = db.prepare('SELECT COUNT(*) as count FROM transit_routes').get() as any;

@@ -34,6 +34,7 @@ import type { Employee } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { PrintButton } from '../components/common/PrintButton';
 import { useAuth } from '../context/AuthContext';
 
 export const EmployeeManagement: React.FC = () => {
@@ -447,94 +448,93 @@ export const EmployeeManagement: React.FC = () => {
           ))}
         </div>
 
-        {/* Search Input */}
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search by name, code, phone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:bg-white outline-none"
+        {/* Search Input & Print */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-72">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search by name, code, phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:bg-white outline-none"
+            />
+          </div>
+          <PrintButton
+            title={`Staff Biodata Directory (${roleFilter === 'All' ? 'All Roles' : roleFilter})`}
+            subtitle={`Total: ${filteredEmployees.length} Employees`}
+            targetId="employees-directory-table-wrap"
           />
         </div>
       </div>
 
       {/* Employees Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div id="employees-directory-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs whitespace-nowrap">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4 w-14 text-center">S.NO</th>
-                <th className="py-3 px-4">Code</th>
-                <th className="py-3 px-4">Employee Name</th>
-                <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4">Worker Type & Salary</th>
-                <th className="py-3 px-4">Phone Number</th>
-                <th className="py-3 px-4">Assigned Bus</th>
-                <th className="py-3 px-4">Joining Date</th>
-                <th className="py-3 px-4">Licence Validity</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-4 px-5 w-16 text-center">S.NO</th>
+                <th className="py-4 px-5 min-w-[140px]">Code</th>
+                <th className="py-4 px-6 min-w-[200px]">Employee Name</th>
+                <th className="py-4 px-5 min-w-[120px]">Role</th>
+                <th className="py-4 px-6 min-w-[180px]">Worker Type & Salary</th>
+                <th className="py-4 px-5 min-w-[140px]">Phone Number</th>
+                <th className="py-4 px-5 min-w-[130px]">Joining Date</th>
+                <th className="py-4 px-5 min-w-[150px]">Licence Validity</th>
+                <th className="py-4 px-5 min-w-[120px]">Status</th>
+                <th className="py-4 px-5 text-center min-w-[130px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={11} className="py-12 text-center text-slate-400">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  <td colSpan={10} className="py-16 text-center text-slate-400">
+                    <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading employee records...
                   </td>
                 </tr>
               ) : filteredEmployees.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-16 text-center text-slate-400">
                     No employees found matching the filters.
                   </td>
                 </tr>
               ) : (
                 filteredEmployees.map((e, index) => (
                   <tr key={e.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900">{e.employee_code}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                    <td className="py-4 px-5 font-bold text-slate-500 text-center">{index + 1}</td>
+                    <td className="py-4 px-5 font-mono font-bold text-slate-900 tracking-wide">{e.employee_code}</td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-2xs">
                           {e.full_name.slice(0, 2)}
                         </div>
-                        <span className="font-bold text-slate-900">{e.full_name}</span>
+                        <span className="font-bold text-slate-900 text-[13px]">{e.full_name}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded-md font-bold text-[11px] bg-slate-100 text-slate-800">
+                    <td className="py-4 px-5">
+                      <span className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-100 text-slate-800">
                         {e.role}
                       </span>
                     </td>
-                    <td className="py-3 px-4">
-                      <div className="flex flex-col">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold w-fit ${
+                    <td className="py-4 px-6">
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold w-fit ${
                           e.employment_type === 'Temporary'
                             ? 'bg-amber-50 text-amber-700 border border-amber-200'
                             : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}>
                           {e.employment_type === 'Temporary' ? 'Temporary' : 'Permanent'}
                         </span>
-                        <span className="font-bold text-slate-900 text-xs mt-0.5">
+                        <span className="font-bold text-slate-900 text-xs">
                           {e.salary ? `₹${Number(e.salary).toLocaleString('en-IN')}` : '₹0'}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 font-medium">{e.phone_number}</td>
-                    <td className="py-3 px-4">
-                      {e.bus_number ? (
-                        <span className="font-semibold text-blue-700">{e.bus_number}</span>
-                      ) : (
-                        <span className="text-slate-400 italic">Unassigned</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-slate-500">{e.joining_date || '-'}</td>
-                    <td className="py-3 px-4">
+                    <td className="py-4 px-5 font-medium">{e.phone_number}</td>
+                    <td className="py-4 px-5 text-slate-500">{e.joining_date || '-'}</td>
+                    <td className="py-4 px-5">
                       {e.licence_validity_date ? (
                         <span className="font-semibold text-slate-800 font-mono">
                           {e.licence_validity_date}
@@ -543,21 +543,21 @@ export const EmployeeManagement: React.FC = () => {
                         <span className="text-slate-400">-</span>
                       )}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-4 px-5">
                       <Badge status={e.employment_status} />
                     </td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
+                    <td className="py-4 px-5 text-center">
+                      <div className="flex items-center justify-center space-x-2">
                         <button
                           onClick={() => handleOpenProfile(e)}
-                          className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                          className="p-2 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                           title="Open Full Biodata Profile"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleOpenEdit(e)}
-                          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
                           title="Edit Employee Biodata"
                         >
                           <Edit className="w-4 h-4" />
@@ -566,7 +566,7 @@ export const EmployeeManagement: React.FC = () => {
                         {isAdmin && (
                           <button
                             onClick={() => handleArchive(e)}
-                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            className="p-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                             title="Archive Employee Record"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -655,10 +655,17 @@ export const EmployeeManagement: React.FC = () => {
           </div>
 
           {/* Staff Accounts Table */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div id="staff-accounts-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-800">Active Staff User Accounts</h3>
-              <span className="text-xs text-slate-400">Total: {staffCredentials.length}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-400">Total: {staffCredentials.length}</span>
+                <PrintButton
+                  title="Staff Login Accounts & Access Directory"
+                  subtitle={`Total Accounts: ${staffCredentials.length}`}
+                  targetId="staff-accounts-table-wrap"
+                />
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -997,7 +1004,7 @@ export const EmployeeManagement: React.FC = () => {
         >
           <div className="space-y-4">
             {/* Print Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 no-print">
               <div className="flex items-center space-x-3">
                 {viewingProfile.employee.profile_photo ? (
                   <img
@@ -1030,8 +1037,11 @@ export const EmployeeManagement: React.FC = () => {
                   <span>Edit Biodata</span>
                 </button>
                 <button
-                  onClick={() => window.print()}
-                  className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                  onClick={() => {
+                    setViewTab('sheet');
+                    setTimeout(() => window.print(), 100);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Print Sheet</span>
@@ -1040,7 +1050,7 @@ export const EmployeeManagement: React.FC = () => {
             </div>
 
             {/* View Mode Switcher */}
-            <div className="flex border-b border-slate-200 gap-2 pb-1 text-xs">
+            <div className="flex border-b border-slate-200 gap-2 pb-1 text-xs no-print">
               <button
                 onClick={() => setViewTab('sheet')}
                 className={`px-3 py-1.5 font-bold rounded-lg transition-all cursor-pointer ${
@@ -1061,157 +1071,80 @@ export const EmployeeManagement: React.FC = () => {
 
             {/* MODE 1: Official Yellow-Header Table matching image.png */}
             {viewTab === 'sheet' && (
-              <div className="border-2 border-black overflow-hidden font-sans text-xs bg-white">
+              <div className="border-2 border-black overflow-hidden font-sans text-xs bg-white printable-sheet">
+                {/* Company Print Header */}
+                <div className="p-3 bg-white border-b-2 border-black flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-[#142B4A] text-white flex items-center justify-center font-black text-sm">
+                      C
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-slate-900 tracking-tight uppercase">CHARVIK STAFFING CONSULTANCY</h3>
+                      <p className="text-[10px] text-slate-600 font-semibold">Driver & Crew Fleet Staffing Verification Record</p>
+                    </div>
+                  </div>
+                  <div className="text-right text-[10px] text-slate-600">
+                    <p><strong className="text-slate-900">Emp Code:</strong> <span className="font-mono font-bold text-blue-700">{viewingProfile.employee.employee_code}</span></p>
+                    <p><strong className="text-slate-900">Role:</strong> <span className="font-bold">{viewingProfile.employee.role}</span></p>
+                  </div>
+                </div>
+
                 {/* Yellow Header */}
-                <div className="bg-[#FFFF00] text-black font-black text-center py-2.5 text-sm uppercase tracking-wider border-b-2 border-black">
+                <div className="bg-[#FFFF00] text-black font-black text-center py-2 text-sm uppercase tracking-wider border-b-2 border-black">
                   {viewingProfile.employee.role === 'Driver' ? 'Biodata Driver' : 'Biodata helper & Captains'}
                 </div>
 
                 <table className="w-full text-xs border-collapse">
                   <tbody className="divide-y divide-black">
-                    {/* 1. Profile Photo */}
+                    {/* Gender */}
                     <tr className="hover:bg-slate-50">
-                      <td className="w-1/2 p-2.5 font-bold border-r border-black bg-slate-50/50">Profile Photo</td>
-                      <td className="w-1/2 p-2.5">
-                        {viewingProfile.employee.profile_photo ? (
-                          <div className="flex items-center space-x-3">
-                            <img
-                              src={viewingProfile.employee.profile_photo}
-                              alt="Profile"
-                              className="w-16 h-16 object-cover rounded-lg border border-slate-300"
-                            />
-                            <button
-                              onClick={() =>
-                                setViewingDocModal({
-                                  title: `${viewingProfile.employee.full_name} - Profile Photo`,
-                                  url: viewingProfile.employee.profile_photo
-                                })
-                              }
-                              className="text-[11px] font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                              <span>View Full</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic">No Photo Uploaded</span>
-                        )}
-                      </td>
+                      <td className="w-1/2 p-2.5 font-bold border-r border-black bg-slate-50/50">Gender</td>
+                      <td className="w-1/2 p-2.5">{viewingProfile.employee.gender || 'Male'}</td>
                     </tr>
 
-                    {/* 2. Gender */}
-                    <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Gender</td>
-                      <td className="p-2.5">{viewingProfile.employee.gender || 'Male'}</td>
-                    </tr>
-
-                    {/* 3. Name (As per Aadhaar) */}
+                    {/* Name (As per Aadhaar) */}
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Name (As per Aadhaar)</td>
                       <td className="p-2.5 font-bold text-slate-900">{viewingProfile.employee.full_name || '-'}</td>
                     </tr>
 
-                    {/* 4. DOB */}
+                    {/* DOB */}
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">DOB</td>
                       <td className="p-2.5 font-mono">{viewingProfile.employee.date_of_birth || '-'}</td>
                     </tr>
 
-                    {/* 5. E MAIL */}
+                    {/* E MAIL */}
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">E MAIL</td>
                       <td className="p-2.5">{viewingProfile.employee.email || '-'}</td>
                     </tr>
 
-                    {/* 6. Phone Number * */}
+                    {/* Phone Number * */}
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Phone Number *</td>
                       <td className="p-2.5 font-mono font-bold text-blue-700">{viewingProfile.employee.phone_number || '-'}</td>
                     </tr>
 
-                    {/* 7. Alternative Number */}
+                    {/* Alternative Number */}
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Alternative Number</td>
                       <td className="p-2.5 font-mono">{viewingProfile.employee.alternative_phone_number || '-'}</td>
                     </tr>
 
-                    {/* 8. Aadhaar Number */}
+                    {/* Aadhaar Number */}
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Aadhaar Number</td>
                       <td className="p-2.5 font-mono">{viewingProfile.employee.aadhaar_number || '-'}</td>
                     </tr>
 
-                    {/* 9. Upload Photo File (Aadhaar front back ) */}
-                    <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Upload Photo File (Aadhaar front back )</td>
-                      <td className="p-2.5">
-                        {viewingProfile.employee.aadhaar_front_doc || viewingProfile.employee.aadhaar_back_doc ? (
-                          <div className="flex items-center gap-2">
-                            {viewingProfile.employee.aadhaar_front_doc && (
-                              <button
-                                onClick={() =>
-                                  setViewingDocModal({
-                                    title: 'Aadhaar Card (Front)',
-                                    url: viewingProfile.employee.aadhaar_front_doc
-                                  })
-                                }
-                                className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                              >
-                                <Eye className="w-3 h-3" />
-                                <span>Aadhaar Front</span>
-                              </button>
-                            )}
-                            {viewingProfile.employee.aadhaar_back_doc && (
-                              <button
-                                onClick={() =>
-                                  setViewingDocModal({
-                                    title: 'Aadhaar Card (Back)',
-                                    url: viewingProfile.employee.aadhaar_back_doc
-                                  })
-                                }
-                                className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                              >
-                                <Eye className="w-3 h-3" />
-                                <span>Aadhaar Back</span>
-                              </button>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic">Not Uploaded</span>
-                        )}
-                      </td>
-                    </tr>
-
-                    {/* 10. PAN Card Number */}
+                    {/* PAN Card Number */}
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">PAN Card Number</td>
                       <td className="p-2.5 font-mono uppercase">{viewingProfile.employee.pan_number || '-'}</td>
                     </tr>
 
-                    {/* 11. Upload Photo File (PAN Card) */}
-                    <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-bold border-r border-black bg-slate-50/50">Upload Photo File (PAN Card)</td>
-                      <td className="p-2.5">
-                        {viewingProfile.employee.pan_doc ? (
-                          <button
-                            onClick={() =>
-                              setViewingDocModal({
-                                title: 'PAN Card Document',
-                                url: viewingProfile.employee.pan_doc
-                              })
-                            }
-                            className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                          >
-                            <Eye className="w-3 h-3" />
-                            <span>View PAN Card</span>
-                          </button>
-                        ) : (
-                          <span className="text-slate-400 italic">Not Uploaded</span>
-                        )}
-                      </td>
-                    </tr>
-
-                    {/* 12. If Driver or Captain or Licence provided */}
+                    {/* If Driver or Captain or Licence provided */}
                     {(viewingProfile.employee.role === 'Driver' || viewingProfile.driverDetail?.licence_number || viewingProfile.employee.licence_number) && (
                       <>
                         <tr className="bg-slate-100 font-black text-slate-800">
@@ -1220,74 +1153,11 @@ export const EmployeeManagement: React.FC = () => {
                           </td>
                         </tr>
                         <tr className="hover:bg-slate-50">
-                          <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Front Side)</td>
-                          <td className="p-2.5">
-                            {viewingProfile.driverDetail?.licence_front_doc ? (
-                              <button
-                                onClick={() =>
-                                  setViewingDocModal({
-                                    title: 'Driving Licence (Front)',
-                                    url: viewingProfile.driverDetail.licence_front_doc
-                                  })
-                                }
-                                className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                              >
-                                <Eye className="w-3 h-3" />
-                                <span>DL Front</span>
-                              </button>
-                            ) : (
-                              <span className="text-slate-400 italic">Not Uploaded</span>
-                            )}
-                          </td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Back Side)</td>
-                          <td className="p-2.5">
-                            {viewingProfile.driverDetail?.licence_back_doc ? (
-                              <button
-                                onClick={() =>
-                                  setViewingDocModal({
-                                    title: 'Driving Licence (Back)',
-                                    url: viewingProfile.driverDetail.licence_back_doc
-                                  })
-                                }
-                                className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                              >
-                                <Eye className="w-3 h-3" />
-                                <span>DL Back</span>
-                              </button>
-                            ) : (
-                              <span className="text-slate-400 italic">Not Uploaded</span>
-                            )}
-                          </td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
                           <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Licence Verification Status</td>
                           <td className="p-2.5">
                             <span className="px-2 py-0.5 rounded font-bold text-xs bg-blue-50 text-blue-700 border border-blue-200">
                               {viewingProfile.driverDetail?.licence_verification_status || 'Pending Verification'}
                             </span>
-                          </td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Photo to Verify Licence</td>
-                          <td className="p-2.5">
-                            {viewingProfile.driverDetail?.licence_verification_doc ? (
-                              <button
-                                onClick={() =>
-                                  setViewingDocModal({
-                                    title: 'Licence Verification Proof Photo',
-                                    url: viewingProfile.driverDetail.licence_verification_doc
-                                  })
-                                }
-                                className="px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                              >
-                                <Eye className="w-3 h-3" />
-                                <span>View Verification Photo</span>
-                              </button>
-                            ) : (
-                              <span className="text-slate-400 italic">Not Uploaded</span>
-                            )}
                           </td>
                         </tr>
                         <tr className="hover:bg-slate-50">
@@ -1332,37 +1202,12 @@ export const EmployeeManagement: React.FC = () => {
                     {/* Bank Details */}
                     <tr className="bg-slate-100 font-black text-slate-800">
                       <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
-                        {viewingProfile.employee.role === 'Driver' ? 'Bank Name' : 'Bank Name ( passbook cheque )'}
+                        Bank Details
                       </td>
                     </tr>
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Bank Name</td>
                       <td className="p-2.5 font-bold">{viewingProfile.employee.bank_name || '-'}</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">
-                        {viewingProfile.employee.role === 'Driver'
-                          ? 'Upload Photo File (passbook check )'
-                          : 'Upload Photo File'}
-                      </td>
-                      <td className="p-2.5">
-                        {viewingProfile.employee.bank_proof_doc ? (
-                          <button
-                            onClick={() =>
-                              setViewingDocModal({
-                                title: 'Bank Passbook / Cheque Proof',
-                                url: viewingProfile.employee.bank_proof_doc
-                              })
-                            }
-                            className="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                          >
-                            <Eye className="w-3 h-3" />
-                            <span>View Passbook/Cheque File</span>
-                          </button>
-                        ) : (
-                          <span className="text-slate-400 italic">Not Uploaded</span>
-                        )}
-                      </td>
                     </tr>
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Account Holder Name</td>
@@ -1447,7 +1292,13 @@ export const EmployeeManagement: React.FC = () => {
                     </tr>
                     <tr className="hover:bg-slate-50">
                       <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">
-                        {viewingProfile.employee.employment_type === 'Temporary' ? 'Temporary Wage / Salary' : 'Permanent Monthly Salary'}
+                        {viewingProfile.employee.role === 'Captain'
+                          ? viewingProfile.employee.employment_type === 'Temporary'
+                            ? 'Temporary Monthly Salary'
+                            : 'Permanent Monthly Salary'
+                          : viewingProfile.employee.employment_type === 'Temporary'
+                            ? 'Temporary Worker (Per Day Salary)'
+                            : 'Permanent Worker (Per Day Salary)'}
                       </td>
                       <td className="p-2.5 font-bold text-slate-900">
                         {viewingProfile.employee.salary ? `₹${Number(viewingProfile.employee.salary).toLocaleString('en-IN')}` : '₹0'}
@@ -1467,6 +1318,41 @@ export const EmployeeManagement: React.FC = () => {
                     </tr>
                   </tbody>
                 </table>
+
+                {/* Official Declaration */}
+                <div className="border-t-2 border-black bg-slate-50/60 p-3 text-[11px] text-slate-700 leading-relaxed">
+                  <span className="font-bold text-slate-900">Declaration: </span>
+                  <span>
+                    I hereby declare that all the information and particulars provided in this biodata sheet are true, complete, and accurate to the best of my knowledge and belief.
+                  </span>
+                </div>
+
+                {/* Signature Section */}
+                <div className="border-t-2 border-black grid grid-cols-2 divide-x-2 divide-black bg-white">
+                  {/* Left: Employee Signature */}
+                  <div className="p-4 flex flex-col justify-between min-h-[120px]">
+                    <div>
+                      <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Employee Signature</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Signature of {viewingProfile.employee.full_name}</p>
+                    </div>
+                    <div className="mt-10 pt-2 border-t border-dashed border-slate-500 flex items-center justify-between text-[11px] font-semibold text-slate-700">
+                      <span>Sign: ___________________</span>
+                      <span>Date: ____________</span>
+                    </div>
+                  </div>
+
+                  {/* Right: Authorized Signatory */}
+                  <div className="p-4 flex flex-col justify-between min-h-[120px]">
+                    <div>
+                      <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Authorized Signatory & Seal</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Charvik Staffing Consultancy</p>
+                    </div>
+                    <div className="mt-10 pt-2 border-t border-dashed border-slate-500 flex items-center justify-between text-[11px] font-semibold text-slate-700">
+                      <span>Sign & Seal: _____________</span>
+                      <span>Date: ____________</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -2287,7 +2173,13 @@ export const EmployeeManagement: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1">
-                      {editFormData.employment_type === 'Temporary' ? 'Temporary Worker Salary / Wage (₹) *' : 'Permanent Worker Salary (₹) *'}
+                      {editingEmployee?.role === 'Captain'
+                        ? editFormData.employment_type === 'Temporary'
+                          ? 'Temporary Monthly Salary (₹) *'
+                          : 'Permanent Monthly Salary (₹) *'
+                        : editFormData.employment_type === 'Temporary'
+                          ? 'Temporary Worker (Per Day Salary) (₹) *'
+                          : 'Permanent Worker (Per Day Salary) (₹) *'}
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
@@ -2297,7 +2189,11 @@ export const EmployeeManagement: React.FC = () => {
                         step="any"
                         value={editFormData.salary !== undefined ? editFormData.salary : ''}
                         onChange={(e) => setEditFormData({ ...editFormData, salary: e.target.value })}
-                        placeholder={editFormData.employment_type === 'Temporary' ? 'Enter temporary wage amount (₹)' : 'Enter permanent salary amount (₹)'}
+                        placeholder={
+                          editingEmployee?.role === 'Captain'
+                            ? 'Enter monthly salary amount (₹)'
+                            : 'Enter per day salary amount (₹)'
+                        }
                         className="w-full text-xs pl-7 pr-3 p-2.5 rounded-xl border border-blue-300 bg-white font-semibold text-slate-900 outline-none"
                       />
                     </div>

@@ -1076,6 +1076,34 @@ app.delete('/api/organizers/:id', (req: Request, res: Response) => {
   }
 });
 
+// ================= ORGANIZER PAYMENTS CRUD =================
+app.get('/api/organizer-payments', (req: Request, res: Response) => {
+  try {
+    const list = db.prepare('SELECT * FROM organizer_payments ORDER BY received_date DESC, id DESC').all();
+    return res.json(list);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/organizer-payments', (req: Request, res: Response) => {
+  const p = req.body;
+  if (!p.organizer_name || !p.amount || !p.received_date) {
+    return res.status(400).json({ error: 'Organizer name, amount, and received date are required' });
+  }
+  try {
+    const result = db.prepare(`
+      INSERT INTO organizer_payments (organizer_name, amount, received_date, notes)
+      VALUES (?, ?, ?, ?)
+    `).run(p.organizer_name, Number(p.amount), p.received_date, p.notes || '');
+    const created = { id: result.lastInsertRowid, ...p };
+    logAudit('RECORD_PAYMENT', 'Financial & Earnings', created.id, `Recorded ₹${p.amount} from ${p.organizer_name}`);
+    return res.status(201).json(created);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= TASK MANAGEMENT (TRIP DUTIES) CRUD =================
 app.get('/api/tasks', (req: Request, res: Response) => {
   try {
@@ -1102,13 +1130,14 @@ app.post('/api/tasks', (req: Request, res: Response) => {
     const id = t.id || Date.now();
     db.prepare(`
       INSERT INTO trip_duties (
-        id, trip_start_date, vehicle_number, vehicle_status, route_corridor, operator_organizer,
-        driver1, driver2, helper, captain, trip_remarks, duty_status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        id, trip_start_date, vehicle_number, service_number, vehicle_status, route_corridor, operator_organizer,
+        driver1, driver2, helper, captain, trip_remarks, duty_status, payment_status, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `).run(
       id,
       t.trip_start_date,
       t.vehicle_number,
+      t.service_number || '',
       t.vehicle_status || 'RUN',
       t.route_corridor || '',
       t.operator_organizer || '',
@@ -1117,7 +1146,8 @@ app.post('/api/tasks', (req: Request, res: Response) => {
       t.helper ? JSON.stringify(t.helper) : null,
       t.captain ? JSON.stringify(t.captain) : null,
       t.trip_remarks || '',
-      t.duty_status || 'Scheduled'
+      t.duty_status || 'Scheduled',
+      t.payment_status || 'Pending'
     );
     const created = { id, ...t };
     logAudit('CREATE_TASK', 'Task Management', id, `Created task for bus ${t.vehicle_number}`);
@@ -1133,13 +1163,14 @@ app.put('/api/tasks/:id', (req: Request, res: Response) => {
   try {
     db.prepare(`
       UPDATE trip_duties SET
-        trip_start_date = ?, vehicle_number = ?, vehicle_status = ?, route_corridor = ?,
+        trip_start_date = ?, vehicle_number = ?, service_number = ?, vehicle_status = ?, route_corridor = ?,
         operator_organizer = ?, driver1 = ?, driver2 = ?, helper = ?, captain = ?,
-        trip_remarks = ?, duty_status = ?, updated_at = CURRENT_TIMESTAMP
+        trip_remarks = ?, duty_status = ?, payment_status = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
       t.trip_start_date,
       t.vehicle_number,
+      t.service_number || '',
       t.vehicle_status || 'RUN',
       t.route_corridor || '',
       t.operator_organizer || '',
@@ -1149,6 +1180,7 @@ app.put('/api/tasks/:id', (req: Request, res: Response) => {
       t.captain ? JSON.stringify(t.captain) : null,
       t.trip_remarks || '',
       t.duty_status || 'Scheduled',
+      t.payment_status || 'Pending',
       id
     );
     logAudit('UPDATE_TASK', 'Task Management', id, `Updated task ${id}`);

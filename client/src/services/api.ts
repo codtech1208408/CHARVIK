@@ -1299,6 +1299,34 @@ export const api = {
   updateOrganizer: (id: number | string, data: any) => request<any>(`/organizers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteOrganizer: (id: number | string) => request<any>(`/organizers/${id}`, { method: 'DELETE' }),
 
+  // Organizer Payments
+  getOrganizerPayments: async () => {
+    try {
+      const remote = await request<any[]>('/organizer-payments');
+      if (Array.isArray(remote)) {
+        localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(remote));
+        return remote;
+      }
+    } catch {}
+    try {
+      const saved = localStorage.getItem('charvik_organizer_payments_data');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  },
+  createOrganizerPayment: async (data: any) => {
+    try {
+      const res = await request<any>('/organizer-payments', { method: 'POST', body: JSON.stringify(data) });
+      return res;
+    } catch {
+      // Local fallback
+      const saved = JSON.parse(localStorage.getItem('charvik_organizer_payments_data') || '[]');
+      const item = { id: Date.now(), ...data };
+      localStorage.setItem('charvik_organizer_payments_data', JSON.stringify([item, ...saved]));
+      return item;
+    }
+  },
+
   // Tasks (Trip Duties)
   getTasks: async () => {
     try {

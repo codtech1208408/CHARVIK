@@ -19,6 +19,7 @@ import { api } from '../services/api';
 import type { DailyKmEntry, Bus as BusType, Employee } from '../types';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { PrintButton } from '../components/common/PrintButton';
 
 export const DailyKilometers: React.FC = () => {
   const { success, error } = useToast();
@@ -239,13 +240,20 @@ export const DailyKilometers: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="inline-flex items-center px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow gap-1.5 cursor-pointer self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Daily Entry</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <PrintButton
+            title="Daily Kilometer Entry & Odometer Log Sheet"
+            subtitle={`Filtered Date: ${selectedDate || 'All Dates'} • Total Distance: ${summary?.totalDistance || 0} KM`}
+            targetId="daily-km-table-wrap"
+          />
+          <button
+            onClick={handleOpenAdd}
+            className="inline-flex items-center px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow gap-1.5 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Daily Entry</span>
+          </button>
+        </div>
       </div>
 
       {/* Summary KPI Cards */}
@@ -347,7 +355,7 @@ export const DailyKilometers: React.FC = () => {
       </div>
 
       {/* Entries Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div id="daily-km-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
