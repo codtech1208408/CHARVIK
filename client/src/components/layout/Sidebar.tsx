@@ -116,6 +116,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: UserPlus,
       activeRoutes: ['/admin/employee-registration', '/admin/employees', '/admin/drivers', '/admin/support-staff']
     },
+    {
+      label: 'Employee Payments',
+      route: '/admin/employee-payments',
+      icon: IndianRupee,
+      activeRoutes: ['/admin/employee-payments']
+    },
   ];
 
   const vehicleMaintenanceTabs: NavItemLeaf[] = [
@@ -155,12 +161,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       activeRoutes: ['/admin/dashboard']
     },
     {
-      label: 'Employee Payments',
-      route: '/admin/employee-payments',
-      icon: IndianRupee,
-      activeRoutes: ['/admin/employee-payments']
-    },
-    {
       label: 'Vehicle Management',
       route: '/admin/vehicles',
       icon: Truck,
@@ -173,7 +173,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         '/admin/tasks',
         '/admin/organizers',
         '/admin/employee-registration',
-        '/admin/employees'
+        '/admin/employees',
+        '/admin/employee-payments'
       ]
     },
     {
@@ -238,7 +239,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       location.pathname.startsWith('/admin/employee-registration') ||
       location.pathname.startsWith('/admin/employees') ||
       location.pathname.startsWith('/admin/drivers') ||
-      location.pathname.startsWith('/admin/support-staff'));
+      location.pathname.startsWith('/admin/support-staff') ||
+      location.pathname.startsWith('/admin/employee-payments'));
 
   const isVehicleMaintenanceModule =
     !isDashboard &&
@@ -323,25 +325,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          {/* Logo */}
+          {/* Logo - Always shows the full Charvik brand logo */}
           <div className="w-full flex items-center justify-center">
-            {isCollapsed ? (
-              <div className="w-11 h-11 rounded-xl bg-white p-1 flex items-center justify-center shadow-xs border border-slate-200">
-                <img
-                  src="/logo-mark.png"
-                  alt="Charvik Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            ) : (
-              <div className="w-full rounded-2xl bg-white px-3 py-1.5 flex items-center justify-center shadow-xs border border-slate-200/90 overflow-hidden hover:border-blue-400 transition-colors">
-                <img
-                  src="/logo-compact.png"
-                  alt="Charvik Staffing Consultancy"
-                  className="w-auto h-auto max-h-[62px] max-w-[88%] object-contain"
-                />
-              </div>
-            )}
+            <div className={`w-full rounded-2xl bg-white flex items-center justify-center shadow-xs border border-slate-200/90 overflow-hidden hover:border-blue-400 transition-all ${
+              isCollapsed ? 'px-1 py-1 max-w-[68px]' : 'px-3 py-1.5 max-w-full'
+            }`}>
+              <img
+                src="/logo-compact.png"
+                alt="Charvik Staffing Consultancy"
+                className={`w-auto object-contain transition-all duration-200 ${
+                  isCollapsed ? 'max-h-[44px] max-w-full' : 'max-h-[62px] max-w-[88%]'
+                }`}
+              />
+            </div>
           </div>
 
           {!isCollapsed && (

@@ -31,6 +31,7 @@ import {
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
+import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 import { api } from '../services/api';
 import { BASE_FLEET_TASKS, BASE_FLEET_ORGANIZERS, BASE_FLEET_ROUTES } from '../services/seedData';
 
@@ -181,6 +182,27 @@ export const TaskManagement: React.FC = () => {
   const drivers = useMemo(() => employees.filter((e) => e.role === 'Driver'), [employees]);
   const helpers = useMemo(() => employees.filter((e) => e.role === 'Helper'), [employees]);
   const captains = useMemo(() => employees.filter((e) => e.role === 'Captain'), [employees]);
+
+  const busSearchOptions: SearchOption[] = useMemo(() => {
+    return buses.map((b) => ({
+      value: b.registration_number,
+      label: b.registration_number,
+      sublabel: [b.make, b.model].filter(Boolean).join(' '),
+      badge: b.bus_type || undefined
+    }));
+  }, [buses]);
+
+  const routeSearchOptions: SearchOption[] = useMemo(() => {
+    return routes.map((r: any) => ({
+      value: `${r.starting_city} → ${r.ending_city}`,
+      label: `${r.starting_city} → ${r.ending_city}`,
+      badge: r.service_number || undefined,
+      sublabel: [
+        r.destination_km ? `${r.destination_km} km` : '',
+        r.trip_amount ? `₹${Number(r.trip_amount).toLocaleString('en-IN')}` : ''
+      ].filter(Boolean).join(' • ')
+    }));
+  }, [routes]);
 
   // Trips strictly on the selected date
   const dateTrips = useMemo(() => {
@@ -374,13 +396,16 @@ export const TaskManagement: React.FC = () => {
     }));
   };
 
-  // Helper Selection (No trip salary needed)
+  // Helper Selection (supports helper salary amount)
   const handleHelperSelect = (empName: string) => {
     if (!empName) {
       setFormData((prev) => ({ ...prev, helper: undefined }));
       return;
     }
     const emp = helpers.find((h) => h.full_name === empName);
+    const sal = emp && emp.salary !== undefined && emp.salary !== null && emp.salary !== ''
+      ? Number(emp.salary)
+      : (formData.helper?.salary_amount || ('' as any));
 
     setFormData((prev) => ({
       ...prev,
@@ -388,9 +413,9 @@ export const TaskManagement: React.FC = () => {
         employee_id: emp?.id,
         employee_name: empName,
         role: 'Helper',
-        salary_amount: 0,
+        salary_amount: sal,
         advance_amount: 0,
-        balance_due: 0
+        balance_due: Number(sal || 0)
       }
     }));
   };
@@ -1095,7 +1120,8 @@ export const TaskManagement: React.FC = () => {
               <span>1. Trip Details & Operational Route</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Row 1: Trip Start Date + Vehicle Number (Searchable) + Route Corridor (Searchable) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Trip Start Date */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Trip Start Date *</label>
@@ -1104,84 +1130,63 @@ export const TaskManagement: React.FC = () => {
                   required
                   value={formData.trip_start_date || selectedDate}
                   onChange={(e) => setFormData({ ...formData, trip_start_date: e.target.value })}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
                 />
               </div>
 
-              {/* Vehicle Number */}
+              {/* Vehicle Number (Searchable) */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Number *</label>
-                <select
+                <SearchableSelect
+                  label="Vehicle Number"
                   required
+                  placeholder="-- Search or Select Vehicle --"
+                  searchPlaceholder="Search vehicle number, type, model..."
+                  options={busSearchOptions}
                   value={formData.vehicle_number || ''}
-                  onChange={(e) => setFormData({ ...formData, vehicle_number: e.target.value })}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
-                >
-                  <option value="">-- Select Vehicle --</option>
-                  {buses.map((b) => (
-                    <option key={b.id} value={b.registration_number}>
-                      {b.registration_number} {b.bus_type ? `(${b.bus_type})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Service Number */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Service Number</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 555, SRV-001"
-                  value={formData.service_number || ''}
-                  onChange={(e) => setFormData({ ...formData, service_number: e.target.value })}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
+                  onChange={(val) => setFormData({ ...formData, vehicle_number: val })}
                 />
               </div>
 
+              {/* Route Corridor (Searchable - Placed at Vehicle Status position) */}
+              <div>
+                <SearchableSelect
+                  label="Route Corridor"
+                  required
+                  placeholder="-- Search or Select Route Corridor --"
+                  searchPlaceholder="Search cities or service number..."
+                  options={routeSearchOptions}
+                  value={formData.route_corridor || ''}
+                  onChange={(val) => {
+                    const selectedRoute = routes.find(
+                      (r: any) => `${r.starting_city} → ${r.ending_city}` === val
+                    );
+                    setFormData({
+                      ...formData,
+                      route_corridor: val,
+                      service_number: selectedRoute?.service_number || formData.service_number || '',
+                      trip_amount: selectedRoute?.trip_amount !== undefined ? selectedRoute.trip_amount : formData.trip_amount,
+                      operator_commission: selectedRoute?.operator_commission !== undefined ? selectedRoute.operator_commission : formData.operator_commission
+                    });
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Row 2: Vehicle Status (Placed at Route Corridor position) + Operator / Organizer */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Status *</label>
                 <select
                   required
                   value={formData.vehicle_status || 'RUN'}
                   onChange={(e: any) => handleVehicleStatusChange(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none cursor-pointer"
                 >
                   <option value="RUN">🟢 RUN</option>
                   <option value="HOLD (Low Occupancy)">🟡 HOLD (Low Occupancy)</option>
                   <option value="HOLD (Maintenance)">🔴 HOLD (Maintenance)</option>
                   <option value="HOLD (Break Down)">🟠 HOLD (Break Down)</option>
                   <option value="HOLD (Finance Side)">🟣 HOLD (Finance Side)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Row 2: Route Corridor + Organizer */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Route Corridor *</label>
-                <select
-                  required
-                  value={formData.route_corridor || ''}
-                  onChange={(e) => {
-                    const selectedRoute = routes.find(
-                      (r: any) => `${r.starting_city} → ${r.ending_city}` === e.target.value
-                    );
-                    setFormData({
-                      ...formData,
-                      route_corridor: e.target.value,
-                      service_number: selectedRoute?.service_number || formData.service_number || '',
-                      trip_amount: selectedRoute?.trip_amount !== undefined ? selectedRoute.trip_amount : formData.trip_amount,
-                      operator_commission: selectedRoute?.operator_commission !== undefined ? selectedRoute.operator_commission : formData.operator_commission
-                    });
-                  }}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
-                >
-                  <option value="">-- Choose Route Corridor --</option>
-                  {routes.map((r: any) => (
-                    <option key={r.id} value={`${r.starting_city} → ${r.ending_city}`}>
-                      {r.starting_city} → {r.ending_city} ({r.service_number})
-                    </option>
-                  ))}
                 </select>
               </div>
 
@@ -1202,49 +1207,6 @@ export const TaskManagement: React.FC = () => {
                   <option value="Charvik Internal Fleet">Charvik Internal Fleet</option>
                   <option value="Direct Passenger Service">Direct Passenger Service</option>
                 </select>
-              </div>
-            </div>
-
-            {/* Row 3: Trip Amount & Operator Commission */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Trip Amount (₹)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 25000"
-                    value={formData.trip_amount !== undefined ? formData.trip_amount : ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        trip_amount: e.target.value === '' ? undefined : Number(e.target.value)
-                      })
-                    }
-                    className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator Commission (₹)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 3500"
-                    value={formData.operator_commission !== undefined ? formData.operator_commission : ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        operator_commission: e.target.value === '' ? undefined : Number(e.target.value)
-                      })
-                    }
-                    className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:ring-2 focus:ring-blue-600 outline-none"
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -1472,21 +1434,66 @@ export const TaskManagement: React.FC = () => {
                 </span>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Helper Employee</label>
-                <select
-                  value={formData.helper?.employee_name || ''}
-                  onChange={(e) => handleHelperSelect(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
-                >
-                  <option value="">-- None (No Helper Required) --</option>
-                  {helpers.map((h) => (
-                    <option key={h.id} value={h.full_name}>
-                      {h.full_name} ({h.employee_code})
-                    </option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Helper Employee</label>
+                  <select
+                    value={formData.helper?.employee_name || ''}
+                    onChange={(e) => handleHelperSelect(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                  >
+                    <option value="">-- None (No Helper Required) --</option>
+                    {helpers.map((h) => (
+                      <option key={h.id} value={h.full_name}>
+                        {h.full_name} ({h.employee_code}){h.salary ? ` • ₹${Number(h.salary).toLocaleString('en-IN')}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Helper Salary Amount ₹
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Enter helper salary ₹"
+                    value={formData.helper?.salary_amount !== undefined && formData.helper?.salary_amount !== null ? formData.helper.salary_amount : ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const sal = val === '' ? ('' as any) : Number(val);
+                      setFormData({
+                        ...formData,
+                        helper: {
+                          employee_id: formData.helper?.employee_id,
+                          employee_name: formData.helper?.employee_name || '',
+                          role: 'Helper',
+                          salary_amount: sal,
+                          advance_amount: formData.helper?.advance_amount || 0,
+                          balance_due: Number(sal || 0) - Number(formData.helper?.advance_amount || 0)
+                        }
+                      });
+                    }}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-bold outline-none"
+                  />
+                </div>
               </div>
+
+              {formData.helper?.employee_name && (
+                <div className="flex items-center justify-between text-[11px] pt-1 border-t border-emerald-200/50">
+                  <span className="text-[10px] text-slate-500">
+                    {helpers.find((h) => h.full_name === formData.helper?.employee_name)?.salary ? (
+                      <span className="text-emerald-700 font-semibold">
+                        ✓ Auto-filled from registered salary
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="text-slate-500">
+                    Helper Pay: <strong className="text-slate-900 font-bold">₹{Number(formData.helper?.salary_amount || 0)}</strong>
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Crew Member 4: Captain (Route Supervisor / Duty Captain) */}
@@ -1500,45 +1507,20 @@ export const TaskManagement: React.FC = () => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Captain Employee</label>
-                  <select
-                    value={formData.captain?.employee_name || ''}
-                    onChange={(e) => handleCaptainSelect(e.target.value)}
-                    className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
-                  >
-                    <option value="">-- None (No Captain Assigned) --</option>
-                    {captains.map((c) => (
-                      <option key={c.id} value={c.full_name}>
-                        {c.full_name} ({c.employee_code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {formData.captain?.employee_name && (
-                  <div className="sm:col-span-2">
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Assigned Work & Duty Instructions
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.captain?.work_remarks || ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          captain: {
-                            ...formData.captain!,
-                            work_remarks: e.target.value
-                          }
-                        })
-                      }
-                      placeholder="e.g. Passenger onboarding check, luggage tagging, AC regulation"
-                      className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
-                    />
-                  </div>
-                )}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Captain Employee</label>
+                <select
+                  value={formData.captain?.employee_name || ''}
+                  onChange={(e) => handleCaptainSelect(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                >
+                  <option value="">-- None (No Captain Assigned) --</option>
+                  {captains.map((c) => (
+                    <option key={c.id} value={c.full_name}>
+                      {c.full_name} ({c.employee_code})
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>

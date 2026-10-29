@@ -197,8 +197,12 @@ export const RouteManagement: React.FC = () => {
       destination_km: Number(formData.destination_km),
       vehicle_type: formData.vehicle_type as VehicleType,
       status: formData.status as 'Active' | 'Inactive',
-      trip_amount: formData.trip_amount !== undefined && formData.trip_amount !== '' ? Number(formData.trip_amount) : undefined,
-      operator_commission: formData.operator_commission !== undefined && formData.operator_commission !== '' ? Number(formData.operator_commission) : undefined
+      trip_amount: editingRoute
+        ? editingRoute.trip_amount
+        : (formData.trip_amount !== undefined && formData.trip_amount !== '' ? Number(formData.trip_amount) : undefined),
+      operator_commission: editingRoute
+        ? editingRoute.operator_commission
+        : (formData.operator_commission !== undefined && formData.operator_commission !== '' ? Number(formData.operator_commission) : undefined)
     };
 
     if (editingRoute) {
@@ -635,54 +639,82 @@ export const RouteManagement: React.FC = () => {
             </select>
           </div>
 
-          {/* Admin Only: Optional Trip Amount & Operator Commission */}
+          {/* Admin Only: Fixed Trip Amount & Operator Commission */}
           {isAdmin && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Trip Amount (₹)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={formData.trip_amount !== undefined ? formData.trip_amount : ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        trip_amount: e.target.value === '' ? undefined : Number(e.target.value)
-                      })
-                    }
-                    placeholder="e.g. 25000"
-                    className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
-                  />
+            <div className="pt-2 border-t border-slate-100">
+              {editingRoute ? (
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                      🔒 Fixed Financial Parameters
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                      <span className="text-[10px] font-bold text-slate-500 block">Trip Amount</span>
+                      <span className="text-sm font-mono font-black text-slate-800">
+                        ₹{editingRoute.trip_amount !== undefined ? Number(editingRoute.trip_amount).toLocaleString('en-IN') : '0'}
+                      </span>
+                      <span className="text-[9px] text-slate-400 block mt-0.5">Cannot be modified</span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white border border-slate-200">
+                      <span className="text-[10px] font-bold text-slate-500 block">Operator Commission</span>
+                      <span className="text-sm font-mono font-black text-slate-800">
+                        ₹{editingRoute.operator_commission !== undefined ? Number(editingRoute.operator_commission).toLocaleString('en-IN') : '0'}
+                      </span>
+                      <span className="text-[9px] text-slate-400 block mt-0.5">Cannot be modified</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Trip Amount (₹)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={formData.trip_amount !== undefined ? formData.trip_amount : ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            trip_amount: e.target.value === '' ? undefined : Number(e.target.value)
+                          })
+                        }
+                        placeholder="e.g. 25000"
+                        className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Operator Commission (₹)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={formData.operator_commission !== undefined ? formData.operator_commission : ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        operator_commission: e.target.value === '' ? undefined : Number(e.target.value)
-                      })
-                    }
-                    placeholder="e.g. 3500"
-                    className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
-                  />
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Operator Commission (₹)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={formData.operator_commission !== undefined ? formData.operator_commission : ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            operator_commission: e.target.value === '' ? undefined : Number(e.target.value)
+                          })
+                        }
+                        placeholder="e.g. 3500"
+                        className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 

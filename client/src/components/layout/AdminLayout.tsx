@@ -95,6 +95,7 @@ export const AdminLayout: React.FC = () => {
     if (p.includes('/organizers')) return 'Organizer Management';
     if (p.includes('/tasks')) return 'Task Management';
     if (p.includes('/employee-registration') || p.includes('/employees') || p.includes('/drivers/new') || p.includes('/support-staff/new')) return 'Employee Registration';
+    if (p.includes('/employee-payments')) return 'Employee Payments';
     if (p.includes('/earnings')) return 'Earnings';
     if (p.includes('/inquiries')) return 'Website Inquiries';
     if (p.includes('/maintenance-schedule')) return 'Maintenance Schedule';

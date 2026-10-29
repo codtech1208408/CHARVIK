@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { BASE_FLEET_BUSES, BASE_FLEET_EMPLOYEES, BASE_FLEET_ROUTES, BASE_FLEET_ORGANIZERS, BASE_FLEET_TASKS } from './seedData';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function getAuthHeaders() {
   const token = localStorage.getItem('charvik_token');
