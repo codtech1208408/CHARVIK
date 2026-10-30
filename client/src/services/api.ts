@@ -6,8 +6,14 @@ import {
   BASE_FLEET_ORGANIZERS,
   BASE_FLEET_TASKS,
   BASE_TYRE_RECORDS,
-  BASE_STAFF_CREDENTIALS,
+  BASE_WHEEL_ALLOTMENTS,
+  BASE_NEW_TYRES,
+  BASE_AC_MAINTENANCE_RECORDS,
+  BASE_BUS_CONDITION_INSPECTIONS,
   BASE_DAILY_KM_ENTRIES,
+  BASE_MAINTENANCE_SCHEDULES,
+  BASE_PRODUCTS,
+  BASE_STAFF_CREDENTIALS,
   BASE_APP_SETTINGS
 } from './seedData';
 
@@ -289,6 +295,34 @@ async function handleFallbackTableCrud(
       if (tableKey === 'tyres' || tableKey === 'tyre_records') {
         list = mergeSeedCollection(list, BASE_TYRE_RECORDS);
         setLocalCollection(tableKey, list);
+      }
+      if (tableKey === 'ac_maintenance_records') {
+        list = mergeSeedCollection(list, BASE_AC_MAINTENANCE_RECORDS);
+        setLocalCollection('ac_maintenance_records', list);
+      }
+      if (tableKey === 'bus_conditions' || tableKey === 'bus_condition_inspections') {
+        list = mergeSeedCollection(list, BASE_BUS_CONDITION_INSPECTIONS);
+        setLocalCollection(tableKey, list);
+      }
+      if (tableKey === 'wheel_allotments') {
+        list = mergeSeedCollection(list, BASE_WHEEL_ALLOTMENTS);
+        setLocalCollection('wheel_allotments', list);
+      }
+      if (tableKey === 'new_tyres') {
+        list = mergeSeedCollection(list, BASE_NEW_TYRES);
+        setLocalCollection('new_tyres', list);
+      }
+      if (tableKey === 'daily_km') {
+        list = mergeSeedCollection(list, BASE_DAILY_KM_ENTRIES);
+        setLocalCollection('daily_km', list);
+      }
+      if (tableKey === 'maintenance_schedules') {
+        list = mergeSeedCollection(list, BASE_MAINTENANCE_SCHEDULES);
+        setLocalCollection('maintenance_schedules', list);
+      }
+      if (tableKey === 'products') {
+        list = mergeSeedCollection(list, BASE_PRODUCTS);
+        setLocalCollection('products', list);
       }
       if (options?.enrich) list = options.enrich(list);
       if (options?.filter) list = options.filter(list, params);
@@ -867,7 +901,8 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         list = getLocalCollection<any>('daily_km');
       }
 
-      if (!Array.isArray(list)) list = [];
+      list = mergeSeedCollection(Array.isArray(list) ? list : [], BASE_DAILY_KM_ENTRIES);
+      setLocalCollection('daily_km', list);
 
       const dateFilter = params.get('date');
       const busFilter = params.get('bus_id');

@@ -29,6 +29,8 @@ interface ProductItem {
   status: 'In Stock' | 'Low Stock' | 'Out of Stock';
 }
 
+import { BASE_PRODUCTS } from '../services/seedData';
+
 const STORAGE_KEY = 'charvik_products_inventory';
 
 export const ProductManagement: React.FC = () => {
@@ -37,9 +39,18 @@ export const ProductManagement: React.FC = () => {
   const [products, setProducts] = useState<ProductItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const map = new Map<string, ProductItem>();
+          BASE_PRODUCTS.forEach((p) => map.set(String(p.id || p.sku), p));
+          parsed.forEach((p) => map.set(String(p.id || p.sku), { ...map.get(String(p.id || p.sku)), ...p }));
+          return Array.from(map.values());
+        }
+      }
+      return BASE_PRODUCTS;
     } catch {
-      return [];
+      return BASE_PRODUCTS;
     }
   });
 

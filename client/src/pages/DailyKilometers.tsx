@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { DailyKmEntry, Bus as BusType, Employee } from '../types';
+import { BASE_DAILY_KM_ENTRIES } from '../services/seedData';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
@@ -85,9 +86,13 @@ export const DailyKilometers: React.FC = () => {
         api.getEmployees({ role: 'Driver' }).catch(() => [])
       ]);
 
-      const rawEntries = Array.isArray(kmRes)
+      let rawEntries = Array.isArray(kmRes)
         ? kmRes
         : (Array.isArray(kmRes?.entries) ? kmRes.entries : []);
+
+      if ((!rawEntries || rawEntries.length === 0) && !selectedDate && !selectedBus && !selectedDriver) {
+        rawEntries = BASE_DAILY_KM_ENTRIES;
+      }
 
       const totalDist = rawEntries.reduce(
         (sum: number, item: any) =>

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "sync-seed": "node export_seed.js",
+    "sync-seed": "node sync_db_to_seed.mjs",
+    "sync": "node sync_db_to_seed.mjs",
+    "build": "node sync_db_to_seed.mjs && npm --prefix client run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
