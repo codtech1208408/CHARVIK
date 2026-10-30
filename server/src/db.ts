@@ -576,6 +576,7 @@ export function initDatabase() {
     try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN km INTEGER DEFAULT 0`).run(); } catch (_) {}
     try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN present_km INTEGER DEFAULT 0`).run(); } catch (_) {}
     try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN running_km INTEGER DEFAULT 0`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN tyre_photo_url TEXT`).run(); } catch (_) {}
 
     // Create wheel_allotments table for wheel allotment and tyre rotations
     db.prepare(`

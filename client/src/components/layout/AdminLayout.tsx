@@ -5,6 +5,7 @@ import { Navbar } from './Navbar';
 import { useAuth } from '../../context/AuthContext';
 import { ErrorBoundary } from '../common/ErrorBoundary';
 import AOS from 'aos';
+import { auditLogger } from '../../services/auditLogger';
 
 export const AdminLayout: React.FC = () => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -106,9 +107,26 @@ export const AdminLayout: React.FC = () => {
     if (p.includes('/repairs')) return 'Repairs & Service';
     if (p.includes('/bus-condition')) return isSupporterPortal ? 'Cleaning Management' : 'Bus Condition Inspection';
     if (p.includes('/reports')) return 'Fleet & Operational Reports';
+    if (p.includes('/audit-log')) return 'Audit Log & History';
     if (p.includes('/settings')) return 'Application & System Settings';
     return isCaptainPortal ? 'Captain Portal' : isSupporterPortal ? 'Supporter Portal' : 'Admin Panel';
   };
+
+  // Automatically log tab/page navigation across the admin panel into the Audit Log
+  const prevPathRef = React.useRef<string>(location.pathname);
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      const pageName = getPageTitle();
+      const currentRole = activeUser?.role || 'Admin';
+      auditLogger.log({
+        user: activeUser?.username || activeUser?.name || currentRole,
+        module: pageName,
+        action_type: 'Tab Switch',
+        description: `Switched page to ${pageName} (${location.pathname})`
+      });
+      prevPathRef.current = location.pathname;
+    }
+  }, [location.pathname, activeUser]);
 
   const isDashboard =
     location.pathname.endsWith('/dashboard') ||
@@ -118,8 +136,6 @@ export const AdminLayout: React.FC = () => {
     location.pathname === '/captain/' ||
     location.pathname === '/supporter' ||
     location.pathname === '/supporter/';
-
-
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col">

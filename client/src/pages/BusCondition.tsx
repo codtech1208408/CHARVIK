@@ -12,7 +12,9 @@ import {
   Trash2,
   Check,
   X,
-  FileText
+  FileText,
+  Disc,
+  Gauge
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { BusConditionInspection, Bus as BusType } from '../types';
@@ -24,7 +26,7 @@ import { SearchableSelect, type SearchOption } from '../components/common/Search
 export interface DailyChecklistItem {
   no: number;
   name: string;
-  status: 'OK' | 'Not OK' | 'N/A';
+  status: 'OK' | 'Not OK';
   remarks: string;
 }
 
@@ -99,6 +101,11 @@ export const BusCondition: React.FC = () => {
   const [editingInspection, setEditingInspection] = useState<BusConditionInspection | null>(null);
   const [viewingInspection, setViewingInspection] = useState<BusConditionInspection | null>(null);
   const [isBlankPrintModalOpen, setIsBlankPrintModalOpen] = useState(false);
+  const [vehicleTyres, setVehicleTyres] = useState<any[]>([]);
+
+  // Item inline edit state
+  const [editingItemNo, setEditingItemNo] = useState<number | null>(null);
+  const [editingItemName, setEditingItemName] = useState<string>('');
 
   // Form State
   const [formData, setFormData] = useState<{
@@ -120,7 +127,7 @@ export const BusCondition: React.FC = () => {
     vehicle_model: '',
     driver_name: '',
     inspection_date: new Date().toISOString().split('T')[0],
-    reporting_time: new Date().toTimeString().slice(0, 5),
+    reporting_time: '',
     starting_km: '',
     closing_km: '',
     route_trip: '',
@@ -225,13 +232,15 @@ export const BusCondition: React.FC = () => {
 
   const handleOpenAdd = () => {
     setEditingInspection(null);
+    setEditingItemNo(null);
+    setEditingItemName('');
     setFormData({
       bus_id: '',
       vehicle_number: '',
       vehicle_model: '',
       driver_name: '',
       inspection_date: new Date().toISOString().split('T')[0],
-      reporting_time: new Date().toTimeString().slice(0, 5),
+      reporting_time: '',
       starting_km: '',
       closing_km: '',
       route_trip: '',
@@ -247,7 +256,7 @@ export const BusCondition: React.FC = () => {
     setIsAddOpen(true);
   };
 
-  const handleBusSelectChange = (busId: string) => {
+  const handleBusSelectChange = async (busId: string) => {
     if (!busId) {
       setFormData((prev) => ({
         ...prev,
@@ -256,6 +265,7 @@ export const BusCondition: React.FC = () => {
         vehicle_model: '',
         starting_km: ''
       }));
+      setVehicleTyres([]);
       return;
     }
     const foundBus = buses.find((b) => String(b.id) === busId);
@@ -267,6 +277,27 @@ export const BusCondition: React.FC = () => {
       vehicle_model: busModel,
       starting_km: foundBus?.current_odometer_km !== undefined ? foundBus.current_odometer_km : ''
     }));
+
+    try {
+      const tyres = await api.getNewTyres({ bus_id: busId }).catch(() => []);
+      setVehicleTyres(tyres || []);
+    } catch (_) {
+      setVehicleTyres([]);
+    }
+  };
+
+  const handleTyreKmChange = (tyreId: number, kmVal: number | string) => {
+    setVehicleTyres((prev) =>
+      prev.map((t) => (t.id === tyreId ? { ...t, present_km: kmVal === '' ? '' : Number(kmVal) } : t))
+    );
+  };
+
+  const handleSyncStartingKmToTyres = () => {
+    const sKm = Number(formData.starting_km);
+    if (!sKm) return;
+    setVehicleTyres((prev) =>
+      prev.map((t) => ({ ...t, present_km: sKm }))
+    );
   };
 
   const parseChecklistData = (dataStr?: string): DailyChecklistItem[] => {
@@ -284,7 +315,7 @@ export const BusCondition: React.FC = () => {
         return parsed.map((p: any, idx: number) => ({
           no: p.no || idx + 1,
           name: p.name || `Inspection item #${idx + 1}`,
-          status: p.status || 'OK',
+          status: p.status === 'Not OK' ? 'Not OK' : 'OK',
           remarks: p.remarks || ''
         }));
       }
@@ -301,6 +332,8 @@ export const BusCondition: React.FC = () => {
 
   const handleOpenEdit = (item: any) => {
     setEditingInspection(item);
+    setEditingItemNo(null);
+    setEditingItemName('');
     const foundBus = buses.find((b) => b.id === item.bus_id);
     const busModel = item.vehicle_model || (foundBus ? `${foundBus.make || ''} ${foundBus.model || ''}`.trim() : '');
 
@@ -310,7 +343,7 @@ export const BusCondition: React.FC = () => {
       vehicle_model: busModel,
       driver_name: item.driver_name || item.inspector_name || foundBus?.driver_name || '',
       inspection_date: item.inspection_date || new Date().toISOString().split('T')[0],
-      reporting_time: item.reporting_time || item.inspection_time || '09:30',
+      reporting_time: item.reporting_time || item.inspection_time || '',
       starting_km: item.starting_km ?? item.odometer_km ?? '',
       closing_km: item.closing_km ?? '',
       route_trip: item.route_trip || '',
@@ -318,6 +351,15 @@ export const BusCondition: React.FC = () => {
       defects_found: item.defects_found || '',
       items: parseChecklistData(item.checklist_data)
     });
+
+    try {
+      api.getNewTyres({ bus_id: item.bus_id }).then((tyres) => {
+        setVehicleTyres(tyres || []);
+      }).catch(() => setVehicleTyres([]));
+    } catch (_) {
+      setVehicleTyres([]);
+    }
+
     setIsAddOpen(true);
   };
 
@@ -332,7 +374,7 @@ export const BusCondition: React.FC = () => {
     }
   };
 
-  const handleItemStatusChange = (no: number, status: 'OK' | 'Not OK' | 'N/A') => {
+  const handleItemStatusChange = (no: number, status: 'OK' | 'Not OK') => {
     setFormData((prev) => ({
       ...prev,
       items: prev.items.map((it) => (it.no === no ? { ...it, status } : it))
@@ -346,22 +388,40 @@ export const BusCondition: React.FC = () => {
     }));
   };
 
+  const handleStartEditItem = (no: number, currentName: string) => {
+    setEditingItemNo(no);
+    setEditingItemName(currentName);
+  };
+
+  const handleSaveEditItem = (no: number) => {
+    if (!editingItemName.trim()) return;
+    handleItemNameChange(no, editingItemName.trim());
+    setEditingItemNo(null);
+    setEditingItemName('');
+  };
+
+  const handleCancelEditItem = () => {
+    setEditingItemNo(null);
+    setEditingItemName('');
+  };
+
   const handleAddInspectionItem = () => {
-    setFormData((prev) => {
-      const nextNo = prev.items.length + 1;
-      return {
-        ...prev,
-        items: [
-          ...prev.items,
-          {
-            no: nextNo,
-            name: '',
-            status: 'OK',
-            remarks: ''
-          }
-        ]
-      };
-    });
+    const nextNo = formData.items.length + 1;
+    const defaultName = `Inspection item #${nextNo}`;
+    setFormData((prev) => ({
+      ...prev,
+      items: [
+        ...prev.items,
+        {
+          no: nextNo,
+          name: defaultName,
+          status: 'OK',
+          remarks: ''
+        }
+      ]
+    }));
+    setEditingItemNo(nextNo);
+    setEditingItemName(defaultName);
   };
 
   const handleRemoveInspectionItem = (no: number) => {
@@ -376,6 +436,10 @@ export const BusCondition: React.FC = () => {
         items: renumbered
       };
     });
+    if (editingItemNo === no) {
+      setEditingItemNo(null);
+      setEditingItemName('');
+    }
   };
 
   const handleItemRemarksChange = (no: number, remarks: string) => {
@@ -385,7 +449,7 @@ export const BusCondition: React.FC = () => {
     }));
   };
 
-  const handleMarkAll = (status: 'OK' | 'Not OK' | 'N/A') => {
+  const handleMarkAll = (status: 'OK' | 'Not OK') => {
     setFormData((prev) => ({
       ...prev,
       items: prev.items.map((it) => ({ ...it, status }))
@@ -403,14 +467,16 @@ export const BusCondition: React.FC = () => {
     const roadworthinessStatus =
       notOkCount > 2 ? 'Not Fit for Service' : notOkCount > 0 ? 'Fit with Restrictions' : 'Fit for Service';
 
+    const startingKmNum = Number(formData.starting_km) || 0;
+
     const payload = {
       bus_id: Number(formData.bus_id),
       inspection_date: formData.inspection_date,
-      inspection_time: formData.reporting_time,
-      reporting_time: formData.reporting_time,
-      odometer_km: Number(formData.starting_km) || 0,
-      starting_km: Number(formData.starting_km) || 0,
-      closing_km: Number(formData.closing_km) || 0,
+      inspection_time: formData.reporting_time || '',
+      reporting_time: formData.reporting_time || '',
+      odometer_km: startingKmNum,
+      starting_km: startingKmNum,
+      closing_km: 0,
       driver_name: formData.driver_name,
       vehicle_model: formData.vehicle_model,
       route_trip: formData.route_trip,
@@ -418,7 +484,12 @@ export const BusCondition: React.FC = () => {
       mechanic_supervisor: formData.mechanic_supervisor,
       defects_found: formData.defects_found,
       roadworthiness_status: roadworthinessStatus,
-      checklist_data: JSON.stringify(formData.items)
+      checklist_data: JSON.stringify(formData.items),
+      tyre_updates: vehicleTyres.map((vt) => ({
+        id: vt.id,
+        tyre_serial_number: vt.tyre_serial_number,
+        present_km: Number(vt.present_km) || 0
+      }))
     };
 
     try {
@@ -428,6 +499,28 @@ export const BusCondition: React.FC = () => {
       } else {
         await api.createBusCondition(payload);
         success('Daily Vehicle Check Report logged successfully!');
+      }
+
+      // Synchronize starting KM into bus odometer so it shows everywhere KM data is displayed across the admin panel
+      if (formData.bus_id) {
+        await api.updateBus(formData.bus_id, {
+          current_odometer_km: startingKmNum
+        }).catch(() => {});
+      }
+
+      // Sync tyre present KM updates into New Tyres inventory
+      if (vehicleTyres.length > 0) {
+        for (const vt of vehicleTyres) {
+          if (vt.id) {
+            const pKm = Number(vt.present_km) || 0;
+            const bKm = Number(vt.km) || 0;
+            await api.updateNewTyre(vt.id, {
+              ...vt,
+              present_km: pKm,
+              running_km: pKm >= bKm ? pKm - bKm : pKm
+            }).catch(() => {});
+          }
+        }
       }
 
       // Persist any custom inspection items for all future checklists
@@ -730,10 +823,10 @@ export const BusCondition: React.FC = () => {
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4 w-12 text-center">S.NO</th>
-                <th className="py-3 px-4 min-w-[130px]">DATE & TIME</th>
+                <th className="py-3 px-4 min-w-[130px]">DATE</th>
                 <th className="py-3 px-4 min-w-[150px]">VEHICLE NO & MODEL</th>
                 <th className="py-3 px-4 min-w-[130px]">DRIVER NAME</th>
-                <th className="py-3 px-4 min-w-[140px]">KM (START → CLOSE)</th>
+                <th className="py-3 px-4 min-w-[140px]">STARTING KM</th>
                 <th className="py-3 px-4 min-w-[140px]">ROUTE / TRIP</th>
                 <th className="py-3 px-4 min-w-[140px]">CHECKUP STATUS</th>
                 <th className="py-3 px-4 text-center min-w-[130px]">ACTIONS</th>
@@ -769,9 +862,6 @@ export const BusCondition: React.FC = () => {
 
                       <td className="py-3.5 px-4 whitespace-nowrap font-medium text-slate-900">
                         <span>{item.inspection_date}</span>
-                        <span className="block text-[11px] text-slate-400">
-                          {item.reporting_time || item.inspection_time || 'Pre-trip'}
-                        </span>
                       </td>
 
                       <td className="py-3.5 px-4">
@@ -791,13 +881,6 @@ export const BusCondition: React.FC = () => {
                         <span className="font-bold text-blue-700">
                           {Number(item.starting_km || item.odometer_km || 0).toLocaleString('en-IN')} KM
                         </span>
-                        {item.closing_km ? (
-                          <span className="text-slate-400 block text-[11px]">
-                            → {Number(item.closing_km).toLocaleString('en-IN')} KM
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 block text-[10px]">Ongoing Trip</span>
-                        )}
                       </td>
 
                       <td className="py-3.5 px-4 font-medium text-slate-700">
@@ -872,7 +955,7 @@ export const BusCondition: React.FC = () => {
         <form onSubmit={handleSave} className="space-y-4">
           {/* Top Metadata Grid */}
           <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
               <div>
                 <label className="block font-bold text-slate-700 mb-1">Date *</label>
                 <input
@@ -932,17 +1015,6 @@ export const BusCondition: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Closing KM</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 45600"
-                  value={formData.closing_km}
-                  onChange={(e) => setFormData({ ...formData, closing_km: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white outline-none font-mono"
-                />
-              </div>
-
-              <div>
                 <SearchableSelect
                   label="Route / Trip"
                   placeholder="-- Search or Select Route --"
@@ -953,19 +1025,94 @@ export const BusCondition: React.FC = () => {
                   allowCustom
                 />
               </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Reporting Time</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 09:30 AM"
-                  value={formData.reporting_time}
-                  onChange={(e) => setFormData({ ...formData, reporting_time: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white outline-none font-medium"
-                />
-              </div>
             </div>
           </div>
+
+          {/* VEHICLE TYRES & KM UPDATE (DIRECT SYNC TO TYRE MAINTENANCE) */}
+          {formData.bus_id && (
+            <div className="p-4 rounded-2xl border border-blue-200/80 bg-blue-50/40 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black text-xs">
+                    <Disc className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-blue-950 uppercase tracking-wide">
+                      Vehicle Tyres & KM Update
+                    </h4>
+                    <p className="text-[11px] text-blue-700">
+                      Update tyre present running kilometers during daily checkup — automatically syncs to Tyre Maintenance.
+                    </p>
+                  </div>
+                </div>
+
+                {formData.starting_km && vehicleTyres.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleSyncStartingKmToTyres}
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-lg transition-colors cursor-pointer self-start sm:self-auto shadow-2xs"
+                  >
+                    Sync Starting KM ({formData.starting_km} KM) to Tyres
+                  </button>
+                )}
+              </div>
+
+              {vehicleTyres.length === 0 ? (
+                <div className="p-3 bg-white/80 rounded-xl border border-blue-100 text-xs text-slate-500">
+                  <p className="font-semibold text-slate-700">No specific new tyres currently assigned to this vehicle in inventory.</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    When new tyres are allotted to this vehicle in Tyre Maintenance, their present running kilometers can be recorded and tracked directly here.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-blue-100 overflow-hidden shadow-2xs">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-blue-50/80 text-blue-900 uppercase font-bold text-[10px] tracking-wider border-b border-blue-100">
+                      <tr>
+                        <th className="py-2 px-3">Tyre Number</th>
+                        <th className="py-2 px-3">Position</th>
+                        <th className="py-2 px-3">Before KM</th>
+                        <th className="py-2 px-3">Present Tyre KM Running *</th>
+                        <th className="py-2 px-3">Total KM</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {vehicleTyres.map((vt) => {
+                        const bKm = Number(vt.km) || 0;
+                        const pKm = Number(vt.present_km) || 0;
+                        const total = bKm + pKm;
+                        return (
+                          <tr key={vt.id} className="hover:bg-blue-50/30">
+                            <td className="py-2 px-3 font-mono font-bold text-blue-900">
+                              {vt.tyre_serial_number}
+                            </td>
+                            <td className="py-2 px-3 font-medium text-slate-600">
+                              {vt.allocated_wheel_position || '-'}
+                            </td>
+                            <td className="py-2 px-3 font-mono text-slate-500">
+                              {bKm > 0 ? `${bKm.toLocaleString('en-IN')} KM` : '0 KM'}
+                            </td>
+                            <td className="py-2 px-3">
+                              <input
+                                type="number"
+                                value={vt.present_km ?? ''}
+                                onChange={(e) => handleTyreKmChange(vt.id, e.target.value)}
+                                placeholder="Enter present tyre KM"
+                                className="w-36 p-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold text-indigo-700 text-xs"
+                              />
+                            </td>
+                            <td className="py-2 px-3 font-mono font-black text-emerald-700">
+                              {total > 0 ? `${total.toLocaleString('en-IN')} KM` : '0 KM'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Dynamic Items Table */}
           <div className="space-y-2">
@@ -973,30 +1120,6 @@ export const BusCondition: React.FC = () => {
               <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
                 {formData.items.length}-Point Pre-Trip Inspection Checklist
               </span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handleAddInspectionItem}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 cursor-pointer transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+ Add Item</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleMarkAll('OK')}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-800 cursor-pointer transition-colors"
-                >
-                  ✓ Mark All OK
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleMarkAll('N/A')}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors"
-                >
-                  Mark All N/A
-                </button>
-              </div>
             </div>
 
             <div className="border border-slate-200 rounded-xl overflow-hidden max-h-[380px] overflow-y-auto">
@@ -1005,7 +1128,8 @@ export const BusCondition: React.FC = () => {
                   <tr>
                     <th className="py-2 px-3 w-10 text-center border-r border-slate-300">No.</th>
                     <th className="py-2 px-3 border-r border-slate-300">Inspection item</th>
-                    <th className="py-2 px-2 text-center w-40 border-r border-slate-300">Status Selection</th>
+                    <th className="py-2 px-2 text-center w-16 border-r border-slate-300 font-bold">OK</th>
+                    <th className="py-2 px-2 text-center w-20 border-r border-slate-300 font-bold">Not OK</th>
                     <th className="py-2 px-3 w-64">Remarks</th>
                   </tr>
                 </thead>
@@ -1017,66 +1141,108 @@ export const BusCondition: React.FC = () => {
                       </td>
 
                       <td className="py-2 px-3 font-semibold text-slate-800 border-r border-slate-200">
-                        {item.no <= 18 && DEFAULT_18_INSPECTION_ITEMS.some((d) => d.name === item.name) ? (
-                          <span>{item.name}</span>
-                        ) : (
-                          <div className="flex items-center gap-2">
+                        {editingItemNo === item.no ? (
+                          <div className="flex items-center gap-1.5">
                             <input
                               type="text"
-                              value={item.name}
-                              placeholder={`Enter item #${item.no} name...`}
-                              onChange={(e) => handleItemNameChange(item.no, e.target.value)}
-                              className="w-full text-xs font-semibold px-2 py-1 rounded-lg border border-blue-200 bg-blue-50/40 focus:bg-white focus:border-blue-400 outline-none text-slate-900"
-                              autoFocus={item.name === ''}
+                              value={editingItemName}
+                              onChange={(e) => setEditingItemName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleSaveEditItem(item.no);
+                                } else if (e.key === 'Escape') {
+                                  handleCancelEditItem();
+                                }
+                              }}
+                              placeholder="Enter item name..."
+                              className="w-full text-xs font-semibold px-2 py-1 rounded-lg border border-blue-400 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-900"
+                              autoFocus
                             />
                             <button
                               type="button"
-                              onClick={() => handleRemoveInspectionItem(item.no)}
-                              className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
-                              title="Delete this custom item"
+                              onClick={() => handleSaveEditItem(item.no)}
+                              className="p-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors cursor-pointer shrink-0"
+                              title="Save name"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Check className="w-3.5 h-3.5" />
                             </button>
+                            <button
+                              type="button"
+                              onClick={handleCancelEditItem}
+                              className="p-1 rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors cursor-pointer shrink-0"
+                              title="Cancel"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between gap-2 group">
+                            <span className="font-semibold text-slate-800 text-xs">{item.name}</span>
+                            <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                onClick={() => handleStartEditItem(item.no, item.name)}
+                                className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                title="Edit item name"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveInspectionItem(item.no)}
+                                className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                title="Delete item"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                         )}
                       </td>
 
-                      <td className="py-1.5 px-2 text-center border-r border-slate-200">
-                        <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={() => handleItemStatusChange(item.no, 'OK')}
-                            className={`px-2 py-0.5 rounded font-bold cursor-pointer transition-all ${
-                              item.status === 'OK'
-                                ? 'bg-emerald-600 text-white shadow-2xs'
-                                : 'text-slate-600 hover:text-emerald-700'
-                            }`}
-                          >
-                            OK
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleItemStatusChange(item.no, 'Not OK')}
-                            className={`px-2 py-0.5 rounded font-bold cursor-pointer transition-all ${
-                              item.status === 'Not OK'
-                                ? 'bg-rose-600 text-white shadow-2xs'
-                                : 'text-slate-600 hover:text-rose-700'
-                            }`}
-                          >
-                            Not OK
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleItemStatusChange(item.no, 'N/A')}
-                            className={`px-2 py-0.5 rounded font-bold cursor-pointer transition-all ${
-                              item.status === 'N/A'
-                                ? 'bg-slate-700 text-white shadow-2xs'
-                                : 'text-slate-500 hover:text-slate-800'
-                            }`}
-                          >
-                            N/A
-                          </button>
-                        </div>
+                      {/* OK Column - Square Checkbox Matching Image 2 */}
+                      <td
+                        className="py-1.5 px-2 text-center border-r border-slate-200 cursor-pointer hover:bg-emerald-50/40 select-none"
+                        onClick={() => handleItemStatusChange(item.no, 'OK')}
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleItemStatusChange(item.no, 'OK');
+                          }}
+                          className="inline-flex items-center justify-center p-1 cursor-pointer focus:outline-none"
+                          title="Mark as OK"
+                        >
+                          {item.status === 'OK' ? (
+                            <span className="inline-block w-4 h-4 bg-black border-2 border-black rounded-xs shadow-2xs"></span>
+                          ) : (
+                            <span className="inline-block w-4 h-4 bg-white border-2 border-slate-400 rounded-xs hover:border-slate-600"></span>
+                          )}
+                        </button>
+                      </td>
+
+                      {/* Not OK Column - Square Checkbox Matching Image 2 */}
+                      <td
+                        className="py-1.5 px-2 text-center border-r border-slate-200 cursor-pointer hover:bg-rose-50/40 select-none"
+                        onClick={() => handleItemStatusChange(item.no, 'Not OK')}
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleItemStatusChange(item.no, 'Not OK');
+                          }}
+                          className="inline-flex items-center justify-center p-1 cursor-pointer focus:outline-none"
+                          title="Mark as Not OK"
+                        >
+                          {item.status === 'Not OK' ? (
+                            <span className="inline-block w-4 h-4 bg-black border-2 border-black rounded-xs shadow-2xs"></span>
+                          ) : (
+                            <span className="inline-block w-4 h-4 bg-white border-2 border-slate-400 rounded-xs hover:border-slate-600"></span>
+                          )}
+                        </button>
                       </td>
 
                       <td className="py-1.5 px-2">
@@ -1217,37 +1383,21 @@ export const BusCondition: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center">
-                  <span className="w-32 font-bold text-slate-900">Closing KM:</span>
-                  <span className="flex-1 border-b border-black pb-0.5 font-mono font-bold text-slate-900">
-                    {viewingInspection.closing_km
-                      ? `${Number(viewingInspection.closing_km).toLocaleString('en-IN')} KM`
-                      : '—'}
-                  </span>
-                </div>
-
-                <div className="flex items-center">
-                  <span className="w-28 font-bold text-slate-900">Route / Trip:</span>
+                  <span className="w-32 font-bold text-slate-900">Route / Trip:</span>
                   <span className="flex-1 border-b border-black pb-0.5 font-semibold text-slate-900">
                     {viewingInspection.route_trip || 'Transit Corridor'}
                   </span>
                 </div>
-                <div className="flex items-center">
-                  <span className="w-32 font-bold text-slate-900">Reporting Time:</span>
-                  <span className="flex-1 border-b border-black pb-0.5 font-semibold text-slate-900">
-                    {viewingInspection.reporting_time || viewingInspection.inspection_time || '09:30 AM'}
-                  </span>
-                </div>
               </div>
 
-              {/* 18 Items Table */}
+              {/* Items Table */}
               <table className="w-full border-collapse border border-black text-xs mb-4">
                 <thead>
                   <tr className="bg-[#DCE6F1] text-black font-bold border-b border-black">
                     <th className="border border-black py-1.5 px-2 w-10 text-center">No.</th>
                     <th className="border border-black py-1.5 px-3 text-left">Inspection item</th>
-                    <th className="border border-black py-1.5 px-2 w-14 text-center">OK</th>
-                    <th className="border border-black py-1.5 px-2 w-16 text-center">Not OK</th>
-                    <th className="border border-black py-1.5 px-2 w-14 text-center">N/A</th>
+                    <th className="border border-black py-1.5 px-2 w-16 text-center">OK</th>
+                    <th className="border border-black py-1.5 px-2 w-20 text-center">Not OK</th>
                     <th className="border border-black py-1.5 px-3 text-left w-56">Remarks</th>
                   </tr>
                 </thead>
@@ -1269,13 +1419,6 @@ export const BusCondition: React.FC = () => {
                       </td>
                       <td className="border border-black py-1 px-2 text-center">
                         {item.status === 'Not OK' ? (
-                          <span className="sq-box-filled inline-block w-2.5 h-2.5 bg-black text-black leading-none">■</span>
-                        ) : (
-                          <span className="sq-box inline-block w-2.5 h-2.5 border border-slate-400"></span>
-                        )}
-                      </td>
-                      <td className="border border-black py-1 px-2 text-center">
-                        {item.status === 'N/A' ? (
                           <span className="sq-box-filled inline-block w-2.5 h-2.5 bg-black text-black leading-none">■</span>
                         ) : (
                           <span className="sq-box inline-block w-2.5 h-2.5 border border-slate-400"></span>
@@ -1380,29 +1523,19 @@ export const BusCondition: React.FC = () => {
                   <span className="flex-1 border-b border-black pb-0.5 font-medium meta-line">&nbsp;</span>
                 </div>
                 <div className="flex items-center meta-row">
-                  <span className="w-32 font-bold text-slate-900 meta-label">Closing KM:</span>
-                  <span className="flex-1 border-b border-black pb-0.5 font-medium meta-line">&nbsp;</span>
-                </div>
-
-                <div className="flex items-center meta-row">
-                  <span className="w-28 font-bold text-slate-900 meta-label">Route / Trip:</span>
-                  <span className="flex-1 border-b border-black pb-0.5 font-medium meta-line">&nbsp;</span>
-                </div>
-                <div className="flex items-center meta-row">
-                  <span className="w-32 font-bold text-slate-900 meta-label">Reporting Time:</span>
+                  <span className="w-32 font-bold text-slate-900 meta-label">Route / Trip:</span>
                   <span className="flex-1 border-b border-black pb-0.5 font-medium meta-line">&nbsp;</span>
                 </div>
               </div>
 
-              {/* 18 Items Table */}
+              {/* Items Table */}
               <table className="w-full border-collapse border border-black text-xs mb-4">
                 <thead>
                   <tr className="bg-[#DCE6F1] text-black font-bold border-b border-black">
                     <th className="border border-black py-1.5 px-2 w-10 text-center item-no">No.</th>
                     <th className="border border-black py-1.5 px-3 text-left">Inspection item</th>
-                    <th className="border border-black py-1.5 px-2 w-14 text-center box-col">OK</th>
-                    <th className="border border-black py-1.5 px-2 w-16 text-center box-col">Not OK</th>
-                    <th className="border border-black py-1.5 px-2 w-14 text-center box-col">N/A</th>
+                    <th className="border border-black py-1.5 px-2 w-16 text-center box-col">OK</th>
+                    <th className="border border-black py-1.5 px-2 w-20 text-center box-col">Not OK</th>
                     <th className="border border-black py-1.5 px-3 text-left w-56">Remarks</th>
                   </tr>
                 </thead>
@@ -1414,9 +1547,6 @@ export const BusCondition: React.FC = () => {
                       </td>
                       <td className="border border-black py-1 px-3 text-slate-900 font-medium">
                         {item.name}
-                      </td>
-                      <td className="border border-black py-1 px-2 text-center box-col">
-                        <span className="sq-box-filled inline-block w-2.5 h-2.5 bg-black text-black leading-none">■</span>
                       </td>
                       <td className="border border-black py-1 px-2 text-center box-col">
                         <span className="sq-box-filled inline-block w-2.5 h-2.5 bg-black text-black leading-none">■</span>

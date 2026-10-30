@@ -31,7 +31,8 @@ import {
   IndianRupee,
   Snowflake,
   ClipboardCheck,
-  RotateCw
+  RotateCw,
+  History
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -145,16 +146,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const vehicleMaintenanceTabs: NavItemLeaf[] = [
     {
-      label: 'Mileage & Fueling',
-      route: '/admin/mileage-fueling',
-      icon: Fuel,
-      activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers']
-    },
-    {
       label: 'Daily Vehicle Checkup',
       route: '/admin/daily-vehicle-checkup',
       icon: ClipboardCheck,
       activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition']
+    },
+    {
+      label: 'Mileage & Fueling',
+      route: '/admin/mileage-fueling',
+      icon: Fuel,
+      activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers']
     },
     {
       label: 'AC Maintenance',
@@ -166,40 +167,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Tyre Maintenance',
       route: '/admin/tyre-maintenance',
       icon: CircleDot,
-      activeRoutes: ['/admin/tyre-maintenance'],
-      subItems: [
-        {
-          label: 'Tyre Maintenance',
-          route: '/admin/tyre-maintenance?tab=maintenance',
-          icon: Disc,
-          activeRoutes: ['/admin/tyre-maintenance?tab=maintenance', '/admin/tyre-maintenance']
-        },
-        {
-          label: 'New Tyres',
-          route: '/admin/tyre-maintenance?tab=new_tyres',
-          icon: Package,
-          activeRoutes: ['/admin/tyre-maintenance?tab=new_tyres']
-        },
-        {
-          label: 'Wheel Allotment & Tyre Rotation',
-          route: '/admin/tyre-maintenance?tab=allotment_rotation',
-          icon: RotateCw,
-          activeRoutes: ['/admin/tyre-maintenance?tab=allotment_rotation']
-        }
-      ]
+      activeRoutes: ['/admin/tyre-maintenance']
     },
     {
       label: 'Product Management',
       route: '/admin/products',
       icon: Package,
       activeRoutes: ['/admin/products']
-    },
-    {
-      label: 'Cleaning Management',
-      route: '/admin/cleaning',
-      icon: Droplets,
-      activeRoutes: ['/admin/cleaning']
-    },
+    }
   ];
 
   // Structured top-level navigation tabs
@@ -231,9 +206,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       label: 'Vehicle Maintenance',
-      route: '/admin/mileage-fueling',
+      route: '/admin/daily-vehicle-checkup',
       icon: Wrench,
       activeRoutes: [
+        '/admin/daily-vehicle-checkup',
+        '/admin/vehicle-checkup',
+        '/admin/bus-condition',
         '/admin/mileage-fueling',
         '/admin/daily-kilometers',
         '/admin/vehicle-maintenance',
@@ -248,38 +226,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Bell,
       activeRoutes: ['/admin/inquiries']
     },
+    {
+      label: 'Audit Log',
+      route: '/admin/audit-log',
+      icon: History,
+      hasLiveBadge: true,
+      activeRoutes: ['/admin/audit-log']
+    },
   ];
 
   const captainNavItems: NavItemLeaf[] = [
     { label: 'Dashboard', route: '/captain/dashboard', icon: LayoutGrid, hasLiveBadge: true },
     { label: 'Vehicle Management', route: '/captain/buses', icon: Truck },
     { label: 'Mileage & Fueling', route: '/captain/daily-kilometers', icon: Fuel },
-    { label: 'Cleaning Management', route: '/captain/bus-condition', icon: Droplets },
     {
       label: 'Tyre Maintenance',
       route: '/captain/tyre-maintenance',
       icon: CircleDot,
-      activeRoutes: ['/captain/tyre-maintenance'],
-      subItems: [
-        {
-          label: 'Tyre Maintenance',
-          route: '/captain/tyre-maintenance?tab=maintenance',
-          icon: Disc,
-          activeRoutes: ['/captain/tyre-maintenance?tab=maintenance', '/captain/tyre-maintenance']
-        },
-        {
-          label: 'New Tyres',
-          route: '/captain/tyre-maintenance?tab=new_tyres',
-          icon: Package,
-          activeRoutes: ['/captain/tyre-maintenance?tab=new_tyres']
-        },
-        {
-          label: 'Wheel Allotment & Tyre Rotation',
-          route: '/captain/tyre-maintenance?tab=allotment_rotation',
-          icon: RotateCw,
-          activeRoutes: ['/captain/tyre-maintenance?tab=allotment_rotation']
-        }
-      ]
+      activeRoutes: ['/captain/tyre-maintenance']
     },
     { label: 'Battery Check', route: '/captain/battery-maintenance', icon: BatteryCharging },
   ];
@@ -288,7 +252,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Dashboard', route: '/supporter/dashboard', icon: LayoutGrid, hasLiveBadge: true },
     { label: 'Trip Tasks', route: '/supporter/tasks', icon: ClipboardList, activeRoutes: ['/supporter/tasks'] },
     { label: 'Repairs', route: '/supporter/repairs', icon: Wrench, activeRoutes: ['/supporter/repairs'] },
-    { label: 'Cleaning Management', route: '/supporter/bus-condition', icon: Droplets },
     { label: 'Complaints & Issues', route: '/supporter/complaints', icon: AlertTriangle },
     { label: 'Mileage & Fueling', route: '/supporter/daily-kilometers', icon: Fuel },
     { label: 'Maintenance Schedule', route: '/supporter/maintenance-schedule', icon: CalendarDays },

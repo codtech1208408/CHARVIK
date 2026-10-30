@@ -21,10 +21,17 @@ import {
   Tag,
   Truck,
   Clock,
-  Gauge
+  Gauge,
+  Upload,
+  Image as ImageIcon,
+  Camera,
+  X,
+  Wind,
+  RefreshCw
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
+import { auditLogger } from '../services/auditLogger';
 import type { TyreRecord, Bus as BusType, NewTyre, WheelAllotment } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
@@ -33,12 +40,24 @@ import { SearchableSelect } from '../components/common/SearchableSelect';
 
 export const TyreMaintenance: React.FC = () => {
   const { success, error } = useToast();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Active Tab: 'maintenance' | 'new_tyres' | 'allotment_rotation' determined by left sidebar URL
+  // Active Tab: 'maintenance' | 'new_tyres' | 'allotment_rotation' | 'air_checkup'
   const tabParam = searchParams.get('tab');
-  const activeTab: 'maintenance' | 'new_tyres' | 'allotment_rotation' =
-    tabParam === 'new_tyres' || tabParam === 'allotment_rotation' ? tabParam : 'maintenance';
+  const activeTab: 'maintenance' | 'new_tyres' | 'allotment_rotation' | 'air_checkup' =
+    tabParam === 'new_tyres' || tabParam === 'allotment_rotation' || tabParam === 'air_checkup'
+      ? tabParam
+      : 'maintenance';
+
+  const handleTabChange = (newTab: 'maintenance' | 'new_tyres' | 'allotment_rotation' | 'air_checkup') => {
+    setSearchParams({ tab: newTab });
+    auditLogger.log({
+      user: 'Admin',
+      module: 'Tyre Maintenance',
+      action_type: 'Tab Switch',
+      description: `Switched to ${newTab === 'air_checkup' ? 'Tyre Air Checkup' : newTab === 'allotment_rotation' ? 'Wheel Allotment & Tyre Rotation' : newTab}`
+    });
+  };
 
   // Shared Data
   const [buses, setBuses] = useState<BusType[]>([]);
@@ -81,6 +100,8 @@ export const TyreMaintenance: React.FC = () => {
   const [newTyreStatusFilter, setNewTyreStatusFilter] = useState('all');
   const [isNewTyreModalOpen, setIsNewTyreModalOpen] = useState(false);
   const [editingNewTyre, setEditingNewTyre] = useState<NewTyre | null>(null);
+  const [uploadingTyrePhoto, setUploadingTyrePhoto] = useState(false);
+  const [previewPhotoModal, setPreviewPhotoModal] = useState<string | null>(null);
 
   const [newTyreForm, setNewTyreForm] = useState<any>({
     purchase_date: new Date().toISOString().split('T')[0],
@@ -90,10 +111,9 @@ export const TyreMaintenance: React.FC = () => {
     present_km: '',
     brand: 'MRF',
     size: '295/80 R22.5',
-    model: 'Steel Muscle',
     supplier: '',
     invoice_number: '',
-    purchase_cost: '',
+    tyre_photo_url: '',
     status: 'In Stock',
     notes: ''
   });
@@ -132,6 +152,54 @@ export const TyreMaintenance: React.FC = () => {
     notes: ''
   });
 
+  // Helper to add N days to date string
+  const addDaysToDate = (dateStr: string, days: number): string => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '';
+      d.setDate(d.getDate() + days);
+      return d.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  };
+
+  // Wheel Allotment Renewal State
+  const [renewingAllotment, setRenewingAllotment] = useState<WheelAllotment | null>(null);
+  const [renewAllotmentData, setRenewAllotmentData] = useState({
+    event_date: new Date().toISOString().split('T')[0],
+    current_km: '',
+    target_km: 10000,
+    notes: ''
+  });
+
+  // TAB 4: TYRE AIR CHECKUP DATA
+  const [airCheckups, setAirCheckups] = useState<any[]>([]);
+  const [airSearch, setAirSearch] = useState('');
+  const [airBusFilter, setAirBusFilter] = useState('');
+  const [airStatusFilter, setAirStatusFilter] = useState('all');
+  const [isAirModalOpen, setIsAirModalOpen] = useState(false);
+  const [editingAirCheckup, setEditingAirCheckup] = useState<any | null>(null);
+  const [renewingAirCheckup, setRenewingAirCheckup] = useState<any | null>(null);
+
+  const [airFormData, setAirFormData] = useState<any>({
+    bus_id: '',
+    checkup_date: new Date().toISOString().split('T')[0],
+    expiry_date: addDaysToDate(new Date().toISOString().split('T')[0], 7),
+    pressure_psi: 110,
+    technician: 'Fleet Team',
+    remarks: ''
+  });
+
+  const [renewAirData, setRenewAirData] = useState({
+    checkup_date: new Date().toISOString().split('T')[0],
+    expiry_date: addDaysToDate(new Date().toISOString().split('T')[0], 7),
+    pressure_psi: 110,
+    technician: 'Fleet Team',
+    remarks: ''
+  });
+
   // Load Initial Data
   useEffect(() => {
     loadAllData();
@@ -140,16 +208,18 @@ export const TyreMaintenance: React.FC = () => {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      const [tyreData, busesData, newTyresData, allotmentsData] = await Promise.all([
+      const [tyreData, busesData, newTyresData, allotmentsData, airData] = await Promise.all([
         api.getTyreRecords({ bus_id: selectedBus || undefined }).catch(() => []),
         api.getBuses().catch(() => []),
         api.getNewTyres().catch(() => []),
-        api.getWheelAllotments().catch(() => [])
+        api.getWheelAllotments().catch(() => []),
+        api.getTyreAirCheckups().catch(() => [])
       ]);
       setTyres(tyreData || []);
       setBuses(busesData || []);
       setNewTyres(newTyresData || []);
       setAllotments(allotmentsData || []);
+      setAirCheckups(airData || []);
     } catch (err: any) {
       error(err.message || 'Failed to load tyre management data');
     } finally {
@@ -302,10 +372,9 @@ export const TyreMaintenance: React.FC = () => {
       present_km: '',
       brand: 'MRF',
       size: '295/80 R22.5',
-      model: 'Steel Muscle',
       supplier: '',
       invoice_number: '',
-      purchase_cost: '',
+      tyre_photo_url: '',
       status: 'In Stock',
       notes: ''
     });
@@ -322,14 +391,29 @@ export const TyreMaintenance: React.FC = () => {
       present_km: nt.present_km !== undefined && nt.present_km !== null ? nt.present_km : '',
       brand: nt.brand || 'MRF',
       size: nt.size || '295/80 R22.5',
-      model: nt.model || '',
-      supplier: nt.supplier || '',
+      supplier: nt.supplier || nt.supplier_name || '',
       invoice_number: nt.invoice_number || '',
-      purchase_cost: nt.purchase_cost ?? '',
+      tyre_photo_url: nt.tyre_photo_url || '',
       status: nt.status || 'In Stock',
       notes: nt.notes || ''
     });
     setIsNewTyreModalOpen(true);
+  };
+
+  const handleTyrePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingTyrePhoto(true);
+      const res = await api.uploadFile(file);
+      const photoUrl = res.fileUrl || res.url || '';
+      setNewTyreForm((prev: any) => ({ ...prev, tyre_photo_url: photoUrl }));
+      success('Tyre photo uploaded successfully');
+    } catch (err: any) {
+      error(err.message || 'Failed to upload tyre photo');
+    } finally {
+      setUploadingTyrePhoto(false);
+    }
   };
 
   const handleSaveNewTyre = async (e: React.FormEvent) => {
@@ -483,16 +567,20 @@ export const TyreMaintenance: React.FC = () => {
 
   const handleSaveAllotmentRecord = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!allotmentModalData.bus_id || !allotmentModalData.tyre_serial_number) {
-      error('Vehicle and Tyre Number are required');
+    if (!allotmentModalData.bus_id) {
+      error('Please select a vehicle');
       return;
     }
+    const payload = {
+      ...allotmentModalData,
+      tyre_serial_number: allotmentModalData.tyre_serial_number || 'Tyre'
+    };
     try {
       if (editingAllotment) {
-        await api.updateWheelAllotment(editingAllotment.id, allotmentModalData);
+        await api.updateWheelAllotment(editingAllotment.id, payload);
         success('Allotment / Rotation record updated!');
       } else {
-        await api.createWheelAllotment(allotmentModalData);
+        await api.createWheelAllotment(payload);
         success('Allotment / Rotation recorded successfully!');
       }
       setIsAllotmentModalOpen(false);
@@ -511,6 +599,149 @@ export const TyreMaintenance: React.FC = () => {
       loadAllData();
     } catch (err: any) {
       error(err.message || 'Failed to delete record');
+    }
+  };
+
+  // Wheel Allotment Renewal Handlers
+  const handleOpenRenewAllotment = (w: WheelAllotment) => {
+    const bus = buses.find((b) => b.id === w.bus_id);
+    const busKm = (bus as any)?.latest_checkup_km || bus?.current_odometer_km || w.current_km || '';
+    setRenewingAllotment(w);
+    setRenewAllotmentData({
+      event_date: new Date().toISOString().split('T')[0],
+      current_km: busKm,
+      target_km: w.target_km || 10000,
+      notes: `Tyre rotation renewed and cycle reset at ${busKm} KM`
+    });
+  };
+
+  const handleSaveRenewAllotment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!renewingAllotment) return;
+    try {
+      await api.renewWheelAllotment(renewingAllotment.id, renewAllotmentData);
+      auditLogger.log({
+        user: 'Admin',
+        module: 'Wheel Allotment',
+        action_type: 'Renewal',
+        description: `Renewed tyre rotation for ${renewingAllotment.bus_number || 'Vehicle'} at ${renewAllotmentData.current_km} KM. Target: ${renewAllotmentData.target_km} KM`
+      });
+      success(`Tyre rotation renewed for ${renewingAllotment.bus_number || 'vehicle'}!`);
+      setRenewingAllotment(null);
+      loadAllData();
+    } catch (err: any) {
+      error(err.message || 'Failed to renew rotation');
+    }
+  };
+
+  // TAB 4 HANDLERS: TYRE AIR CHECKUP
+  const handleOpenAddAirCheckup = () => {
+    setEditingAirCheckup(null);
+    const firstBus = buses[0];
+    const today = new Date().toISOString().split('T')[0];
+    setAirFormData({
+      bus_id: firstBus ? String(firstBus.id) : '',
+      checkup_date: today,
+      expiry_date: addDaysToDate(today, 7),
+      pressure_psi: 110,
+      technician: 'Fleet Team',
+      remarks: ''
+    });
+    setIsAirModalOpen(true);
+  };
+
+  const handleOpenEditAirCheckup = (record: any) => {
+    setEditingAirCheckup(record);
+    setAirFormData({
+      bus_id: String(record.bus_id),
+      checkup_date: record.checkup_date || new Date().toISOString().split('T')[0],
+      expiry_date: record.expiry_date || addDaysToDate(new Date().toISOString().split('T')[0], 7),
+      pressure_psi: record.pressure_psi || 110,
+      technician: record.technician || 'Fleet Team',
+      remarks: record.remarks || ''
+    });
+    setIsAirModalOpen(true);
+  };
+
+  const handleSaveAirCheckup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!airFormData.bus_id) {
+      error('Please select a vehicle');
+      return;
+    }
+    try {
+      if (editingAirCheckup) {
+        await api.updateTyreAirCheckup(editingAirCheckup.id, airFormData);
+        auditLogger.log({
+          user: 'Admin',
+          module: 'Tyre Air Checkup',
+          action_type: 'Update',
+          description: `Updated tyre air checkup for Bus #${airFormData.bus_id}`
+        });
+        success('Tyre air checkup updated!');
+      } else {
+        await api.createTyreAirCheckup(airFormData);
+        auditLogger.log({
+          user: 'Admin',
+          module: 'Tyre Air Checkup',
+          action_type: 'Create',
+          description: `Logged new tyre air checkup for Bus #${airFormData.bus_id} (${airFormData.pressure_psi} PSI)`
+        });
+        success('Tyre air checkup recorded!');
+      }
+      setIsAirModalOpen(false);
+      setEditingAirCheckup(null);
+      loadAllData();
+    } catch (err: any) {
+      error(err.message || 'Failed to save tyre air checkup');
+    }
+  };
+
+  const handleOpenRenewAir = (record: any) => {
+    const today = new Date().toISOString().split('T')[0];
+    setRenewingAirCheckup(record);
+    setRenewAirData({
+      checkup_date: today,
+      expiry_date: addDaysToDate(today, 7),
+      pressure_psi: record.pressure_psi || 110,
+      technician: record.technician || 'Fleet Team',
+      remarks: `Air pressure inspected and renewed on ${today}`
+    });
+  };
+
+  const handleSaveRenewAir = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!renewingAirCheckup) return;
+    try {
+      await api.renewTyreAirCheckup(renewingAirCheckup.id, renewAirData);
+      auditLogger.log({
+        user: 'Admin',
+        module: 'Tyre Air Checkup',
+        action_type: 'Renewal',
+        description: `Renewed tyre air checkup for ${renewingAirCheckup.bus_number || 'Vehicle'} (Expiry: ${renewAirData.expiry_date})`
+      });
+      success(`Tyre air checkup renewed for ${renewingAirCheckup.bus_number || 'vehicle'}!`);
+      setRenewingAirCheckup(null);
+      loadAllData();
+    } catch (err: any) {
+      error(err.message || 'Failed to renew air checkup');
+    }
+  };
+
+  const handleDeleteAirCheckup = async (id: number | string) => {
+    if (!window.confirm('Delete this tyre air checkup record?')) return;
+    try {
+      await api.deleteTyreAirCheckup(id);
+      auditLogger.log({
+        user: 'Admin',
+        module: 'Tyre Air Checkup',
+        action_type: 'Delete',
+        description: `Deleted tyre air checkup record #${id}`
+      });
+      success('Air checkup deleted!');
+      loadAllData();
+    } catch (err: any) {
+      error(err.message || 'Failed to delete air checkup');
     }
   };
 
@@ -579,33 +810,97 @@ export const TyreMaintenance: React.FC = () => {
 
   return (
     <div className="space-y-6">
-
+      {/* ========================================================================= */}
+      {/* 1. TOP HEADER: TYRE MAINTENANCE & INSPECTION TRACKING */}
+      {/* ========================================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#142B4A]">
+            <Disc className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-lg sm:text-xl font-black text-[#142B4A]">Tyre Maintenance & Inspection Tracking</h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Monitor tread depth, tyre pressure, positions, rotations, and replacement history per bus.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* ========================================================================= */}
-      {/* TAB 1: TYRE MAINTENANCE & INSPECTION TRACKING (KEPT AS IT IS) */}
+      {/* 2. HORIZONTAL TABS (BELOW THE HEADER) */}
+      {/* ========================================================================= */}
+      <div className="bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 shadow-sm flex items-center overflow-x-auto">
+        <div className="flex items-center gap-2 bg-slate-100/90 p-1.5 rounded-xl border border-slate-200/80 overflow-x-auto max-w-full">
+          <button
+            type="button"
+            onClick={() => handleTabChange('maintenance')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === 'maintenance'
+                ? 'bg-[#142B4A] text-white shadow-sm ring-1 ring-[#142B4A]'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+            }`}
+          >
+            <Disc className="w-4 h-4" />
+            <span>Tyre Maintenance</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabChange('new_tyres')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === 'new_tyres'
+                ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-600'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+            }`}
+          >
+            <Package className="w-4 h-4" />
+            <span>New Tyres</span>
+            {newTyres.length > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${activeTab === 'new_tyres' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                {newTyres.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabChange('allotment_rotation')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === 'allotment_rotation'
+                ? 'bg-[#142B4A] text-white shadow-sm ring-1 ring-[#142B4A]'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+            }`}
+          >
+            <RotateCw className="w-4 h-4" />
+            <span>Wheel Allotment & Tyre Rotation</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabChange('air_checkup')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === 'air_checkup'
+                ? 'bg-[#142B4A] text-white shadow-sm ring-1 ring-[#142B4A]'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+            }`}
+          >
+            <Gauge className="w-4 h-4" />
+            <span>Tyre Air Checkup</span>
+            {airCheckups.length > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${activeTab === 'air_checkup' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                {airCheckups.length}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* TAB 1: TYRE MAINTENANCE & INSPECTION TRACKING */}
       {/* ========================================================================= */}
       {activeTab === 'maintenance' && (
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <div>
-              <h2 className="text-xl font-bold text-[#142B4A] flex items-center gap-2">
-                <Disc className="w-5 h-5 text-blue-600" />
-                <span>Tyre Maintenance & Inspection Tracking</span>
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Monitor tread depth, tyre pressure, positions, rotations, and replacement history per bus.
-              </p>
-            </div>
-
-            <button
-              onClick={handleOpenAdd}
-              className="inline-flex items-center px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow gap-1.5 cursor-pointer self-start sm:self-auto"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Mount / Register Tyre</span>
-            </button>
-          </div>
 
           {/* Filter and Bus Selection */}
           <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -838,20 +1133,21 @@ export const TyreMaintenance: React.FC = () => {
                     <th className="py-3 px-4">TYRE NUMBER</th>
                     <th className="py-3 px-4">KM</th>
                     <th className="py-3 px-4">PRESENT TYRE KM RUNNING</th>
+                    <th className="py-3 px-4">TOTAL KM RUNNING</th>
                     <th className="py-3 px-4 text-center">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
                   {loading ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400">
+                      <td colSpan={8} className="py-12 text-center text-slate-400">
                         <div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                         Loading new tyre inventory...
                       </td>
                     </tr>
                   ) : filteredNewTyres.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400">
+                      <td colSpan={8} className="py-12 text-center text-slate-400">
                         <Package className="w-8 h-8 text-slate-300 mx-auto mb-2 opacity-50" />
                         No new tyre stock records found. Click "+ Add New Tyre Stock" to register new purchases.
                       </td>
@@ -859,7 +1155,8 @@ export const TyreMaintenance: React.FC = () => {
                   ) : (
                     filteredNewTyres.map((nt, index) => {
                       const initialKm = Number(nt.km) || 0;
-                      const presentKm = nt.present_km !== undefined && nt.present_km !== null && nt.present_km !== '' ? Number(nt.present_km) : initialKm;
+                      const presentKm = nt.present_km !== undefined && nt.present_km !== null && nt.present_km !== '' ? Number(nt.present_km) : 0;
+                      const totalKmRunning = initialKm + presentKm;
                       const diffKm = presentKm >= initialKm ? presentKm - initialKm : 0;
 
                       return (
@@ -877,11 +1174,30 @@ export const TyreMaintenance: React.FC = () => {
                           </td>
                           {/* 3. TYRE NUMBER */}
                           <td className="py-3 px-4">
-                            <span className="font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg text-xs">
-                              {nt.tyre_serial_number}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {nt.tyre_photo_url ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewPhotoModal(nt.tyre_photo_url!)}
+                                  className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 hover:border-blue-500 cursor-pointer flex-shrink-0 group relative shadow-2xs"
+                                  title="Click to view tyre photo"
+                                >
+                                  <img src={nt.tyre_photo_url} alt={nt.tyre_serial_number} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                </button>
+                              ) : null}
+                              <div>
+                                <span className="font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg text-xs">
+                                  {nt.tyre_serial_number}
+                                </span>
+                                {nt.supplier && (
+                                  <span className="text-[10px] text-slate-400 block mt-0.5 truncate max-w-[120px]">
+                                    {nt.supplier}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </td>
-                          {/* 4. KM */}
+                          {/* 4. KM (Initial / Before KM) */}
                           <td className="py-3 px-4 font-mono font-bold text-slate-800">
                             {initialKm > 0 ? `${initialKm.toLocaleString('en-IN')} KM` : '0 KM'}
                           </td>
@@ -895,6 +1211,15 @@ export const TyreMaintenance: React.FC = () => {
                                 +{diffKm.toLocaleString('en-IN')} KM run
                               </span>
                             )}
+                          </td>
+                          {/* 6. TOTAL KM RUNNING (Before KM + Present KM Running) */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <span className="font-mono font-black text-emerald-700 block text-xs">
+                              {totalKmRunning > 0 ? `${totalKmRunning.toLocaleString('en-IN')} KM` : '0 KM'}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-semibold block">
+                              ({initialKm.toLocaleString('en-IN')} + {presentKm.toLocaleString('en-IN')})
+                            </span>
                           </td>
                           {/* ACTIONS */}
                           <td className="py-3 px-4 text-center whitespace-nowrap">
@@ -1059,28 +1384,27 @@ export const TyreMaintenance: React.FC = () => {
                 <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
                   <tr>
                     <th className="py-3 px-4 w-12 text-center">S.NO</th>
-                    <th className="py-3 px-4">DATE</th>
+                    <th className="py-3 px-4">WORKING DATE</th>
                     <th className="py-3 px-4">VEHICLE NUMBER</th>
-                    <th className="py-3 px-4">TYRE NUMBER</th>
-                    <th className="py-3 px-4">ALLOTMENT / FITTED KM</th>
+                    <th className="py-3 px-4">PRESENT KM</th>
                     <th className="py-3 px-4">TARGET KM</th>
                     <th className="py-3 px-4">TOTAL TYRE KM</th>
                     <th className="py-3 px-4">TYRE PENDING KM</th>
-                    <th className="py-3 px-4">POSITION / ACTION</th>
+                    <th className="py-3 px-4 text-center">STATUS</th>
                     <th className="py-3 px-4 text-center">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
                   {loading ? (
                     <tr>
-                      <td colSpan={10} className="py-12 text-center text-slate-400">
+                      <td colSpan={9} className="py-12 text-center text-slate-400">
                         <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                         Loading wheel allotment and rotation history...
                       </td>
                     </tr>
                   ) : filteredAllotments.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="py-12 text-center text-slate-400">
+                      <td colSpan={9} className="py-12 text-center text-slate-400">
                         <RotateCw className="w-8 h-8 text-slate-300 mx-auto mb-2 opacity-50" />
                         No wheel allotment or tyre rotation records logged yet.
                       </td>
@@ -1102,13 +1426,14 @@ export const TyreMaintenance: React.FC = () => {
                       const pendingKm = Math.max(0, targetKm - totalTyreKm);
                       const percentRun = Math.min(100, Math.round((totalTyreKm / targetKm) * 100));
                       const isLimitReached = totalTyreKm >= targetKm;
+                      const isDueSoon = !isLimitReached && totalTyreKm >= targetKm * 0.8;
 
                       return (
                         <tr key={w.id} className={`hover:bg-slate-50/80 transition-colors ${isLimitReached ? 'bg-rose-50/20' : ''}`}>
                           {/* 1. S.NO */}
                           <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
 
-                          {/* 2. DATE */}
+                          {/* 2. WORKING DATE */}
                           <td className="py-3 px-4 font-medium text-slate-800 whitespace-nowrap">
                             {w.event_date || '-'}
                           </td>
@@ -1125,26 +1450,19 @@ export const TyreMaintenance: React.FC = () => {
                             )}
                           </td>
 
-                          {/* 4. TYRE NUMBER */}
-                          <td className="py-3 px-4">
-                            <span className="font-mono font-bold text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg text-xs">
-                              {w.tyre_serial_number}
-                            </span>
-                          </td>
-
-                          {/* 5. ALLOTMENT / FITTED KM */}
+                          {/* 4. PRESENT KM */}
                           <td className="py-3 px-4 font-mono font-bold text-slate-800 whitespace-nowrap">
                             {fittedKm > 0 ? `${fittedKm.toLocaleString('en-IN')} KM` : '0 KM'}
                           </td>
 
-                          {/* 6. TARGET KM */}
+                          {/* 5. TARGET KM */}
                           <td className="py-3 px-4 whitespace-nowrap">
                             <span className="font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-lg text-xs">
                               {targetKm.toLocaleString('en-IN')} KM
                             </span>
                           </td>
 
-                          {/* 7. TOTAL TYRE KM */}
+                          {/* 6. TOTAL TYRE KM */}
                           <td className="py-3 px-4 whitespace-nowrap">
                             <div className="space-y-0.5">
                               <span className="font-mono font-black text-slate-900 block text-xs">
@@ -1157,7 +1475,7 @@ export const TyreMaintenance: React.FC = () => {
                             </div>
                           </td>
 
-                          {/* 8. TYRE PENDING KM */}
+                          {/* 7. TYRE PENDING KM */}
                           <td className="py-3 px-4 whitespace-nowrap">
                             <div className="space-y-1.5 min-w-[150px]">
                               {isLimitReached ? (
@@ -1185,21 +1503,43 @@ export const TyreMaintenance: React.FC = () => {
                             </div>
                           </td>
 
-                          {/* 9. POSITION / ACTION */}
-                          <td className="py-3 px-4 text-xs whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 font-bold text-indigo-700 mb-0.5">
-                              <span className="text-slate-600 font-medium text-[11px]">{w.from_position || 'Stock'}</span>
-                              <ArrowRight className="w-3 h-3 text-indigo-400" />
-                              <span className="text-indigo-900 font-bold text-[11px]">{w.to_position}</span>
-                            </div>
-                            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600">
-                              {w.action_type || 'Rotation'}
-                            </span>
+                          {/* 8. STATUS (Replaced ACTION TYPE) */}
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                            {isLimitReached ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
+                                <AlertTriangle className="w-3 h-3 text-rose-600" />
+                                <span>Expired (Limit Reached)</span>
+                              </span>
+                            ) : isDueSoon ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                <Clock className="w-3 h-3 text-amber-600" />
+                                <span>Pending ({pendingKm.toLocaleString('en-IN')} KM Left)</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span>Active ({pendingKm.toLocaleString('en-IN')} KM Left)</span>
+                              </span>
+                            )}
                           </td>
 
-                          {/* 10. ACTIONS */}
+                          {/* 9. ACTIONS with RENEWAL OPTION */}
                           <td className="py-3 px-4 text-center whitespace-nowrap">
                             <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                onClick={() => handleOpenRenewAllotment(w)}
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs ${
+                                  isLimitReached
+                                    ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                                    : isDueSoon
+                                    ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                }`}
+                                title="Renew / Rotate Tyre Cycle"
+                              >
+                                <RefreshCw className="w-3 h-3" />
+                                <span>Renew / Rotate</span>
+                              </button>
                               <button
                                 onClick={() => handleOpenEditAllotment(w)}
                                 className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
@@ -1219,6 +1559,282 @@ export const TyreMaintenance: React.FC = () => {
                         </tr>
                       );
                     })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 4: TYRE AIR CHECKUP & PRESSURE TRACKING */}
+      {/* ========================================================================= */}
+      {activeTab === 'air_checkup' && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div>
+              <h2 className="text-xl font-bold text-[#142B4A] flex items-center gap-2">
+                <Gauge className="w-5 h-5 text-indigo-600" />
+                <span>Tyre Air Checkup & Pressure Log</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Maintain optimal tyre pressure (PSI), track inspection dates, monitor air validity expiry, and execute instant renewals.
+              </p>
+            </div>
+
+            <button
+              onClick={handleOpenAddAirCheckup}
+              className="inline-flex items-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow gap-1.5 cursor-pointer self-start sm:self-auto"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Log Air Checkup</span>
+            </button>
+          </div>
+
+          {/* KPI Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Air Logs</p>
+                <h3 className="text-2xl font-black text-[#142B4A] mt-1">{airCheckups.length}</h3>
+                <p className="text-[10px] text-slate-500 mt-0.5 font-medium">Recorded pressure checks</p>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <Gauge className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Valid & Active</p>
+                <h3 className="text-2xl font-black text-emerald-600 mt-1">
+                  {airCheckups.filter(a => {
+                    const today = new Date().toISOString().split('T')[0];
+                    return a.expiry_date && a.expiry_date > today;
+                  }).length}
+                </h3>
+                <p className="text-[10px] text-slate-500 mt-0.5 font-medium">Pressure compliant</p>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pending / Due Soon</p>
+                <h3 className="text-2xl font-black text-amber-600 mt-1">
+                  {airCheckups.filter(a => {
+                    const today = new Date().toISOString().split('T')[0];
+                    if (!a.expiry_date || a.expiry_date <= today) return false;
+                    const diffDays = Math.ceil((new Date(a.expiry_date).getTime() - new Date(today).getTime()) / (1000 * 3600 * 24));
+                    return diffDays <= 3;
+                  }).length}
+                </h3>
+                <p className="text-[10px] text-slate-500 mt-0.5 font-medium">Expires within 3 days</p>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <Clock className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Air Check Expired</p>
+                <h3 className="text-2xl font-black text-rose-600 mt-1">
+                  {airCheckups.filter(a => {
+                    const today = new Date().toISOString().split('T')[0];
+                    return !a.expiry_date || a.expiry_date <= today || a.status === 'Expired';
+                  }).length}
+                </h3>
+                <p className="text-[10px] text-slate-500 mt-0.5 font-medium">Immediate pressure check due</p>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              <div className="w-full sm:w-60">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Filter by Bus</label>
+                <select
+                  value={airBusFilter}
+                  onChange={(e) => setAirBusFilter(e.target.value)}
+                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 outline-none"
+                >
+                  <option value="">All Fleet Buses</option>
+                  {buses.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.bus_number} ({b.registration_number})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full sm:w-48">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status Filter</label>
+                <select
+                  value={airStatusFilter}
+                  onChange={(e) => setAirStatusFilter(e.target.value)}
+                  className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 outline-none font-semibold text-slate-700"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="Active">Active Only</option>
+                  <option value="Pending">Pending Only</option>
+                  <option value="Expired">Expired Only</option>
+                </select>
+              </div>
+
+              <div className="w-full sm:w-60">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Search Air Logs</label>
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search technician, notes..."
+                    value={airSearch}
+                    onChange={(e) => setAirSearch(e.target.value)}
+                    className="w-full text-xs pl-8 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50 outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+              <Clock className="w-4 h-4 text-blue-600" />
+              <span>Standard Air Check Validity: 7 Days</span>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-4 w-12 text-center">S.NO</th>
+                    <th className="py-3 px-4">VEHICLE NUMBER</th>
+                    <th className="py-3 px-4">AIR CHECKUP DATE</th>
+                    <th className="py-3 px-4">EXPIRY DATE</th>
+                    <th className="py-3 px-4 text-center">STATUS</th>
+                    <th className="py-3 px-4 text-center">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {airCheckups
+                    .filter((a) => {
+                      if (airBusFilter && String(a.bus_id) !== String(airBusFilter)) return false;
+                      const today = new Date().toISOString().split('T')[0];
+                      const isExpired = !a.expiry_date || a.expiry_date <= today || a.status === 'Expired';
+                      let diffDays = null;
+                      if (a.expiry_date) {
+                        diffDays = Math.ceil((new Date(a.expiry_date).getTime() - new Date(today).getTime()) / (1000 * 3600 * 24));
+                      }
+                      const isPending = !isExpired && diffDays !== null && diffDays <= 3;
+                      const computedStatus = isExpired ? 'Expired' : isPending ? 'Pending' : 'Active';
+                      if (airStatusFilter !== 'all' && computedStatus !== airStatusFilter) return false;
+                      if (airSearch) {
+                        const q = airSearch.toLowerCase();
+                        const matchBus = (a.bus_number || '').toLowerCase().includes(q);
+                        const matchRemarks = (a.remarks || '').toLowerCase().includes(q);
+                        if (!matchBus && !matchRemarks) return false;
+                      }
+                      return true;
+                    })
+                    .map((a, index) => {
+                      const bus = buses.find((b) => b.id === a.bus_id);
+                      const busName = a.bus_number || bus?.bus_number || (a.bus_id ? `Bus #${a.bus_id}` : '-');
+                      const regName = a.registration_number || bus?.registration_number;
+
+                      const today = new Date().toISOString().split('T')[0];
+                      const isExpired = !a.expiry_date || a.expiry_date <= today || a.status === 'Expired';
+                      let diffDays: number | null = null;
+                      if (a.expiry_date) {
+                        diffDays = Math.ceil((new Date(a.expiry_date).getTime() - new Date(today).getTime()) / (1000 * 3600 * 24));
+                      }
+                      const isPending = !isExpired && diffDays !== null && diffDays <= 3;
+
+                      return (
+                        <tr key={a.id || index} className={`hover:bg-slate-50/80 transition-colors ${isExpired ? 'bg-rose-50/20' : ''}`}>
+                          <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
+                          <td className="py-3 px-4">
+                            <span className="font-black font-mono text-blue-600 block text-xs tracking-wider">
+                              {busName}
+                            </span>
+                            {regName && <span className="text-[10px] text-slate-400 font-medium block">{regName}</span>}
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-800 whitespace-nowrap">
+                            {a.checkup_date || '-'}
+                          </td>
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <span className={`font-black ${isExpired ? 'text-rose-600 underline' : isPending ? 'text-amber-600' : 'text-slate-800'}`}>
+                              {a.expiry_date || '-'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                            {isExpired ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
+                                <AlertTriangle className="w-3 h-3 text-rose-600" />
+                                <span>Expired</span>
+                              </span>
+                            ) : isPending ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                <Clock className="w-3 h-3 text-amber-600" />
+                                <span>Pending ({diffDays}d left)</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span>Active ({diffDays}d left)</span>
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                onClick={() => handleOpenRenewAir(a)}
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs ${
+                                  isExpired
+                                    ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                }`}
+                                title="Renew Tyre Air Checkup"
+                              >
+                                <RefreshCw className="w-3 h-3" />
+                                <span>Renew Air</span>
+                              </button>
+                              <button
+                                onClick={() => handleOpenEditAirCheckup(a)}
+                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                title="Edit Checkup"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteAirCheckup(a.id)}
+                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Checkup"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                  {airCheckups.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-slate-400">
+                        <Gauge className="w-8 h-8 text-slate-300 mx-auto mb-2 opacity-50" />
+                        No tyre air checkup records logged yet. Click "+ Log Air Checkup" to add one.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -1568,7 +2184,18 @@ export const TyreMaintenance: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Live Total KM Running banner */}
+          <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Gauge className="w-4 h-4 text-emerald-600" />
+              <span className="text-xs font-bold text-emerald-900">Total KM Running (Before + Present):</span>
+            </div>
+            <span className="text-sm font-black font-mono text-emerald-700">
+              {((Number(newTyreForm.km) || 0) + (Number(newTyreForm.present_km) || 0)).toLocaleString('en-IN')} KM
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Brand *</label>
               <input
@@ -1592,27 +2219,16 @@ export const TyreMaintenance: React.FC = () => {
                 required
               />
             </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Model / Pattern</label>
-              <input
-                type="text"
-                value={newTyreForm.model}
-                onChange={(e) => setNewTyreForm({ ...newTyreForm, model: e.target.value })}
-                placeholder="Steel Muscle / EnduRace"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              />
-            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Supplier / Dealer</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Supplier Name</label>
               <input
                 type="text"
                 value={newTyreForm.supplier}
                 onChange={(e) => setNewTyreForm({ ...newTyreForm, supplier: e.target.value })}
-                placeholder="Apex Tyre Agency"
+                placeholder="e.g. Apex Tyre Agency"
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
               />
             </div>
@@ -1627,17 +2243,54 @@ export const TyreMaintenance: React.FC = () => {
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
               />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Purchase Cost (₹)</label>
-              <input
-                type="number"
-                value={newTyreForm.purchase_cost}
-                onChange={(e) => setNewTyreForm({ ...newTyreForm, purchase_cost: Number(e.target.value) })}
-                placeholder="22000"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold"
-              />
-            </div>
+          {/* Tyre Upload Photo Option */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Upload Tyre Photo</label>
+            {newTyreForm.tyre_photo_url ? (
+              <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <img
+                  src={newTyreForm.tyre_photo_url}
+                  alt="Tyre preview"
+                  className="w-16 h-16 object-cover rounded-lg border border-slate-200 shadow-2xs"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-slate-800">Photo Attached</p>
+                  <p className="text-[11px] text-slate-500 truncate">{newTyreForm.tyre_photo_url}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNewTyreForm((prev: any) => ({ ...prev, tyre_photo_url: '' }))}
+                  className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  title="Remove photo"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl bg-slate-50 hover:bg-emerald-50/20 transition-all cursor-pointer">
+                {uploadingTyrePhoto ? (
+                  <div className="flex flex-col items-center gap-1.5 text-emerald-600 py-1">
+                    <div className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-xs font-bold">Uploading tyre photo...</span>
+                  </div>
+                ) : (
+                  <>
+                    <Camera className="w-6 h-6 text-slate-400 mb-1" />
+                    <span className="text-xs font-bold text-slate-700">Click to upload tyre photo</span>
+                    <span className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WebP up to 10MB</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleTyrePhotoUpload}
+                  disabled={uploadingTyrePhoto}
+                  className="hidden"
+                />
+              </label>
+            )}
           </div>
 
           <div>
@@ -1824,7 +2477,7 @@ export const TyreMaintenance: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Event Date *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Working Date *</label>
               <input
                 type="date"
                 value={allotmentModalData.event_date}
@@ -1835,63 +2488,15 @@ export const TyreMaintenance: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Tyre Number / Serial *</label>
-              <input
-                type="text"
-                value={allotmentModalData.tyre_serial_number}
-                onChange={(e) => setAllotmentModalData({ ...allotmentModalData, tyre_serial_number: e.target.value })}
-                placeholder="e.g. MRF-2026-001"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">From Position</label>
-              <select
-                value={allotmentModalData.from_position}
-                onChange={(e) => setAllotmentModalData({ ...allotmentModalData, from_position: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              >
-                <option value="New Stock">New Stock</option>
-                <option value="Front Left">Front Left</option>
-                <option value="Front Right">Front Right</option>
-                <option value="Rear Left Outer">Rear Left Outer</option>
-                <option value="Rear Left Inner">Rear Left Inner</option>
-                <option value="Rear Right Outer">Rear Right Outer</option>
-                <option value="Rear Right Inner">Rear Right Inner</option>
-                <option value="Spare">Spare</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">To Position *</label>
-              <select
-                value={allotmentModalData.to_position}
-                onChange={(e) => setAllotmentModalData({ ...allotmentModalData, to_position: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-bold text-indigo-900"
-              >
-                <option value="Front Left">Front Left</option>
-                <option value="Front Right">Front Right</option>
-                <option value="Rear Left Outer">Rear Left Outer</option>
-                <option value="Rear Left Inner">Rear Left Inner</option>
-                <option value="Rear Right Outer">Rear Right Outer</option>
-                <option value="Rear Right Inner">Rear Right Inner</option>
-                <option value="Spare">Spare</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Fitted Odometer (KM)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Present KM</label>
               <input
                 type="number"
                 value={allotmentModalData.current_km}
                 onChange={(e) => setAllotmentModalData({ ...allotmentModalData, current_km: Number(e.target.value) })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold"
+                placeholder="e.g. 45000"
               />
             </div>
 
@@ -1904,40 +2509,6 @@ export const TyreMaintenance: React.FC = () => {
                 placeholder="10000"
                 className="w-full text-xs p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 focus:bg-white outline-none font-mono font-bold text-indigo-900"
                 required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Tread Depth (mm)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={allotmentModalData.tread_depth_mm}
-                onChange={(e) => setAllotmentModalData({ ...allotmentModalData, tread_depth_mm: Number(e.target.value) })}
-                placeholder="10.5"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Pressure (PSI)</label>
-              <input
-                type="number"
-                value={allotmentModalData.pressure_psi}
-                onChange={(e) => setAllotmentModalData({ ...allotmentModalData, pressure_psi: Number(e.target.value) })}
-                placeholder="110"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Technician</label>
-              <input
-                type="text"
-                value={allotmentModalData.technician}
-                onChange={(e) => setAllotmentModalData({ ...allotmentModalData, technician: e.target.value })}
-                placeholder="Technician name"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
               />
             </div>
           </div>
@@ -1971,6 +2542,276 @@ export const TyreMaintenance: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* PHOTO PREVIEW MODAL */}
+      <Modal
+        isOpen={!!previewPhotoModal}
+        onClose={() => setPreviewPhotoModal(null)}
+        title="Tyre Photo Preview"
+        subtitle="Full resolution inspection photo"
+        maxWidth="max-w-xl"
+      >
+        <div className="flex flex-col items-center p-2">
+          {previewPhotoModal && (
+            <img
+              src={previewPhotoModal}
+              alt="Enlarged tyre preview"
+              className="w-full max-h-[70vh] object-contain rounded-xl border border-slate-200 shadow-md"
+            />
+          )}
+          <div className="w-full flex justify-end mt-4">
+            <button
+              type="button"
+              onClick={() => setPreviewPhotoModal(null)}
+              className="px-4 py-2 bg-[#142B4A] text-white rounded-xl text-xs font-bold hover:bg-[#1E3A5F] cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ========================================================================= */}
+      {/* MODAL: RENEW WHEEL ALLOTMENT / ROTATION CYCLE */}
+      {/* ========================================================================= */}
+      {renewingAllotment && (
+        <Modal
+          isOpen={true}
+          onClose={() => setRenewingAllotment(null)}
+          title={`Renew Tyre Rotation — ${renewingAllotment.bus_number || 'Vehicle'}`}
+          subtitle="Reset tyre rotation kilometer cycle with new present odometer reading"
+          maxWidth="max-w-md"
+        >
+          <form onSubmit={handleSaveRenewAllotment} className="space-y-4">
+            <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900 font-medium">
+              Renewing tyre rotation cycle for <strong className="font-black text-indigo-950">{renewingAllotment.bus_number || `Bus #${renewingAllotment.bus_id}`}</strong>. The starting odometer will reset to the entered Present KM and status will return to Active.
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Working Date *</label>
+              <input
+                type="date"
+                required
+                value={renewAllotmentData.event_date}
+                onChange={(e) => setRenewAllotmentData({ ...renewAllotmentData, event_date: e.target.value })}
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Present KM (New Starting Cycle Reading) *</label>
+              <input
+                type="number"
+                required
+                value={renewAllotmentData.current_km}
+                onChange={(e) => setRenewAllotmentData({ ...renewAllotmentData, current_km: e.target.value })}
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold"
+                placeholder="e.g. 55000"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Target KM Limit *</label>
+              <input
+                type="number"
+                required
+                value={renewAllotmentData.target_km}
+                onChange={(e) => setRenewAllotmentData({ ...renewAllotmentData, target_km: Number(e.target.value) })}
+                className="w-full text-xs p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 text-indigo-900 outline-none font-mono font-bold"
+                placeholder="10000"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Remarks / Reason</label>
+              <textarea
+                rows={2}
+                value={renewAllotmentData.notes}
+                onChange={(e) => setRenewAllotmentData({ ...renewAllotmentData, notes: e.target.value })}
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                placeholder="e.g. Rotated front to rear, cross-diagonal alignment done"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setRenewingAllotment(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer transition-all shadow-sm flex items-center gap-1.5"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Save Rotation Renewal</span>
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: LOG / EDIT TYRE AIR CHECKUP */}
+      {/* ========================================================================= */}
+      <Modal
+        isOpen={isAirModalOpen}
+        onClose={() => {
+          setIsAirModalOpen(false);
+          setEditingAirCheckup(null);
+        }}
+        title={editingAirCheckup ? 'Edit Tyre Air Checkup' : 'Log Tyre Air Pressure Checkup'}
+        subtitle="Record inspection date, measured PSI, and compute expiry date"
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleSaveAirCheckup} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Select Vehicle *</label>
+            <SearchableSelect
+              options={busSelectOptions}
+              value={airFormData.bus_id}
+              onChange={(val) => setAirFormData({ ...airFormData, bus_id: val })}
+              placeholder="Search bus..."
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Air Checkup Date *</label>
+              <input
+                type="date"
+                required
+                value={airFormData.checkup_date}
+                onChange={(e) => {
+                  const checkup = e.target.value;
+                  const expiry = addDaysToDate(checkup, 7);
+                  setAirFormData({ ...airFormData, checkup_date: checkup, expiry_date: expiry });
+                }}
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date (Auto +7 Days) *</label>
+              <input
+                type="date"
+                required
+                value={airFormData.expiry_date}
+                onChange={(e) => setAirFormData({ ...airFormData, expiry_date: e.target.value })}
+                className="w-full text-xs p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 text-indigo-900 font-bold outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Remarks</label>
+            <textarea
+              rows={2}
+              value={airFormData.remarks}
+              onChange={(e) => setAirFormData({ ...airFormData, remarks: e.target.value })}
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+              placeholder="e.g. Air pressure checked and verified"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => {
+                setIsAirModalOpen(false);
+                setEditingAirCheckup(null);
+              }}
+              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer transition-all shadow-sm flex items-center gap-1.5"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>{editingAirCheckup ? 'Update Air Checkup' : 'Save Air Checkup'}</span>
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ========================================================================= */}
+      {/* MODAL: RENEW TYRE AIR CHECKUP */}
+      {/* ========================================================================= */}
+      {renewingAirCheckup && (
+        <Modal
+          isOpen={true}
+          onClose={() => setRenewingAirCheckup(null)}
+          title={`Renew Tyre Air Checkup — ${renewingAirCheckup.bus_number || 'Vehicle'}`}
+          subtitle="Record new inspection date and renew validity period"
+          maxWidth="max-w-md"
+        >
+          <form onSubmit={handleSaveRenewAir} className="space-y-4">
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-medium">
+              Renewing air pressure checkup for <strong className="font-black text-blue-950">{renewingAirCheckup.bus_number || `Bus #${renewingAirCheckup.bus_id}`}</strong>. The validity will extend to 7 days from checkup date.
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Checkup Date *</label>
+                <input
+                  type="date"
+                  required
+                  value={renewAirData.checkup_date}
+                  onChange={(e) => {
+                    const checkup = e.target.value;
+                    const expiry = addDaysToDate(checkup, 7);
+                    setRenewAirData({ ...renewAirData, checkup_date: checkup, expiry_date: expiry });
+                  }}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date (Auto +7 Days) *</label>
+                <input
+                  type="date"
+                  required
+                  value={renewAirData.expiry_date}
+                  onChange={(e) => setRenewAirData({ ...renewAirData, expiry_date: e.target.value })}
+                  className="w-full text-xs p-2.5 rounded-xl border border-emerald-300 bg-emerald-50/40 text-emerald-900 font-bold outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Remarks</label>
+              <textarea
+                rows={2}
+                value={renewAirData.remarks}
+                onChange={(e) => setRenewAirData({ ...renewAirData, remarks: e.target.value })}
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setRenewingAirCheckup(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer transition-all shadow-sm flex items-center gap-1.5"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Save Air Renewal</span>
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 };

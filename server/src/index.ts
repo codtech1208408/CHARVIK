@@ -885,7 +885,8 @@ app.post('/api/buses', (req: Request, res: Response) => {
 
 app.put('/api/buses/:id', (req: Request, res: Response) => {
   const { id } = req.params;
-  const b = req.body;
+  const existing = (db.prepare('SELECT * FROM buses WHERE id = ?').get(id) as any) || {};
+  const b = { ...existing, ...req.body };
   if (!b.bus_number && b.registration_number) {
     b.bus_number = b.registration_number;
   }
@@ -1602,13 +1603,14 @@ app.post('/api/new-tyres', (req: Request, res: Response) => {
     const initialKm = Number(n.km) || 0;
     const presentKm = Number(n.present_km) || 0;
     const runningKm = presentKm >= initialKm ? presentKm - initialKm : (Number(n.running_km) || 0);
+    const supplierVal = n.supplier_name || n.supplier || '';
 
     const stmt = db.prepare(`
       INSERT INTO new_tyres (
         purchase_date, quantity, tyre_serial_number, km, present_km, running_km,
         brand, size, model, supplier, invoice_number, purchase_cost, status,
-        allocated_bus_id, allocated_wheel_position, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        allocated_bus_id, allocated_wheel_position, notes, tyre_photo_url
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const info = stmt.run(
@@ -1621,13 +1623,14 @@ app.post('/api/new-tyres', (req: Request, res: Response) => {
       n.brand || 'MRF',
       n.size || '295/80 R22.5',
       n.model || '',
-      n.supplier || '',
+      supplierVal,
       n.invoice_number || '',
       Number(n.purchase_cost) || 0,
       n.status || 'In Stock',
       n.allocated_bus_id || null,
       n.allocated_wheel_position || '',
-      n.notes || ''
+      n.notes || '',
+      n.tyre_photo_url || ''
     );
 
     logAudit('NEW_TYRE_ADD', 'New Tyres', info.lastInsertRowid, `Added new tyre ${n.tyre_serial_number} to inventory`);
@@ -1644,12 +1647,13 @@ app.put('/api/new-tyres/:id', (req: Request, res: Response) => {
     const initialKm = Number(n.km) || 0;
     const presentKm = Number(n.present_km) || 0;
     const runningKm = presentKm >= initialKm ? presentKm - initialKm : (Number(n.running_km) || 0);
+    const supplierVal = n.supplier_name || n.supplier || '';
 
     db.prepare(`
       UPDATE new_tyres SET
         purchase_date = ?, quantity = ?, tyre_serial_number = ?, km = ?, present_km = ?, running_km = ?,
         brand = ?, size = ?, model = ?, supplier = ?, invoice_number = ?, purchase_cost = ?, status = ?,
-        allocated_bus_id = ?, allocated_wheel_position = ?, notes = ?,
+        allocated_bus_id = ?, allocated_wheel_position = ?, notes = ?, tyre_photo_url = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
@@ -1662,13 +1666,14 @@ app.put('/api/new-tyres/:id', (req: Request, res: Response) => {
       n.brand || 'MRF',
       n.size || '295/80 R22.5',
       n.model || '',
-      n.supplier || '',
+      supplierVal,
       n.invoice_number || '',
       Number(n.purchase_cost) || 0,
       n.status || 'In Stock',
       n.allocated_bus_id || null,
       n.allocated_wheel_position || '',
       n.notes || '',
+      n.tyre_photo_url || '',
       id
     );
 
@@ -2653,13 +2658,45 @@ app.post('/api/bus-condition', (req: Request, res: Response) => {
     db.prepare("UPDATE buses SET operational_status = 'Under Maintenance', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(c.bus_id);
   }
 
-  // Automatically sync kilometers into bus current odometer
-  const latestKm = Number(c.closing_km) > 0 
-    ? Number(c.closing_km) 
-    : (Number(c.starting_km) > 0 ? Number(c.starting_km) : Number(c.odometer_km) || 0);
+  // Automatically sync starting kilometers into bus current odometer (visible across entire admin panel)
+  const startingKm = Number(c.starting_km) > 0 ? Number(c.starting_km) : (Number(c.odometer_km) || 0);
 
-  if (latestKm > 0 && c.bus_id) {
-    db.prepare("UPDATE buses SET current_odometer_km = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(latestKm, c.bus_id);
+  if (startingKm > 0 && c.bus_id) {
+    db.prepare("UPDATE buses SET current_odometer_km = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(startingKm, c.bus_id);
+  }
+
+  // Sync tyre kilometers into new_tyres
+  if (Array.isArray(c.tyre_updates) && c.tyre_updates.length > 0) {
+    for (const tu of c.tyre_updates) {
+      const tKm = Number(tu.present_km) || 0;
+      if (tu.id) {
+        db.prepare(`
+          UPDATE new_tyres SET
+            present_km = ?,
+            running_km = CASE WHEN ? >= km THEN ? - km ELSE ? END,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `).run(tKm, tKm, tKm, tKm, tu.id);
+      } else if (tu.tyre_serial_number) {
+        db.prepare(`
+          UPDATE new_tyres SET
+            present_km = ?,
+            running_km = CASE WHEN ? >= km THEN ? - km ELSE ? END,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE tyre_serial_number = ?
+        `).run(tKm, tKm, tKm, tKm, tu.tyre_serial_number);
+      }
+    }
+  } else if (c.bus_id && startingKm > 0) {
+    try {
+      db.prepare(`
+        UPDATE new_tyres SET
+          present_km = CASE WHEN present_km = 0 OR ? > present_km THEN ? ELSE present_km END,
+          running_km = CASE WHEN ? >= km THEN ? - km ELSE running_km END,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE allocated_bus_id = ?
+      `).run(startingKm, startingKm, startingKm, startingKm, c.bus_id);
+    } catch (_) {}
   }
 
   logAudit('INSPECTION_ADD', 'Bus Condition', info.lastInsertRowid, `Logged daily checkup ${inspectionRef}`);
@@ -2720,14 +2757,47 @@ app.put('/api/bus-condition/:id', (req: Request, res: Response) => {
       id
     );
 
-    // Automatically sync kilometers into bus current odometer
-    const latestKm = Number(c.closing_km) > 0 
-      ? Number(c.closing_km) 
-      : (Number(c.starting_km) > 0 ? Number(c.starting_km) : Number(c.odometer_km) || 0);
+    // Automatically sync starting kilometers into bus current odometer (visible across entire admin panel)
+    const startingKm = Number(c.starting_km) > 0 ? Number(c.starting_km) : (Number(c.odometer_km) || 0);
 
-    if (latestKm > 0 && c.bus_id) {
-      db.prepare("UPDATE buses SET current_odometer_km = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(latestKm, c.bus_id);
+    if (startingKm > 0 && c.bus_id) {
+      db.prepare("UPDATE buses SET current_odometer_km = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(startingKm, c.bus_id);
     }
+
+    // Sync tyre kilometers into new_tyres
+    if (Array.isArray(c.tyre_updates) && c.tyre_updates.length > 0) {
+      for (const tu of c.tyre_updates) {
+        const tKm = Number(tu.present_km) || 0;
+        if (tu.id) {
+          db.prepare(`
+            UPDATE new_tyres SET
+              present_km = ?,
+              running_km = CASE WHEN ? >= km THEN ? - km ELSE ? END,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `).run(tKm, tKm, tKm, tKm, tu.id);
+        } else if (tu.tyre_serial_number) {
+          db.prepare(`
+            UPDATE new_tyres SET
+              present_km = ?,
+              running_km = CASE WHEN ? >= km THEN ? - km ELSE ? END,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE tyre_serial_number = ?
+          `).run(tKm, tKm, tKm, tKm, tu.tyre_serial_number);
+        }
+      }
+    } else if (c.bus_id && startingKm > 0) {
+      try {
+        db.prepare(`
+          UPDATE new_tyres SET
+            present_km = CASE WHEN present_km = 0 OR ? > present_km THEN ? ELSE present_km END,
+            running_km = CASE WHEN ? >= km THEN ? - km ELSE running_km END,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE allocated_bus_id = ?
+        `).run(startingKm, startingKm, startingKm, startingKm, c.bus_id);
+      } catch (_) {}
+    }
+
     logAudit('INSPECTION_UPDATE', 'Bus Condition', id, `Updated vehicle checkup ID ${id}`);
     return res.json({ message: 'Vehicle check report updated successfully' });
   } catch (err: any) {

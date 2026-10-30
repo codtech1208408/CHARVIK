@@ -164,12 +164,15 @@ export interface NewTyre {
   km?: number;
   present_km?: number;
   running_km?: number;
+  total_km?: number;
   brand: string;
   size: string;
   model?: string;
   supplier?: string;
+  supplier_name?: string;
   invoice_number?: string;
-  purchase_cost: number;
+  purchase_cost?: number;
+  tyre_photo_url?: string;
   status: 'In Stock' | 'Allotted' | 'Scrapped';
   allocated_bus_id?: number;
   bus_number?: string;

@@ -210,21 +210,29 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
           <span>{todayButtonLabel}</span>
         </button>
       ) : (
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className={`hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs transition-all cursor-pointer select-none group ${
-            isOpen
-              ? 'bg-blue-50/90 border-blue-400 text-blue-900 ring-2 ring-blue-500/20 shadow-xs'
-              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
-          }`}
-          title="Fleet Calendar & Operations Schedule (Click to open)"
-          aria-label="Toggle fleet calendar"
-          aria-expanded={isOpen}
-        >
-          <Calendar className="w-3.5 h-3.5 text-[#2563EB] group-hover:scale-110 transition-transform" />
-          <span className="font-semibold">{todayButtonLabel}</span>
-        </button>
+        <div className="hidden sm:flex flex-col items-center">
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className={`flex items-center space-x-1.5 px-3 py-1 rounded-xl border text-xs transition-all cursor-pointer select-none group ${
+              isOpen
+                ? 'bg-blue-50/90 border-blue-400 text-blue-900 ring-2 ring-blue-500/20 shadow-xs'
+                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+            }`}
+            title="Fleet Calendar & Operations Schedule (Click to open)"
+            aria-label="Toggle fleet calendar"
+            aria-expanded={isOpen}
+          >
+            <Calendar className="w-3.5 h-3.5 text-[#2563EB] group-hover:scale-110 transition-transform" />
+            <span className="font-semibold">{todayButtonLabel}</span>
+          </button>
+          {currentTime && (
+            <div className="flex items-center gap-1 text-[11px] font-bold text-slate-600 mt-0.5 tracking-wide select-none">
+              <Clock className="w-3 h-3 text-[#2563EB]" />
+              <span>{currentTime}</span>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Calendar Dropdown Modal */}

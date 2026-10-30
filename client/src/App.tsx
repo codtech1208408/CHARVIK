@@ -41,6 +41,7 @@ import { WebsiteInquiries } from './pages/WebsiteInquiries';
 import { SupporterTasks } from './pages/SupporterTasks';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
+import { AuditLog } from './pages/AuditLog';
 
 export function App() {
   return (
@@ -75,7 +76,7 @@ export function App() {
               <Route path="daily-kilometers" element={<DailyKilometers />} />
               <Route path="tyre-maintenance" element={<TyreMaintenance />} />
               <Route path="products" element={<ProductManagement />} />
-              <Route path="cleaning" element={<CleaningManagement />} />
+              <Route path="cleaning" element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="routes" element={<RouteManagement />} />
               <Route path="organizers" element={<OrganizerManagement />} />
               <Route path="tasks" element={<TaskManagement />} />
@@ -98,6 +99,7 @@ export function App() {
               <Route path="drivers/new" element={<DriverRegistration />} />
               <Route path="support-staff/new" element={<SupportStaffRegistration />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="audit-log" element={<AuditLog />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 

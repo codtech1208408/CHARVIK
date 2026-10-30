@@ -811,6 +811,29 @@ export const BASE_TYRE_RECORDS: any[] = [
   }
 ];
 
+export const BASE_TYRE_AIR_CHECKUPS: any[] = [
+  {
+    id: 1,
+    bus_id: 1,
+    checkup_date: "2026-10-24",
+    expiry_date: "2026-10-31",
+    pressure_psi: 115,
+    technician: "Ramesh Sharma",
+    status: "Pending",
+    remarks: "Checked all tyres, air pressure adjusted to 115 PSI"
+  },
+  {
+    id: 2,
+    bus_id: 2,
+    checkup_date: "2026-10-20",
+    expiry_date: "2026-10-27",
+    pressure_psi: 110,
+    technician: "Suresh Kumar",
+    status: "Expired",
+    remarks: "Pressure check validity expired, due for tyre air renewal"
+  }
+];
+
 export const BASE_WHEEL_ALLOTMENTS: any[] = [
   {
     "id": 11,

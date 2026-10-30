@@ -69,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
   }, []);
 
   return (
-    <header className="h-[80px] bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
+    <header className="min-h-[82px] py-1 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
       {/* Left: Menu Drawer Toggle (Mobile) & Brand Logo when collapsed & Page Title */}
       <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         <button
@@ -80,27 +80,40 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
 
-        {/* When sidebar is collapsed on desktop, Charvik brand logo matching exact sidebar size */}
-        {isCollapsed && (
-          <Link
-            to={`${basePrefix}/dashboard`}
-            className="hidden lg:flex items-center justify-center py-1 mr-8 sm:mr-10 lg:mr-12 shrink-0 transition-opacity hover:opacity-90 cursor-pointer"
-            title="Charvik Staffing Consultancy"
-          >
-            <img
-              src="/logo-compact.png"
-              alt="Charvik Staffing Consultancy"
-              className="h-[66px] max-h-[68px] w-auto max-w-[220px] object-contain transition-transform"
-            />
-          </Link>
+        {/* When sidebar is collapsed on desktop, Charvik brand logo with Dashboard text directly below the logo */}
+        {isCollapsed ? (
+          <div className="hidden lg:flex flex-col items-start justify-center py-0.5 shrink-0">
+            <Link
+              to={`${basePrefix}/dashboard`}
+              className="transition-opacity hover:opacity-90 cursor-pointer block"
+              title="Charvik Staffing Consultancy"
+            >
+              <img
+                src="/logo-compact.png"
+                alt="Charvik Staffing Consultancy"
+                className="h-[46px] max-h-[48px] w-auto max-w-[190px] object-contain transition-transform"
+              />
+            </Link>
+            <h1 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 mt-0.5 pl-0.5">
+              {pageTitle}
+            </h1>
+          </div>
+        ) : (
+          <div className="pl-1 sm:pl-2">
+            <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+              {pageTitle}
+            </h1>
+          </div>
         )}
 
-        {/* Page Title (e.g. Dashboard) beside the logo with comfortable distance */}
-        <div className="pl-1 sm:pl-2">
-          <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
-            {pageTitle}
-          </h1>
-        </div>
+        {/* Mobile Page Title */}
+        {isCollapsed && (
+          <div className="lg:hidden pl-1 sm:pl-2">
+            <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+              {pageTitle}
+            </h1>
+          </div>
+        )}
       </div>
 
       {/* Middle: Search Box */}

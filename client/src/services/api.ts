@@ -6,6 +6,7 @@ import {
   BASE_FLEET_ORGANIZERS,
   BASE_FLEET_TASKS,
   BASE_TYRE_RECORDS,
+  BASE_TYRE_AIR_CHECKUPS,
   BASE_WHEEL_ALLOTMENTS,
   BASE_NEW_TYRES,
   BASE_AC_MAINTENANCE_RECORDS,
@@ -307,6 +308,10 @@ async function handleFallbackTableCrud(
       if (tableKey === 'wheel_allotments') {
         list = mergeSeedCollection(list, BASE_WHEEL_ALLOTMENTS);
         setLocalCollection('wheel_allotments', list);
+      }
+      if (tableKey === 'tyre_air_checkups') {
+        list = mergeSeedCollection(list, BASE_TYRE_AIR_CHECKUPS);
+        setLocalCollection('tyre_air_checkups', list);
       }
       if (tableKey === 'new_tyres') {
         list = mergeSeedCollection(list, BASE_NEW_TYRES);
@@ -1099,6 +1104,77 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     }) as any;
   }
 
+  // 8.2b WHEEL ALLOTMENTS RENEWAL (Reset cycle with new present KM & target KM)
+  if (path.includes('/wheel-allotments/') && path.endsWith('/renew')) {
+    const parts = path.split('/');
+    const recordId = parts[2];
+    const items = getLocalCollection<any>('wheel_allotments');
+    const idx = items.findIndex(w => String(w.id) === String(recordId));
+    if (idx !== -1) {
+      const prev = items[idx];
+      const today = new Date().toISOString().split('T')[0];
+      const newPresentKm = Number(body.current_km) || Number(body.present_km) || 0;
+      const targetKm = Number(body.target_km) || 10000;
+      items[idx] = {
+        ...prev,
+        event_date: body.event_date || today,
+        current_km: newPresentKm,
+        target_km: targetKm,
+        notes: body.notes || `Renewed/rotated on ${today}`,
+        action_type: 'Rotation'
+      };
+      setLocalCollection('wheel_allotments', items);
+      return items[idx] as any;
+    }
+  }
+
+  // 8.3 TYRE AIR CHECKUPS
+  if (path === '/tyre-air-checkups' || path.startsWith('/tyre-air-checkups/')) {
+    if (path.endsWith('/renew')) {
+      const parts = path.split('/');
+      const recordId = parts[2];
+      const items = getLocalCollection<any>('tyre_air_checkups');
+      const idx = items.findIndex(a => String(a.id) === String(recordId));
+      if (idx !== -1) {
+        const prev = items[idx];
+        const today = new Date().toISOString().split('T')[0];
+        items[idx] = {
+          ...prev,
+          checkup_date: body.checkup_date || today,
+          expiry_date: body.expiry_date || null,
+          pressure_psi: body.pressure_psi || prev.pressure_psi || 110,
+          technician: body.technician || prev.technician || 'Fleet Team',
+          status: 'Active',
+          remarks: body.remarks || `Air checked & renewed on ${today}`
+        };
+        setLocalCollection('tyre_air_checkups', items);
+        return items[idx] as any;
+      }
+    }
+
+    return handleFallbackTableCrud('tyre_air_checkups', 'tyre_air_checkups', path, method, body, params, {
+      enrich: (items) => {
+        const buses = getLocalCollection<any>('buses');
+        return items.map(a => {
+          const bus = buses.find(b => String(b.id) === String(a.bus_id));
+          return {
+            ...a,
+            bus_number: bus?.bus_number || (a.bus_id ? `Bus #${a.bus_id}` : '-'),
+            registration_number: bus?.registration_number || '-'
+          };
+        });
+      },
+      filter: (items, qParams) => {
+        let filtered = items;
+        const busId = qParams.get('bus_id');
+        const status = qParams.get('status');
+        if (busId && busId !== 'undefined' && busId !== 'all') filtered = filtered.filter(a => String(a.bus_id) === String(busId));
+        if (status && status !== 'all') filtered = filtered.filter(a => a.status === status);
+        return filtered;
+      }
+    }) as any;
+  }
+
   // 9. AC MAINTENANCE
   if (path.includes('/ac-maintenance/') && path.endsWith('/renew-filter')) {
     const parts = path.split('/');
@@ -1225,12 +1301,47 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
 
   // 14. BUS CONDITION / INSPECTIONS
   if (path === '/bus-condition' || path.startsWith('/bus-condition/')) {
-    return handleFallbackTableCrud('bus_conditions', 'bus_condition_inspections', path, method, body, params, {
+    const res = handleFallbackTableCrud('bus_conditions', 'bus_condition_inspections', path, method, body, params, {
       filter: (items, qParams) => {
         const busId = qParams.get('bus_id');
         return busId ? items.filter(i => String(i.bus_id) === String(busId)) : items;
       }
-    }) as any;
+    });
+
+    if ((method === 'POST' || method === 'PUT') && body) {
+      try {
+        if (body.bus_id && (Number(body.starting_km) > 0 || Number(body.odometer_km) > 0)) {
+          const sKm = Number(body.starting_km) > 0 ? Number(body.starting_km) : Number(body.odometer_km);
+          const buses = getLocalCollection<any>('buses');
+          const updatedBuses = buses.map(b => String(b.id) === String(body.bus_id) ? { ...b, current_odometer_km: sKm } : b);
+          setLocalCollection('buses', updatedBuses);
+        }
+
+        const newTyres = getLocalCollection<any>('new_tyres');
+        if (Array.isArray(body.tyre_updates) && body.tyre_updates.length > 0) {
+          const updated = newTyres.map(nt => {
+            const tu = body.tyre_updates.find((u: any) => u.id === nt.id || u.tyre_serial_number === nt.tyre_serial_number);
+            if (tu) {
+              const pKm = Number(tu.present_km) || 0;
+              const bKm = Number(nt.km) || 0;
+              return { ...nt, present_km: pKm, running_km: pKm >= bKm ? pKm - bKm : pKm };
+            }
+            return nt;
+          });
+          setLocalCollection('new_tyres', updated);
+        } else if (body.bus_id && (Number(body.starting_km) > 0 || Number(body.closing_km) > 0)) {
+          const lKm = Number(body.starting_km) > 0 ? Number(body.starting_km) : Number(body.closing_km);
+          const updated = newTyres.map(nt => {
+            if (String(nt.allocated_bus_id) === String(body.bus_id)) {
+              return { ...nt, present_km: lKm, running_km: lKm >= (Number(nt.km) || 0) ? lKm - (Number(nt.km) || 0) : lKm };
+            }
+            return nt;
+          });
+          setLocalCollection('new_tyres', updated);
+        }
+      } catch (_) {}
+    }
+    return res as any;
   }
 
   // 15. CAPTAIN DUTY
@@ -1614,7 +1725,21 @@ export const api = {
   },
   createWheelAllotment: (data: any) => request<any>('/wheel-allotments', { method: 'POST', body: JSON.stringify(data) }),
   updateWheelAllotment: (id: number | string, data: any) => request<any>(`/wheel-allotments/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  renewWheelAllotment: (id: number | string, data: any) => request<any>(`/wheel-allotments/${id}/renew`, { method: 'POST', body: JSON.stringify(data) }),
   deleteWheelAllotment: (id: number | string) => request<any>(`/wheel-allotments/${id}`, { method: 'DELETE' }),
+
+  // Tyre Air Checkups
+  getTyreAirCheckups: (params?: { bus_id?: number | string; status?: string }) => {
+    const cleanParams: any = {};
+    if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'all') cleanParams.bus_id = params.bus_id;
+    if (params?.status && params.status !== 'all') cleanParams.status = params.status;
+    const q = new URLSearchParams(cleanParams).toString();
+    return request<any[]>(`/tyre-air-checkups${q ? `?${q}` : ''}`);
+  },
+  createTyreAirCheckup: (data: any) => request<any>('/tyre-air-checkups', { method: 'POST', body: JSON.stringify(data) }),
+  updateTyreAirCheckup: (id: number | string, data: any) => request<any>(`/tyre-air-checkups/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  renewTyreAirCheckup: (id: number | string, data: any) => request<any>(`/tyre-air-checkups/${id}/renew`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteTyreAirCheckup: (id: number | string) => request<any>(`/tyre-air-checkups/${id}`, { method: 'DELETE' }),
 
   // AC Maintenance
   getAcRecords: (params?: { bus_id?: number | string }) => {

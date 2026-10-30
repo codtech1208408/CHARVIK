@@ -149,8 +149,8 @@ export const AcMaintenance: React.FC = () => {
   const handleOpenAdd = () => {
     setEditingRecord(null);
     const today = new Date().toISOString().split('T')[0];
-    // Default filter expiry to 90 days ahead
-    const defaultExpiry = addDaysToDate(today, 90);
+    // Filter expiry automatically set to 5 days after cleaning date
+    const defaultExpiry = addDaysToDate(today, 5);
     // Vehicle general checkup is every month (1 month ahead)
     const defaultCheckupExpiry = addOneMonthToDate(today);
 
@@ -222,7 +222,7 @@ export const AcMaintenance: React.FC = () => {
   // Open Renewal Modal
   const handleOpenRenewal = (r: AcRecord) => {
     const today = new Date().toISOString().split('T')[0];
-    const newExpiry = addDaysToDate(today, 90);
+    const newExpiry = addDaysToDate(today, 5);
     setRenewingRecord(r);
     setRenewFormData({
       filter_cleaning_date: today,
@@ -780,7 +780,15 @@ export const AcMaintenance: React.FC = () => {
                 <input
                   type="date"
                   value={formData.filter_cleaning_date}
-                  onChange={(e) => setFormData({ ...formData, filter_cleaning_date: e.target.value })}
+                  onChange={(e) => {
+                    const cDate = e.target.value;
+                    const autoExpiry = cDate ? addDaysToDate(cDate, 5) : '';
+                    setFormData(prev => ({
+                      ...prev,
+                      filter_cleaning_date: cDate,
+                      filter_expiry_date: autoExpiry || prev.filter_expiry_date
+                    }));
+                  }}
                   className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white outline-none font-semibold text-slate-800"
                   required
                 />
@@ -1005,7 +1013,15 @@ export const AcMaintenance: React.FC = () => {
               <input
                 type="date"
                 value={renewFormData.filter_cleaning_date}
-                onChange={(e) => setRenewFormData({ ...renewFormData, filter_cleaning_date: e.target.value })}
+                onChange={(e) => {
+                  const cDate = e.target.value;
+                  const autoExpiry = cDate ? addDaysToDate(cDate, 5) : '';
+                  setRenewFormData(prev => ({
+                    ...prev,
+                    filter_cleaning_date: cDate,
+                    filter_expiry_date: autoExpiry || prev.filter_expiry_date
+                  }));
+                }}
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-semibold text-slate-800"
                 required
               />
