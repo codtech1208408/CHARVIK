@@ -80,61 +80,79 @@ export const SupporterTasks: React.FC = () => {
 
   // Tasks Store
   const [tasks, setTasks] = useState<SupporterTaskRow[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
+    const map = new Map<string, SupporterTaskRow>();
 
-    // Convert from admin tasks if present
+    // Baseline fleet tasks from localhost seed
+    BASE_FLEET_TASKS.forEach((at: any, idx: number) => {
+      const key = String(at.id || idx + 1);
+      map.set(key, {
+        id: at.id || idx + 1,
+        trip_start_date: at.trip_start_date || '2026-10-30',
+        display_date: at.trip_start_date ? at.trip_start_date.split('-').reverse().join('-') : '30-10-2026',
+        service_number: at.service_number || `SRV-${101 + idx}`,
+        route_corridor: at.route_corridor || 'Hyderabad → Bangalore',
+        vehicle_number: at.vehicle_number || 'AP16TV1234',
+        vehicle_status: String(at.vehicle_status || '').toUpperCase().includes('HOLD') ? 'HOLD' : 'Run',
+        driver1_emp_id: at.driver1?.employee_id ? `YS${at.driver1.employee_id}` : (at.driver1_emp_id || 'YS137'),
+        driver1_name: at.driver1?.employee_name || at.driver1_name || 'akhil',
+        driver2_emp_id: at.driver2?.employee_id ? `YS${at.driver2.employee_id}` : (at.driver2_emp_id || 'YS185'),
+        driver2_name: at.driver2?.employee_name || at.driver2_name || 'kittu',
+        helper_emp_id: at.helper?.employee_id ? `YS${at.helper.employee_id}` : (at.helper_emp_id || 'YS210'),
+        helper_name: at.helper?.employee_name || at.helper_name || 'santhu',
+        captain_emp_id: at.captain?.employee_id ? `YS${at.captain.employee_id}` : (at.captain_emp_id || 'YS201'),
+        captain_name: at.captain?.employee_name || at.captain_name || 'hari',
+        actual_trip_amount: Number(at.trip_amount || at.actual_trip_amount || 25000)
+      });
+    });
+
+    // Merge with any admin tasks
     try {
       const adminTasksRaw = localStorage.getItem(ADMIN_TASKS_KEY);
       if (adminTasksRaw) {
         const adminTasks = JSON.parse(adminTasksRaw);
-        if (Array.isArray(adminTasks) && adminTasks.length > 0) {
-          return adminTasks.map((at: any, idx: number) => ({
-            id: at.id || idx + 1,
-            trip_start_date: at.trip_start_date || '2026-10-30',
-            display_date: at.trip_start_date ? at.trip_start_date.split('-').reverse().join('-') : '30-10-2026',
-            service_number: at.service_number || `SRV-${at.id || 101 + idx}`,
-            route_corridor: at.route_corridor || '',
-            vehicle_number: at.vehicle_number || '',
-            vehicle_status: String(at.vehicle_status || '').toUpperCase().includes('HOLD') ? 'HOLD' : 'Run',
-            driver1_emp_id: at.driver1?.employee_id ? `YS${at.driver1.employee_id}` : (at.driver1_emp_id || 'YS137'),
-            driver1_name: at.driver1?.employee_name || at.driver1_name || '',
-            driver2_emp_id: at.driver2?.employee_id ? `YS${at.driver2.employee_id}` : (at.driver2_emp_id || ''),
-            driver2_name: at.driver2?.employee_name || at.driver2_name || '',
-            helper_emp_id: at.helper?.employee_id ? `YS${at.helper.employee_id}` : (at.helper_emp_id || ''),
-            helper_name: at.helper?.employee_name || at.helper_name || '',
-            captain_emp_id: at.captain?.employee_id ? `YS${at.captain.employee_id}` : (at.captain_emp_id || ''),
-            captain_name: at.captain?.employee_name || at.captain_name || '',
-            actual_trip_amount: Number(at.trip_amount || at.actual_trip_amount || 16000)
-          }));
+        if (Array.isArray(adminTasks)) {
+          adminTasks.forEach((at: any, idx: number) => {
+            const key = String(at.id || idx + 1);
+            const current = map.get(key) || ({} as any);
+            map.set(key, {
+              ...current,
+              id: at.id || idx + 1,
+              trip_start_date: at.trip_start_date || current.trip_start_date || '2026-10-30',
+              display_date: at.trip_start_date ? at.trip_start_date.split('-').reverse().join('-') : current.display_date || '30-10-2026',
+              service_number: at.service_number || current.service_number || `SRV-${at.id || 101 + idx}`,
+              route_corridor: at.route_corridor || current.route_corridor || '',
+              vehicle_number: at.vehicle_number || current.vehicle_number || '',
+              vehicle_status: String(at.vehicle_status || current.vehicle_status || '').toUpperCase().includes('HOLD') ? 'HOLD' : 'Run',
+              driver1_emp_id: at.driver1?.employee_id ? `YS${at.driver1.employee_id}` : (at.driver1_emp_id || current.driver1_emp_id || 'YS137'),
+              driver1_name: at.driver1?.employee_name || at.driver1_name || current.driver1_name || '',
+              driver2_emp_id: at.driver2?.employee_id ? `YS${at.driver2.employee_id}` : (at.driver2_emp_id || current.driver2_emp_id || ''),
+              driver2_name: at.driver2?.employee_name || at.driver2_name || current.driver2_name || '',
+              helper_emp_id: at.helper?.employee_id ? `YS${at.helper.employee_id}` : (at.helper_emp_id || current.helper_emp_id || ''),
+              helper_name: at.helper?.employee_name || at.helper_name || current.helper_name || '',
+              captain_emp_id: at.captain?.employee_id ? `YS${at.captain.employee_id}` : (at.captain_emp_id || current.captain_emp_id || ''),
+              captain_name: at.captain?.employee_name || at.captain_name || current.captain_name || '',
+              actual_trip_amount: Number(at.trip_amount || at.actual_trip_amount || current.actual_trip_amount || 16000)
+            });
+          });
         }
       }
     } catch {}
 
-    // Fallback to active fleet tasks
-    return BASE_FLEET_TASKS.map((at: any, idx: number) => ({
-      id: at.id || idx + 1,
-      trip_start_date: at.trip_start_date || '2026-10-30',
-      display_date: at.trip_start_date ? at.trip_start_date.split('-').reverse().join('-') : '30-10-2026',
-      service_number: at.service_number || `SRV-${101 + idx}`,
-      route_corridor: at.route_corridor || 'Hyderabad → Bangalore',
-      vehicle_number: at.vehicle_number || 'AP16TV1234',
-      vehicle_status: String(at.vehicle_status || '').toUpperCase().includes('HOLD') ? 'HOLD' : 'Run',
-      driver1_emp_id: at.driver1?.employee_id ? `YS${at.driver1.employee_id}` : 'YS137',
-      driver1_name: at.driver1?.employee_name || 'akhil',
-      driver2_emp_id: at.driver2?.employee_id ? `YS${at.driver2.employee_id}` : 'YS185',
-      driver2_name: at.driver2?.employee_name || 'kittu',
-      helper_emp_id: at.helper?.employee_id ? `YS${at.helper.employee_id}` : 'YS210',
-      helper_name: at.helper?.employee_name || 'santhu',
-      captain_emp_id: at.captain?.employee_id ? `YS${at.captain.employee_id}` : 'YS201',
-      captain_name: at.captain?.employee_name || 'hari',
-      actual_trip_amount: 25000
-    }));
+    // Merge with any supporter tasks
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((p) => {
+            const key = String(p.id);
+            map.set(key, { ...(map.get(key) || {}), ...p });
+          });
+        }
+      }
+    } catch {}
+
+    return Array.from(map.values());
   });
 
   const [search, setSearch] = useState('');

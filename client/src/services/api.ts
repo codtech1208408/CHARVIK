@@ -1,5 +1,38 @@
 import { supabase } from './supabase';
-import { BASE_FLEET_BUSES, BASE_FLEET_EMPLOYEES, BASE_FLEET_ROUTES, BASE_FLEET_ORGANIZERS, BASE_FLEET_TASKS } from './seedData';
+import {
+  BASE_FLEET_BUSES,
+  BASE_FLEET_EMPLOYEES,
+  BASE_FLEET_ROUTES,
+  BASE_FLEET_ORGANIZERS,
+  BASE_FLEET_TASKS,
+  BASE_TYRE_RECORDS,
+  BASE_STAFF_CREDENTIALS,
+  BASE_DAILY_KM_ENTRIES,
+  BASE_APP_SETTINGS
+} from './seedData';
+
+/**
+ * Merges local existing items with baseline seed items so that newly registered
+ * routes, employees, buses, organizers, and tasks from localhost immediately show on Vercel
+ */
+export function mergeSeedCollection<T extends { id?: any; service_number?: any; organization_name?: any; bus_number?: any; registration_number?: any; employee_code?: any }>(
+  existing: T[],
+  seed: T[]
+): T[] {
+  const map = new Map<string, T>();
+  for (const item of seed || []) {
+    if (!item) continue;
+    const key = String(item.id ?? item.service_number ?? item.bus_number ?? item.registration_number ?? item.organization_name ?? item.employee_code ?? JSON.stringify(item));
+    map.set(key, item);
+  }
+  for (const item of existing || []) {
+    if (!item) continue;
+    const key = String(item.id ?? item.service_number ?? item.bus_number ?? item.registration_number ?? item.organization_name ?? item.employee_code ?? JSON.stringify(item));
+    const current = map.get(key) || ({} as T);
+    map.set(key, { ...current, ...item });
+  }
+  return Array.from(map.values());
+}
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
@@ -237,13 +270,25 @@ async function handleFallbackTableCrud(
         list = getLocalCollection<any>(tableKey).filter(x => x?.is_archived !== 1);
       }
 
-      if (tableKey === 'buses' && (!list || list.length === 0)) {
-        list = [...BASE_FLEET_BUSES];
+      if (tableKey === 'buses') {
+        list = mergeSeedCollection(list, BASE_FLEET_BUSES);
         setLocalCollection('buses', list);
       }
-      if (tableKey === 'routes' && (!list || list.length === 0)) {
-        list = [...BASE_FLEET_ROUTES];
+      if (tableKey === 'routes') {
+        list = mergeSeedCollection(list, BASE_FLEET_ROUTES);
         setLocalCollection('routes', list);
+      }
+      if (tableKey === 'organizers') {
+        list = mergeSeedCollection(list, BASE_FLEET_ORGANIZERS);
+        setLocalCollection('organizers', list);
+      }
+      if (tableKey === 'tasks') {
+        list = mergeSeedCollection(list, BASE_FLEET_TASKS);
+        setLocalCollection('tasks', list);
+      }
+      if (tableKey === 'tyres' || tableKey === 'tyre_records') {
+        list = mergeSeedCollection(list, BASE_TYRE_RECORDS);
+        setLocalCollection(tableKey, list);
       }
       if (options?.enrich) list = options.enrich(list);
       if (options?.filter) list = options.filter(list, params);
@@ -1242,11 +1287,37 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
   // 17. TRANSIT ROUTES FALLBACK
   if (path === '/routes' || path.startsWith('/routes/')) {
     const res = await handleFallbackTableCrud('routes', 'transit_routes', path, method, body, params);
-    if (!res || (Array.isArray(res) && res.length === 0)) {
-      setLocalCollection('routes', BASE_FLEET_ROUTES);
-      return BASE_FLEET_ROUTES as any;
-    }
-    return res as any;
+    let routeList = Array.isArray(res) ? res : getLocalCollection<any>('routes');
+    routeList = mergeSeedCollection(routeList, BASE_FLEET_ROUTES);
+    setLocalCollection('routes', routeList);
+    try {
+      localStorage.setItem('charvik_route_management_data', JSON.stringify(routeList));
+    } catch {}
+    return (Array.isArray(res) ? routeList : res) as any;
+  }
+
+  // 17B. TASKS (Trip Duties) FALLBACK
+  if (path === '/tasks' || path.startsWith('/tasks/')) {
+    const res = await handleFallbackTableCrud('tasks', 'tasks', path, method, body, params);
+    let taskList = Array.isArray(res) ? res : getLocalCollection<any>('tasks');
+    taskList = mergeSeedCollection(taskList, BASE_FLEET_TASKS);
+    setLocalCollection('tasks', taskList);
+    try {
+      localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(taskList));
+    } catch {}
+    return (Array.isArray(res) ? taskList : res) as any;
+  }
+
+  // 17C. ORGANIZERS FALLBACK
+  if (path === '/organizers' || path.startsWith('/organizers/')) {
+    const res = await handleFallbackTableCrud('organizers', 'organizers', path, method, body, params);
+    let orgList = Array.isArray(res) ? res : getLocalCollection<any>('organizers');
+    orgList = mergeSeedCollection(orgList, BASE_FLEET_ORGANIZERS);
+    setLocalCollection('organizers', orgList);
+    try {
+      localStorage.setItem('charvik_organizer_management_data', JSON.stringify(orgList));
+    } catch {}
+    return (Array.isArray(res) ? orgList : res) as any;
   }
 
   // 18. NOTIFICATIONS, SETTINGS, AUDIT LOGS, REPORTS
@@ -1356,15 +1427,18 @@ export const api = {
     try {
       const remote = await request<any[]>('/routes');
       if (Array.isArray(remote) && remote.length > 0) {
-        localStorage.setItem('charvik_route_management_data', JSON.stringify(remote));
-        return remote;
+        const merged = mergeSeedCollection(remote, BASE_FLEET_ROUTES);
+        localStorage.setItem('charvik_route_management_data', JSON.stringify(merged));
+        return merged;
       }
     } catch {}
     try {
       const saved = localStorage.getItem('charvik_route_management_data');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      const savedList = saved ? JSON.parse(saved) : [];
+      const merged = mergeSeedCollection(Array.isArray(savedList) ? savedList : [], BASE_FLEET_ROUTES);
+      if (merged.length > 0) {
+        localStorage.setItem('charvik_route_management_data', JSON.stringify(merged));
+        return merged;
       }
     } catch {}
     return BASE_FLEET_ROUTES;
@@ -1378,15 +1452,18 @@ export const api = {
     try {
       const remote = await request<any[]>('/organizers');
       if (Array.isArray(remote) && remote.length > 0) {
-        localStorage.setItem('charvik_organizer_management_data', JSON.stringify(remote));
-        return remote;
+        const merged = mergeSeedCollection(remote, BASE_FLEET_ORGANIZERS);
+        localStorage.setItem('charvik_organizer_management_data', JSON.stringify(merged));
+        return merged;
       }
     } catch {}
     try {
       const saved = localStorage.getItem('charvik_organizer_management_data');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      const savedList = saved ? JSON.parse(saved) : [];
+      const merged = mergeSeedCollection(Array.isArray(savedList) ? savedList : [], BASE_FLEET_ORGANIZERS);
+      if (merged.length > 0) {
+        localStorage.setItem('charvik_organizer_management_data', JSON.stringify(merged));
+        return merged;
       }
     } catch {}
     return BASE_FLEET_ORGANIZERS;
@@ -1428,15 +1505,18 @@ export const api = {
     try {
       const remote = await request<any[]>('/tasks');
       if (Array.isArray(remote) && remote.length > 0) {
-        localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(remote));
-        return remote;
+        const merged = mergeSeedCollection(remote, BASE_FLEET_TASKS);
+        localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(merged));
+        return merged;
       }
     } catch {}
     try {
       const saved = localStorage.getItem('charvik_trip_duty_management_v2');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      const savedList = saved ? JSON.parse(saved) : [];
+      const merged = mergeSeedCollection(Array.isArray(savedList) ? savedList : [], BASE_FLEET_TASKS);
+      if (merged.length > 0) {
+        localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(merged));
+        return merged;
       }
     } catch {}
     return BASE_FLEET_TASKS;

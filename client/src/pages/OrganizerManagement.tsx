@@ -45,7 +45,13 @@ export const OrganizerManagement: React.FC = () => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((o: any, idx: number) => ({
+          const map = new Map<string, any>();
+          BASE_FLEET_ORGANIZERS.forEach((o, idx) => map.set(String(o.id || idx + 1), o));
+          parsed.forEach((o, idx) => {
+            const key = String(o.id || idx + 1);
+            map.set(key, { ...map.get(key), ...o });
+          });
+          return Array.from(map.values()).map((o: any, idx: number) => ({
             id: o.id || idx + 1,
             organization_name: o.organization_name || '',
             gst_number: o.gst_number || '',

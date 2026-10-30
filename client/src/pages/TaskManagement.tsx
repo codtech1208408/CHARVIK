@@ -102,7 +102,12 @@ export const TaskManagement: React.FC = () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const map = new Map<string, any>();
+          BASE_FLEET_TASKS.forEach((t) => map.set(String(t.id), t));
+          parsed.forEach((t) => map.set(String(t.id), { ...map.get(String(t.id)), ...t }));
+          return Array.from(map.values());
+        }
       }
       return BASE_FLEET_TASKS;
     } catch {}
