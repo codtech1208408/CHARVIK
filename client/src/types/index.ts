@@ -156,6 +156,49 @@ export interface TyreRecord {
   is_active?: number;
 }
 
+export interface NewTyre {
+  id: number;
+  purchase_date: string;
+  quantity?: number;
+  tyre_serial_number: string;
+  km?: number;
+  present_km?: number;
+  running_km?: number;
+  brand: string;
+  size: string;
+  model?: string;
+  supplier?: string;
+  invoice_number?: string;
+  purchase_cost: number;
+  status: 'In Stock' | 'Allotted' | 'Scrapped';
+  allocated_bus_id?: number;
+  bus_number?: string;
+  registration_number?: string;
+  allocated_wheel_position?: string;
+  notes?: string;
+  created_at?: string;
+}
+
+export interface WheelAllotment {
+  id: number;
+  bus_id: number;
+  bus_number?: string;
+  registration_number?: string;
+  action_type: 'Allotment' | 'Rotation';
+  event_date: string;
+  current_km?: number;
+  target_km?: number;
+  latest_vehicle_km?: number;
+  tyre_serial_number: string;
+  from_position: string;
+  to_position: string;
+  technician?: string;
+  tread_depth_mm?: number;
+  pressure_psi?: number;
+  notes?: string;
+  created_at?: string;
+}
+
 export interface AcRecord {
   id: number;
   bus_id: number;
@@ -179,6 +222,14 @@ export interface AcRecord {
   technician?: string;
   status: string;
   remarks?: string;
+  filter_cleaning_date?: string;
+  filter_expiry_date?: string;
+  general_checkup_date?: string;
+  general_checkup_expiry_date?: string;
+  filter_proof_photo?: string;
+  general_checkup_photo?: string;
+  filter_renewal_date?: string;
+  filter_status?: string;
 }
 
 export interface OilFilterRecord {
@@ -319,6 +370,14 @@ export interface BusConditionInspection {
   linked_complaint_id?: number;
   photo_attachments?: string;
   inspector_remarks?: string;
+  driver_name?: string;
+  vehicle_model?: string;
+  starting_km?: number;
+  closing_km?: number;
+  route_trip?: string;
+  reporting_time?: string;
+  mechanic_supervisor?: string;
+  checklist_data?: string;
 }
 
 export interface User {

@@ -126,6 +126,7 @@ export const SupportStaffRegistration: React.FC = () => {
 
   const validateStep = (stepNumber: number): string | null => {
     if (stepNumber === 1) {
+      if (!formData.employee_code?.trim()) return 'Please enter Employee ID';
       if (!formData.full_name?.trim()) return 'Please enter Full Name as per Aadhaar';
       if (!formData.date_of_birth) return 'Please select Date of Birth (DOB)';
       if (!formData.phone_number?.trim()) return 'Please enter 10-digit Phone Number';
@@ -135,12 +136,6 @@ export const SupportStaffRegistration: React.FC = () => {
       if (formData.aadhaar_number.replace(/\D/g, '').length < 12) return 'Please enter a valid 12-digit Aadhaar Number';
       if (!formData.aadhaar_front_doc) return 'Please upload Aadhaar Card (Front Side) photo';
       if (!formData.aadhaar_back_doc) return 'Please upload Aadhaar Card (Back Side) photo';
-      if (formData.role === 'Captain') {
-        if (!formData.licence_number?.trim()) return 'Please enter Driving Licence Number for Captain';
-        if (!formData.licence_front_doc) return 'Please upload Driving Licence (Front Side) photo for Captain';
-        if (!formData.licence_back_doc) return 'Please upload Driving Licence (Back Side) photo for Captain';
-        if (!formData.licence_verification_doc) return 'Please upload Photo to Verify Licence (Sarathi Portal / Proof Photo)';
-      }
     } else if (stepNumber === 3) {
       if (!formData.bank_name?.trim()) return 'Please enter Bank Name';
       if (!formData.account_number?.trim()) return 'Please enter Bank Account Number';
@@ -360,7 +355,22 @@ export const SupportStaffRegistration: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Employee ID */}
+                <div>
+                  <label className="block text-xs font-bold text-[#142B4A] mb-1">
+                    Employee ID *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.employee_code}
+                    onChange={(e) => handleInputChange('employee_code', e.target.value)}
+                    placeholder="e.g. EMP-STF-1001"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold text-blue-700"
+                    required
+                  />
+                </div>
+
                 {/* 2. Gender */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>
@@ -531,120 +541,6 @@ export const SupportStaffRegistration: React.FC = () => {
                 </div>
               </div>
 
-              {/* Driving Licence & Verification Photo Section */}
-              <div className="mt-6 pt-5 border-t border-slate-200">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h4 className="text-xs font-bold text-[#142B4A] uppercase tracking-wider">
-                      Driving Licence &amp; Verification Details
-                    </h4>
-                    <p className="text-[11px] text-slate-500">
-                      {formData.role === 'Captain' ? 'Required for Bus Captain registration' : 'Optional for Helper (if licence available)'}
-                    </p>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                    {formData.role === 'Captain' ? 'Recommended for Captain' : 'Optional'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Driving Licence Number</label>
-                    <input
-                      type="text"
-                      value={formData.licence_number}
-                      onChange={(e) => handleInputChange('licence_number', e.target.value.toUpperCase())}
-                      placeholder="e.g. TS0920210012345"
-                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono uppercase"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Licence Verification Status</label>
-                    <select
-                      value={formData.licence_verification_status}
-                      onChange={(e) => handleInputChange('licence_verification_status', e.target.value)}
-                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-medium"
-                    >
-                      <option value="Verified (Official Sarathi Portal)">Verified (Official Sarathi Portal)</option>
-                      <option value="Pending Verification">Pending Verification</option>
-                      <option value="Not Verified">Not Verified</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Issued By State</label>
-                    <input
-                      type="text"
-                      value={formData.issuing_state}
-                      onChange={(e) => handleInputChange('issuing_state', e.target.value)}
-                      placeholder="e.g. Telangana / AP"
-                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Validity Date (TRANS)</label>
-                    <input
-                      type="date"
-                      value={formData.licence_validity_date}
-                      onChange={(e) => handleInputChange('licence_validity_date', e.target.value)}
-                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-bold text-blue-700"
-                    />
-                  </div>
-                </div>
-
-                {/* DL Front, DL Back, and Licence Verification Photo Proof */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-                  {/* Driving Licence Front */}
-                  <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                    <Upload className="w-6 h-6 text-slate-400 mb-1" />
-                    <p className="text-xs font-bold text-slate-700">Driving Licence (Front Side)</p>
-                    <p className="text-[11px] text-slate-400 mb-2">Upload DL front</p>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileUpload('licence_front_doc', e)}
-                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
-                    />
-                    {formData.licence_front_doc && (
-                      <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ DL Front attached</p>
-                    )}
-                  </div>
-
-                  {/* Driving Licence Back */}
-                  <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                    <Upload className="w-6 h-6 text-slate-400 mb-1" />
-                    <p className="text-xs font-bold text-slate-700">Driving Licence (Back Side)</p>
-                    <p className="text-[11px] text-slate-400 mb-2">Upload DL back</p>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileUpload('licence_back_doc', e)}
-                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
-                    />
-                    {formData.licence_back_doc && (
-                      <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ DL Back attached</p>
-                    )}
-                  </div>
-
-                  {/* Upload Photo to Verify Licence */}
-                  <div className="p-4 rounded-xl border border-dashed border-blue-300 bg-blue-50/40 flex flex-col items-center text-center">
-                    <Upload className="w-6 h-6 text-blue-500 mb-1" />
-                    <p className="text-xs font-bold text-[#142B4A]">Photo to Verify Licence</p>
-                    <p className="text-[11px] text-slate-500 mb-2">Sarathi Portal / Proof Photo</p>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileUpload('licence_verification_doc', e)}
-                      className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer w-full"
-                    />
-                    {formData.licence_verification_doc && (
-                      <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Verification Photo attached</p>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
@@ -1121,56 +1017,7 @@ export const SupportStaffRegistration: React.FC = () => {
                   <td className="p-2.5 font-mono uppercase">{formData.pan_number || '-'}</td>
                 </tr>
 
-                {/* Driving Licence & Verification (if provided) */}
-                {(formData.licence_number || formData.role === 'Captain') && (
-                  <>
-                    <tr className="bg-slate-100 font-black text-slate-800">
-                      <td colSpan={2} className="p-2.5 text-center uppercase tracking-wide border-y border-black font-bold">
-                        Driving Licence Details
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Front Side)</td>
-                      <td className="p-2.5">
-                        {formData.licence_front_doc ? (
-                          <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            ✓ Front Uploaded
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 italic">Not Uploaded</span>
-                        )}
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence (Back Side)</td>
-                      <td className="p-2.5">
-                        {formData.licence_back_doc ? (
-                          <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            ✓ Back Uploaded
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 italic">Not Uploaded</span>
-                        )}
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Licence Verification Status</td>
-                      <td className="p-2.5">
-                        <span className="px-2 py-0.5 rounded font-bold text-xs bg-blue-50 text-blue-700 border border-blue-200">
-                          {formData.licence_verification_status || 'Pending Verification'}
-                        </span>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Driving Licence Number</td>
-                      <td className="p-2.5 font-mono font-bold text-blue-700 uppercase">{formData.licence_number || '-'}</td>
-                    </tr>
-                    <tr className="hover:bg-slate-50">
-                      <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Issued By State</td>
-                      <td className="p-2.5">{formData.issuing_state || '-'}</td>
-                    </tr>
-                  </>
-                )}
+
 
                 {/* Bank Details */}
                 <tr className="bg-slate-100 font-black text-slate-800">

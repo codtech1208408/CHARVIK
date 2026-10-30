@@ -2,15 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, AlertTriangle, Wrench, ShieldAlert, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { NavbarCalendar } from './NavbarCalendar';
 
 interface NavbarProps {
   onMobileToggle: () => void;
   pageTitle: string;
+  isCollapsed?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCollapsed }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -68,34 +69,34 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle }) => 
   }, []);
 
   return (
-    <header className="h-16 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
-      {/* Left: Menu Drawer Toggle & Back to Dashboard & Page Title */}
+    <header className="h-[80px] bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
+      {/* Left: Menu Drawer Toggle (Mobile) & Brand Logo when collapsed & Page Title */}
       <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         <button
           onClick={onMobileToggle}
-          className={`p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer ${
-            isDashboard ? 'lg:hidden' : 'flex'
-          }`}
+          className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
           title="Open Navigation Menu"
         >
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
 
-        {/* Universal Back to Dashboard Option */}
-        {!isDashboard && (
-          <button
-            onClick={() => {
-              navigate(`${basePrefix}/dashboard`);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-all cursor-pointer shadow-xs group shrink-0"
-            title="Return to Dashboard"
+        {/* When sidebar is collapsed on desktop, Charvik brand logo matching exact sidebar size */}
+        {isCollapsed && (
+          <Link
+            to={`${basePrefix}/dashboard`}
+            className="hidden lg:flex items-center justify-center py-1 mr-8 sm:mr-10 lg:mr-12 shrink-0 transition-opacity hover:opacity-90 cursor-pointer"
+            title="Charvik Staffing Consultancy"
           >
-            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Dashboard</span>
-          </button>
+            <img
+              src="/logo-compact.png"
+              alt="Charvik Staffing Consultancy"
+              className="h-[66px] max-h-[68px] w-auto max-w-[220px] object-contain transition-transform"
+            />
+          </Link>
         )}
 
-        <div>
+        {/* Page Title (e.g. Dashboard) beside the logo with comfortable distance */}
+        <div className="pl-1 sm:pl-2">
           <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
             {pageTitle}
           </h1>

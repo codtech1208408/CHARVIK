@@ -964,17 +964,113 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     return handleFallbackTableCrud('tyre_records', 'tyre_records', path, method, body, params, {
       filter: (items, qParams) => {
         const busId = qParams.get('bus_id');
-        return busId ? items.filter(t => String(t.bus_id) === String(busId)) : items;
+        return busId && busId !== 'undefined' && busId !== 'all' ? items.filter(t => String(t.bus_id) === String(busId)) : items;
+      }
+    }) as any;
+  }
+
+  // 8.1 NEW TYRES (INVENTORY)
+  if (path === '/new-tyres' || path.startsWith('/new-tyres/')) {
+    return handleFallbackTableCrud('new_tyres', 'new_tyres', path, method, body, params, {
+      enrich: (items) => {
+        const buses = getLocalCollection<any>('buses');
+        return items.map(n => {
+          const bus = buses.find(b => String(b.id) === String(n.allocated_bus_id));
+          return {
+            ...n,
+            bus_number: bus?.bus_number || (n.allocated_bus_id ? `Bus #${n.allocated_bus_id}` : '-'),
+            registration_number: bus?.registration_number || '-'
+          };
+        });
+      },
+      filter: (items, qParams) => {
+        let filtered = items;
+        const busId = qParams.get('bus_id');
+        const status = qParams.get('status');
+        if (busId && busId !== 'undefined' && busId !== 'all') filtered = filtered.filter(n => String(n.allocated_bus_id) === String(busId));
+        if (status && status !== 'all') filtered = filtered.filter(n => n.status === status);
+        return filtered;
+      }
+    }) as any;
+  }
+
+  // 8.2 WHEEL ALLOTMENTS & ROTATION
+  if (path === '/wheel-allotments' || path.startsWith('/wheel-allotments/')) {
+    return handleFallbackTableCrud('wheel_allotments', 'wheel_allotments', path, method, body, params, {
+      enrich: (items) => {
+        const buses = getLocalCollection<any>('buses');
+        return items.map(w => {
+          const bus = buses.find(b => String(b.id) === String(w.bus_id));
+          return {
+            ...w,
+            bus_number: bus?.bus_number || (w.bus_id ? `Bus #${w.bus_id}` : '-'),
+            registration_number: bus?.registration_number || '-'
+          };
+        });
+      },
+      filter: (items, qParams) => {
+        let filtered = items;
+        const busId = qParams.get('bus_id');
+        const actionType = qParams.get('action_type');
+        if (busId && busId !== 'undefined' && busId !== 'all') filtered = filtered.filter(w => String(w.bus_id) === String(busId));
+        if (actionType && actionType !== 'all') filtered = filtered.filter(w => w.action_type === actionType);
+        return filtered;
       }
     }) as any;
   }
 
   // 9. AC MAINTENANCE
+  if (path.includes('/ac-maintenance/') && path.endsWith('/renew-filter')) {
+    const parts = path.split('/');
+    const recordId = parts[2];
+    const items = getLocalCollection<any>('ac_maintenance_records');
+    const idx = items.findIndex(r => String(r.id) === String(recordId));
+    if (idx !== -1) {
+      const prev = items[idx];
+      const today = new Date().toISOString().split('T')[0];
+      // 1. Mark previous record as Expired so before data remains as Expired
+      items[idx] = {
+        ...prev,
+        filter_status: 'Expired',
+        status: 'Expired'
+      };
+
+      // 2. Insert new record for the next renewed cycle
+      const newRecord = {
+        ...prev,
+        id: Date.now(),
+        inspection_date: body.filter_cleaning_date || today,
+        filter_cleaning_date: body.filter_cleaning_date || today,
+        filter_expiry_date: body.filter_expiry_date || null,
+        filter_proof_photo: body.filter_proof_photo || null,
+        filter_renewal_date: today,
+        filter_status: body.filter_expiry_date && body.filter_expiry_date <= today ? 'Expired' : 'Active',
+        status: 'Completed',
+        remarks: body.remarks || `Renewed on ${today}`
+      };
+      items.unshift(newRecord);
+      setLocalCollection('ac_maintenance_records', items);
+      return { success: true, newId: newRecord.id, message: 'AC Filter renewed and new record created successfully!' } as any;
+    }
+    return { success: false, message: 'Record not found' } as any;
+  }
+
   if (path === '/ac-maintenance' || path.startsWith('/ac-maintenance/')) {
     return handleFallbackTableCrud('ac_maintenance_records', 'ac_maintenance_records', path, method, body, params, {
+      enrich: (items) => {
+        const buses = getLocalCollection<any>('buses');
+        return items.map(a => {
+          const bus = buses.find(b => String(b.id) === String(a.bus_id));
+          return {
+            ...a,
+            bus_number: a.bus_number || bus?.bus_number || (a.bus_id ? `Bus #${a.bus_id}` : '-'),
+            registration_number: a.registration_number || bus?.registration_number || '-'
+          };
+        });
+      },
       filter: (items, qParams) => {
         const busId = qParams.get('bus_id');
-        return busId ? items.filter(a => String(a.bus_id) === String(busId)) : items;
+        return busId && busId !== 'undefined' && busId !== 'all' ? items.filter(a => String(a.bus_id) === String(busId)) : items;
       }
     }) as any;
   }
@@ -1370,20 +1466,53 @@ export const api = {
 
   // Tyre Maintenance
   getTyreRecords: (params?: { bus_id?: number | string }) => {
-    const q = new URLSearchParams(params as any).toString();
+    const cleanParams: any = {};
+    if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'all') {
+      cleanParams.bus_id = params.bus_id;
+    }
+    const q = new URLSearchParams(cleanParams).toString();
     return request<any[]>(`/tyre-maintenance${q ? `?${q}` : ''}`);
   },
   createTyreRecord: (data: any) => request<any>('/tyre-maintenance', { method: 'POST', body: JSON.stringify(data) }),
   updateTyreRecord: (id: number | string, data: any) => request<any>(`/tyre-maintenance/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteTyreRecord: (id: number | string) => request<any>(`/tyre-maintenance/${id}`, { method: 'DELETE' }),
 
+  // New Tyres (Stock / Purchases)
+  getNewTyres: (params?: { bus_id?: number | string; status?: string }) => {
+    const cleanParams: any = {};
+    if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'all') cleanParams.bus_id = params.bus_id;
+    if (params?.status && params.status !== 'all') cleanParams.status = params.status;
+    const q = new URLSearchParams(cleanParams).toString();
+    return request<any[]>(`/new-tyres${q ? `?${q}` : ''}`);
+  },
+  createNewTyre: (data: any) => request<any>('/new-tyres', { method: 'POST', body: JSON.stringify(data) }),
+  updateNewTyre: (id: number | string, data: any) => request<any>(`/new-tyres/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteNewTyre: (id: number | string) => request<any>(`/new-tyres/${id}`, { method: 'DELETE' }),
+
+  // Wheel Allotment & Tyre Rotation
+  getWheelAllotments: (params?: { bus_id?: number | string; action_type?: string }) => {
+    const cleanParams: any = {};
+    if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'all') cleanParams.bus_id = params.bus_id;
+    if (params?.action_type && params.action_type !== 'all') cleanParams.action_type = params.action_type;
+    const q = new URLSearchParams(cleanParams).toString();
+    return request<any[]>(`/wheel-allotments${q ? `?${q}` : ''}`);
+  },
+  createWheelAllotment: (data: any) => request<any>('/wheel-allotments', { method: 'POST', body: JSON.stringify(data) }),
+  updateWheelAllotment: (id: number | string, data: any) => request<any>(`/wheel-allotments/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteWheelAllotment: (id: number | string) => request<any>(`/wheel-allotments/${id}`, { method: 'DELETE' }),
+
   // AC Maintenance
   getAcRecords: (params?: { bus_id?: number | string }) => {
-    const q = new URLSearchParams(params as any).toString();
+    const cleanParams: any = {};
+    if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'all') {
+      cleanParams.bus_id = params.bus_id;
+    }
+    const q = new URLSearchParams(cleanParams).toString();
     return request<any[]>(`/ac-maintenance${q ? `?${q}` : ''}`);
   },
   createAcRecord: (data: any) => request<any>('/ac-maintenance', { method: 'POST', body: JSON.stringify(data) }),
   updateAcRecord: (id: number | string, data: any) => request<any>(`/ac-maintenance/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  renewAcFilter: (id: number | string, data: any) => request<any>(`/ac-maintenance/${id}/renew-filter`, { method: 'POST', body: JSON.stringify(data) }),
   deleteAcRecord: (id: number | string) => request<any>(`/ac-maintenance/${id}`, { method: 'DELETE' }),
 
   // Oil and Filter
@@ -1424,7 +1553,14 @@ export const api = {
 
   // Bus Condition
   getBusConditions: (params?: { bus_id?: number | string; roadworthiness?: string }) => {
-    const q = new URLSearchParams(params as any).toString();
+    const clean: Record<string, string> = {};
+    if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'All') {
+      clean.bus_id = String(params.bus_id);
+    }
+    if (params?.roadworthiness && params.roadworthiness !== 'undefined' && params.roadworthiness !== 'All') {
+      clean.roadworthiness = params.roadworthiness;
+    }
+    const q = new URLSearchParams(clean).toString();
     return request<any[]>(`/bus-condition${q ? `?${q}` : ''}`);
   },
   createBusCondition: (data: any) => request<any>('/bus-condition', { method: 'POST', body: JSON.stringify(data) }),

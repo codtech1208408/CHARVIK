@@ -38,6 +38,7 @@ import { TaskManagement } from './pages/TaskManagement';
 import { Earnings } from './pages/Earnings';
 import { EmployeePayments } from './pages/EmployeePayments';
 import { WebsiteInquiries } from './pages/WebsiteInquiries';
+import { SupporterTasks } from './pages/SupporterTasks';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 
@@ -92,6 +93,8 @@ export function App() {
               <Route path="complaints" element={<Complaints />} />
               <Route path="repairs" element={<Repairs />} />
               <Route path="bus-condition" element={<BusCondition />} />
+              <Route path="daily-vehicle-checkup" element={<BusCondition />} />
+              <Route path="vehicle-checkup" element={<BusCondition />} />
               <Route path="drivers/new" element={<DriverRegistration />} />
               <Route path="support-staff/new" element={<SupportStaffRegistration />} />
               <Route path="reports" element={<Reports />} />
@@ -118,6 +121,7 @@ export function App() {
               <Route path="bus-condition" element={<BusCondition />} />
               <Route path="complaints" element={<Complaints />} />
               <Route path="repairs" element={<Repairs />} />
+              <Route path="tasks" element={<SupporterTasks />} />
               <Route path="daily-kilometers" element={<DailyKilometers />} />
               <Route path="maintenance-schedule" element={<MaintenanceSchedule />} />
               <Route path="buses" element={<BusMaster />} />

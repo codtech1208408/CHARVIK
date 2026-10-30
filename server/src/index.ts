@@ -622,13 +622,33 @@ app.get('/api/dashboard', (req: Request, res: Response) => {
       LIMIT 5
     `).all();
 
+    // Recent Wheel Allotments with live odometer from daily checkup / buses
+    const recentWheelAllotments = db.prepare(`
+      SELECT w.*, b.bus_number, b.registration_number,
+        COALESCE(
+          (SELECT MAX(CASE 
+             WHEN closing_km IS NOT NULL AND closing_km > 0 THEN closing_km 
+             WHEN starting_km IS NOT NULL AND starting_km > 0 THEN starting_km 
+             WHEN odometer_km IS NOT NULL AND odometer_km > 0 THEN odometer_km 
+             ELSE 0 END)
+           FROM bus_condition_inspections 
+           WHERE bus_id = w.bus_id),
+          b.current_odometer_km,
+          0
+        ) AS latest_vehicle_km
+      FROM wheel_allotments w
+      LEFT JOIN buses b ON w.bus_id = b.id
+      ORDER BY w.event_date DESC, w.id DESC
+      LIMIT 10
+    `).all();
+
     // Recent AC Records
     const recentAc = db.prepare(`
       SELECT a.*, b.bus_number, b.registration_number
       FROM ac_maintenance_records a
-      JOIN buses b ON a.bus_id = b.id
+      LEFT JOIN buses b ON a.bus_id = b.id
       ORDER BY a.id DESC
-      LIMIT 5
+      LIMIT 10
     `).all();
 
     // Recent Oil & Filter Records
@@ -715,6 +735,7 @@ app.get('/api/dashboard', (req: Request, res: Response) => {
       recentComplaints,
       recentRepairs,
       recentTyres,
+      recentWheelAllotments,
       recentAc,
       recentOil,
       recentBattery,
@@ -734,7 +755,17 @@ app.get('/api/buses', (req: Request, res: Response) => {
   let query = `
     SELECT b.*, 
       d.full_name as driver_name, d.phone_number as driver_phone,
-      h.full_name as helper_name
+      h.full_name as helper_name,
+      COALESCE(
+        (
+          SELECT CASE WHEN c.closing_km > 0 THEN c.closing_km ELSE c.starting_km END
+          FROM bus_condition_inspections c
+          WHERE c.bus_id = b.id AND (c.closing_km > 0 OR c.starting_km > 0)
+          ORDER BY c.inspection_date DESC, c.id DESC
+          LIMIT 1
+        ),
+        b.current_odometer_km
+      ) AS latest_checkup_km
     FROM buses b
     LEFT JOIN employees d ON b.assigned_driver_id = d.id
     LEFT JOIN employees h ON b.assigned_helper_id = h.id
@@ -1409,13 +1440,24 @@ app.delete('/api/maintenance-schedules/:id', (req: Request, res: Response) => {
 app.get('/api/tyre-maintenance', (req: Request, res: Response) => {
   const { bus_id } = req.query;
   let query = `
-    SELECT t.*, b.bus_number, b.registration_number, b.current_odometer_km
+    SELECT t.*, b.bus_number, b.registration_number, b.current_odometer_km,
+      COALESCE(
+        (
+          SELECT CASE WHEN c.closing_km > 0 THEN c.closing_km ELSE c.starting_km END
+          FROM bus_condition_inspections c
+          WHERE c.bus_id = t.bus_id AND (c.closing_km > 0 OR c.starting_km > 0)
+          ORDER BY c.inspection_date DESC, c.id DESC
+          LIMIT 1
+        ),
+        b.current_odometer_km,
+        t.installation_km
+      ) AS latest_km
     FROM tyre_records t
-    JOIN buses b ON t.bus_id = b.id
+    LEFT JOIN buses b ON t.bus_id = b.id
     WHERE 1=1
   `;
   const params: any[] = [];
-  if (bus_id) {
+  if (bus_id && bus_id !== 'undefined' && bus_id !== 'null' && bus_id !== 'All') {
     query += ' AND t.bus_id = ?';
     params.push(bus_id);
   }
@@ -1456,6 +1498,30 @@ app.post('/api/tyre-maintenance', (req: Request, res: Response) => {
   );
 
   logAudit('TYRE_ADD', 'Tyre Maintenance', info.lastInsertRowid, `Logged tyre ${t.tyre_serial_number} on position ${t.tyre_position}`);
+
+  // Automatically record into wheel_allotments so it shows in Wheel Allotment & Tyre Rotation tab
+  try {
+    db.prepare(`
+      INSERT INTO wheel_allotments (
+        bus_id, action_type, event_date, current_km, tyre_serial_number,
+        from_position, to_position, technician, tread_depth_mm, pressure_psi, notes, target_km
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      t.bus_id,
+      'Allotment',
+      t.installation_date || new Date().toISOString().split('T')[0],
+      t.installation_km || 0,
+      t.tyre_serial_number,
+      'New Stock',
+      t.tyre_position || 'Front Left',
+      'Fleet Team',
+      t.tread_depth_mm || 10,
+      t.tyre_pressure_psi || 110,
+      t.remarks || 'Mounted Tyre',
+      10000
+    );
+  } catch (_) {}
+
   return res.status(201).json({ id: info.lastInsertRowid, message: 'Tyre record saved successfully' });
 });
 
@@ -1503,39 +1569,336 @@ app.delete('/api/tyre-maintenance/:id', (req: Request, res: Response) => {
   }
 });
 
+// ================= NEW TYRES (INVENTORY / PURCHASES) =================
+app.get('/api/new-tyres', (req: Request, res: Response) => {
+  try {
+    const { status, bus_id } = req.query;
+    let query = `
+      SELECT n.*, b.bus_number, b.registration_number
+      FROM new_tyres n
+      LEFT JOIN buses b ON n.allocated_bus_id = b.id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+    if (status && status !== 'all') {
+      query += ' AND n.status = ?';
+      params.push(status);
+    }
+    if (bus_id && bus_id !== 'undefined' && bus_id !== 'all') {
+      query += ' AND n.allocated_bus_id = ?';
+      params.push(bus_id);
+    }
+    query += ' ORDER BY n.purchase_date DESC, n.id DESC';
+    const records = db.prepare(query).all(...params);
+    return res.json(records);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/new-tyres', (req: Request, res: Response) => {
+  try {
+    const n = req.body;
+    const initialKm = Number(n.km) || 0;
+    const presentKm = Number(n.present_km) || 0;
+    const runningKm = presentKm >= initialKm ? presentKm - initialKm : (Number(n.running_km) || 0);
+
+    const stmt = db.prepare(`
+      INSERT INTO new_tyres (
+        purchase_date, quantity, tyre_serial_number, km, present_km, running_km,
+        brand, size, model, supplier, invoice_number, purchase_cost, status,
+        allocated_bus_id, allocated_wheel_position, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const info = stmt.run(
+      n.purchase_date || new Date().toISOString().split('T')[0],
+      Number(n.quantity) || 1,
+      n.tyre_serial_number,
+      initialKm,
+      presentKm,
+      runningKm,
+      n.brand || 'MRF',
+      n.size || '295/80 R22.5',
+      n.model || '',
+      n.supplier || '',
+      n.invoice_number || '',
+      Number(n.purchase_cost) || 0,
+      n.status || 'In Stock',
+      n.allocated_bus_id || null,
+      n.allocated_wheel_position || '',
+      n.notes || ''
+    );
+
+    logAudit('NEW_TYRE_ADD', 'New Tyres', info.lastInsertRowid, `Added new tyre ${n.tyre_serial_number} to inventory`);
+    return res.status(201).json({ id: info.lastInsertRowid, message: 'New tyre added to stock' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/new-tyres/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const n = req.body;
+    const initialKm = Number(n.km) || 0;
+    const presentKm = Number(n.present_km) || 0;
+    const runningKm = presentKm >= initialKm ? presentKm - initialKm : (Number(n.running_km) || 0);
+
+    db.prepare(`
+      UPDATE new_tyres SET
+        purchase_date = ?, quantity = ?, tyre_serial_number = ?, km = ?, present_km = ?, running_km = ?,
+        brand = ?, size = ?, model = ?, supplier = ?, invoice_number = ?, purchase_cost = ?, status = ?,
+        allocated_bus_id = ?, allocated_wheel_position = ?, notes = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      n.purchase_date || new Date().toISOString().split('T')[0],
+      Number(n.quantity) || 1,
+      n.tyre_serial_number,
+      initialKm,
+      presentKm,
+      runningKm,
+      n.brand || 'MRF',
+      n.size || '295/80 R22.5',
+      n.model || '',
+      n.supplier || '',
+      n.invoice_number || '',
+      Number(n.purchase_cost) || 0,
+      n.status || 'In Stock',
+      n.allocated_bus_id || null,
+      n.allocated_wheel_position || '',
+      n.notes || '',
+      id
+    );
+
+    logAudit('NEW_TYRE_UPDATE', 'New Tyres', id, `Updated new tyre ${n.tyre_serial_number}`);
+    return res.json({ message: 'New tyre updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/new-tyres/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    db.prepare('DELETE FROM new_tyres WHERE id = ?').run(id);
+    logAudit('NEW_TYRE_DELETE', 'New Tyres', id, `Deleted new tyre ID ${id}`);
+    return res.json({ success: true, message: 'New tyre deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ================= WHEEL ALLOTMENT & TYRE ROTATION =================
+app.get('/api/wheel-allotments', (req: Request, res: Response) => {
+  try {
+    const { bus_id, action_type } = req.query;
+
+    // Auto-sync any mounted tyres from tyre_records into wheel_allotments if missing
+    try {
+      db.prepare(`
+        INSERT INTO wheel_allotments (
+          bus_id, action_type, event_date, current_km, tyre_serial_number,
+          from_position, to_position, technician, tread_depth_mm, pressure_psi, notes, target_km
+        )
+        SELECT 
+          t.bus_id,
+          'Allotment',
+          COALESCE(t.installation_date, date('now')),
+          COALESCE(t.installation_km, 0),
+          t.tyre_serial_number,
+          'New Stock',
+          COALESCE(t.tyre_position, 'Front Left'),
+          'Fleet Team',
+          COALESCE(t.tread_depth_mm, 10),
+          COALESCE(t.tyre_pressure_psi, 110),
+          COALESCE(t.remarks, 'Mounted Tyre'),
+          10000
+        FROM tyre_records t
+        WHERE t.is_active = 1
+          AND NOT EXISTS (
+            SELECT 1 FROM wheel_allotments w 
+            WHERE w.bus_id = t.bus_id AND w.tyre_serial_number = t.tyre_serial_number
+          )
+      `).run();
+    } catch (_) {}
+
+    let query = `
+      SELECT w.*, b.bus_number, b.registration_number,
+        COALESCE(
+          (SELECT MAX(CASE 
+             WHEN closing_km IS NOT NULL AND closing_km > 0 THEN closing_km 
+             WHEN starting_km IS NOT NULL AND starting_km > 0 THEN starting_km 
+             WHEN odometer_km IS NOT NULL AND odometer_km > 0 THEN odometer_km 
+             ELSE 0 END)
+           FROM bus_condition_inspections 
+           WHERE bus_id = w.bus_id),
+          b.current_odometer_km,
+          0
+        ) AS latest_vehicle_km
+      FROM wheel_allotments w
+      LEFT JOIN buses b ON w.bus_id = b.id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+    if (bus_id && bus_id !== 'undefined' && bus_id !== 'all') {
+      query += ' AND w.bus_id = ?';
+      params.push(bus_id);
+    }
+    if (action_type && action_type !== 'all') {
+      query += ' AND w.action_type = ?';
+      params.push(action_type);
+    }
+    query += ' ORDER BY w.event_date DESC, w.id DESC';
+    const records = db.prepare(query).all(...params);
+    return res.json(records);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/wheel-allotments', (req: Request, res: Response) => {
+  try {
+    const w = req.body;
+    const targetKm = Number(w.target_km) > 0 ? Number(w.target_km) : 10000;
+    const stmt = db.prepare(`
+      INSERT INTO wheel_allotments (
+        bus_id, action_type, event_date, current_km, tyre_serial_number,
+        from_position, to_position, technician, tread_depth_mm, pressure_psi, notes, target_km
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const info = stmt.run(
+      w.bus_id,
+      w.action_type || 'Rotation',
+      w.event_date || new Date().toISOString().split('T')[0],
+      w.current_km || 0,
+      w.tyre_serial_number,
+      w.from_position || 'Stock',
+      w.to_position,
+      w.technician || '',
+      w.tread_depth_mm || null,
+      w.pressure_psi || null,
+      w.notes || '',
+      targetKm
+    );
+
+    // If it's a rotation, also update the position in tyre_records if tyre exists
+    try {
+      db.prepare(`
+        UPDATE tyre_records SET
+          tyre_position = ?,
+          rotation_date = ?,
+          last_inspection_date = ?,
+          tread_depth_mm = COALESCE(?, tread_depth_mm),
+          tyre_pressure_psi = COALESCE(?, tyre_pressure_psi),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE bus_id = ? AND tyre_serial_number = ?
+      `).run(
+        w.to_position,
+        w.event_date || new Date().toISOString().split('T')[0],
+        w.event_date || new Date().toISOString().split('T')[0],
+        w.tread_depth_mm || null,
+        w.pressure_psi || null,
+        w.bus_id,
+        w.tyre_serial_number
+      );
+    } catch (_) {}
+
+    logAudit('WHEEL_ALLOTMENT_ADD', 'Wheel Allotment & Rotation', info.lastInsertRowid, `Logged ${w.action_type} for tyre ${w.tyre_serial_number} on bus ID ${w.bus_id}`);
+    return res.status(201).json({ id: info.lastInsertRowid, message: 'Allotment / Rotation record saved' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/wheel-allotments/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const w = req.body;
+    const targetKm = Number(w.target_km) > 0 ? Number(w.target_km) : 10000;
+    db.prepare(`
+      UPDATE wheel_allotments SET
+        bus_id = ?, action_type = ?, event_date = ?, current_km = ?,
+        tyre_serial_number = ?, from_position = ?, to_position = ?,
+        technician = ?, tread_depth_mm = ?, pressure_psi = ?, notes = ?, target_km = ?
+      WHERE id = ?
+    `).run(
+      w.bus_id,
+      w.action_type || 'Rotation',
+      w.event_date || new Date().toISOString().split('T')[0],
+      w.current_km || 0,
+      w.tyre_serial_number,
+      w.from_position || 'Stock',
+      w.to_position,
+      w.technician || '',
+      w.tread_depth_mm || null,
+      w.pressure_psi || null,
+      w.notes || '',
+      targetKm,
+      id
+    );
+
+    logAudit('WHEEL_ALLOTMENT_UPDATE', 'Wheel Allotment & Rotation', id, `Updated allotment/rotation record ID ${id}`);
+    return res.json({ message: 'Record updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/wheel-allotments/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    db.prepare('DELETE FROM wheel_allotments WHERE id = ?').run(id);
+    logAudit('WHEEL_ALLOTMENT_DELETE', 'Wheel Allotment & Rotation', id, `Deleted allotment/rotation record ID ${id}`);
+    return res.json({ success: true, message: 'Record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= AC MAINTENANCE =================
 app.get('/api/ac-maintenance', (req: Request, res: Response) => {
   const { bus_id } = req.query;
   let query = `
     SELECT a.*, b.bus_number, b.registration_number
     FROM ac_maintenance_records a
-    JOIN buses b ON a.bus_id = b.id
+    LEFT JOIN buses b ON a.bus_id = b.id
     WHERE 1=1
   `;
   const params: any[] = [];
-  if (bus_id) {
+  if (bus_id && bus_id !== 'undefined' && bus_id !== 'null' && bus_id !== 'all') {
     query += ' AND a.bus_id = ?';
     params.push(bus_id);
   }
-  query += ' ORDER BY a.inspection_date DESC';
+  query += ' ORDER BY COALESCE(a.inspection_date, a.created_at) DESC, a.id DESC';
   const records = db.prepare(query).all(...params);
   return res.json(records);
 });
 
 app.post('/api/ac-maintenance', (req: Request, res: Response) => {
   const a = req.body;
+  const today = new Date().toISOString().split('T')[0];
+  let filterStatus = a.filter_status || 'Active';
+  if (a.filter_expiry_date && a.filter_expiry_date < today) {
+    filterStatus = 'Expired';
+  }
+
   const stmt = db.prepare(`
     INSERT INTO ac_maintenance_records (
       bus_id, inspection_date, current_km, ac_working_status, cooling_performance,
       refrigerant_check, filter_cleaning_replacement, compressor_condition, leak_inspection,
       electrical_check, issue_description, work_performed, service_provider, next_service_date,
-      next_service_km, service_cost, technician, status, remarks
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      next_service_km, service_cost, technician, status, remarks,
+      filter_cleaning_date, filter_expiry_date, general_checkup_date, general_checkup_expiry_date,
+      filter_proof_photo, general_checkup_photo, filter_renewal_date, filter_status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const info = stmt.run(
     a.bus_id,
-    a.inspection_date || new Date().toISOString().split('T')[0],
+    a.inspection_date || today,
     a.current_km || 0,
     a.ac_working_status || 'Working',
     a.cooling_performance || 'Good',
@@ -1552,7 +1915,15 @@ app.post('/api/ac-maintenance', (req: Request, res: Response) => {
     a.service_cost || 0,
     a.technician || '',
     a.status || 'Completed',
-    a.remarks || ''
+    a.remarks || '',
+    a.filter_cleaning_date || null,
+    a.filter_expiry_date || null,
+    a.general_checkup_date || null,
+    a.general_checkup_expiry_date || null,
+    a.filter_proof_photo || null,
+    a.general_checkup_photo || null,
+    a.filter_renewal_date || null,
+    filterStatus
   );
 
   logAudit('AC_SERVICE_ADD', 'AC Maintenance', info.lastInsertRowid, `Logged AC service for bus ID ${a.bus_id}`);
@@ -1562,6 +1933,12 @@ app.post('/api/ac-maintenance', (req: Request, res: Response) => {
 app.put('/api/ac-maintenance/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   const a = req.body;
+  const today = new Date().toISOString().split('T')[0];
+  let filterStatus = a.filter_status || 'Active';
+  if (a.filter_expiry_date && a.filter_expiry_date < today) {
+    filterStatus = 'Expired';
+  }
+
   try {
     db.prepare(`
       UPDATE ac_maintenance_records SET
@@ -1570,11 +1947,18 @@ app.put('/api/ac-maintenance/:id', (req: Request, res: Response) => {
         compressor_condition = ?, leak_inspection = ?, electrical_check = ?,
         issue_description = ?, work_performed = ?, service_provider = ?,
         next_service_date = ?, next_service_km = ?, service_cost = ?,
-        technician = ?, status = ?, remarks = ?, updated_at = CURRENT_TIMESTAMP
+        technician = ?, status = ?, remarks = ?,
+        filter_cleaning_date = ?, filter_expiry_date = ?,
+        general_checkup_date = ?, general_checkup_expiry_date = ?,
+        filter_proof_photo = COALESCE(?, filter_proof_photo),
+        general_checkup_photo = COALESCE(?, general_checkup_photo),
+        filter_renewal_date = COALESCE(?, filter_renewal_date),
+        filter_status = ?,
+        updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
       a.bus_id,
-      a.inspection_date || new Date().toISOString().split('T')[0],
+      a.inspection_date || today,
       a.current_km || 0,
       a.ac_working_status || 'Working',
       a.cooling_performance || 'Good',
@@ -1592,10 +1976,95 @@ app.put('/api/ac-maintenance/:id', (req: Request, res: Response) => {
       a.technician || '',
       a.status || 'Completed',
       a.remarks || '',
+      a.filter_cleaning_date || null,
+      a.filter_expiry_date || null,
+      a.general_checkup_date || null,
+      a.general_checkup_expiry_date || null,
+      a.filter_proof_photo || null,
+      a.general_checkup_photo || null,
+      a.filter_renewal_date || null,
+      filterStatus,
       id
     );
     logAudit('AC_SERVICE_UPDATE', 'AC Maintenance', id, `Updated AC service record ID ${id}`);
     return res.json({ message: 'AC maintenance record updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/ac-maintenance/:id/renew-filter', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { filter_cleaning_date, filter_expiry_date, filter_proof_photo, remarks } = req.body;
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    let filterStatus = 'Active';
+    if (filter_expiry_date && filter_expiry_date <= today) {
+      filterStatus = 'Expired';
+    }
+
+    // 1. Fetch previous record
+    const prev = db.prepare('SELECT * FROM ac_maintenance_records WHERE id = ?').get(id) as any;
+    if (!prev) {
+      return res.status(404).json({ error: 'Record not found' });
+    }
+
+    // 2. Mark previous record as Expired so before data remains permanently visible as Expired
+    db.prepare(`
+      UPDATE ac_maintenance_records SET
+        filter_status = 'Expired',
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(id);
+
+    // 3. Insert NEW record for the next renewed cycle
+    const insertStmt = db.prepare(`
+      INSERT INTO ac_maintenance_records (
+        bus_id, inspection_date, current_km, ac_working_status, cooling_performance,
+        refrigerant_check, filter_cleaning_replacement, compressor_condition, leak_inspection,
+        electrical_check, issue_description, work_performed, service_provider, next_service_date,
+        next_service_km, service_cost, technician, status, remarks,
+        filter_cleaning_date, filter_expiry_date, general_checkup_date, general_checkup_expiry_date,
+        filter_proof_photo, general_checkup_photo, filter_renewal_date, filter_status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const info = insertStmt.run(
+      prev.bus_id,
+      filter_cleaning_date || today,
+      prev.current_km || 0,
+      'Working',
+      prev.cooling_performance || 'Good',
+      prev.refrigerant_check || 'Normal',
+      'Filter Renewed',
+      prev.compressor_condition || 'Good',
+      prev.leak_inspection || 'No leaks',
+      prev.electrical_check || 'Normal',
+      `Filter renewed from previous cycle (Record #${id})`,
+      'Filter renewal with proof photo',
+      prev.service_provider || '',
+      prev.next_service_date || null,
+      prev.next_service_km || null,
+      0,
+      prev.technician || '',
+      'Completed',
+      remarks || `Renewed on ${today}`,
+      filter_cleaning_date || today,
+      filter_expiry_date || null,
+      prev.general_checkup_date || null,
+      prev.general_checkup_expiry_date || null,
+      filter_proof_photo || null,
+      prev.general_checkup_photo || null,
+      today,
+      filterStatus
+    );
+
+    logAudit('AC_FILTER_RENEWAL', 'AC Maintenance', info.lastInsertRowid, `Renewed AC filter for record ID ${id}, created new cycle record ID ${info.lastInsertRowid}`);
+    return res.json({
+      success: true,
+      newId: info.lastInsertRowid,
+      message: 'Filter renewed! Previous record kept as Expired and next renewed record created successfully.'
+    });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
@@ -2098,25 +2567,25 @@ app.delete('/api/repairs/:id', (req: Request, res: Response) => {
   }
 });
 
-// ================= BUS CONDITION INSPECTION =================
+// ================= BUS CONDITION INSPECTION (DAILY VEHICLE CHECKUP) =================
 app.get('/api/bus-condition', (req: Request, res: Response) => {
   const { bus_id, roadworthiness } = req.query;
   let query = `
-    SELECT c.*, b.bus_number, b.registration_number
+    SELECT c.*, b.bus_number, b.registration_number, b.model as bus_model_name, b.make as bus_make_name
     FROM bus_condition_inspections c
-    JOIN buses b ON c.bus_id = b.id
+    LEFT JOIN buses b ON c.bus_id = b.id
     WHERE 1=1
   `;
   const params: any[] = [];
-  if (bus_id) {
+  if (bus_id && bus_id !== 'undefined' && bus_id !== 'null' && bus_id !== 'All' && bus_id !== '') {
     query += ' AND c.bus_id = ?';
     params.push(bus_id);
   }
-  if (roadworthiness && roadworthiness !== 'All') {
+  if (roadworthiness && roadworthiness !== 'All' && roadworthiness !== 'undefined') {
     query += ' AND c.roadworthiness_status = ?';
     params.push(roadworthiness);
   }
-  query += ' ORDER BY c.inspection_date DESC';
+  query += ' ORDER BY c.inspection_date DESC, c.id DESC';
 
   const inspections = db.prepare(query).all(...params);
   return res.json(inspections);
@@ -2124,12 +2593,13 @@ app.get('/api/bus-condition', (req: Request, res: Response) => {
 
 app.post('/api/bus-condition', (req: Request, res: Response) => {
   const c = req.body;
-  if (!c.bus_id || !c.inspector_name) {
-    return res.status(400).json({ error: 'Bus and inspector name are required' });
+  if (!c.bus_id) {
+    return res.status(400).json({ error: 'Bus is required' });
   }
 
+  const inspectorName = c.inspector_name || c.mechanic_supervisor || c.driver_name || 'Inspector';
   const count = (db.prepare('SELECT COUNT(*) as count FROM bus_condition_inspections').get() as any).count + 1;
-  const inspectionRef = `INS-2026-${String(count).padStart(3, '0')}`;
+  const inspectionRef = `DVC-2026-${String(count).padStart(3, '0')}`;
 
   const stmt = db.prepare(`
     INSERT INTO bus_condition_inspections (
@@ -2137,17 +2607,18 @@ app.post('/api/bus-condition', (req: Request, res: Response) => {
       exterior_body, tyre_condition, brake_condition, engine_condition, battery_condition,
       ac_condition, lights_condition, mirrors_condition, windshield_condition, wiper_condition,
       doors_emergency_exits, seat_condition, safety_equipment, fluid_levels, visible_leaks,
-      roadworthiness_status, defects_found, corrective_action_required, inspector_remarks
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      roadworthiness_status, defects_found, corrective_action_required, inspector_remarks,
+      driver_name, vehicle_model, starting_km, closing_km, route_trip, reporting_time, mechanic_supervisor, checklist_data
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const info = stmt.run(
     inspectionRef,
     c.bus_id,
     c.inspection_date || new Date().toISOString().split('T')[0],
-    c.inspection_time || '10:00',
-    c.odometer_km || 0,
-    c.inspector_name,
+    c.inspection_time || c.reporting_time || '10:00',
+    c.odometer_km || c.starting_km || 0,
+    inspectorName,
     c.exterior_body || 'Good',
     c.tyre_condition || 'Good',
     c.brake_condition || 'Good',
@@ -2166,7 +2637,15 @@ app.post('/api/bus-condition', (req: Request, res: Response) => {
     c.roadworthiness_status || 'Fit for Service',
     c.defects_found || '',
     c.corrective_action_required || '',
-    c.inspector_remarks || ''
+    c.inspector_remarks || '',
+    c.driver_name || '',
+    c.vehicle_model || '',
+    c.starting_km || c.odometer_km || 0,
+    c.closing_km || 0,
+    c.route_trip || '',
+    c.reporting_time || c.inspection_time || '',
+    c.mechanic_supervisor || inspectorName,
+    typeof c.checklist_data === 'string' ? c.checklist_data : JSON.stringify(c.checklist_data || [])
   );
 
   // If inspection marked Not Fit for Service, update bus operational status
@@ -2174,13 +2653,23 @@ app.post('/api/bus-condition', (req: Request, res: Response) => {
     db.prepare("UPDATE buses SET operational_status = 'Under Maintenance', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(c.bus_id);
   }
 
-  logAudit('INSPECTION_ADD', 'Bus Condition', info.lastInsertRowid, `Logged inspection ${inspectionRef} (${c.roadworthiness_status})`);
-  return res.status(201).json({ id: info.lastInsertRowid, inspectionRef, message: 'Inspection checklist recorded successfully' });
+  // Automatically sync kilometers into bus current odometer
+  const latestKm = Number(c.closing_km) > 0 
+    ? Number(c.closing_km) 
+    : (Number(c.starting_km) > 0 ? Number(c.starting_km) : Number(c.odometer_km) || 0);
+
+  if (latestKm > 0 && c.bus_id) {
+    db.prepare("UPDATE buses SET current_odometer_km = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(latestKm, c.bus_id);
+  }
+
+  logAudit('INSPECTION_ADD', 'Bus Condition', info.lastInsertRowid, `Logged daily checkup ${inspectionRef}`);
+  return res.status(201).json({ id: info.lastInsertRowid, inspectionRef, message: 'Vehicle check report recorded successfully' });
 });
 
 app.put('/api/bus-condition/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   const c = req.body;
+  const inspectorName = c.inspector_name || c.mechanic_supervisor || c.driver_name || 'Inspector';
   try {
     db.prepare(`
       UPDATE bus_condition_inspections SET
@@ -2191,14 +2680,16 @@ app.put('/api/bus-condition/:id', (req: Request, res: Response) => {
         doors_emergency_exits = ?, seat_condition = ?, safety_equipment = ?,
         fluid_levels = ?, visible_leaks = ?, roadworthiness_status = ?,
         defects_found = ?, corrective_action_required = ?, inspector_remarks = ?,
+        driver_name = ?, vehicle_model = ?, starting_km = ?, closing_km = ?,
+        route_trip = ?, reporting_time = ?, mechanic_supervisor = ?, checklist_data = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
       c.bus_id,
       c.inspection_date || new Date().toISOString().split('T')[0],
-      c.inspection_time || '10:00',
-      c.odometer_km || 0,
-      c.inspector_name,
+      c.inspection_time || c.reporting_time || '10:00',
+      c.odometer_km || c.starting_km || 0,
+      inspectorName,
       c.exterior_body || 'Good',
       c.tyre_condition || 'Good',
       c.brake_condition || 'Good',
@@ -2218,10 +2709,27 @@ app.put('/api/bus-condition/:id', (req: Request, res: Response) => {
       c.defects_found || '',
       c.corrective_action_required || '',
       c.inspector_remarks || '',
+      c.driver_name || '',
+      c.vehicle_model || '',
+      c.starting_km || c.odometer_km || 0,
+      c.closing_km || 0,
+      c.route_trip || '',
+      c.reporting_time || c.inspection_time || '',
+      c.mechanic_supervisor || inspectorName,
+      typeof c.checklist_data === 'string' ? c.checklist_data : JSON.stringify(c.checklist_data || []),
       id
     );
-    logAudit('INSPECTION_UPDATE', 'Bus Condition', id, `Updated inspection ID ${id}`);
-    return res.json({ message: 'Inspection checklist updated successfully' });
+
+    // Automatically sync kilometers into bus current odometer
+    const latestKm = Number(c.closing_km) > 0 
+      ? Number(c.closing_km) 
+      : (Number(c.starting_km) > 0 ? Number(c.starting_km) : Number(c.odometer_km) || 0);
+
+    if (latestKm > 0 && c.bus_id) {
+      db.prepare("UPDATE buses SET current_odometer_km = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(latestKm, c.bus_id);
+    }
+    logAudit('INSPECTION_UPDATE', 'Bus Condition', id, `Updated vehicle checkup ID ${id}`);
+    return res.json({ message: 'Vehicle check report updated successfully' });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }

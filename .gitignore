@@ -15,6 +15,7 @@ build/
 *.local
 
 # Database & SQLite files
+*.sqlite
 *.db-shm
 *.db-wal
 server/data/*.db-shm

@@ -23,7 +23,8 @@ import {
   Sparkles,
   Save,
   Check,
-  X
+  X,
+  ClipboardList
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -245,6 +246,14 @@ export const SupportDashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center flex-wrap gap-2.5">
+          <button
+            onClick={() => navigate('/supporter/tasks')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] shadow-sm transition-all cursor-pointer"
+          >
+            <ClipboardList className="w-3.5 h-3.5" />
+            <span>Trip Tasks & Schedule</span>
+          </button>
+
           <button
             onClick={() => setIsConditionModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all"

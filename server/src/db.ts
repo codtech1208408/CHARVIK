@@ -514,6 +514,26 @@ export function initDatabase() {
       // Column already exists — safe to ignore
     }
 
+    // Migrate: add daily vehicle check report columns to bus_condition_inspections
+    try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN driver_name TEXT DEFAULT ''`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN vehicle_model TEXT DEFAULT ''`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN starting_km INTEGER DEFAULT 0`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN closing_km INTEGER DEFAULT 0`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN route_trip TEXT DEFAULT ''`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN reporting_time TEXT DEFAULT ''`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN mechanic_supervisor TEXT DEFAULT ''`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN checklist_data TEXT DEFAULT ''`).run(); } catch (_) {}
+
+    // Migrations for ac_maintenance_records
+    try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN filter_cleaning_date DATE`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN filter_expiry_date DATE`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN general_checkup_date DATE`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN general_checkup_expiry_date DATE`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN filter_proof_photo TEXT`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN general_checkup_photo TEXT`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN filter_renewal_date DATE`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN filter_status TEXT DEFAULT 'Active'`).run(); } catch (_) {}
+
     // Create organizer_payments table
     db.prepare(`
       CREATE TABLE IF NOT EXISTS organizer_payments (
@@ -525,6 +545,127 @@ export function initDatabase() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run();
+
+    // Create new_tyres table for new tyre stock / purchases
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS new_tyres (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        purchase_date DATE NOT NULL,
+        quantity INTEGER DEFAULT 1,
+        tyre_serial_number TEXT NOT NULL,
+        km INTEGER DEFAULT 0,
+        present_km INTEGER DEFAULT 0,
+        running_km INTEGER DEFAULT 0,
+        brand TEXT NOT NULL,
+        size TEXT NOT NULL,
+        model TEXT,
+        supplier TEXT,
+        invoice_number TEXT,
+        purchase_cost REAL DEFAULT 0,
+        status TEXT DEFAULT 'In Stock',
+        allocated_bus_id INTEGER REFERENCES buses(id),
+        allocated_wheel_position TEXT,
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    // Migrate new_tyres columns
+    try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN quantity INTEGER DEFAULT 1`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN km INTEGER DEFAULT 0`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN present_km INTEGER DEFAULT 0`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN running_km INTEGER DEFAULT 0`).run(); } catch (_) {}
+
+    // Create wheel_allotments table for wheel allotment and tyre rotations
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS wheel_allotments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        bus_id INTEGER NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+        action_type TEXT DEFAULT 'Rotation',
+        event_date DATE NOT NULL,
+        current_km INTEGER,
+        tyre_serial_number TEXT NOT NULL,
+        from_position TEXT,
+        to_position TEXT NOT NULL,
+        technician TEXT,
+        tread_depth_mm REAL,
+        pressure_psi REAL,
+        notes TEXT,
+        target_km INTEGER DEFAULT 10000,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    // Migrate wheel_allotments columns
+    try { db.prepare(`ALTER TABLE wheel_allotments ADD COLUMN target_km INTEGER DEFAULT 10000`).run(); } catch (_) {}
+
+    // Seed default wheel allotments and tyre records for fleet vehicles if empty
+    const allotmentCount = db.prepare('SELECT COUNT(*) as count FROM wheel_allotments').get() as any;
+    if (!allotmentCount || allotmentCount.count === 0) {
+      const bus1 = db.prepare("SELECT id, current_odometer_km FROM buses WHERE bus_number = 'AP16TV1234' OR id = 1").get() as any;
+      const bus2 = db.prepare("SELECT id, current_odometer_km FROM buses WHERE bus_number = 'AP16TC4567' OR id = 2").get() as any;
+
+      if (bus1) {
+        const bus1Id = bus1.id;
+        const insertAllotment = db.prepare(`
+          INSERT INTO wheel_allotments (
+            bus_id, action_type, event_date, current_km, tyre_serial_number,
+            from_position, to_position, technician, tread_depth_mm, pressure_psi, notes, target_km
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        const insertTyreRecord = db.prepare(`
+          INSERT OR IGNORE INTO tyre_records (
+            bus_id, tyre_serial_number, brand, size, tyre_position, installation_date,
+            installation_km, last_inspection_date, tread_depth_mm, tyre_pressure_psi, condition, is_active
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        `);
+
+        const bus1Tyres = [
+          { serial: 'MRF-2026-001', pos: 'Front Left', fittedKm: 38000, targetKm: 10000, tread: 11, psi: 110 },
+          { serial: 'MRF-2026-002', pos: 'Front Right', fittedKm: 38000, targetKm: 10000, tread: 11, psi: 110 },
+          { serial: 'APO-2026-103', pos: 'Rear Left Outer', fittedKm: 35000, targetKm: 10000, tread: 7, psi: 115 },
+          { serial: 'APO-2026-104', pos: 'Rear Left Inner', fittedKm: 41000, targetKm: 10000, tread: 12, psi: 115 },
+          { serial: 'APO-2026-105', pos: 'Rear Right Outer', fittedKm: 35000, targetKm: 10000, tread: 7, psi: 115 },
+          { serial: 'APO-2026-106', pos: 'Rear Right Inner', fittedKm: 41000, targetKm: 10000, tread: 12, psi: 115 },
+        ];
+
+        for (const t of bus1Tyres) {
+          insertAllotment.run(bus1Id, 'Allotment', '2026-10-30', t.fittedKm, t.serial, 'New Stock', t.pos, 'Fleet Team', t.tread, t.psi, 'Standard Allotment', t.targetKm);
+          insertTyreRecord.run(bus1Id, t.serial, 'MRF', '295/80 R22.5', t.pos, '2026-10-30', t.fittedKm, '2026-10-30', t.tread, t.psi, 'Good');
+        }
+      }
+
+      if (bus2) {
+        const bus2Id = bus2.id;
+        const insertAllotment = db.prepare(`
+          INSERT INTO wheel_allotments (
+            bus_id, action_type, event_date, current_km, tyre_serial_number,
+            from_position, to_position, technician, tread_depth_mm, pressure_psi, notes, target_km
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        const insertTyreRecord = db.prepare(`
+          INSERT OR IGNORE INTO tyre_records (
+            bus_id, tyre_serial_number, brand, size, tyre_position, installation_date,
+            installation_km, last_inspection_date, tread_depth_mm, tyre_pressure_psi, condition, is_active
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        `);
+
+        const bus2Tyres = [
+          { serial: 'JKT-2026-201', pos: 'Front Left', fittedKm: 28000, targetKm: 10000, tread: 10, psi: 110 },
+          { serial: 'JKT-2026-202', pos: 'Front Right', fittedKm: 28000, targetKm: 10000, tread: 10, psi: 110 },
+          { serial: 'CEAT-2026-303', pos: 'Rear Left Outer', fittedKm: 22000, targetKm: 10000, tread: 6, psi: 115 },
+          { serial: 'CEAT-2026-304', pos: 'Rear Right Outer', fittedKm: 22000, targetKm: 10000, tread: 6, psi: 115 },
+        ];
+
+        for (const t of bus2Tyres) {
+          insertAllotment.run(bus2Id, 'Allotment', '2026-10-30', t.fittedKm, t.serial, 'New Stock', t.pos, 'Fleet Team', t.tread, t.psi, 'Standard Allotment', t.targetKm);
+          insertTyreRecord.run(bus2Id, t.serial, 'JK Tyre', '295/80 R22.5', t.pos, '2026-10-30', t.fittedKm, '2026-10-30', t.tread, t.psi, 'Good');
+        }
+      }
+    }
 
     // Seed default transit routes if empty
     const routeCount = db.prepare('SELECT COUNT(*) as count FROM transit_routes').get() as any;

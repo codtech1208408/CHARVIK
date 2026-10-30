@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   LayoutGrid,
@@ -28,7 +28,10 @@ import {
   AlertTriangle,
   Wrench,
   Users,
-  IndianRupee
+  IndianRupee,
+  Snowflake,
+  ClipboardCheck,
+  RotateCw
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -66,6 +69,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Track expanded/collapsed state of sidebar items with sub-menus
+  const [subMenusOpen, setSubMenusOpen] = useState<Record<string, boolean>>({});
+
+  const toggleSubMenu = (route: string, currentExpanded: boolean) => {
+    setSubMenusOpen((prev) => ({
+      ...prev,
+      [route]: !currentExpanded
+    }));
+  };
 
   const isCaptain = location.pathname.startsWith('/captain');
   const isSupporter = location.pathname.startsWith('/supporter');
@@ -122,6 +135,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: IndianRupee,
       activeRoutes: ['/admin/employee-payments']
     },
+    {
+      label: 'Earnings',
+      route: '/admin/earnings',
+      icon: TrendingUp,
+      activeRoutes: ['/admin/earnings']
+    },
   ];
 
   const vehicleMaintenanceTabs: NavItemLeaf[] = [
@@ -132,10 +151,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
       activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers']
     },
     {
+      label: 'Daily Vehicle Checkup',
+      route: '/admin/daily-vehicle-checkup',
+      icon: ClipboardCheck,
+      activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition']
+    },
+    {
+      label: 'AC Maintenance',
+      route: '/admin/ac-maintenance',
+      icon: Snowflake,
+      activeRoutes: ['/admin/ac-maintenance']
+    },
+    {
       label: 'Tyre Maintenance',
       route: '/admin/tyre-maintenance',
       icon: CircleDot,
-      activeRoutes: ['/admin/tyre-maintenance']
+      activeRoutes: ['/admin/tyre-maintenance'],
+      subItems: [
+        {
+          label: 'Tyre Maintenance',
+          route: '/admin/tyre-maintenance?tab=maintenance',
+          icon: Disc,
+          activeRoutes: ['/admin/tyre-maintenance?tab=maintenance', '/admin/tyre-maintenance']
+        },
+        {
+          label: 'New Tyres',
+          route: '/admin/tyre-maintenance?tab=new_tyres',
+          icon: Package,
+          activeRoutes: ['/admin/tyre-maintenance?tab=new_tyres']
+        },
+        {
+          label: 'Wheel Allotment & Tyre Rotation',
+          route: '/admin/tyre-maintenance?tab=allotment_rotation',
+          icon: RotateCw,
+          activeRoutes: ['/admin/tyre-maintenance?tab=allotment_rotation']
+        }
+      ]
     },
     {
       label: 'Product Management',
@@ -147,7 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Cleaning Management',
       route: '/admin/cleaning',
       icon: Droplets,
-      activeRoutes: ['/admin/cleaning', '/admin/bus-condition']
+      activeRoutes: ['/admin/cleaning']
     },
   ];
 
@@ -174,7 +225,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         '/admin/organizers',
         '/admin/employee-registration',
         '/admin/employees',
-        '/admin/employee-payments'
+        '/admin/employee-payments',
+        '/admin/earnings'
       ]
     },
     {
@@ -191,12 +243,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ]
     },
     {
-      label: 'Earnings',
-      route: '/admin/earnings',
-      icon: TrendingUp,
-      activeRoutes: ['/admin/earnings']
-    },
-    {
       label: 'Website Inquiries',
       route: '/admin/inquiries',
       icon: Bell,
@@ -209,17 +255,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Vehicle Management', route: '/captain/buses', icon: Truck },
     { label: 'Mileage & Fueling', route: '/captain/daily-kilometers', icon: Fuel },
     { label: 'Cleaning Management', route: '/captain/bus-condition', icon: Droplets },
-    { label: 'Complaints & Defects', route: '/captain/complaints', icon: AlertTriangle },
-    { label: 'Maintenance Schedule', route: '/captain/maintenance-schedule', icon: CalendarDays },
-    { label: 'Tyre Maintenance', route: '/captain/tyre-maintenance', icon: CircleDot },
+    {
+      label: 'Tyre Maintenance',
+      route: '/captain/tyre-maintenance',
+      icon: CircleDot,
+      activeRoutes: ['/captain/tyre-maintenance'],
+      subItems: [
+        {
+          label: 'Tyre Maintenance',
+          route: '/captain/tyre-maintenance?tab=maintenance',
+          icon: Disc,
+          activeRoutes: ['/captain/tyre-maintenance?tab=maintenance', '/captain/tyre-maintenance']
+        },
+        {
+          label: 'New Tyres',
+          route: '/captain/tyre-maintenance?tab=new_tyres',
+          icon: Package,
+          activeRoutes: ['/captain/tyre-maintenance?tab=new_tyres']
+        },
+        {
+          label: 'Wheel Allotment & Tyre Rotation',
+          route: '/captain/tyre-maintenance?tab=allotment_rotation',
+          icon: RotateCw,
+          activeRoutes: ['/captain/tyre-maintenance?tab=allotment_rotation']
+        }
+      ]
+    },
     { label: 'Battery Check', route: '/captain/battery-maintenance', icon: BatteryCharging },
   ];
 
   const supporterNavItems: NavItemLeaf[] = [
     { label: 'Dashboard', route: '/supporter/dashboard', icon: LayoutGrid, hasLiveBadge: true },
+    { label: 'Trip Tasks', route: '/supporter/tasks', icon: ClipboardList, activeRoutes: ['/supporter/tasks'] },
+    { label: 'Repairs', route: '/supporter/repairs', icon: Wrench, activeRoutes: ['/supporter/repairs'] },
     { label: 'Cleaning Management', route: '/supporter/bus-condition', icon: Droplets },
     { label: 'Complaints & Issues', route: '/supporter/complaints', icon: AlertTriangle },
-    { label: 'Repairs & Tasks', route: '/supporter/repairs', icon: Wrench },
     { label: 'Mileage & Fueling', route: '/supporter/daily-kilometers', icon: Fuel },
     { label: 'Maintenance Schedule', route: '/supporter/maintenance-schedule', icon: CalendarDays },
     { label: 'Vehicle Fleet', route: '/supporter/buses', icon: Truck },
@@ -240,7 +310,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       location.pathname.startsWith('/admin/employees') ||
       location.pathname.startsWith('/admin/drivers') ||
       location.pathname.startsWith('/admin/support-staff') ||
-      location.pathname.startsWith('/admin/employee-payments'));
+      location.pathname.startsWith('/admin/employee-payments') ||
+      location.pathname.startsWith('/admin/earnings'));
 
   const isVehicleMaintenanceModule =
     !isDashboard &&
@@ -248,6 +319,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     !isSupporter &&
     (location.pathname.startsWith('/admin/mileage-fueling') ||
       location.pathname.startsWith('/admin/daily-kilometers') ||
+      location.pathname.startsWith('/admin/daily-vehicle-checkup') ||
+      location.pathname.startsWith('/admin/vehicle-checkup') ||
       location.pathname.startsWith('/admin/vehicle-maintenance') ||
       location.pathname.startsWith('/admin/tyre-maintenance') ||
       location.pathname.startsWith('/admin/products') ||
@@ -325,20 +398,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          {/* Logo - Always shows the full Charvik brand logo */}
-          <div className="w-full flex items-center justify-center">
-            <div className={`w-full rounded-2xl bg-white flex items-center justify-center shadow-xs border border-slate-200/90 overflow-hidden hover:border-blue-400 transition-all ${
-              isCollapsed ? 'px-1 py-1 max-w-[68px]' : 'px-3 py-1.5 max-w-full'
-            }`}>
-              <img
-                src="/logo-compact.png"
-                alt="Charvik Staffing Consultancy"
-                className={`w-auto object-contain transition-all duration-200 ${
-                  isCollapsed ? 'max-h-[44px] max-w-full' : 'max-h-[62px] max-w-[88%]'
-                }`}
-              />
+          {/* Logo - Matches Image 1; Hidden when collapsed so only ONE logo shows on screen */}
+          {!isCollapsed && (
+            <div className="w-full flex items-center justify-center">
+              <div className="w-full rounded-2xl bg-white flex items-center justify-center shadow-xs border-2 border-blue-400 px-3 py-2 max-w-full overflow-hidden hover:border-blue-500 transition-all">
+                <img
+                  src="/logo-compact.png"
+                  alt="Charvik Staffing Consultancy"
+                  className="max-h-[72px] h-[68px] w-auto object-contain transition-all duration-200"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {!isCollapsed && (
             <div className="w-full mt-2 flex items-center justify-center">
@@ -412,40 +483,114 @@ export const Sidebar: React.FC<SidebarProps> = ({
               ? item.activeRoutes.some((r) => location.pathname === r || location.pathname.startsWith(r + '/'))
               : location.pathname === item.route || location.pathname.startsWith(item.route + '/');
 
-            return (
-              <NavLink
-                key={item.route}
-                to={item.route}
-                onClick={() => setIsMobileOpen(false)}
-                className={`flex items-center px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group relative ${
-                  isItemActive
-                    ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
-                    : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
-                } ${isCollapsed ? 'justify-center px-2' : ''}`}
-                title={isCollapsed ? item.label : undefined}
-              >
-                <Icon
-                  className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
-                    isItemActive ? 'text-white' : 'text-[#2563EB]'
-                  } ${isCollapsed ? '' : 'mr-3'}`}
-                />
-                {!isCollapsed && (
-                  <span className="truncate flex-1 tracking-tight">{item.label}</span>
-                )}
+            const currentTab = new URLSearchParams(location.search).get('tab') || 'maintenance';
+            const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
+            const defaultExpanded = isItemActive && hasSubItems && !isCollapsed;
+            const isSubMenuExpanded = hasSubItems && !isCollapsed && (subMenusOpen[item.route] !== undefined ? subMenusOpen[item.route] : defaultExpanded);
 
-                {/* LIVE Badge on Dashboard */}
-                {!isCollapsed && item.hasLiveBadge && (
-                  <span
-                    className={`ml-auto px-2 py-0.5 text-[10px] font-black uppercase rounded-full tracking-wider ${
-                      isItemActive
-                        ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
-                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    }`}
-                  >
-                    LIVE
-                  </span>
+            return (
+              <div key={item.route} className="space-y-1">
+                <NavLink
+                  to={item.route}
+                  onClick={() => {
+                    setIsMobileOpen(false);
+                    if (hasSubItems) {
+                      if (isItemActive) {
+                        // Clicking active item toggles sub-menu
+                        toggleSubMenu(item.route, isSubMenuExpanded);
+                      } else {
+                        // When navigating to it, ensure sub-menu is opened
+                        setSubMenusOpen((prev) => ({ ...prev, [item.route]: true }));
+                      }
+                    }
+                  }}
+                  className={`flex items-center px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group relative ${
+                    isItemActive
+                      ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
+                      : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
+                  } ${isCollapsed ? 'justify-center px-2' : ''}`}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  <Icon
+                    className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
+                      isItemActive ? 'text-white' : 'text-[#2563EB]'
+                    } ${isCollapsed ? '' : 'mr-3'}`}
+                  />
+                  {!isCollapsed && (
+                    <span className="truncate flex-1 tracking-tight">{item.label}</span>
+                  )}
+
+                  {/* LIVE Badge on Dashboard */}
+                  {!isCollapsed && item.hasLiveBadge && (
+                    <span
+                      className={`ml-auto px-2 py-0.5 text-[10px] font-black uppercase rounded-full tracking-wider ${
+                        isItemActive
+                          ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
+                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }`}
+                    >
+                      LIVE
+                    </span>
+                  )}
+
+                  {/* Expand / Collapse Indicator Button */}
+                  {!isCollapsed && hasSubItems && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleSubMenu(item.route, isSubMenuExpanded);
+                      }}
+                      className={`p-1 -mr-1 rounded-lg transition-all cursor-pointer ${
+                        isItemActive
+                          ? 'hover:bg-white/20 text-white'
+                          : 'hover:bg-slate-200/80 text-slate-500'
+                      }`}
+                      title={isSubMenuExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
+                      aria-label={isSubMenuExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
+                    >
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          isSubMenuExpanded ? 'rotate-180 text-white' : isItemActive ? 'text-white' : 'text-slate-400'
+                        }`}
+                      />
+                    </button>
+                  )}
+                </NavLink>
+
+                {/* Sub-items (Shows only when clicking Tyre Maintenance) */}
+                {isSubMenuExpanded && (
+                  <div className="mt-1 ml-3 pl-3 pr-2 py-1.5 border-l-2 border-blue-400/80 bg-blue-50/50 rounded-r-2xl space-y-1">
+                    {item.subItems!.map((sub) => {
+                      const SubIcon = sub.icon;
+                      const isSubActive =
+                        (currentTab === 'maintenance' && (sub.route.includes('tab=maintenance') || sub.route === '/admin/tyre-maintenance' || sub.route === '/captain/tyre-maintenance')) ||
+                        (currentTab === 'new_tyres' && sub.route.includes('tab=new_tyres')) ||
+                        (currentTab === 'allotment_rotation' && sub.route.includes('tab=allotment_rotation'));
+
+                      return (
+                        <NavLink
+                          key={sub.route}
+                          to={sub.route}
+                          onClick={() => setIsMobileOpen(false)}
+                          className={`flex items-center px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                            isSubActive
+                              ? 'bg-blue-600 text-white shadow-xs font-extrabold'
+                              : 'text-slate-700 hover:text-blue-700 hover:bg-white/80'
+                          }`}
+                        >
+                          <SubIcon className={`w-3.5 h-3.5 mr-2 shrink-0 ${isSubActive ? 'text-white' : 'text-blue-600'}`} />
+                          <span className="truncate flex-1">{sub.label}</span>
+                          {isSubActive && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-white ml-1.5 shrink-0" />
+                          )}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
                 )}
-              </NavLink>
+              </div>
             );
           })}
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Wrench,
   Plus,
@@ -11,7 +12,8 @@ import {
   Trash2,
   DollarSign,
   ShieldCheck,
-  Check
+  Check,
+  ClipboardList
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { RepairWorkOrder, Bus as BusType, Complaint } from '../types';
@@ -21,6 +23,8 @@ import { useToast } from '../components/common/Toast';
 
 export const Repairs: React.FC = () => {
   const { success, error } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [repairs, setRepairs] = useState<RepairWorkOrder[]>([]);
   const [buses, setBuses] = useState<BusType[]>([]);
@@ -190,6 +194,24 @@ export const Repairs: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Top Module Navigation: Repairs & Tasks */}
+      <div className="flex items-center space-x-2 border-b border-slate-200 pb-3">
+        <button
+          className="px-4 py-2 rounded-xl text-xs font-bold bg-[#142B4A] text-white shadow-xs flex items-center gap-1.5 cursor-pointer"
+        >
+          <Wrench className="w-3.5 h-3.5" />
+          <span>Vehicle Repairs & Work Orders</span>
+        </button>
+
+        <button
+          onClick={() => navigate(location.pathname.startsWith('/supporter') ? '/supporter/tasks' : '/admin/tasks')}
+          className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+        >
+          <ClipboardList className="w-3.5 h-3.5 text-blue-600" />
+          <span>Trip Tasks & Crew Schedule</span>
+        </button>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>

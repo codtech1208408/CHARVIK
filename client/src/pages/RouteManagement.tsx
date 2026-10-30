@@ -36,10 +36,26 @@ export interface RouteItem {
 const STORAGE_KEY = 'charvik_route_management_data';
 
 const DEFAULT_ROUTES: RouteItem[] = [
-  { id: 1, service_number: 'SRV-101', starting_city: 'Hyderabad', ending_city: 'Bangalore', destination_km: 570, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 25000, operator_commission: 3500 },
-  { id: 2, service_number: 'SRV-204', starting_city: 'Hyderabad', ending_city: 'Vijayawada', destination_km: 275, vehicle_type: 'Seating/Sleeper', status: 'Active', trip_amount: 14000, operator_commission: 2000 },
-  { id: 3, service_number: 'SRV-305', starting_city: 'Bangalore', ending_city: 'Chennai', destination_km: 345, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 18000, operator_commission: 2500 },
-  { id: 4, service_number: 'SRV-412', starting_city: 'Hyderabad', ending_city: 'Visakhapatnam', destination_km: 620, vehicle_type: 'Seating/Sleeper', status: 'Active', trip_amount: 28000, operator_commission: 4000 }
+  { id: 1, service_number: '2080', starting_city: 'Bengaluru', ending_city: 'Tirupati', destination_km: 250, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 16000, operator_commission: 2400 },
+  { id: 2, service_number: '2168', starting_city: 'Bengaluru', ending_city: 'Tirupati', destination_km: 250, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 16000, operator_commission: 2400 },
+  { id: 3, service_number: '2214', starting_city: 'Bengaluru', ending_city: 'Tirupati', destination_km: 250, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 16000, operator_commission: 2400 },
+  { id: 4, service_number: '1838', starting_city: 'Bengaluru', ending_city: 'Tirupati', destination_km: 250, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 16000, operator_commission: 2400 },
+  { id: 5, service_number: '2081', starting_city: 'Bengaluru', ending_city: 'Tirupati', destination_km: 250, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 16000, operator_commission: 2400 },
+  { id: 6, service_number: '2215', starting_city: 'Bengaluru', ending_city: 'Tirupati', destination_km: 250, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 16000, operator_commission: 2400 },
+  { id: 7, service_number: '2173', starting_city: 'Tirupati', ending_city: 'Bengaluru', destination_km: 250, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 16000, operator_commission: 2400 },
+  { id: 8, service_number: '3473', starting_city: 'Tirupati', ending_city: 'Vijayawada', destination_km: 380, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 20000, operator_commission: 3000 },
+  { id: 9, service_number: '3474', starting_city: 'Vijayawada', ending_city: 'Tirupati', destination_km: 380, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 20000, operator_commission: 3000 },
+  { id: 10, service_number: '3483', starting_city: 'Tirupati', ending_city: 'Hyderabad', destination_km: 560, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 26000, operator_commission: 3900 },
+  { id: 11, service_number: '3482', starting_city: 'Hyderabad', ending_city: 'Tirupati', destination_km: 560, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 26000, operator_commission: 3900 },
+  { id: 12, service_number: '1525', starting_city: 'Tirupati', ending_city: 'Hyderabad', destination_km: 560, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 26000, operator_commission: 3900 },
+  { id: 13, service_number: '1526', starting_city: 'Hyderabad', ending_city: 'Tirupati', destination_km: 560, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 26000, operator_commission: 3900 },
+  { id: 14, service_number: '2044', starting_city: 'Hyderabad', ending_city: 'Vijayawada', destination_km: 275, vehicle_type: 'Seating/Sleeper', status: 'Active', trip_amount: 14000, operator_commission: 2000 },
+  { id: 15, service_number: '2046', starting_city: 'Vijayawada', ending_city: 'Hyderabad', destination_km: 275, vehicle_type: 'Seating/Sleeper', status: 'Active', trip_amount: 14000, operator_commission: 2000 },
+  { id: 16, service_number: '1948', starting_city: 'Hyderabad', ending_city: 'Chirala', destination_km: 305, vehicle_type: 'Seating/Sleeper', status: 'Active', trip_amount: 15500, operator_commission: 2200 },
+  { id: 17, service_number: 'SRV-101', starting_city: 'Hyderabad', ending_city: 'Bangalore', destination_km: 570, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 25000, operator_commission: 3500 },
+  { id: 18, service_number: 'SRV-204', starting_city: 'Hyderabad', ending_city: 'Vijayawada', destination_km: 275, vehicle_type: 'Seating/Sleeper', status: 'Active', trip_amount: 14000, operator_commission: 2000 },
+  { id: 19, service_number: 'SRV-305', starting_city: 'Bangalore', ending_city: 'Chennai', destination_km: 345, vehicle_type: 'Full Sleeper', status: 'Active', trip_amount: 18000, operator_commission: 2500 },
+  { id: 20, service_number: 'SRV-412', starting_city: 'Hyderabad', ending_city: 'Visakhapatnam', destination_km: 620, vehicle_type: 'Seating/Sleeper', status: 'Active', trip_amount: 28000, operator_commission: 4000 }
 ];
 
 const normalizeRoute = (item: any, idx: number): RouteItem => {

@@ -119,6 +119,7 @@ export const DriverRegistration: React.FC = () => {
 
   const validateStep = (stepNumber: number): string | null => {
     if (stepNumber === 1) {
+      if (!formData.employee_code?.trim()) return 'Please enter Employee ID';
       if (!formData.full_name?.trim()) return 'Please enter Full Name as per Aadhaar';
       if (!formData.date_of_birth) return 'Please select Date of Birth (DOB)';
       if (!formData.phone_number?.trim()) return 'Please enter 10-digit Phone Number';
@@ -328,7 +329,22 @@ export const DriverRegistration: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Employee ID */}
+                <div>
+                  <label className="block text-xs font-bold text-[#142B4A] mb-1">
+                    Employee ID *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.employee_code}
+                    onChange={(e) => handleInputChange('employee_code', e.target.value)}
+                    placeholder="e.g. EMP-DRV-1001"
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold text-blue-700"
+                    required
+                  />
+                </div>
+
                 {/* 2. Gender */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>

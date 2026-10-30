@@ -608,6 +608,43 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* =========================================================================
+          AC FILTER EXPIRY & RENEWAL ALERT BANNER (If any expired / expiring)
+         ========================================================================= */}
+      {(() => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const acRecords = data?.recentAc || [];
+        const expiredFilters = acRecords.filter((a: any) => a.filter_expiry_date && a.filter_expiry_date < todayStr);
+        if (expiredFilters.length === 0) return null;
+
+        return (
+          <div className="bg-gradient-to-r from-rose-500/10 via-amber-500/10 to-transparent border border-rose-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-rose-500 text-white shadow-sm flex-shrink-0">
+                <Snowflake className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-rose-950 flex items-center gap-2">
+                  <span>AC Filter Renewal Required ({expiredFilters.length} Bus{expiredFilters.length > 1 ? 'es' : ''})</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white">Action Due</span>
+                </h4>
+                <p className="text-[11px] text-rose-800 mt-0.5">
+                  Filters on {expiredFilters.map((f: any) => f.bus_number || `Bus #${f.bus_id}`).join(', ')} have passed their expiry date. Renew filter with photo proof to ensure cabin air quality.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => navigate('/admin/ac-maintenance')}
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer whitespace-nowrap self-start sm:self-auto"
+            >
+              <span>Renew Filters Now</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        );
+      })()}
+
+      {/* =========================================================================
           5. UPCOMING MAINTENANCE (NEXT 5) - Table as per Section 3.1
          ========================================================================= */}
       <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
@@ -979,44 +1016,104 @@ export const Dashboard: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 2: Tyre Records */}
+          {/* TAB 2: Tyre Records & Wheel Allotments */}
           {activeTab === 'tyres' && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
-                    <th className="py-2 px-3 font-semibold text-center w-12">S.NO</th>
-                    <th className="py-2 px-3 font-semibold">Bus</th>
-                    <th className="py-2 px-3 font-semibold">Serial #</th>
-                    <th className="py-2 px-3 font-semibold">Position</th>
-                    <th className="py-2 px-3 font-semibold">Brand / Size</th>
-                    <th className="py-2 px-3 font-semibold">Tread Depth</th>
-                    <th className="py-2 px-3 font-semibold">Condition</th>
+                    <th className="py-2.5 px-3 font-semibold text-center w-12">S.NO</th>
+                    <th className="py-2.5 px-3 font-semibold">VEHICLE NUMBER</th>
+                    <th className="py-2.5 px-3 font-semibold">TYRE NUMBER</th>
+                    <th className="py-2.5 px-3 font-semibold">FITTED KM</th>
+                    <th className="py-2.5 px-3 font-semibold">TARGET KM</th>
+                    <th className="py-2.5 px-3 font-semibold">TOTAL TYRE KM</th>
+                    <th className="py-2.5 px-3 font-semibold">TYRE PENDING KM</th>
+                    <th className="py-2.5 px-3 font-semibold text-center">STATUS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {(data?.recentTyres || []).map((t: any, idx: number) => (
-                    <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
-                      <td className="py-2.5 px-3 font-bold text-blue-600">{t.bus_number}</td>
-                      <td className="py-2.5 px-3 font-mono text-slate-700">{t.tyre_serial_number}</td>
-                      <td className="py-2.5 px-3 text-slate-600">{t.tyre_position}</td>
-                      <td className="py-2.5 px-3 text-slate-800 font-medium">{t.brand} ({t.size})</td>
-                      <td className="py-2.5 px-3 font-bold text-slate-900">{t.tread_depth_mm} mm</td>
-                      <td className="py-2.5 px-3">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          {t.condition}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                  {(data?.recentTyres || []).length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
-                        No tyre maintenance records logged yet.
-                      </td>
-                    </tr>
-                  )}
+                  {((data?.recentWheelAllotments && data.recentWheelAllotments.length > 0)
+                    ? data.recentWheelAllotments
+                    : (data?.recentTyres || [])
+                  ).map((t: any, idx: number) => {
+                    const fittedKm = Number(t.current_km || t.installation_km) || 0;
+                    const latestKm = Math.max(Number(t.latest_vehicle_km) || 0, fittedKm);
+                    const totalTyreKm = Math.max(0, latestKm - fittedKm);
+                    const targetKm = Number(t.target_km) > 0 ? Number(t.target_km) : 10000;
+                    const pendingKm = Math.max(0, targetKm - totalTyreKm);
+                    const isLimitReached = totalTyreKm >= targetKm;
+                    const percentRun = Math.min(100, Math.round((totalTyreKm / targetKm) * 100));
+
+                    return (
+                      <tr key={t.id || idx} className={`hover:bg-slate-50/80 transition-colors ${isLimitReached ? 'bg-rose-50/20' : ''}`}>
+                        <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
+                        <td className="py-2.5 px-3 font-black font-mono text-blue-600">
+                          {t.bus_number || (t.bus_id ? `Bus #${t.bus_id}` : '-')}
+                        </td>
+                        <td className="py-2.5 px-3 font-mono font-bold text-slate-800">
+                          <span className="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-xs">
+                            {t.tyre_serial_number}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 font-mono font-bold text-slate-700">
+                          {fittedKm > 0 ? `${fittedKm.toLocaleString('en-IN')} KM` : '0 KM'}
+                        </td>
+                        <td className="py-2.5 px-3 font-mono font-bold text-indigo-700">
+                          <span className="bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded text-xs">
+                            {targetKm.toLocaleString('en-IN')} KM
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 font-mono font-black text-slate-900 whitespace-nowrap">
+                          <div>
+                            <span>{totalTyreKm.toLocaleString('en-IN')} KM</span>
+                            {latestKm > 0 && (
+                              <span className="text-[10px] text-emerald-600 block font-semibold">
+                                Live Checkup: {latestKm.toLocaleString('en-IN')} KM
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">
+                          <div className="space-y-1 min-w-[140px]">
+                            <div className="flex items-center justify-between text-[11px] font-bold">
+                              <span className={isLimitReached ? 'text-rose-600' : 'text-amber-700'}>
+                                {isLimitReached ? '0 KM Pending' : `${pendingKm.toLocaleString('en-IN')} KM Pending`}
+                              </span>
+                              <span className="text-[10px] text-slate-400">{percentRun}%</span>
+                            </div>
+                            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${
+                                  isLimitReached ? 'bg-rose-500' : 'bg-indigo-600'
+                                }`}
+                                style={{ width: `${percentRun}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                          {isLimitReached ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-300">
+                              Limit Reached (Due)
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              Running Normal
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {(!data?.recentWheelAllotments || data.recentWheelAllotments.length === 0) &&
+                    (!data?.recentTyres || data.recentTyres.length === 0) && (
+                      <tr>
+                        <td colSpan={8} className="py-8 text-center text-slate-400 font-medium">
+                          No wheel allotment or tyre rotation records logged yet.
+                        </td>
+                      </tr>
+                    )}
                 </tbody>
               </table>
             </div>
@@ -1029,32 +1126,78 @@ export const Dashboard: React.FC = () => {
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-100 bg-slate-50/60">
                     <th className="py-2 px-3 font-semibold text-center w-12">S.NO</th>
-                    <th className="py-2 px-3 font-semibold">Bus</th>
-                    <th className="py-2 px-3 font-semibold">Working Status</th>
-                    <th className="py-2 px-3 font-semibold">Cooling Performance</th>
-                    <th className="py-2 px-3 font-semibold">Refrigerant Check</th>
-                    <th className="py-2 px-3 font-semibold">Next Due Km</th>
+                    <th className="py-2 px-3 font-semibold">VEHICLE NUMBER</th>
+                    <th className="py-2 px-3 font-semibold">FILTER CLEANING DATE</th>
+                    <th className="py-2 px-3 font-semibold">FILTER EXPIRY DATE</th>
+                    <th className="py-2 px-3 font-semibold text-center">FILTER STATUS</th>
+                    <th className="py-2 px-3 font-semibold text-center">ACTION</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {(data?.recentAc || []).map((a: any, idx: number) => (
-                    <tr key={a.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
-                      <td className="py-2.5 px-3 font-bold text-blue-600">{a.bus_number}</td>
-                      <td className="py-2.5 px-3">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
-                          {a.ac_working_status}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-slate-700 font-medium">{a.cooling_performance}</td>
-                      <td className="py-2.5 px-3 text-slate-500">{a.refrigerant_check}</td>
-                      <td className="py-2.5 px-3 font-bold text-blue-600">{a.next_service_km?.toLocaleString()} km</td>
-                    </tr>
-                  ))}
+                  {(data?.recentAc || []).map((a: any, idx: number) => {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const expiryDateStr = a.filter_expiry_date;
+                    const isExpired = expiryDateStr && (expiryDateStr <= todayStr || a.filter_status === 'Expired');
+                    let diffDays: number | null = null;
+                    if (expiryDateStr) {
+                      const expTime = new Date(expiryDateStr).getTime();
+                      const curTime = new Date(todayStr).getTime();
+                      diffDays = Math.ceil((expTime - curTime) / (1000 * 3600 * 24));
+                    }
+                    const isExpiringSoon = !isExpired && diffDays !== null && diffDays <= 7;
+
+                    return (
+                      <tr key={a.id} className={`hover:bg-slate-50/80 transition-colors ${isExpired ? 'bg-rose-50/20' : ''}`}>
+                        <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
+                        <td className="py-2.5 px-3">
+                          <span className="font-bold text-blue-600 block">{a.bus_number || a.registration_number || (a.bus_id ? `Bus #${a.bus_id}` : '-')}</span>
+                        </td>
+                        <td className="py-2.5 px-3 font-medium text-slate-700">
+                          {a.filter_cleaning_date || a.inspection_date || '-'}
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">
+                          <span className={`font-bold ${isExpired ? 'text-rose-600 underline' : isExpiringSoon ? 'text-amber-600' : 'text-slate-800'}`}>
+                            {a.filter_expiry_date || '-'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                          {isExpired ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
+                              Expired
+                            </span>
+                          ) : isExpiringSoon ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                              Expiring in {diffDays}d
+                            </span>
+                          ) : a.filter_expiry_date ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              Active ({diffDays}d left)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600">
+                              {a.ac_working_status || 'Active'}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                          <button
+                            onClick={() => navigate('/admin/ac-maintenance')}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              isExpired
+                                ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm'
+                                : 'bg-[#142B4A]/10 hover:bg-[#142B4A] hover:text-white text-[#142B4A]'
+                            }`}
+                          >
+                            {isExpired ? 'Renew Filter' : 'View / Manage'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                   {(data?.recentAc || []).length === 0 && (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
-                        No AC maintenance records logged yet.
+                        No AC maintenance & filter records logged yet.
                       </td>
                     </tr>
                   )}

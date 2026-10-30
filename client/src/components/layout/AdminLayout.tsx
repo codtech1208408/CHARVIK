@@ -93,7 +93,7 @@ export const AdminLayout: React.FC = () => {
     if (p.includes('/cleaning')) return 'Cleaning Management';
     if (p.includes('/routes')) return 'Route Management';
     if (p.includes('/organizers')) return 'Organizer Management';
-    if (p.includes('/tasks')) return 'Task Management';
+    if (p.includes('/tasks')) return isSupporterPortal ? 'Trip Tasks & Crew Schedule' : 'Task Management';
     if (p.includes('/employee-registration') || p.includes('/employees') || p.includes('/drivers/new') || p.includes('/support-staff/new')) return 'Employee Registration';
     if (p.includes('/employee-payments')) return 'Employee Payments';
     if (p.includes('/earnings')) return 'Earnings';
@@ -141,6 +141,7 @@ export const AdminLayout: React.FC = () => {
         <Navbar
           onMobileToggle={() => setIsMobileOpen(true)}
           pageTitle={getPageTitle()}
+          isCollapsed={isCollapsed}
         />
 
         <main className={`flex-1 p-4 sm:p-6 lg:p-8 w-full ${isDashboard ? 'max-w-7xl' : 'max-w-[1920px]'} mx-auto pb-24 lg:pb-8`}>

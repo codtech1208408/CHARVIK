@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, ChevronDown, X, Check } from 'lucide-react';
+import { Search, ChevronDown, X, Check, Plus } from 'lucide-react';
 
 export interface SearchOption {
   value: string;
@@ -18,6 +18,7 @@ interface SearchableSelectProps {
   onChange: (value: string, option?: SearchOption) => void;
   className?: string;
   disabled?: boolean;
+  allowCustom?: boolean;
 }
 
 export const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -29,7 +30,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   value,
   onChange,
   className = '',
-  disabled = false
+  disabled = false,
+  allowCustom = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -160,6 +162,17 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
           {/* Options List */}
           <div className="max-h-60 overflow-y-auto p-1 scrollbar-thin scrollbar-thumb-slate-200">
+            {allowCustom && searchQuery.trim() && !options.some((opt) => opt.value.toLowerCase() === searchQuery.trim().toLowerCase()) && (
+              <button
+                type="button"
+                onClick={() => handleSelect({ value: searchQuery.trim(), label: searchQuery.trim(), badge: 'Custom' })}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg text-left bg-blue-50/80 text-blue-700 hover:bg-blue-100 font-semibold cursor-pointer mb-1 border border-blue-200/60"
+              >
+                <Plus className="w-3.5 h-3.5 text-blue-600" />
+                <span>Use "{searchQuery.trim()}" as Route</span>
+              </button>
+            )}
+
             {filteredOptions.length === 0 ? (
               <div className="p-4 text-center text-xs text-slate-400">
                 No matching results found

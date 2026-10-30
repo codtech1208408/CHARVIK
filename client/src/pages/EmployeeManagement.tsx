@@ -1579,7 +1579,7 @@ export const EmployeeManagement: React.FC = () => {
             {[
               { id: 'personal', label: '1. Personal & Photo' },
               { id: 'identity', label: '2. Identity & Documents' },
-              ...(editingEmployee?.role === 'Driver' || editingEmployee?.role === 'Captain' || editFormData.licence_number ? [{ id: 'licence', label: '3. Driving Licence' }] : []),
+              ...(editingEmployee?.role === 'Driver' ? [{ id: 'licence', label: '3. Driving Licence' }] : []),
               { id: 'bank', label: 'Bank Details' },
               { id: 'nominee', label: 'Nominee' },
               { id: 'references', label: 'References' },
@@ -1795,7 +1795,7 @@ export const EmployeeManagement: React.FC = () => {
           )}
 
           {/* TAB 3: Driving Licence */}
-          {editTab === 'licence' && (editingEmployee?.role === 'Driver' || editingEmployee?.role === 'Captain' || editFormData.licence_number) && (
+          {editTab === 'licence' && editingEmployee?.role === 'Driver' && (
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                 <h4 className="text-xs font-bold text-[#142B4A] uppercase tracking-wider">Driving Licence Details</h4>

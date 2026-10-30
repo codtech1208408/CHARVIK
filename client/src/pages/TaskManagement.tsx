@@ -810,11 +810,11 @@ export const TaskManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Table View (Exact User Sequence: S.NO, VEHICLE NUMBER, SERVICE NUMBER, ROUTE CORRIDOR, VEHICLE STATUS, ROUTE OPERATOR, DRIVER1, DRIVER2, HELPER, CAPTAIN, TOTAL, ACTIONS) */}
+      {/* Main Table View (Exact User Sequence: S.NO, VEHICLE NUMBER, SERVICE NUMBER, ROUTE CORRIDOR, VEHICLE STATUS, OPERATOR, DRIVER1, DRIVER2, HELPER, CAPTAIN, TOTAL, ACTIONS) */}
       {activeTab === 'assigned' && (
         <div id="assigned-duties-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs" style={{ minWidth: '1650px' }}>
+            <table className="w-full text-left text-xs" style={{ minWidth: '1350px' }}>
               <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
                 <tr>
                   <th className="py-3 px-3 w-12 text-center">S.NO</th>
@@ -822,20 +822,19 @@ export const TaskManagement: React.FC = () => {
                   <th className="py-3 px-4 min-w-[110px]">SERVICE NUMBER</th>
                   <th className="py-3 px-4 min-w-[160px]">ROUTE CORRIDOR</th>
                   <th className="py-3 px-4 min-w-[110px]">VEHICLE STATUS</th>
-                  <th className="py-3 px-4 min-w-[130px]">ROUTE OPERATOR</th>
-                  <th className="py-3 px-4 min-w-[150px]">TRIP AMOUNT & COMMISSION</th>
+                  <th className="py-3 px-4 min-w-[130px]">OPERATOR</th>
                   <th className="py-3 px-4 min-w-[130px]">DRIVER1</th>
                   <th className="py-3 px-4 min-w-[130px]">DRIVER2</th>
                   <th className="py-3 px-4 min-w-[110px]">HELPER</th>
                   <th className="py-3 px-4 min-w-[110px]">CAPTAIN</th>
                   <th className="py-3 px-4 min-w-[100px]">TOTAL</th>
-                  <th className="py-3 px-4 text-center min-w-[340px]">ACTIONS</th>
+                  <th className="py-3 px-4 text-center min-w-[120px]">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filteredDateTrips.length === 0 ? (
                   <tr>
-                    <td colSpan={13} className="py-14 text-center text-slate-400">
+                    <td colSpan={12} className="py-14 text-center text-slate-400">
                       <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                       <p className="font-semibold text-slate-600">No buses assigned for {selectedDate}.</p>
                       <p className="text-xs text-slate-400 mt-1">
@@ -903,44 +902,9 @@ export const TaskManagement: React.FC = () => {
                           </span>
                         </td>
 
-                        {/* 6. ROUTE OPERATOR */}
+                        {/* 6. OPERATOR */}
                         <td className="py-3.5 px-4 text-slate-700 font-medium text-xs">
                           {t.operator_organizer || 'Charvik Fleet'}
-                        </td>
-
-                        {/* TRIP AMOUNT & COMMISSION */}
-                        <td className="py-3.5 px-4">
-                          {(() => {
-                            const matchedRoute = routes.find(
-                              (r: any) =>
-                                (t.service_number && (r.service_number === t.service_number || r.route_code === t.service_number)) ||
-                                (t.route_corridor && (
-                                  `${r.starting_city} → ${r.ending_city}`.toLowerCase() === t.route_corridor.toLowerCase() ||
-                                  `${r.starting_city} - ${r.ending_city}`.toLowerCase() === t.route_corridor.toLowerCase() ||
-                                  (t.route_corridor.toLowerCase().includes(r.starting_city?.toLowerCase()) &&
-                                   t.route_corridor.toLowerCase().includes(r.ending_city?.toLowerCase()))
-                                ))
-                            );
-                            const tAmt = t.trip_amount !== undefined ? t.trip_amount : matchedRoute?.trip_amount;
-                            const cAmt = t.operator_commission !== undefined ? t.operator_commission : matchedRoute?.operator_commission;
-
-                            return (
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[10px] font-semibold text-slate-500 uppercase">TRIP:</span>
-                                  <span className="font-mono font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
-                                    ₹{tAmt !== undefined ? Number(tAmt).toLocaleString('en-IN') : '0'}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[10px] font-semibold text-slate-500 uppercase">COMM:</span>
-                                  <span className="font-mono font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                                    ₹{cAmt !== undefined ? Number(cAmt).toLocaleString('en-IN') : '0'}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })()}
                         </td>
 
                         {/* 7. DRIVER1 */}
@@ -993,38 +957,9 @@ export const TaskManagement: React.FC = () => {
                           <p className="text-[10px] text-slate-400">Total Payout</p>
                         </td>
 
-                        {/* 12. ACTIONS (MATCHING IMAGE 2 EXACTLY) */}
+                        {/* 12. ACTIONS */}
                         <td className="py-3.5 px-4 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            {/* Mark Completed Button */}
-                            <button
-                              type="button"
-                              onClick={() => handleToggleTripCompleted(t)}
-                              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
-                                t.duty_status === 'Completed'
-                                  ? 'border-blue-600 bg-blue-600 text-white'
-                                  : 'border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100'
-                              }`}
-                              title={t.duty_status === 'Completed' ? 'Trip Completed (Click to Re-open)' : 'Mark Trip as Completed'}
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>{t.duty_status === 'Completed' ? 'Completed' : 'Mark Completed'}</span>
-                            </button>
-
-                            {/* Mark Paid Button */}
-                            <button
-                              type="button"
-                              onClick={() => handleToggleTripPaid(t)}
-                              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
-                                t.payment_status === 'Paid'
-                                  ? 'border-emerald-600 bg-emerald-600 text-white'
-                                  : 'border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                              }`}
-                              title={t.payment_status === 'Paid' ? 'Payout Paid (Click to Mark Pending)' : 'Mark Payout as Paid'}
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                              <span>{t.payment_status === 'Paid' ? 'Paid' : 'Mark Paid'}</span>
-                            </button>
 
                             {/* Edit Button */}
                             <button
