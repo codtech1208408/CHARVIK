@@ -80,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
 
-        {/* When sidebar is collapsed on desktop, Charvik brand logo cleanly without text underneath */}
+        {/* When sidebar is collapsed on desktop, Charvik brand logo with increased size */}
         {isCollapsed && (
           <Link
             to={`${basePrefix}/dashboard`}
@@ -90,17 +90,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
             <img
               src="/logo-compact.png"
               alt="Charvik Staffing Consultancy"
-              className="h-[46px] max-h-[48px] w-auto max-w-[190px] object-contain transition-transform"
+              className="h-[60px] sm:h-[66px] max-h-[70px] w-auto max-w-[240px] object-contain transition-transform hover:scale-105"
             />
           </Link>
         )}
 
-        {/* Page Title beside the logo */}
-        <div className="pl-1 sm:pl-2">
-          <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
-            {pageTitle}
-          </h1>
-        </div>
+        {/* Page Title beside the logo (hidden when on Dashboard per user request) */}
+        {pageTitle && !pageTitle.toLowerCase().includes('dashboard') && (
+          <div className="pl-1 sm:pl-2">
+            <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+              {pageTitle}
+            </h1>
+          </div>
+        )}
       </div>
 
       {/* Middle: Search Box */}

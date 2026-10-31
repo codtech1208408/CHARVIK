@@ -26,7 +26,8 @@ import {
   Sparkles,
   Layers,
   ChevronDown,
-  X
+  X,
+  FileSpreadsheet
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
@@ -87,6 +88,12 @@ export const TaskManagement: React.FC = () => {
   const [organizers, setOrganizers] = useState<any[]>([]);
 
   const [search, setSearch] = useState('');
+  const [staffCategoryFilter, setStaffCategoryFilter] = useState('All Staff Categories');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('All Payment Statuses');
+  const [routeOriginFilter, setRouteOriginFilter] = useState('All Route Origins');
+  const [destinationFilter, setDestinationFilter] = useState('All Destinations');
+  const [fromDateFilter, setFromDateFilter] = useState('');
+  const [toDateFilter, setToDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [activeTab, setActiveTab] = useState<'assigned' | 'pending' | 'all_trips'>('assigned');
 
@@ -208,6 +215,34 @@ export const TaskManagement: React.FC = () => {
       ].filter(Boolean).join(' • ')
     }));
   }, [routes]);
+
+  const uniqueOrigins = useMemo(() => {
+    const set = new Set<string>();
+    routes.forEach((r: any) => {
+      if (r.starting_city) set.add(r.starting_city.trim());
+    });
+    trips.forEach((t) => {
+      if (t.route_corridor) {
+        const parts = t.route_corridor.split(/→|->/);
+        if (parts[0]) set.add(parts[0].trim());
+      }
+    });
+    return Array.from(set).sort();
+  }, [routes, trips]);
+
+  const uniqueDestinations = useMemo(() => {
+    const set = new Set<string>();
+    routes.forEach((r: any) => {
+      if (r.ending_city) set.add(r.ending_city.trim());
+    });
+    trips.forEach((t) => {
+      if (t.route_corridor) {
+        const parts = t.route_corridor.split(/→|->/);
+        if (parts[1]) set.add(parts[1].trim());
+      }
+    });
+    return Array.from(set).sort();
+  }, [routes, trips]);
 
   // Trips strictly on the selected date
   const dateTrips = useMemo(() => {
@@ -563,13 +598,23 @@ export const TaskManagement: React.FC = () => {
     success(`Trip status updated for ${busNumber}`);
   };
 
-  // Filtered date trips strictly for the selected date
+  // Filtered date trips considering date range, vehicle search, staff category, payment status, origin and destination
   const filteredDateTrips = useMemo(() => {
-    return dateTrips.filter((t) => {
+    // Determine base pool of trips
+    const basePool = (fromDateFilter || toDateFilter)
+      ? trips.filter((t) => {
+          if (fromDateFilter && t.trip_start_date < fromDateFilter) return false;
+          if (toDateFilter && t.trip_start_date > toDateFilter) return false;
+          return true;
+        })
+      : dateTrips;
+
+    return basePool.filter((t) => {
       const q = search.toLowerCase().trim();
       const matchSearch =
         !q ||
         t.vehicle_number.toLowerCase().includes(q) ||
+        String(t.id).includes(q) ||
         (t.service_number && t.service_number.toLowerCase().includes(q)) ||
         t.route_corridor.toLowerCase().includes(q) ||
         (t.operator_organizer && t.operator_organizer.toLowerCase().includes(q)) ||
@@ -580,34 +625,94 @@ export const TaskManagement: React.FC = () => {
 
       if (!matchSearch) return false;
 
-      if (statusFilter === 'Active') {
-        return t.duty_status !== 'Completed';
+      // Staff Category filter
+      if (staffCategoryFilter !== 'All Staff Categories') {
+        if (staffCategoryFilter === 'Driver' && !t.driver1?.employee_name && !t.driver2?.employee_name) return false;
+        if (staffCategoryFilter === 'Helper' && !t.helper?.employee_name) return false;
+        if (staffCategoryFilter === 'Captain' && !t.captain?.employee_name) return false;
       }
-      if (statusFilter === 'Completed') {
-        return t.duty_status === 'Completed';
+
+      // Payment Status filter
+      if (paymentStatusFilter !== 'All Payment Statuses') {
+        if ((t.payment_status || 'Pending') !== paymentStatusFilter) return false;
       }
-      if (statusFilter === 'Hold') {
-        return t.vehicle_status.startsWith('HOLD');
+
+      // Route Origin filter
+      if (routeOriginFilter !== 'All Route Origins') {
+        if (!t.route_corridor.toLowerCase().includes(routeOriginFilter.toLowerCase())) return false;
       }
+
+      // Destination filter
+      if (destinationFilter !== 'All Destinations') {
+        if (!t.route_corridor.toLowerCase().includes(destinationFilter.toLowerCase())) return false;
+      }
+
+      // Duty status filter
+      if (statusFilter === 'Active' && t.duty_status === 'Completed') return false;
+      if (statusFilter === 'Completed' && t.duty_status !== 'Completed') return false;
+      if (statusFilter === 'Hold' && !t.vehicle_status.startsWith('HOLD')) return false;
+
       return true;
     });
-  }, [dateTrips, search, statusFilter]);
+  }, [
+    trips,
+    dateTrips,
+    fromDateFilter,
+    toDateFilter,
+    search,
+    staffCategoryFilter,
+    paymentStatusFilter,
+    routeOriginFilter,
+    destinationFilter,
+    statusFilter
+  ]);
 
   // Filtered assigned buses
   const filteredAssignedBuses = useMemo(() => {
     return assignedBusNumbers.filter((busNo) => {
       const bTrips = busGroupMap.get(busNo) || [];
+      const q = search.toLowerCase().trim();
       const matchSearch =
-        busNo.toLowerCase().includes(search.toLowerCase()) ||
+        !q ||
+        busNo.toLowerCase().includes(q) ||
         bTrips.some(
           (t) =>
-            t.route_corridor.toLowerCase().includes(search.toLowerCase()) ||
-            t.driver1.employee_name.toLowerCase().includes(search.toLowerCase()) ||
-            (t.driver2 && t.driver2.employee_name.toLowerCase().includes(search.toLowerCase())) ||
-            (t.captain && t.captain.employee_name.toLowerCase().includes(search.toLowerCase()))
+            t.route_corridor.toLowerCase().includes(q) ||
+            t.driver1.employee_name.toLowerCase().includes(q) ||
+            (t.driver2 && t.driver2.employee_name.toLowerCase().includes(q)) ||
+            (t.captain && t.captain.employee_name.toLowerCase().includes(q))
         );
 
       if (!matchSearch) return false;
+
+      // Staff category filter on bus
+      if (staffCategoryFilter !== 'All Staff Categories') {
+        const matchesStaff = bTrips.some((t) => {
+          if (staffCategoryFilter === 'Driver') return t.driver1?.employee_name || t.driver2?.employee_name;
+          if (staffCategoryFilter === 'Helper') return t.helper?.employee_name;
+          if (staffCategoryFilter === 'Captain') return t.captain?.employee_name;
+          return true;
+        });
+        if (!matchesStaff) return false;
+      }
+
+      // Payment status filter
+      if (paymentStatusFilter !== 'All Payment Statuses') {
+        const matchesPay = bTrips.some((t) => (t.payment_status || 'Pending') === paymentStatusFilter);
+        if (!matchesPay) return false;
+      }
+
+      // Origin filter
+      if (routeOriginFilter !== 'All Route Origins') {
+        const matchesOrg = bTrips.some((t) => t.route_corridor.toLowerCase().includes(routeOriginFilter.toLowerCase()));
+        if (!matchesOrg) return false;
+      }
+
+      // Destination filter
+      if (destinationFilter !== 'All Destinations') {
+        const matchesDst = bTrips.some((t) => t.route_corridor.toLowerCase().includes(destinationFilter.toLowerCase()));
+        if (!matchesDst) return false;
+      }
 
       if (statusFilter === 'Active') {
         return bTrips.some((t) => t.duty_status !== 'Completed');
@@ -620,7 +725,90 @@ export const TaskManagement: React.FC = () => {
       }
       return true;
     });
-  }, [assignedBusNumbers, busGroupMap, search, statusFilter]);
+  }, [
+    assignedBusNumbers,
+    busGroupMap,
+    search,
+    staffCategoryFilter,
+    paymentStatusFilter,
+    routeOriginFilter,
+    destinationFilter,
+    statusFilter
+  ]);
+
+  // Export Tasks to Excel / CSV with vehicle-specific filtering and summary count
+  const handleExportTasksExcel = () => {
+    try {
+      const isFilteredByVeh = !!search.trim();
+      const vehLabel = isFilteredByVeh ? search.trim().toUpperCase() : 'All Vehicles';
+
+      const csvLines: string[] = [];
+      csvLines.push(`"CHARVIK STAFFING CONSULTANCY - TASK MANAGEMENT FLEET DUTY REPORT"`);
+      csvLines.push(`"Vehicle / Search Filter","${vehLabel}"`);
+      csvLines.push(`"Staff Category","${staffCategoryFilter}"`);
+      csvLines.push(`"Payment Status","${paymentStatusFilter}"`);
+      csvLines.push(`"Origin / Destination","${routeOriginFilter} -> ${destinationFilter}"`);
+      csvLines.push(`"Date Range","${fromDateFilter || selectedDate} to ${toDateFilter || selectedDate}"`);
+      csvLines.push(`"Total Matching Tasks Found","${filteredDateTrips.length}"`);
+      csvLines.push(`"Exported At","${new Date().toLocaleString()}"`);
+      csvLines.push('');
+
+      const headers = [
+        'S.No',
+        'Trip Start Date',
+        'Vehicle Number',
+        'Service Number',
+        'Route Corridor',
+        'Vehicle Status',
+        'Operator',
+        'Driver 1',
+        'Driver 2',
+        'Helper',
+        'Captain',
+        'Duty Status',
+        'Payment Status',
+        'Trip Amount (Rs)',
+        'Operator Commission (Rs)',
+        'Trip Remarks'
+      ];
+      csvLines.push(headers.map((h) => `"${h}"`).join(','));
+
+      filteredDateTrips.forEach((t, idx) => {
+        const row = [
+          idx + 1,
+          t.trip_start_date,
+          t.vehicle_number,
+          t.service_number || '',
+          t.route_corridor,
+          t.vehicle_status,
+          t.operator_organizer || '',
+          t.driver1?.employee_name || '',
+          t.driver2?.employee_name || '',
+          t.helper?.employee_name || '',
+          t.captain?.employee_name || '',
+          t.duty_status || '',
+          t.payment_status || 'Pending',
+          t.trip_amount || '',
+          t.operator_commission || '',
+          t.trip_remarks || ''
+        ];
+        csvLines.push(row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(','));
+      });
+
+      const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const safeVeh = isFilteredByVeh ? search.trim().replace(/[^a-zA-Z0-9]/g, '_') : 'All';
+      link.setAttribute('href', url);
+      link.setAttribute('download', `Tasks_Duties_${safeVeh}_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      success(`Exported ${filteredDateTrips.length} task record(s) for ${vehLabel} to Excel!`);
+    } catch {
+      error('Failed to export Excel report.');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -742,10 +930,9 @@ export const TaskManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs and Filter Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto">
+      {/* Navigation Tabs Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
           <button
             onClick={() => setActiveTab('assigned')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
@@ -771,29 +958,16 @@ export const TaskManagement: React.FC = () => {
           </button>
         </div>
 
-        {/* Search & Status Filters */}
-        <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
-          <div className="relative flex-1 md:w-60">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search vehicle, driver, route..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-            />
-          </div>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 outline-none cursor-pointer"
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button
+            type="button"
+            onClick={handleExportTasksExcel}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-emerald-700 hover:text-emerald-800 border border-emerald-300 hover:bg-emerald-50 transition-all cursor-pointer shadow-2xs"
+            title="Download Excel containing filtered vehicle / duty data"
           >
-            <option value="All">All Status</option>
-            <option value="Active">Active Duty</option>
-            <option value="Completed">Completed</option>
-            <option value="Hold">On Hold</option>
-          </select>
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Export Excel</span>
+          </button>
 
           <PrintButton
             title={
@@ -814,6 +988,138 @@ export const TaskManagement: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* Comprehensive Filter Toolbar (Exact Match to User Screenshot) */}
+      <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center gap-2.5">
+        {/* 1. Search task #, vehicle... (amber-focused border matching screenshot) */}
+        <div className="relative min-w-[170px] sm:min-w-[190px]">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search task #, vehicle..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-8 pr-6 py-1.5 text-xs rounded-xl border border-amber-400 focus:ring-1 focus:ring-amber-500 bg-white font-medium outline-none text-slate-800"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* 2. All Staff Categories */}
+        <select
+          value={staffCategoryFilter}
+          onChange={(e) => setStaffCategoryFilter(e.target.value)}
+          className="text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-700 outline-none cursor-pointer"
+        >
+          <option value="All Staff Categories">All Staff Categories</option>
+          <option value="Driver">Driver Assigned</option>
+          <option value="Helper">Helper Assigned</option>
+          <option value="Captain">Captain Assigned</option>
+        </select>
+
+        {/* 3. All Payment Statuses */}
+        <select
+          value={paymentStatusFilter}
+          onChange={(e) => setPaymentStatusFilter(e.target.value)}
+          className="text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-700 outline-none cursor-pointer"
+        >
+          <option value="All Payment Statuses">All Payment Statuses</option>
+          <option value="Paid">Paid</option>
+          <option value="Pending">Pending</option>
+          <option value="Partial">Partial</option>
+        </select>
+
+        {/* 4. All Route Origins */}
+        <select
+          value={routeOriginFilter}
+          onChange={(e) => setRouteOriginFilter(e.target.value)}
+          className="text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-700 outline-none cursor-pointer max-w-[150px] truncate"
+        >
+          <option value="All Route Origins">All Route Origins</option>
+          {uniqueOrigins.map((org) => (
+            <option key={org} value={org}>
+              {org}
+            </option>
+          ))}
+        </select>
+
+        {/* 5. All Destinations */}
+        <select
+          value={destinationFilter}
+          onChange={(e) => setDestinationFilter(e.target.value)}
+          className="text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-700 outline-none cursor-pointer max-w-[150px] truncate"
+        >
+          <option value="All Destinations">All Destinations</option>
+          {uniqueDestinations.map((dst) => (
+            <option key={dst} value={dst}>
+              {dst}
+            </option>
+          ))}
+        </select>
+
+        {/* 6. From Date (dd-mm-yyyy) */}
+        <div className="flex items-center gap-1.5 text-xs border border-slate-200 px-2.5 py-1 rounded-xl bg-slate-50 text-slate-600 font-medium">
+          <span className="text-slate-500 font-bold">From:</span>
+          <input
+            type="date"
+            value={fromDateFilter}
+            onChange={(e) => setFromDateFilter(e.target.value)}
+            className="bg-transparent text-xs font-medium text-slate-700 outline-none cursor-pointer"
+          />
+        </div>
+
+        {/* 7. To Date (dd-mm-yyyy) */}
+        <div className="flex items-center gap-1.5 text-xs border border-slate-200 px-2.5 py-1 rounded-xl bg-slate-50 text-slate-600 font-medium">
+          <span className="text-slate-500 font-bold">To:</span>
+          <input
+            type="date"
+            value={toDateFilter}
+            onChange={(e) => setToDateFilter(e.target.value)}
+            className="bg-transparent text-xs font-medium text-slate-700 outline-none cursor-pointer"
+          />
+        </div>
+
+        {/* Clear Filters Button */}
+        {(search || staffCategoryFilter !== 'All Staff Categories' || paymentStatusFilter !== 'All Payment Statuses' || routeOriginFilter !== 'All Route Origins' || destinationFilter !== 'All Destinations' || fromDateFilter || toDateFilter) && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearch('');
+              setStaffCategoryFilter('All Staff Categories');
+              setPaymentStatusFilter('All Payment Statuses');
+              setRouteOriginFilter('All Route Origins');
+              setDestinationFilter('All Destinations');
+              setFromDateFilter('');
+              setToDateFilter('');
+            }}
+            className="px-2.5 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer ml-auto"
+          >
+            Clear Filters
+          </button>
+        )}
+      </div>
+
+      {/* Helper Notification when vehicle search is active in Task Management */}
+      {search.trim() && (
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-center justify-between">
+          <span>
+            Filtering exclusively for: <strong>{search.toUpperCase()}</strong>. Found{' '}
+            <strong>{filteredDateTrips.length} task duty record(s)</strong>.
+          </span>
+          <button
+            onClick={handleExportTasksExcel}
+            className="text-xs font-bold text-blue-700 underline hover:text-blue-900 cursor-pointer"
+          >
+            Download {search.toUpperCase()} Excel ({filteredDateTrips.length} records) →
+          </button>
+        </div>
+      )}
 
       {/* Main Table View (Exact User Sequence: S.NO, VEHICLE NUMBER, SERVICE NUMBER, ROUTE CORRIDOR, VEHICLE STATUS, OPERATOR, DRIVER1, DRIVER2, HELPER, CAPTAIN, TOTAL, ACTIONS) */}
       {activeTab === 'assigned' && (
