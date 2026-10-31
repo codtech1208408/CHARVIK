@@ -1230,7 +1230,7 @@ export const TyreMaintenance: React.FC = () => {
                                       title="View invoice photo"
                                     >
                                       <Receipt className="w-3 h-3 text-amber-600" />
-                                      {nt.invoice_number ? `Inv: ${nt.invoice_number}` : 'Invoice'}
+                                      <span>Invoice</span>
                                     </button>
                                   )}
                                 </div>
@@ -2266,28 +2266,15 @@ export const TyreMaintenance: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Supplier Name</label>
-              <input
-                type="text"
-                value={newTyreForm.supplier}
-                onChange={(e) => setNewTyreForm({ ...newTyreForm, supplier: e.target.value })}
-                placeholder="e.g. Apex Tyre Agency"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Invoice Number</label>
-              <input
-                type="text"
-                value={newTyreForm.invoice_number}
-                onChange={(e) => setNewTyreForm({ ...newTyreForm, invoice_number: e.target.value })}
-                placeholder="INV-99218"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Supplier Name</label>
+            <input
+              type="text"
+              value={newTyreForm.supplier}
+              onChange={(e) => setNewTyreForm({ ...newTyreForm, supplier: e.target.value })}
+              placeholder="e.g. Apex Tyre Agency"
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+            />
           </div>
 
           {/* Upload Photos Grid: Tyre Photo and Invoice Photo */}
