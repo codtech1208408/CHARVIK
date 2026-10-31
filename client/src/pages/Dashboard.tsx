@@ -1354,9 +1354,7 @@ export const Dashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Expiry Date <span className="text-emerald-600 font-normal">(Auto +4 Days)</span>
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date *</label>
                 <input
                   type="date"
                   required

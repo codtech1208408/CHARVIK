@@ -2784,7 +2784,7 @@ export const TyreMaintenance: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date (Auto +4 Days) *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date *</label>
               <input
                 type="date"
                 required
@@ -2861,7 +2861,7 @@ export const TyreMaintenance: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date (Auto +4 Days) *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date *</label>
                 <input
                   type="date"
                   required
