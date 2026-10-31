@@ -824,8 +824,7 @@ export const BusCondition: React.FC = () => {
               <tr>
                 <th className="py-3 px-4 w-12 text-center">S.NO</th>
                 <th className="py-3 px-4 min-w-[130px]">DATE</th>
-                <th className="py-3 px-4 min-w-[150px]">VEHICLE NO & MODEL</th>
-                <th className="py-3 px-4 min-w-[130px]">DRIVER NAME</th>
+                <th className="py-3 px-4 min-w-[150px]">VEHICLE NO</th>
                 <th className="py-3 px-4 min-w-[140px]">STARTING KM</th>
                 <th className="py-3 px-4 min-w-[140px]">ROUTE / TRIP</th>
                 <th className="py-3 px-4 min-w-[140px]">CHECKUP STATUS</th>
@@ -835,14 +834,14 @@ export const BusCondition: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-14 text-center text-slate-400">
+                  <td colSpan={7} className="py-14 text-center text-slate-400">
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                     Loading vehicle check reports...
                   </td>
                 </tr>
               ) : filteredInspections.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-14 text-center text-slate-400">
+                  <td colSpan={7} className="py-14 text-center text-slate-400">
                     <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                     <p className="font-semibold text-slate-600">No vehicle checkup reports recorded.</p>
                     <p className="text-xs text-slate-400 mt-1">
@@ -868,13 +867,6 @@ export const BusCondition: React.FC = () => {
                         <span className="font-mono font-black text-slate-900 tracking-wider uppercase block">
                           {item.registration_number || bus?.registration_number || item.bus_number || '—'}
                         </span>
-                        <span className="text-[11px] text-slate-500 font-semibold block mt-0.5">
-                          {item.vehicle_model || (bus ? `${bus.make || ''} ${bus.model || ''}`.trim() : 'Fleet Bus')}
-                        </span>
-                      </td>
-
-                      <td className="py-3.5 px-4 font-bold text-slate-800">
-                        {item.driver_name || item.inspector_name || bus?.driver_name || 'Driver Assigned'}
                       </td>
 
                       <td className="py-3.5 px-4 font-mono">
@@ -955,7 +947,7 @@ export const BusCondition: React.FC = () => {
         <form onSubmit={handleSave} className="space-y-4">
           {/* Top Metadata Grid */}
           <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
               <div>
                 <label className="block font-bold text-slate-700 mb-1">Date *</label>
                 <input
@@ -972,34 +964,10 @@ export const BusCondition: React.FC = () => {
                   label="Vehicle No."
                   required
                   placeholder="-- Select Vehicle --"
-                  searchPlaceholder="Search vehicle number, type, model..."
+                  searchPlaceholder="Search vehicle number..."
                   options={busSearchOptions}
                   value={formData.bus_id}
                   onChange={(busId) => handleBusSelectChange(busId)}
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Vehicle Model</label>
-                <input
-                  type="text"
-                  placeholder="e.g. BharatBenz 1624 Sleeper"
-                  value={formData.vehicle_model}
-                  onChange={(e) => setFormData({ ...formData, vehicle_model: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white outline-none font-medium"
-                />
-              </div>
-
-              <div>
-                <SearchableSelect
-                  label="Driver Name"
-                  required
-                  placeholder="-- Search or Select Driver --"
-                  searchPlaceholder="Search driver name or employee ID..."
-                  options={driverSearchOptions}
-                  value={formData.driver_name}
-                  onChange={(val) => setFormData((prev) => ({ ...prev, driver_name: val }))}
-                  allowCustom
                 />
               </div>
 

@@ -190,7 +190,7 @@ export const TyreMaintenance: React.FC = () => {
   const [airFormData, setAirFormData] = useState<any>({
     bus_id: '',
     checkup_date: new Date().toISOString().split('T')[0],
-    expiry_date: addDaysToDate(new Date().toISOString().split('T')[0], 7),
+    expiry_date: addDaysToDate(new Date().toISOString().split('T')[0], 4),
     pressure_psi: 110,
     technician: 'Fleet Team',
     remarks: ''
@@ -198,7 +198,7 @@ export const TyreMaintenance: React.FC = () => {
 
   const [renewAirData, setRenewAirData] = useState({
     checkup_date: new Date().toISOString().split('T')[0],
-    expiry_date: addDaysToDate(new Date().toISOString().split('T')[0], 7),
+    expiry_date: addDaysToDate(new Date().toISOString().split('T')[0], 4),
     pressure_psi: 110,
     technician: 'Fleet Team',
     remarks: ''
@@ -664,7 +664,7 @@ export const TyreMaintenance: React.FC = () => {
     setAirFormData({
       bus_id: firstBus ? String(firstBus.id) : '',
       checkup_date: today,
-      expiry_date: addDaysToDate(today, 7),
+      expiry_date: addDaysToDate(today, 4),
       pressure_psi: 110,
       technician: 'Fleet Team',
       remarks: ''
@@ -677,7 +677,7 @@ export const TyreMaintenance: React.FC = () => {
     setAirFormData({
       bus_id: String(record.bus_id),
       checkup_date: record.checkup_date || new Date().toISOString().split('T')[0],
-      expiry_date: record.expiry_date || addDaysToDate(new Date().toISOString().split('T')[0], 7),
+      expiry_date: record.expiry_date || addDaysToDate(new Date().toISOString().split('T')[0], 4),
       pressure_psi: record.pressure_psi || 110,
       technician: record.technician || 'Fleet Team',
       remarks: record.remarks || ''
@@ -724,7 +724,7 @@ export const TyreMaintenance: React.FC = () => {
     setRenewingAirCheckup(record);
     setRenewAirData({
       checkup_date: today,
-      expiry_date: addDaysToDate(today, 7),
+      expiry_date: addDaysToDate(today, 4),
       pressure_psi: record.pressure_psi || 110,
       technician: record.technician || 'Fleet Team',
       remarks: `Air pressure inspected and renewed on ${today}`
@@ -2789,7 +2789,7 @@ export const TyreMaintenance: React.FC = () => {
                 value={airFormData.checkup_date}
                 onChange={(e) => {
                   const checkup = e.target.value;
-                  const expiry = addDaysToDate(checkup, 7);
+                  const expiry = addDaysToDate(checkup, 4);
                   setAirFormData({ ...airFormData, checkup_date: checkup, expiry_date: expiry });
                 }}
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-semibold"
@@ -2797,7 +2797,7 @@ export const TyreMaintenance: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date (Auto +7 Days) *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date (Auto +4 Days) *</label>
               <input
                 type="date"
                 required
@@ -2854,7 +2854,7 @@ export const TyreMaintenance: React.FC = () => {
         >
           <form onSubmit={handleSaveRenewAir} className="space-y-4">
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-medium">
-              Renewing air pressure checkup for <strong className="font-black text-blue-950">{renewingAirCheckup.bus_number || `Bus #${renewingAirCheckup.bus_id}`}</strong>. The validity will extend to 7 days from checkup date.
+              Renewing air pressure checkup for <strong className="font-black text-blue-950">{renewingAirCheckup.bus_number || `Bus #${renewingAirCheckup.bus_id}`}</strong>. The validity will extend to 4 days from checkup date.
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2866,7 +2866,7 @@ export const TyreMaintenance: React.FC = () => {
                   value={renewAirData.checkup_date}
                   onChange={(e) => {
                     const checkup = e.target.value;
-                    const expiry = addDaysToDate(checkup, 7);
+                    const expiry = addDaysToDate(checkup, 4);
                     setRenewAirData({ ...renewAirData, checkup_date: checkup, expiry_date: expiry });
                   }}
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-semibold"
@@ -2874,7 +2874,7 @@ export const TyreMaintenance: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date (Auto +7 Days) *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Expiry Date (Auto +4 Days) *</label>
                 <input
                   type="date"
                   required

@@ -289,7 +289,7 @@ export const Dashboard: React.FC = () => {
     setRenewingAirRecord(record);
     setRenewAirFormData({
       checkup_date: today,
-      expiry_date: addDaysToDate(today, 7),
+      expiry_date: addDaysToDate(today, 4),
       pressure_psi: record.pressure_psi || 110,
       technician: record.technician || 'Fleet Team',
       remarks: `Air pressure inspected and renewed on ${today}`
@@ -437,17 +437,6 @@ export const Dashboard: React.FC = () => {
             <Bus className="w-6 h-6 text-blue-400" />
           </div>
           <div>
-            {/* Highlighted Dashboard Badge directly above Welcome Admin */}
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black tracking-wider uppercase bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/20">
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                Dashboard
-              </span>
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                • Operations & Control Center
-              </span>
-            </div>
-
             <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-black text-[#142B4A] tracking-tight">
                 Welcome, Admin
@@ -457,9 +446,17 @@ export const Dashboard: React.FC = () => {
                 Fleet Operations Live
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Bus Fleet & Maintenance Management Platform • Section 3.1 Operations Dashboard
-            </p>
+
+            {/* Highlighted Dashboard Badge below the header line */}
+            <div className="flex items-center gap-2.5 mt-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black tracking-wider uppercase bg-blue-600 text-white shadow-md ring-2 ring-blue-500/30">
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                DASHBOARD
+              </span>
+              <span className="text-[11px] font-semibold text-slate-500">
+                • Bus Fleet & Maintenance Management Platform • Section 3.1 Operations Dashboard
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -1345,7 +1342,7 @@ export const Dashboard: React.FC = () => {
                   value={renewAirFormData.checkup_date}
                   onChange={(e) => {
                     const checkup = e.target.value;
-                    const expiry = addDaysToDate(checkup, 7);
+                    const expiry = addDaysToDate(checkup, 4);
                     setRenewAirFormData((prev) => ({
                       ...prev,
                       checkup_date: checkup,
@@ -1358,7 +1355,7 @@ export const Dashboard: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Expiry Date <span className="text-emerald-600 font-normal">(Auto +7 Days)</span>
+                  Expiry Date <span className="text-emerald-600 font-normal">(Auto +4 Days)</span>
                 </label>
                 <input
                   type="date"
