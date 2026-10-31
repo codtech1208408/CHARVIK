@@ -566,6 +566,8 @@ export function initDatabase() {
         allocated_bus_id INTEGER REFERENCES buses(id),
         allocated_wheel_position TEXT,
         notes TEXT,
+        tyre_photo_url TEXT,
+        invoice_photo_url TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -577,6 +579,7 @@ export function initDatabase() {
     try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN present_km INTEGER DEFAULT 0`).run(); } catch (_) {}
     try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN running_km INTEGER DEFAULT 0`).run(); } catch (_) {}
     try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN tyre_photo_url TEXT`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN invoice_photo_url TEXT`).run(); } catch (_) {}
 
     // Create wheel_allotments table for wheel allotment and tyre rotations
     db.prepare(`

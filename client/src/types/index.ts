@@ -173,6 +173,7 @@ export interface NewTyre {
   invoice_number?: string;
   purchase_cost?: number;
   tyre_photo_url?: string;
+  invoice_photo_url?: string;
   status: 'In Stock' | 'Allotted' | 'Scrapped';
   allocated_bus_id?: number;
   bus_number?: string;

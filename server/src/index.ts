@@ -1609,8 +1609,8 @@ app.post('/api/new-tyres', (req: Request, res: Response) => {
       INSERT INTO new_tyres (
         purchase_date, quantity, tyre_serial_number, km, present_km, running_km,
         brand, size, model, supplier, invoice_number, purchase_cost, status,
-        allocated_bus_id, allocated_wheel_position, notes, tyre_photo_url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        allocated_bus_id, allocated_wheel_position, notes, tyre_photo_url, invoice_photo_url
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const info = stmt.run(
@@ -1630,7 +1630,8 @@ app.post('/api/new-tyres', (req: Request, res: Response) => {
       n.allocated_bus_id || null,
       n.allocated_wheel_position || '',
       n.notes || '',
-      n.tyre_photo_url || ''
+      n.tyre_photo_url || '',
+      n.invoice_photo_url || ''
     );
 
     logAudit('NEW_TYRE_ADD', 'New Tyres', info.lastInsertRowid, `Added new tyre ${n.tyre_serial_number} to inventory`);
@@ -1653,7 +1654,7 @@ app.put('/api/new-tyres/:id', (req: Request, res: Response) => {
       UPDATE new_tyres SET
         purchase_date = ?, quantity = ?, tyre_serial_number = ?, km = ?, present_km = ?, running_km = ?,
         brand = ?, size = ?, model = ?, supplier = ?, invoice_number = ?, purchase_cost = ?, status = ?,
-        allocated_bus_id = ?, allocated_wheel_position = ?, notes = ?, tyre_photo_url = ?,
+        allocated_bus_id = ?, allocated_wheel_position = ?, notes = ?, tyre_photo_url = ?, invoice_photo_url = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
@@ -1674,6 +1675,7 @@ app.put('/api/new-tyres/:id', (req: Request, res: Response) => {
       n.allocated_wheel_position || '',
       n.notes || '',
       n.tyre_photo_url || '',
+      n.invoice_photo_url || '',
       id
     );
 

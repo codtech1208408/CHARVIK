@@ -25,6 +25,8 @@ import {
   Upload,
   Image as ImageIcon,
   Camera,
+  Receipt,
+  FileText,
   X,
   Wind,
   RefreshCw
@@ -101,6 +103,7 @@ export const TyreMaintenance: React.FC = () => {
   const [isNewTyreModalOpen, setIsNewTyreModalOpen] = useState(false);
   const [editingNewTyre, setEditingNewTyre] = useState<NewTyre | null>(null);
   const [uploadingTyrePhoto, setUploadingTyrePhoto] = useState(false);
+  const [uploadingInvoicePhoto, setUploadingInvoicePhoto] = useState(false);
   const [previewPhotoModal, setPreviewPhotoModal] = useState<string | null>(null);
 
   const [newTyreForm, setNewTyreForm] = useState<any>({
@@ -114,6 +117,7 @@ export const TyreMaintenance: React.FC = () => {
     supplier: '',
     invoice_number: '',
     tyre_photo_url: '',
+    invoice_photo_url: '',
     status: 'In Stock',
     notes: ''
   });
@@ -375,6 +379,7 @@ export const TyreMaintenance: React.FC = () => {
       supplier: '',
       invoice_number: '',
       tyre_photo_url: '',
+      invoice_photo_url: '',
       status: 'In Stock',
       notes: ''
     });
@@ -394,6 +399,7 @@ export const TyreMaintenance: React.FC = () => {
       supplier: nt.supplier || nt.supplier_name || '',
       invoice_number: nt.invoice_number || '',
       tyre_photo_url: nt.tyre_photo_url || '',
+      invoice_photo_url: nt.invoice_photo_url || '',
       status: nt.status || 'In Stock',
       notes: nt.notes || ''
     });
@@ -413,6 +419,22 @@ export const TyreMaintenance: React.FC = () => {
       error(err.message || 'Failed to upload tyre photo');
     } finally {
       setUploadingTyrePhoto(false);
+    }
+  };
+
+  const handleInvoicePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingInvoicePhoto(true);
+      const res = await api.uploadFile(file);
+      const photoUrl = res.fileUrl || res.url || '';
+      setNewTyreForm((prev: any) => ({ ...prev, invoice_photo_url: photoUrl }));
+      success('Invoice photo uploaded successfully');
+    } catch (err: any) {
+      error(err.message || 'Failed to upload invoice photo');
+    } finally {
+      setUploadingInvoicePhoto(false);
     }
   };
 
@@ -1179,18 +1201,41 @@ export const TyreMaintenance: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => setPreviewPhotoModal(nt.tyre_photo_url!)}
-                                  className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 hover:border-blue-500 cursor-pointer flex-shrink-0 group relative shadow-2xs"
+                                  className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 hover:border-emerald-500 cursor-pointer flex-shrink-0 group relative shadow-2xs"
                                   title="Click to view tyre photo"
                                 >
                                   <img src={nt.tyre_photo_url} alt={nt.tyre_serial_number} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                                 </button>
                               ) : null}
+                              {nt.invoice_photo_url ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewPhotoModal(nt.invoice_photo_url!)}
+                                  className="w-8 h-8 rounded-lg overflow-hidden border border-amber-300 hover:border-amber-500 cursor-pointer flex-shrink-0 group relative shadow-2xs bg-amber-50 flex items-center justify-center text-amber-700"
+                                  title="Click to view invoice photo"
+                                >
+                                  <img src={nt.invoice_photo_url} alt="Invoice" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                </button>
+                              ) : null}
                               <div>
-                                <span className="font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg text-xs">
-                                  {nt.tyre_serial_number}
-                                </span>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg text-xs">
+                                    {nt.tyre_serial_number}
+                                  </span>
+                                  {nt.invoice_photo_url && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setPreviewPhotoModal(nt.invoice_photo_url!)}
+                                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold hover:bg-amber-100 transition-colors cursor-pointer"
+                                      title="View invoice photo"
+                                    >
+                                      <Receipt className="w-3 h-3 text-amber-600" />
+                                      {nt.invoice_number ? `Inv: ${nt.invoice_number}` : 'Invoice'}
+                                    </button>
+                                  )}
+                                </div>
                                 {nt.supplier && (
-                                  <span className="text-[10px] text-slate-400 block mt-0.5 truncate max-w-[120px]">
+                                  <span className="text-[10px] text-slate-400 block mt-0.5 truncate max-w-[140px]">
                                     {nt.supplier}
                                   </span>
                                 )}
@@ -2245,52 +2290,109 @@ export const TyreMaintenance: React.FC = () => {
             </div>
           </div>
 
-          {/* Tyre Upload Photo Option */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Upload Tyre Photo</label>
-            {newTyreForm.tyre_photo_url ? (
-              <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                <img
-                  src={newTyreForm.tyre_photo_url}
-                  alt="Tyre preview"
-                  className="w-16 h-16 object-cover rounded-lg border border-slate-200 shadow-2xs"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-800">Photo Attached</p>
-                  <p className="text-[11px] text-slate-500 truncate">{newTyreForm.tyre_photo_url}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setNewTyreForm((prev: any) => ({ ...prev, tyre_photo_url: '' }))}
-                  className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                  title="Remove photo"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl bg-slate-50 hover:bg-emerald-50/20 transition-all cursor-pointer">
-                {uploadingTyrePhoto ? (
-                  <div className="flex flex-col items-center gap-1.5 text-emerald-600 py-1">
-                    <div className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-xs font-bold">Uploading tyre photo...</span>
-                  </div>
-                ) : (
-                  <>
-                    <Camera className="w-6 h-6 text-slate-400 mb-1" />
-                    <span className="text-xs font-bold text-slate-700">Click to upload tyre photo</span>
-                    <span className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WebP up to 10MB</span>
-                  </>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleTyrePhotoUpload}
-                  disabled={uploadingTyrePhoto}
-                  className="hidden"
-                />
+          {/* Upload Photos Grid: Tyre Photo and Invoice Photo */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Tyre Upload Photo Option */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                <Camera className="w-3.5 h-3.5 text-emerald-600" />
+                Upload Tyre Photo
               </label>
-            )}
+              {newTyreForm.tyre_photo_url ? (
+                <div className="flex items-center gap-2.5 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <img
+                    src={newTyreForm.tyre_photo_url}
+                    alt="Tyre preview"
+                    className="w-14 h-14 object-cover rounded-lg border border-slate-200 shadow-2xs"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-800">Tyre Photo Attached</p>
+                    <p className="text-[10px] text-slate-500 truncate">{newTyreForm.tyre_photo_url}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setNewTyreForm((prev: any) => ({ ...prev, tyre_photo_url: '' }))}
+                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                    title="Remove photo"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl bg-slate-50 hover:bg-emerald-50/20 transition-all cursor-pointer h-[88px]">
+                  {uploadingTyrePhoto ? (
+                    <div className="flex flex-col items-center gap-1 text-emerald-600 py-1">
+                      <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-[11px] font-bold">Uploading...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Camera className="w-5 h-5 text-slate-400 mb-1" />
+                      <span className="text-xs font-bold text-slate-700 text-center">Click to upload tyre photo</span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WebP up to 10MB</span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleTyrePhotoUpload}
+                    disabled={uploadingTyrePhoto}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Invoice Upload Photo Option */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+                <Receipt className="w-3.5 h-3.5 text-amber-600" />
+                Upload Invoice Photo
+              </label>
+              {newTyreForm.invoice_photo_url ? (
+                <div className="flex items-center gap-2.5 p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl">
+                  <img
+                    src={newTyreForm.invoice_photo_url}
+                    alt="Invoice preview"
+                    className="w-14 h-14 object-cover rounded-lg border border-amber-200 shadow-2xs"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-amber-900">Invoice Photo Attached</p>
+                    <p className="text-[10px] text-amber-700/80 truncate">{newTyreForm.invoice_photo_url}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setNewTyreForm((prev: any) => ({ ...prev, invoice_photo_url: '' }))}
+                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                    title="Remove invoice photo"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-slate-300 hover:border-amber-500 rounded-xl bg-slate-50 hover:bg-amber-50/20 transition-all cursor-pointer h-[88px]">
+                  {uploadingInvoicePhoto ? (
+                    <div className="flex flex-col items-center gap-1 text-amber-600 py-1">
+                      <div className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-[11px] font-bold">Uploading...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Receipt className="w-5 h-5 text-amber-500/80 mb-1" />
+                      <span className="text-xs font-bold text-slate-700 text-center">Click to upload invoice photo</span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, WebP up to 10MB</span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleInvoicePhotoUpload}
+                    disabled={uploadingInvoicePhoto}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
           </div>
 
           <div>
@@ -2547,8 +2649,8 @@ export const TyreMaintenance: React.FC = () => {
       <Modal
         isOpen={!!previewPhotoModal}
         onClose={() => setPreviewPhotoModal(null)}
-        title="Tyre Photo Preview"
-        subtitle="Full resolution inspection photo"
+        title="Photo / Document Preview"
+        subtitle="Full resolution tyre inspection or invoice photo"
         maxWidth="max-w-xl"
       >
         <div className="flex flex-col items-center p-2">
