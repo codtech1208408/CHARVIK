@@ -22,7 +22,8 @@ import {
   Activity,
   History,
   Check,
-  Filter
+  Filter,
+  LayoutDashboard
 } from 'lucide-react';
 import { StatCard } from '../components/common/StatCard';
 import { Modal } from '../components/common/Modal';
@@ -436,6 +437,17 @@ export const Dashboard: React.FC = () => {
             <Bus className="w-6 h-6 text-blue-400" />
           </div>
           <div>
+            {/* Highlighted Dashboard Badge directly above Welcome Admin */}
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black tracking-wider uppercase bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/20">
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                Dashboard
+              </span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                • Operations & Control Center
+              </span>
+            </div>
+
             <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-black text-[#142B4A] tracking-tight">
                 Welcome, Admin

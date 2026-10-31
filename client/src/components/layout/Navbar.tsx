@@ -80,40 +80,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
 
-        {/* When sidebar is collapsed on desktop, Charvik brand logo with Dashboard text directly below the logo */}
-        {isCollapsed ? (
-          <div className="hidden lg:flex flex-col items-start justify-center py-0.5 shrink-0">
-            <Link
-              to={`${basePrefix}/dashboard`}
-              className="transition-opacity hover:opacity-90 cursor-pointer block"
-              title="Charvik Staffing Consultancy"
-            >
-              <img
-                src="/logo-compact.png"
-                alt="Charvik Staffing Consultancy"
-                className="h-[46px] max-h-[48px] w-auto max-w-[190px] object-contain transition-transform"
-              />
-            </Link>
-            <h1 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 mt-0.5 pl-0.5">
-              {pageTitle}
-            </h1>
-          </div>
-        ) : (
-          <div className="pl-1 sm:pl-2">
-            <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
-              {pageTitle}
-            </h1>
-          </div>
+        {/* When sidebar is collapsed on desktop, Charvik brand logo cleanly without text underneath */}
+        {isCollapsed && (
+          <Link
+            to={`${basePrefix}/dashboard`}
+            className="hidden lg:flex items-center justify-center py-1 mr-4 shrink-0 transition-opacity hover:opacity-90 cursor-pointer"
+            title="Charvik Staffing Consultancy"
+          >
+            <img
+              src="/logo-compact.png"
+              alt="Charvik Staffing Consultancy"
+              className="h-[46px] max-h-[48px] w-auto max-w-[190px] object-contain transition-transform"
+            />
+          </Link>
         )}
 
-        {/* Mobile Page Title */}
-        {isCollapsed && (
-          <div className="lg:hidden pl-1 sm:pl-2">
-            <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
-              {pageTitle}
-            </h1>
-          </div>
-        )}
+        {/* Page Title beside the logo */}
+        <div className="pl-1 sm:pl-2">
+          <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+            {pageTitle}
+          </h1>
+        </div>
       </div>
 
       {/* Middle: Search Box */}
