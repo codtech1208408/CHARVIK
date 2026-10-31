@@ -183,7 +183,9 @@ export const OrganizerManagement: React.FC = () => {
       };
       const updated = organizers.map((o) => (o.id === editingOrg.id ? updatedItem : o));
       setOrganizers(updated);
-      api.updateOrganizer(editingOrg.id, updatedItem).catch(() => {});
+      api.updateOrganizer(editingOrg.id, updatedItem).catch((err: any) => {
+        error(err.message || 'Failed to update organization in database');
+      });
       success(`Organization "${formData.organization_name.trim()}" updated successfully.`);
     } else {
       const newItem: OrganizerItem = {
@@ -196,7 +198,13 @@ export const OrganizerManagement: React.FC = () => {
         office_address: (formData.office_address || '').trim()
       };
       setOrganizers([newItem, ...organizers]);
-      api.createOrganizer(newItem).catch(() => {});
+      api.createOrganizer(newItem).then((saved) => {
+        if (saved && saved.id) {
+          setOrganizers((curr) => curr.map((o) => (o.id === newItem.id ? { ...o, id: saved.id } : o)));
+        }
+      }).catch((err: any) => {
+        error(err.message || 'Failed to create organization in database');
+      });
       success(`Organization "${newItem.organization_name}" added successfully.`);
     }
 
@@ -208,7 +216,9 @@ export const OrganizerManagement: React.FC = () => {
     const targetName = target ? target.organization_name : 'this organization';
     if (!window.confirm(`Are you sure you want to delete "${targetName}"?`)) return;
     setOrganizers(organizers.filter((o) => o.id !== id));
-    api.deleteOrganizer(id).catch(() => {});
+    api.deleteOrganizer(id).catch((err: any) => {
+      error(err.message || 'Failed to delete organization from database');
+    });
     success(`Organization "${targetName}" removed.`);
   };
 

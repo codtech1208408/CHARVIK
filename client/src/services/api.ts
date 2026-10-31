@@ -205,47 +205,26 @@ function setLocalCollection<T>(key: string, items: T[]) {
 }
 
 /**
- * Resilient merge helper:
- * Guarantees that local newly-added/edited records are NEVER wiped out by an empty or partial remote array.
+ * Supabase-first synchronization helper:
+ * Live database data from Supabase is the authoritative truth across all users/devices.
+ * Falls back to local/IndexedDB cache only when completely offline.
  */
-function mergeWithLocal<T extends { id?: any; is_archived?: number; registration_number?: string; bus_number?: string }>(
+function syncRemoteCollection<T extends { id?: any; is_archived?: number; registration_number?: string; bus_number?: string }>(
   key: string,
   remoteItems: T[] | null | undefined,
   idField: string = 'id'
 ): T[] {
+  if (Array.isArray(remoteItems) && remoteItems.length > 0) {
+    const valid = remoteItems.filter(item => (item as any)?.is_archived !== 1);
+    setLocalCollection(key, valid);
+    return valid;
+  }
   const localItems = getLocalCollection<T>(key);
-  if (!remoteItems || !Array.isArray(remoteItems) || remoteItems.length === 0) {
-    // If remote has nothing or is offline, retain all non-archived local items!
-    return localItems.filter(item => (item as any)?.is_archived !== 1);
-  }
-
-  const map = new Map<string, T>();
-
-  // 1. Load valid remote items
-  for (const item of remoteItems) {
-    if (item && (item as any).is_archived !== 1) {
-      const uKey = String((item as any)[idField] ?? (item as any).registration_number ?? (item as any).bus_number ?? (item as any).id);
-      map.set(uKey, item);
-    }
-  }
-
-  // 2. Overlay local items (preserves user-created items that haven't synced or are newer)
-  for (const item of localItems) {
-    if (item) {
-      const uKey = String((item as any)[idField] ?? (item as any).registration_number ?? (item as any).bus_number ?? (item as any).id);
-      if ((item as any).is_archived === 1) {
-        map.delete(uKey);
-      } else {
-        map.set(uKey, item);
-      }
-    }
-  }
-
-  const merged = Array.from(map.values());
-  setLocalCollection(key, merged);
-  return merged;
+  return localItems.filter(item => (item as any)?.is_archived !== 1);
 }
 
+// Backward compatibility alias
+const mergeWithLocal = syncRemoteCollection;
 
 /**
  * Helper to handle full CRUD on any fleet management table in fallback/cloud mode
@@ -272,110 +251,96 @@ async function handleFallbackTableCrud(
       let list: any[] = [];
       try {
         const { data, error } = await supabase.from(supabaseTable).select('*').order('id', { ascending: false });
-        list = mergeWithLocal(tableKey, !error && Array.isArray(data) ? data : []);
+        if (!error && Array.isArray(data)) {
+          list = data.filter(x => x?.is_archived !== 1);
+          setLocalCollection(tableKey, list);
+        } else {
+          list = getLocalCollection<any>(tableKey).filter(x => x?.is_archived !== 1);
+        }
       } catch {
         list = getLocalCollection<any>(tableKey).filter(x => x?.is_archived !== 1);
       }
 
-      if (tableKey === 'buses') {
-        list = mergeSeedCollection(list, BASE_FLEET_BUSES);
-        setLocalCollection('buses', list);
-      }
-      if (tableKey === 'routes') {
-        list = mergeSeedCollection(list, BASE_FLEET_ROUTES);
-        setLocalCollection('routes', list);
-      }
-      if (tableKey === 'organizers') {
-        list = mergeSeedCollection(list, BASE_FLEET_ORGANIZERS);
-        setLocalCollection('organizers', list);
-      }
-      if (tableKey === 'tasks') {
-        list = mergeSeedCollection(list, BASE_FLEET_TASKS);
-        setLocalCollection('tasks', list);
-      }
-      if (tableKey === 'tyres' || tableKey === 'tyre_records') {
-        list = mergeSeedCollection(list, BASE_TYRE_RECORDS);
+      // If database is currently empty, provide baseline seed data so the system is initialized
+      if (list.length === 0) {
+        if (tableKey === 'buses') list = [...BASE_FLEET_BUSES];
+        if (tableKey === 'routes') list = [...BASE_FLEET_ROUTES];
+        if (tableKey === 'organizers') list = [...BASE_FLEET_ORGANIZERS];
+        if (tableKey === 'tasks') list = [...BASE_FLEET_TASKS];
+        if (tableKey === 'tyres' || tableKey === 'tyre_records') list = [...BASE_TYRE_RECORDS];
+        if (tableKey === 'ac_maintenance_records') list = [...BASE_AC_MAINTENANCE_RECORDS];
+        if (tableKey === 'bus_conditions' || tableKey === 'bus_condition_inspections') list = [...BASE_BUS_CONDITION_INSPECTIONS];
+        if (tableKey === 'wheel_allotments') list = [...BASE_WHEEL_ALLOTMENTS];
+        if (tableKey === 'tyre_air_checkups') list = [...BASE_TYRE_AIR_CHECKUPS];
+        if (tableKey === 'new_tyres') list = [...BASE_NEW_TYRES];
+        if (tableKey === 'daily_km') list = [...BASE_DAILY_KM_ENTRIES];
+        if (tableKey === 'maintenance_schedules') list = [...BASE_MAINTENANCE_SCHEDULES];
+        if (tableKey === 'products') list = [...BASE_PRODUCTS];
         setLocalCollection(tableKey, list);
       }
-      if (tableKey === 'ac_maintenance_records') {
-        list = mergeSeedCollection(list, BASE_AC_MAINTENANCE_RECORDS);
-        setLocalCollection('ac_maintenance_records', list);
-      }
-      if (tableKey === 'bus_conditions' || tableKey === 'bus_condition_inspections') {
-        list = mergeSeedCollection(list, BASE_BUS_CONDITION_INSPECTIONS);
-        setLocalCollection(tableKey, list);
-      }
-      if (tableKey === 'wheel_allotments') {
-        list = mergeSeedCollection(list, BASE_WHEEL_ALLOTMENTS);
-        setLocalCollection('wheel_allotments', list);
-      }
-      if (tableKey === 'tyre_air_checkups') {
-        list = mergeSeedCollection(list, BASE_TYRE_AIR_CHECKUPS);
-        setLocalCollection('tyre_air_checkups', list);
-      }
-      if (tableKey === 'new_tyres') {
-        list = mergeSeedCollection(list, BASE_NEW_TYRES);
-        setLocalCollection('new_tyres', list);
-      }
-      if (tableKey === 'daily_km') {
-        list = mergeSeedCollection(list, BASE_DAILY_KM_ENTRIES);
-        setLocalCollection('daily_km', list);
-      }
-      if (tableKey === 'maintenance_schedules') {
-        list = mergeSeedCollection(list, BASE_MAINTENANCE_SCHEDULES);
-        setLocalCollection('maintenance_schedules', list);
-      }
-      if (tableKey === 'products') {
-        list = mergeSeedCollection(list, BASE_PRODUCTS);
-        setLocalCollection('products', list);
-      }
+
       if (options?.enrich) list = options.enrich(list);
       if (options?.filter) list = options.filter(list, params);
       return list;
     }
 
     if (method === 'POST') {
-      const record = {
+      const record: any = {
         ...body,
-        id: body.id || (options?.idGenerator ? options.idGenerator() : Date.now()),
         is_archived: 0,
-        created_at: new Date().toISOString()
+        created_at: body.created_at || new Date().toISOString()
       };
-      const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(record.id));
-      list.unshift(record);
+      if (body.id) {
+        record.id = body.id;
+      } else if (options?.idGenerator) {
+        record.id = options.idGenerator();
+      }
+
+      const { data, error } = await supabase.from(supabaseTable).insert([record]).select();
+      if (error) {
+        console.error(`Database error inserting into ${supabaseTable}:`, error);
+        throw new Error(`Database error (${supabaseTable}): ${error.message || 'Insert failed'}`);
+      }
+
+      const savedRecord = Array.isArray(data) && data[0] ? data[0] : record;
+      const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(savedRecord.id));
+      list.unshift(savedRecord);
       setLocalCollection(tableKey, list);
-      try {
-        await supabase.from(supabaseTable).insert([record]);
-      } catch {}
-      return record;
+      return savedRecord;
     }
   } else if (itemId) {
     if (method === 'GET') {
+      try {
+        const { data, error } = await supabase.from(supabaseTable).select('*').eq('id', itemId).single();
+        if (!error && data) return data;
+      } catch {}
       const list = getLocalCollection<any>(tableKey);
       const found = list.find(x => String(x.id) === String(itemId));
-      if (found) return found;
-      try {
-        const { data } = await supabase.from(supabaseTable).select('*').eq('id', itemId).single();
-        if (data) return data;
-      } catch {}
       return found || {};
     }
 
     if (method === 'PUT') {
-      const list = getLocalCollection<any>(tableKey).map(x => (String(x.id) === String(itemId) ? { ...x, ...body } : x));
+      const updateData = { ...body };
+      delete updateData.id;
+      const { data, error } = await supabase.from(supabaseTable).update(updateData).eq('id', itemId).select();
+      if (error) {
+        console.error(`Database error updating ${supabaseTable} id ${itemId}:`, error);
+        throw new Error(`Database error (${supabaseTable}): ${error.message || 'Update failed'}`);
+      }
+      const updatedRecord = Array.isArray(data) && data[0] ? data[0] : { ...body, id: itemId };
+      const list = getLocalCollection<any>(tableKey).map(x => (String(x.id) === String(itemId) ? updatedRecord : x));
       setLocalCollection(tableKey, list);
-      try {
-        await supabase.from(supabaseTable).update(body).eq('id', itemId);
-      } catch {}
-      return { success: true, ...body };
+      return updatedRecord;
     }
 
     if (method === 'DELETE') {
+      const { error } = await supabase.from(supabaseTable).delete().eq('id', itemId);
+      if (error) {
+        console.error(`Database error deleting from ${supabaseTable} id ${itemId}:`, error);
+        throw new Error(`Database error (${supabaseTable}): ${error.message || 'Delete failed'}`);
+      }
       const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(itemId));
       setLocalCollection(tableKey, list);
-      try {
-        await supabase.from(supabaseTable).delete().eq('id', itemId);
-      } catch {}
       return { success: true };
     }
   }
@@ -1466,6 +1431,37 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     return (Array.isArray(res) ? orgList : res) as any;
   }
 
+  // 17D. ORGANIZER PAYMENTS FALLBACK
+  if (path === '/organizer-payments' || path.startsWith('/organizer-payments/')) {
+    return handleFallbackTableCrud('organizer_payments', 'organizer_payments', path, method, body, params) as any;
+  }
+
+  // 17E. PRODUCTS INVENTORY FALLBACK
+  if (path === '/products' || path.startsWith('/products/')) {
+    return handleFallbackTableCrud('products', 'products', path, method, body, params, {
+      idGenerator: () => `prod-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+    }) as any;
+  }
+
+  // 17F. PRODUCT USAGE RECORDS FALLBACK
+  if (path === '/product-usage' || path.startsWith('/product-usage/')) {
+    return handleFallbackTableCrud('product_usage_records', 'product_usage_records', path, method, body, params, {
+      idGenerator: () => `use-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+    }) as any;
+  }
+
+  // 17G. CLEANING RECORDS FALLBACK
+  if (path === '/cleaning-records' || path.startsWith('/cleaning-records/')) {
+    return handleFallbackTableCrud('cleaning_records', 'cleaning_records', path, method, body, params) as any;
+  }
+
+  // 17H. EMPLOYEE PAYMENTS FALLBACK
+  if (path === '/employee-payments' || path.startsWith('/employee-payments/')) {
+    return handleFallbackTableCrud('employee_payments', 'employee_payments', path, method, body, params, {
+      idGenerator: () => `REC-${Date.now().toString().slice(-6)}`
+    }) as any;
+  }
+
   // 18. NOTIFICATIONS, SETTINGS, AUDIT LOGS, REPORTS
   if (path === '/notifications') return [] as any;
   if (path === '/settings') {
@@ -1626,25 +1622,14 @@ export const api = {
         localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(remote));
         return remote;
       }
-    } catch {}
-    try {
-      const saved = localStorage.getItem('charvik_organizer_payments_data');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [];
-  },
-  createOrganizerPayment: async (data: any) => {
-    try {
-      const res = await request<any>('/organizer-payments', { method: 'POST', body: JSON.stringify(data) });
-      return res;
-    } catch {
-      // Local fallback
-      const saved = JSON.parse(localStorage.getItem('charvik_organizer_payments_data') || '[]');
-      const item = { id: Date.now(), ...data };
-      localStorage.setItem('charvik_organizer_payments_data', JSON.stringify([item, ...saved]));
-      return item;
+    } catch (e) {
+      console.warn('Failed to fetch organizer payments from remote:', e);
     }
+    const saved = localStorage.getItem('charvik_organizer_payments_data');
+    return saved ? JSON.parse(saved) : [];
   },
+  createOrganizerPayment: (data: any) => request<any>('/organizer-payments', { method: 'POST', body: JSON.stringify(data) }),
+  deleteOrganizerPayment: (id: number | string) => request<any>(`/organizer-payments/${id}`, { method: 'DELETE' }),
 
   // Tasks (Trip Duties)
   getTasks: async () => {
@@ -1848,6 +1833,28 @@ export const api = {
 
   // Captain Duty
   getCaptainDuty: () => request<any>('/captain/my-duty'),
+
+  // Products & Spare Parts Inventory
+  getProducts: () => request<any[]>('/products'),
+  createProduct: (data: any) => request<any>('/products', { method: 'POST', body: JSON.stringify(data) }),
+  updateProduct: (id: string | number, data: any) => request<any>(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteProduct: (id: string | number) => request<any>(`/products/${id}`, { method: 'DELETE' }),
+
+  // Product Usage Records
+  getProductUsageRecords: () => request<any[]>('/product-usage'),
+  createProductUsageRecord: (data: any) => request<any>('/product-usage', { method: 'POST', body: JSON.stringify(data) }),
+  deleteProductUsageRecord: (id: string | number) => request<any>(`/product-usage/${id}`, { method: 'DELETE' }),
+
+  // Cleaning Records
+  getCleaningRecords: () => request<any[]>('/cleaning-records'),
+  createCleaningRecord: (data: any) => request<any>('/cleaning-records', { method: 'POST', body: JSON.stringify(data) }),
+  updateCleaningRecord: (id: string | number, data: any) => request<any>(`/cleaning-records/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteCleaningRecord: (id: string | number) => request<any>(`/cleaning-records/${id}`, { method: 'DELETE' }),
+
+  // Employee Recorded Payments
+  getEmployeePayments: () => request<any[]>('/employee-payments'),
+  createEmployeePayment: (data: any) => request<any>('/employee-payments', { method: 'POST', body: JSON.stringify(data) }),
+  deleteEmployeePayment: (id: string | number) => request<any>(`/employee-payments/${id}`, { method: 'DELETE' }),
 
   // File Upload
   uploadFile: async (file: File) => {

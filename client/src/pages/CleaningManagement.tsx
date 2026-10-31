@@ -79,12 +79,16 @@ export const CleaningManagement: React.FC = () => {
   useEffect(() => {
     async function loadAuxData() {
       try {
-        const [bData, hData] = await Promise.all([
+        const [bData, hData, cData] = await Promise.all([
           api.getBuses().catch(() => []),
-          api.getEmployees({ role: 'Helper' }).catch(() => [])
+          api.getEmployees({ role: 'Helper' }).catch(() => []),
+          api.getCleaningRecords().catch(() => [])
         ]);
         setBuses(Array.isArray(bData) ? bData : []);
         setHelpers(Array.isArray(hData) ? hData : []);
+        if (Array.isArray(cData) && cData.length > 0) {
+          setLogs(cData);
+        }
       } catch {}
     }
     loadAuxData();
@@ -143,59 +147,61 @@ export const CleaningManagement: React.FC = () => {
     }));
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.bus_number && !formData.bus_id) {
       error('Please select a fleet vehicle.');
       return;
     }
 
-    if (editingLog) {
-      const updatedLog: CleaningLog = {
-        ...editingLog,
-        bus_number: formData.bus_number || `Bus #${formData.bus_id}`,
-        registration_number: formData.registration_number || 'TS Fleet Reg',
-        cleaning_type: formData.cleaning_type,
-        cleaner_name: formData.cleaner_name || 'Depot Staff',
-        cleaned_date: formData.cleaned_date,
-        status: formData.status,
-        floor_cleaned: formData.floor_cleaned,
-        seats_vacuumed: formData.seats_vacuumed,
-        windows_polished: formData.windows_polished,
-        exterior_washed: formData.exterior_washed,
-        sanitizer_refilled: formData.sanitizer_refilled,
-        notes: formData.notes
-      };
-      setLogs(logs.map((l) => (l.id === editingLog.id ? updatedLog : l)));
-      success('Cleaning record updated successfully.');
-    } else {
-      const newLog: CleaningLog = {
-        id: Date.now(),
-        bus_number: formData.bus_number || `Bus #${formData.bus_id}`,
-        registration_number: formData.registration_number || 'TS Fleet Reg',
-        cleaning_type: formData.cleaning_type,
-        cleaner_name: formData.cleaner_name || 'Depot Staff',
-        cleaned_date: formData.cleaned_date,
-        status: formData.status,
-        floor_cleaned: formData.floor_cleaned,
-        seats_vacuumed: formData.seats_vacuumed,
-        windows_polished: formData.windows_polished,
-        exterior_washed: formData.exterior_washed,
-        sanitizer_refilled: formData.sanitizer_refilled,
-        notes: formData.notes
-      };
-      setLogs([newLog, ...logs]);
-      success('Cleaning inspection logged successfully.');
-    }
+    const payload = {
+      bus_id: formData.bus_id ? Number(formData.bus_id) : null,
+      bus_number: formData.bus_number || `Bus #${formData.bus_id}`,
+      registration_number: formData.registration_number || 'TS Fleet Reg',
+      cleaning_type: formData.cleaning_type,
+      cleaner_name: formData.cleaner_name || 'Depot Staff',
+      cleaned_date: formData.cleaned_date,
+      status: formData.status,
+      floor_cleaned: formData.floor_cleaned,
+      seats_vacuumed: formData.seats_vacuumed,
+      windows_polished: formData.windows_polished,
+      exterior_washed: formData.exterior_washed,
+      sanitizer_refilled: formData.sanitizer_refilled,
+      notes: formData.notes
+    };
 
-    setIsAddOpen(false);
-    setEditingLog(null);
+    try {
+      if (editingLog) {
+        const res = await api.updateCleaningRecord(editingLog.id, payload);
+        const updatedLog: CleaningLog = { ...editingLog, ...payload, ...res };
+        setLogs(logs.map((l) => (l.id === editingLog.id ? updatedLog : l)));
+        success('Cleaning record updated successfully.');
+      } else {
+        const saved = await api.createCleaningRecord(payload);
+        const newLog: CleaningLog = {
+          id: saved.id || Date.now(),
+          ...payload,
+          ...saved
+        };
+        setLogs([newLog, ...logs]);
+        success('Cleaning inspection logged successfully.');
+      }
+      setIsAddOpen(false);
+      setEditingLog(null);
+    } catch (err: any) {
+      error(err.message || 'Failed to save cleaning record to database');
+    }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this cleaning log?')) return;
-    setLogs(logs.filter((l) => l.id !== id));
-    success('Cleaning record deleted.');
+    try {
+      await api.deleteCleaningRecord(id);
+      setLogs(logs.filter((l) => l.id !== id));
+      success('Cleaning record deleted.');
+    } catch (err: any) {
+      error(err.message || 'Failed to delete cleaning record from database');
+    }
   };
 
   const filteredLogs = logs.filter((l) => {

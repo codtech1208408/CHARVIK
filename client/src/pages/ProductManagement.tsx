@@ -251,17 +251,23 @@ export const ProductManagement: React.FC = () => {
   const [uploadingUsagePhoto, setUploadingUsagePhoto] = useState(false);
   const usageFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load vehicles from API
+  // Load products, vehicle usage, and vehicles from API
   useEffect(() => {
-    const loadBuses = async () => {
+    const loadAllData = async () => {
       try {
-        const data = await api.getBuses();
-        if (Array.isArray(data)) setBuses(data);
+        const [bData, pData, uData] = await Promise.all([
+          api.getBuses().catch(() => []),
+          api.getProducts().catch(() => []),
+          api.getProductUsageRecords().catch(() => [])
+        ]);
+        if (Array.isArray(bData)) setBuses(bData);
+        if (Array.isArray(pData) && pData.length > 0) setProducts(pData);
+        if (Array.isArray(uData) && uData.length > 0) setUsageHistory(uData);
       } catch (err) {
-        console.warn('Could not load vehicles list, using defaults:', err);
+        console.warn('Could not load inventory data from API:', err);
       }
     };
-    loadBuses();
+    loadAllData();
   }, []);
 
   // Save products to localStorage whenever updated
@@ -415,6 +421,10 @@ export const ProductManagement: React.FC = () => {
       };
       updatedProducts = [...products];
       updatedProducts[existingIndex] = updated;
+      setProducts(updatedProducts);
+      api.updateProduct(existing.id, updated).catch((err: any) => {
+        error(err.message || 'Failed to sync product update with database');
+      });
       success(`Updated stock for ${existing.name}! Added ${qty} units.`);
     } else {
       const newProduct: ProductItem = {
@@ -433,10 +443,12 @@ export const ProductManagement: React.FC = () => {
       };
       // Append so ALL previously created products and this new product are displayed
       updatedProducts = [newProduct, ...products];
+      setProducts(updatedProducts);
+      api.createProduct(newProduct).catch((err: any) => {
+        error(err.message || 'Failed to sync product creation with database');
+      });
       success(`Product "${newProduct.name}" created and added to inventory!`);
     }
-
-    setProducts(updatedProducts);
 
     auditLogger.log({
       user: 'Admin',
@@ -509,10 +521,11 @@ export const ProductManagement: React.FC = () => {
     }
 
     // 1. Deduct stock from Product
+    const targetId = targetProduct.id;
+    const newUsed = (targetProduct.used_quantity || 0) + qty;
+    const newStock = Math.max(0, targetProduct.stock_quantity - qty);
     const updatedProducts = products.map((p) => {
-      if (p.id === targetProduct.id) {
-        const newUsed = (p.used_quantity || 0) + qty;
-        const newStock = Math.max(0, p.stock_quantity - qty);
+      if (p.id === targetId) {
         return {
           ...p,
           used_quantity: newUsed,
@@ -522,6 +535,9 @@ export const ProductManagement: React.FC = () => {
       return p;
     });
     setProducts(updatedProducts);
+    api.updateProduct(targetId, { used_quantity: newUsed, stock_quantity: newStock }).catch((err: any) => {
+      error(err.message || 'Failed to update stock in database');
+    });
 
     // 2. Add to Vehicle Usage History
     const newUsageRecord: VehicleUsageRecord = {
@@ -540,6 +556,9 @@ export const ProductManagement: React.FC = () => {
     };
 
     setUsageHistory([newUsageRecord, ...usageHistory]);
+    api.createProductUsageRecord(newUsageRecord).catch((err: any) => {
+      error(err.message || 'Failed to record usage in database');
+    });
 
     auditLogger.log({
       user: 'Admin',
@@ -556,6 +575,9 @@ export const ProductManagement: React.FC = () => {
   const handleDeleteProduct = (prodId: string, prodName: string) => {
     if (window.confirm(`Are you sure you want to remove "${prodName}" from inventory?`)) {
       setProducts(products.filter((p) => p.id !== prodId));
+      api.deleteProduct(prodId).catch((err: any) => {
+        error(err.message || 'Failed to delete product from database');
+      });
       auditLogger.log({
         user: 'Admin',
         module: 'Product Management',
@@ -570,6 +592,9 @@ export const ProductManagement: React.FC = () => {
   const handleDeleteUsageRecord = (usageId: string, prodName: string) => {
     if (window.confirm(`Are you sure you want to delete this usage record?`)) {
       setUsageHistory(usageHistory.filter((u) => u.id !== usageId));
+      api.deleteProductUsageRecord(usageId).catch((err: any) => {
+        error(err.message || 'Failed to delete usage record from database');
+      });
       auditLogger.log({
         user: 'Admin',
         module: 'Product Management',

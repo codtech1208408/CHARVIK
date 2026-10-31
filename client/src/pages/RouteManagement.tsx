@@ -226,7 +226,9 @@ export const RouteManagement: React.FC = () => {
         r.id === editingRoute.id ? ({ ...r, ...payload } as RouteItem) : r
       );
       setRoutes(updated);
-      api.updateRoute(editingRoute.id, payload).catch(() => {});
+      api.updateRoute(editingRoute.id, payload).catch((err: any) => {
+        error(err.message || 'Failed to update service in database');
+      });
       success(`Service ${formData.service_number.trim()} updated successfully.`);
     } else {
       const newItem: RouteItem = {
@@ -234,7 +236,13 @@ export const RouteManagement: React.FC = () => {
         ...payload
       };
       setRoutes([newItem, ...routes]);
-      api.createRoute(payload).catch(() => {});
+      api.createRoute(payload).then((saved) => {
+        if (saved && saved.id) {
+          setRoutes((curr) => curr.map((r) => (r.id === newItem.id ? { ...r, id: saved.id } : r)));
+        }
+      }).catch((err: any) => {
+        error(err.message || 'Failed to save new service to database');
+      });
       success(`New service ${newItem.service_number} created successfully.`);
     }
 
@@ -246,7 +254,9 @@ export const RouteManagement: React.FC = () => {
     const targetName = target ? target.service_number : 'this route';
     if (!window.confirm(`Are you sure you want to delete service "${targetName}"?`)) return;
     setRoutes(routes.filter((r) => r.id !== id));
-    api.deleteRoute(id).catch(() => {});
+    api.deleteRoute(id).catch((err: any) => {
+      error(err.message || 'Failed to delete service from database');
+    });
     success(`Service ${targetName} deleted successfully.`);
   };
 

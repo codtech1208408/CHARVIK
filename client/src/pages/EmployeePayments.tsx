@@ -105,21 +105,24 @@ export const EmployeePayments: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [tData, eData] = await Promise.all([
+      const [tData, eData, pData] = await Promise.all([
         api.getTasks().catch(() => []),
-        api.getEmployees().catch(() => [])
+        api.getEmployees().catch(() => []),
+        api.getEmployeePayments().catch(() => [])
       ]);
       setTasks(Array.isArray(tData) ? tData : []);
       setEmployees(Array.isArray(eData) ? eData : []);
-
-      // Load saved payment records
-      try {
-        const savedPayments = localStorage.getItem("charvik_employee_recorded_payments");
-        if (savedPayments) {
-          const parsed = JSON.parse(savedPayments);
-          if (Array.isArray(parsed)) setPaymentHistory(parsed);
-        }
-      } catch {}
+      if (Array.isArray(pData) && pData.length > 0) {
+        setPaymentHistory(pData);
+      } else {
+        try {
+          const savedPayments = localStorage.getItem("charvik_employee_recorded_payments");
+          if (savedPayments) {
+            const parsed = JSON.parse(savedPayments);
+            if (Array.isArray(parsed)) setPaymentHistory(parsed);
+          }
+        } catch {}
+      }
     } catch {
       error("Failed to load payment records");
     } finally {
@@ -455,6 +458,10 @@ export const EmployeePayments: React.FC = () => {
     try {
       localStorage.setItem("charvik_employee_recorded_payments", JSON.stringify(updatedHistory));
     } catch {}
+
+    api.createEmployeePayment(newRecord).catch((err: any) => {
+      error(err.message || 'Failed to save payment record to database');
+    });
 
     setIsRecordModalOpen(false);
     success(`Payment of ₹${payAmount.toLocaleString("en-IN")} recorded successfully for ${targetStaff.full_name}!`);
