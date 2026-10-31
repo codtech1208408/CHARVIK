@@ -424,7 +424,15 @@ export const Dashboard: React.FC = () => {
 
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-12">
+      {/* Highlighted DASHBOARD badge between Header and Welcome Admin */}
+      <div className="flex items-center justify-between -mt-1 sm:-mt-2">
+        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black tracking-wider uppercase bg-blue-600 text-white shadow-md ring-2 ring-blue-500/25">
+          <LayoutDashboard className="w-3.5 h-3.5" />
+          DASHBOARD
+        </span>
+      </div>
+
       {/* =========================================================================
           1. HEADER BAR: Welcome & Status
          ========================================================================= */}
@@ -446,17 +454,9 @@ export const Dashboard: React.FC = () => {
                 Fleet Operations Live
               </span>
             </div>
-
-            {/* Highlighted Dashboard Badge below the header line */}
-            <div className="flex items-center gap-2.5 mt-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black tracking-wider uppercase bg-blue-600 text-white shadow-md ring-2 ring-blue-500/30">
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                DASHBOARD
-              </span>
-              <span className="text-[11px] font-semibold text-slate-500">
-                • Bus Fleet & Maintenance Management Platform • Section 3.1 Operations Dashboard
-              </span>
-            </div>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Bus Fleet & Maintenance Management Platform • Section 3.1 Operations Dashboard
+            </p>
           </div>
         </div>
       </div>
