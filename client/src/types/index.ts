@@ -388,6 +388,8 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  phone_number?: string;
   role: string;
   status: string;
+  categories?: string[];
 }

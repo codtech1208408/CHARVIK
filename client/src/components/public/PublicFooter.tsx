@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUp, ChevronRight, Users } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUp, ChevronRight, Key, ShieldCheck, Compass } from 'lucide-react';
 
 export const PublicFooter: React.FC = () => {
   const scrollToTop = () => {
@@ -23,7 +23,7 @@ export const PublicFooter: React.FC = () => {
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <a
-              href="https://wa.me/919876543210?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20a%20quote%20for%20bus%20rental%20%2F%20fleet%20supply."
+              href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20a%20quote%20for%20bus%20rental%20%2F%20fleet%20supply."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg transition-transform hover:-translate-y-0.5"
@@ -161,12 +161,30 @@ export const PublicFooter: React.FC = () => {
           <p>© {new Date().getFullYear()} Charvik Staffing Consultancy. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Link
-              to="/supporter"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 transition-all font-bold text-xs"
-              title="Supporter Account Portal (/supporter)"
+              to="/admin"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 hover:text-blue-200 border border-blue-500/30 transition-all font-bold text-xs"
+              title="Admin Portal (/admin)"
             >
-              <Users className="w-3.5 h-3.5 text-emerald-400" />
-              <span>/supporter</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+              <span>Admin Portal</span>
+            </Link>
+
+            <Link
+              to="/operator"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 transition-all font-bold text-xs"
+              title="Operator Portal (/operator)"
+            >
+              <Key className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Operator Dashboard</span>
+            </Link>
+
+            <Link
+              to="/captain"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200 border border-amber-500/30 transition-all font-bold text-xs"
+              title="Captain Portal (/captain)"
+            >
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
+              <span>Captain Portal</span>
             </Link>
 
             <button

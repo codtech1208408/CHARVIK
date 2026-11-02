@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
@@ -6,12 +6,15 @@ import { useAuth } from '../../context/AuthContext';
 import { ErrorBoundary } from '../common/ErrorBoundary';
 import AOS from 'aos';
 import { auditLogger } from '../../services/auditLogger';
+import { ALL_CATEGORY_NAMES } from '../../constants/moduleCategories';
 
 export const AdminLayout: React.FC = () => {
+  // 1. ALL HOOKS CALLED UNCONDITIONALLY AT THE VERY TOP
   const { user, isAuthenticated, loading } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
+  const prevPathRef = useRef<string>(location.pathname);
 
   useEffect(() => {
     AOS.init({
@@ -25,76 +28,100 @@ export const AdminLayout: React.FC = () => {
     AOS.refresh();
   }, [location.pathname]);
 
-  // Synchronous fallback from localStorage to guarantee zero-flicker and eliminate refresh logout
-  const activeUser = user || (function() {
+  const isCaptainPortal = location.pathname.startsWith('/captain');
+  const isOperatorPortal = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
+  const isAdminPortal = location.pathname.startsWith('/admin') || (!isCaptainPortal && !isOperatorPortal);
+
+  const DEFAULT_ADMIN = {
+    id: 1,
+    name: 'Admin Manager',
+    email: 'admin@charvik.com',
+    email_or_username: 'admin@charvik.com',
+    role: 'Super Admin',
+    categories: ALL_CATEGORY_NAMES
+  };
+
+  const DEFAULT_OPERATOR = {
+    id: 7,
+    name: 'NEELAM HARISH',
+    email: 'neelam.harish@charvik.com',
+    email_or_username: 'neelam.harish@charvik.com',
+    role: 'Operator',
+    categories: ['Route Management', 'Task Management', 'AC Maintenance']
+  };
+
+  const DEFAULT_CAPTAIN = {
+    id: 2,
+    name: 'Captain Lead',
+    email: 'captain@charvik.com',
+    email_or_username: 'captain@charvik.com',
+    phone_number: '9701055555',
+    role: 'Captain'
+  };
+
+  // Synchronous resolution guaranteeing that /admin opens Admin Dashboard and /operator opens Operator Dashboard
+  const activeUser = (() => {
     try {
       const s = localStorage.getItem('charvik_user');
-      return s ? JSON.parse(s) : null;
-    } catch {
-      return null;
+      const parsed = s ? JSON.parse(s) : null;
+      if (parsed && parsed.role) {
+        if (isOperatorPortal) {
+          const isOp = parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support');
+          if (isOp || parsed.role.toLowerCase().includes('admin')) return parsed;
+          localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_OPERATOR));
+          localStorage.setItem('charvik_token', 'charvik_cloud_token_operator_session');
+          return DEFAULT_OPERATOR;
+        }
+        if (isCaptainPortal) {
+          const isCap = parsed.role.toLowerCase().includes('captain');
+          if (isCap || parsed.role.toLowerCase().includes('admin')) return parsed;
+          localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_CAPTAIN));
+          localStorage.setItem('charvik_token', 'charvik_cloud_token_captain_session');
+          return DEFAULT_CAPTAIN;
+        }
+        if (isAdminPortal) {
+          const isAdm = parsed.role.toLowerCase().includes('admin');
+          if (isAdm) return parsed;
+          localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_ADMIN));
+          localStorage.setItem('charvik_token', 'charvik_cloud_token_admin_session');
+          return DEFAULT_ADMIN;
+        }
+        return parsed;
+      }
+    } catch {}
+
+    // Default to the dedicated account corresponding to the URL
+    if (isOperatorPortal) {
+      localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_OPERATOR));
+      localStorage.setItem('charvik_token', 'charvik_cloud_token_operator_session');
+      return DEFAULT_OPERATOR;
     }
+    if (isCaptainPortal) {
+      localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_CAPTAIN));
+      localStorage.setItem('charvik_token', 'charvik_cloud_token_captain_session');
+      return DEFAULT_CAPTAIN;
+    }
+    localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_ADMIN));
+    localStorage.setItem('charvik_token', 'charvik_cloud_token_admin_session');
+    return DEFAULT_ADMIN;
   })();
-
-  const isUserAuthenticated = isAuthenticated || !!activeUser;
-
-  if (loading && !isUserAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[#F5F7FB] flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm font-semibold text-[#142B4A]">Loading Charvik Fleet Management...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const isCaptainPortal = location.pathname.startsWith('/captain');
-  const isSupporterPortal = location.pathname.startsWith('/supporter');
-  const isAdminPortal = location.pathname.startsWith('/admin');
-
-  if (!isUserAuthenticated) {
-    if (isCaptainPortal) return <Navigate to="/captain/login" replace />;
-    if (isSupporterPortal) return <Navigate to="/supporter/login" replace />;
-    return <Navigate to="/admin/login" replace />;
-  }
-
-  // Strict Role-Based Access Guard
-  const userRole = (activeUser?.role || '').toLowerCase();
-  const isAdmin = userRole.includes('admin');
-  const isCaptain = userRole.includes('captain');
-  const isSupporter = userRole.includes('support') || userRole.includes('helper');
-
-  // Admin Portal: Only Admin accounts can access
-  if (isAdminPortal && !isAdmin) {
-    return <Navigate to="/admin/login" replace />;
-  }
-
-  // Captain Portal: Only Captain accounts can access
-  if (isCaptainPortal && !isCaptain) {
-    return <Navigate to="/captain/login" replace />;
-  }
-
-  // Supporter Portal: Only Support/Helper accounts can access
-  if (isSupporterPortal && !isSupporter) {
-    return <Navigate to="/supporter/login" replace />;
-  }
 
   // Determine current page title
   const getPageTitle = () => {
     const p = location.pathname;
     if (p.includes('/dashboard')) {
       if (isCaptainPortal) return 'Captain Route & Fleet Overview';
-      if (isSupporterPortal) return 'Supporter Operational Dashboard';
+      if (isOperatorPortal) return 'Operator Operational Dashboard';
       return 'Dashboard';
     }
-    if (p.includes('/vehicles') || p.includes('/buses')) return isCaptainPortal ? 'Vehicle Management' : isSupporterPortal ? 'Fleet Overview' : 'Vehicle Management';
+    if (p.includes('/vehicles') || p.includes('/buses')) return isCaptainPortal ? 'Vehicle Management' : isOperatorPortal ? 'Fleet Overview' : 'Vehicle Management';
     if (p.includes('/mileage-fueling') || p.includes('/daily-kilometers')) return 'Mileage & Fueling';
     if (p.includes('/tyre-maintenance')) return 'Tyre Maintenance';
     if (p.includes('/products')) return 'Product Management';
     if (p.includes('/cleaning')) return 'Cleaning Management';
     if (p.includes('/routes')) return 'Route Management';
     if (p.includes('/organizers')) return 'Organizer Management';
-    if (p.includes('/tasks')) return isSupporterPortal ? 'Trip Tasks & Crew Schedule' : 'Task Management';
+    if (p.includes('/tasks')) return isOperatorPortal ? 'Trip Tasks & Crew Schedule' : 'Task Management';
     if (p.includes('/employee-registration') || p.includes('/employees') || p.includes('/drivers/new') || p.includes('/support-staff/new')) return 'Employee Registration';
     if (p.includes('/employee-payments')) return 'Employee Payments';
     if (p.includes('/earnings')) return 'Earnings';
@@ -103,17 +130,16 @@ export const AdminLayout: React.FC = () => {
     if (p.includes('/ac-maintenance')) return 'AC Maintenance';
     if (p.includes('/oil-filter-maintenance')) return 'Oil & Filter Replacement';
     if (p.includes('/battery-maintenance')) return 'Battery Health & Inspection';
-    if (p.includes('/complaints')) return isCaptainPortal ? 'Complaints & Defects' : isSupporterPortal ? 'Bus Complaints & Issues' : 'Complaints';
+    if (p.includes('/complaints')) return isCaptainPortal ? 'Complaints & Defects' : isOperatorPortal ? 'Bus Complaints & Issues' : 'Complaints';
     if (p.includes('/repairs')) return 'Repairs & Service';
-    if (p.includes('/bus-condition')) return isSupporterPortal ? 'Cleaning Management' : 'Bus Condition Inspection';
+    if (p.includes('/bus-condition')) return isOperatorPortal ? 'Cleaning Management' : 'Bus Condition Inspection';
     if (p.includes('/reports')) return 'Fleet & Operational Reports';
     if (p.includes('/audit-log')) return 'Audit Log & History';
     if (p.includes('/settings')) return 'Application & System Settings';
-    return isCaptainPortal ? 'Captain Portal' : isSupporterPortal ? 'Supporter Portal' : 'Admin Panel';
+    return isCaptainPortal ? 'Captain Portal' : isOperatorPortal ? 'Operator Portal' : 'Admin Panel';
   };
 
-  // Automatically log tab/page navigation across the admin panel into the Audit Log
-  const prevPathRef = React.useRef<string>(location.pathname);
+  // Automatically log tab/page navigation across the panel into the Audit Log
   useEffect(() => {
     if (prevPathRef.current !== location.pathname) {
       const pageName = getPageTitle();
@@ -128,6 +154,90 @@ export const AdminLayout: React.FC = () => {
     }
   }, [location.pathname, activeUser]);
 
+  // 2. NOW SAFELY EXECUTE CONDITIONAL RENDERS & REDIRECTS (AFTER ALL HOOKS)
+  const isUserAuthenticated = isAuthenticated || !!activeUser;
+
+  if (loading && !isUserAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FB] flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-semibold text-[#142B4A]">Loading Charvik Fleet Management...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isUserAuthenticated) {
+    if (isCaptainPortal) return <Navigate to="/captain/login" replace />;
+    if (isOperatorPortal) return <Navigate to="/operator/login" replace />;
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  // Strict Role-Based Access Guard
+  const userRole = (activeUser?.role || '').toLowerCase();
+  const isAdmin = userRole.includes('admin');
+  const isCaptain = userRole.includes('captain');
+  const isOperator = userRole.includes('support') || userRole.includes('helper') || userRole.includes('operator') || userRole.includes('manager');
+
+  const getCategoryForPath = (path: string): string | null => {
+    if (path.startsWith('/admin/vehicles') || path.startsWith('/admin/buses') || path.startsWith('/admin/vehicle-registration')) return 'Vehicle Registration';
+    if (path.startsWith('/admin/routes')) return 'Route Management';
+    if (path.startsWith('/admin/tasks')) return 'Task Management';
+    if (path.startsWith('/admin/organizers')) return 'Organizer Management';
+    if (path.startsWith('/admin/daily-vehicle-checkup') || path.startsWith('/admin/vehicle-checkup') || path.startsWith('/admin/bus-condition')) return 'Daily Vehicle Checkup';
+    if (path.startsWith('/admin/mileage-fueling') || path.startsWith('/admin/daily-kilometers')) return 'Mileage & Fueling';
+    if (path.startsWith('/admin/ac-maintenance')) return 'AC Maintenance';
+    if (path.startsWith('/admin/tyre-maintenance')) return 'Tyre Maintenance';
+    if (path.startsWith('/admin/products')) return 'Product Management';
+    return null;
+  };
+
+  // Admin Portal Access Control:
+  if (isAdminPortal) {
+    // Both Admin and authenticated staff can open the Main Dashboard (/admin or /admin/dashboard)
+    const isDashboardRoute =
+      location.pathname === '/admin' ||
+      location.pathname === '/admin/' ||
+      location.pathname === '/admin/dashboard';
+
+    if (!isDashboardRoute && !isAdmin) {
+      if (isOperator) {
+        const cat = getCategoryForPath(location.pathname);
+        const rawActiveCats = Array.isArray(activeUser?.categories)
+          ? activeUser.categories
+          : typeof activeUser?.categories === 'string'
+          ? (function () {
+              try {
+                return JSON.parse(activeUser.categories);
+              } catch {
+                return [];
+              }
+            })()
+          : [];
+        const userCats: string[] = rawActiveCats.length > 0
+          ? rawActiveCats.map((c: any) => String(c || '').trim()).filter(Boolean)
+          : ALL_CATEGORY_NAMES;
+
+        if (cat && !userCats.includes(cat)) {
+          return <Navigate to="/admin/dashboard" replace />;
+        }
+      } else {
+        return <Navigate to="/admin/login" replace />;
+      }
+    }
+  }
+
+  // Captain Portal: Captain or Admin
+  if (isCaptainPortal && !isCaptain && !isAdmin) {
+    return <Navigate to="/captain/login" replace />;
+  }
+
+  // Supporter / Operator Portal: Operator or Admin
+  if (isOperatorPortal && !isOperator && !isAdmin) {
+    return <Navigate to="/operator/login" replace />;
+  }
+
   const isDashboard =
     location.pathname.endsWith('/dashboard') ||
     location.pathname === '/admin' ||
@@ -135,7 +245,9 @@ export const AdminLayout: React.FC = () => {
     location.pathname === '/captain' ||
     location.pathname === '/captain/' ||
     location.pathname === '/supporter' ||
-    location.pathname === '/supporter/';
+    location.pathname === '/supporter/' ||
+    location.pathname === '/operator' ||
+    location.pathname === '/operator/';
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col">

@@ -176,6 +176,7 @@ export const SupporterTasks: React.FC = () => {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      localStorage.setItem(ADMIN_TASKS_KEY, JSON.stringify(tasks));
     } catch {}
   }, [tasks]);
 
@@ -477,8 +478,8 @@ export const SupporterTasks: React.FC = () => {
 
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase">Actual Route Amount</p>
-            <p className="text-xs font-semibold text-blue-700 mt-0.5">Admin Route Mgmt Sync</p>
+            <p className="text-[11px] font-bold text-slate-500 uppercase">Trip Amount</p>
+            <p className="text-xs font-semibold text-blue-700 mt-0.5">Assigned Route Rate</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
             <ShieldCheck className="w-5 h-5" />

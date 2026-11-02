@@ -41,7 +41,7 @@ export const FloatingButtons: React.FC = () => {
             </span>
           </div>
           <a
-            href="https://wa.me/919876543210?text=Hello%20Charvik%20Fleet%20Support%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
+            href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%20Support%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
             target="_blank"
             rel="noopener noreferrer"
             className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-95 border-2 border-white ring-4 ring-emerald-500/20 relative"

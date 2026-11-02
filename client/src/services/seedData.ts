@@ -552,6 +552,53 @@ export const BASE_FLEET_TASKS: any[] = [
     "updated_at": "2026-10-30 02:35:16",
     "service_number": "SRV-101",
     "payment_status": "Pending"
+  },
+  {
+    "id": 1793418489902,
+    "trip_start_date": "2026-10-31",
+    "vehicle_number": "AP16TV1234",
+    "vehicle_status": "RUN",
+    "route_corridor": "Hyderabad → Bangalore",
+    "operator_organizer": "charvik",
+    "driver1": {
+      "employee_id": 1,
+      "employee_name": "akhil",
+      "role": "Driver",
+      "salary_amount": 1200,
+      "advance_amount": 0,
+      "balance_due": 1200
+    },
+    "driver2": {
+      "employee_id": 4,
+      "employee_name": "kittu",
+      "role": "Driver",
+      "salary_amount": 900,
+      "advance_amount": 0,
+      "balance_due": 900
+    },
+    "helper": {
+      "employee_id": 2,
+      "employee_name": "santhu",
+      "role": "Helper",
+      "salary_amount": 15000,
+      "advance_amount": 0,
+      "balance_due": 15000
+    },
+    "captain": {
+      "employee_id": 3,
+      "employee_name": "hari",
+      "role": "Captain",
+      "salary_amount": 0,
+      "advance_amount": 0,
+      "balance_due": 0,
+      "work_remarks": "Supervise route stops, passenger comfort & safety"
+    },
+    "trip_remarks": "",
+    "duty_status": "Scheduled",
+    "created_at": "2026-10-31 03:48:09",
+    "updated_at": "2026-10-31 03:48:09",
+    "service_number": "SRV-101",
+    "payment_status": "Pending"
   }
 ];
 
@@ -811,28 +858,7 @@ export const BASE_TYRE_RECORDS: any[] = [
   }
 ];
 
-export const BASE_TYRE_AIR_CHECKUPS: any[] = [
-  {
-    id: 1,
-    bus_id: 1,
-    checkup_date: "2026-10-24",
-    expiry_date: "2026-10-31",
-    pressure_psi: 115,
-    technician: "Ramesh Sharma",
-    status: "Pending",
-    remarks: "Checked all tyres, air pressure adjusted to 115 PSI"
-  },
-  {
-    id: 2,
-    bus_id: 2,
-    checkup_date: "2026-10-20",
-    expiry_date: "2026-10-27",
-    pressure_psi: 110,
-    technician: "Suresh Kumar",
-    status: "Expired",
-    remarks: "Pressure check validity expired, due for tyre air renewal"
-  }
-];
+export const BASE_TYRE_AIR_CHECKUPS: any[] = [];
 
 export const BASE_WHEEL_ALLOTMENTS: any[] = [
   {
@@ -1017,7 +1043,9 @@ export const BASE_NEW_TYRES: any[] = [
     "quantity": 1,
     "km": 0,
     "present_km": 0,
-    "running_km": 0
+    "running_km": 0,
+    "tyre_photo_url": null,
+    "invoice_photo_url": null
   },
   {
     "id": 2,
@@ -1038,7 +1066,9 @@ export const BASE_NEW_TYRES: any[] = [
     "quantity": 1,
     "km": 0,
     "present_km": 0,
-    "running_km": 0
+    "running_km": 0,
+    "tyre_photo_url": null,
+    "invoice_photo_url": null
   },
   {
     "id": 3,
@@ -1059,7 +1089,9 @@ export const BASE_NEW_TYRES: any[] = [
     "quantity": 1,
     "km": 0,
     "present_km": 0,
-    "running_km": 0
+    "running_km": 0,
+    "tyre_photo_url": null,
+    "invoice_photo_url": null
   },
   {
     "id": 4,
@@ -1080,7 +1112,9 @@ export const BASE_NEW_TYRES: any[] = [
     "quantity": 1,
     "km": 0,
     "present_km": 0,
-    "running_km": 0
+    "running_km": 0,
+    "tyre_photo_url": null,
+    "invoice_photo_url": null
   },
   {
     "id": 5,
@@ -1101,7 +1135,9 @@ export const BASE_NEW_TYRES: any[] = [
     "quantity": 1,
     "km": 0,
     "present_km": 45000,
-    "running_km": 45000
+    "running_km": 45000,
+    "tyre_photo_url": null,
+    "invoice_photo_url": null
   },
   {
     "id": 6,
@@ -1122,7 +1158,9 @@ export const BASE_NEW_TYRES: any[] = [
     "quantity": 1,
     "km": 0,
     "present_km": 45000,
-    "running_km": 45000
+    "running_km": 45000,
+    "tyre_photo_url": null,
+    "invoice_photo_url": null
   }
 ];
 
@@ -1717,29 +1755,20 @@ export const BASE_STAFF_CREDENTIALS: any[] = [
     "status": "Active",
     "created_at": "2026-10-26 07:14:51",
     "updated_at": "2026-10-26 07:14:51",
-    "phone_number": "9876543210"
+    "phone_number": "9876543210",
+    "categories": null
   },
   {
-    "id": 2,
-    "name": "Fleet Captain",
-    "email_or_username": "captain@charvik.com",
-    "password_hash": "$2a$10$rR.illluuKKpDVG3ykH9BOvuGHOSpD35/GD.aqqoIX5W//livFU6W",
-    "role": "Captain",
-    "status": "Active",
-    "created_at": "2026-10-26 07:14:51",
-    "updated_at": "2026-10-26 07:14:51",
-    "phone_number": "9701055555"
-  },
-  {
-    "id": 3,
-    "name": "Support Staff Member",
-    "email_or_username": "supporter@charvik.com",
-    "password_hash": "$2a$10$o6/8ZpaxqdOEXc2ZzSFq7.S7l6CXo1X6Suc4cYJG49QRx9O4AOJpe",
+    "id": 7,
+    "name": "NEELAM HARISH",
+    "email_or_username": "harisn@gmail.com",
+    "password_hash": "$2a$10$kHMnwIKWN38CEGw4wR6w.uKljIsWIYVJ9Z0xQ.QH.q9ryS0ID1ISe",
     "role": "Support Staff",
     "status": "Active",
-    "created_at": "2026-10-26 07:14:51",
-    "updated_at": "2026-10-26 07:14:51",
-    "phone_number": "9848033445"
+    "created_at": "2026-11-02 05:10:27",
+    "updated_at": "2026-11-02 05:10:27",
+    "phone_number": "8519821491",
+    "categories": "[\"Route Management\",\"Task Management\",\"AC Maintenance\"]"
   }
 ];
 

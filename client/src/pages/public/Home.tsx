@@ -236,7 +236,7 @@ export const Home: React.FC = () => {
                         </Link>
 
                         <a
-                          href="https://wa.me/919876543210?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
+                          href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition-transform hover:-translate-y-0.5"
@@ -314,7 +314,7 @@ export const Home: React.FC = () => {
               </Link>
 
               <a
-                href="https://wa.me/919876543210?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
+                href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
@@ -507,7 +507,7 @@ export const Home: React.FC = () => {
 
               <div className="mt-6 flex flex-col gap-2">
                 <a
-                  href="https://wa.me/919876543210?text=Hello%20Charvik%2C%20I%20have%20a%20custom%20transportation%20requirement."
+                  href="https://wa.me/919396151527?text=Hello%20Charvik%2C%20I%20have%20a%20custom%20transportation%20requirement."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition"
@@ -595,7 +595,7 @@ export const Home: React.FC = () => {
                       <CheckCircle2 className="w-3.5 h-3.5" /> Inspected & Certified
                     </span>
                     <a
-                      href="https://wa.me/919876543210?text=Hello%20Charvik%2C%20I%20am%20interested%20in%20booking%20the%20bus%20fleet."
+                      href="https://wa.me/919396151527?text=Hello%20Charvik%2C%20I%20am%20interested%20in%20booking%20the%20bus%20fleet."
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs font-bold text-blue-600 hover:text-blue-800"
@@ -673,7 +673,7 @@ export const Home: React.FC = () => {
 
             <div className="flex flex-wrap items-center justify-center gap-4">
               <a
-                href="https://wa.me/919876543210?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20booking%20buses."
+                href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20booking%20buses."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl transition-transform hover:-translate-y-0.5"

@@ -10,7 +10,8 @@ import {
   Save,
   CheckCircle2,
   ShieldCheck,
-  Key
+  Key,
+  IndianRupee
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useToast } from '../components/common/Toast';
@@ -32,7 +33,7 @@ export const Settings: React.FC = () => {
   const { user } = useAuth();
   const { success, error } = useToast();
 
-  const [activeTab, setActiveTab] = useState<'company' | 'maintenance' | 'account' | 'notifications' | 'audit' | 'staff_access'>('company');
+  const [activeTab, setActiveTab] = useState<'company' | 'financial_control' | 'maintenance' | 'account' | 'notifications' | 'audit' | 'staff_access'>('company');
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [staffCredentials, setStaffCredentials] = useState<any[]>([]);
@@ -200,8 +201,9 @@ export const Settings: React.FC = () => {
       <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-2 overflow-x-auto text-xs">
         {[
           { id: 'company', label: 'Company Profile', icon: Building },
+          { id: 'financial_control', label: 'Amount Control (Supervision)', icon: IndianRupee },
           { id: 'maintenance', label: 'Maintenance Intervals', icon: Wrench },
-          { id: 'staff_access', label: 'Supporter & Crew Logins', icon: Users },
+          { id: 'staff_access', label: 'Operator & Crew Logins', icon: Users },
           { id: 'account', label: 'Admin Security', icon: Lock },
           { id: 'notifications', label: 'Alert Preferences', icon: Bell },
           { id: 'audit', label: 'Audit Trail Logs', icon: History },
@@ -226,6 +228,156 @@ export const Settings: React.FC = () => {
 
       {/* Tab Content Cards */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+        {/* FINANCIAL AMOUNT CONTROL (ADMIN SUPERVISION) */}
+        {activeTab === 'financial_control' && (
+          <form onSubmit={handleSaveSettings} className="space-y-5">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-sm font-bold text-[#142B4A] flex items-center gap-2">
+                <IndianRupee className="w-4 h-4 text-emerald-600" />
+                <span>Financial Amount Control & Admin Supervision</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Admin supervised control over trip payments, driver & helper wages. Choose whether tasks calculate pay using a Fixed Amount or Company-Defined worker salary.
+              </p>
+            </div>
+
+            {/* Mode Selection Cards */}
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-2">
+                Financial Rate Mode <span className="text-rose-500">*</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('amount_control_mode', 'fixed')}
+                  className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                    (settings.amount_control_mode || 'company_defined') === 'fixed'
+                      ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 ring-2 ring-emerald-200 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-sm flex items-center gap-1.5">
+                      <IndianRupee className="w-4 h-4 text-emerald-600" />
+                      <span>Fixed Amount Mode</span>
+                    </span>
+                    {(settings.amount_control_mode || 'company_defined') === 'fixed' && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white">Active</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 mt-2">
+                    Standard fixed wages apply across all tasks regardless of worker contract. Admin sets the uniform trip pay rate.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('amount_control_mode', 'company_defined')}
+                  className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                    (settings.amount_control_mode || 'company_defined') === 'company_defined'
+                      ? 'border-blue-500 bg-blue-50/70 text-blue-900 ring-2 ring-blue-200 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-sm flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-blue-600" />
+                      <span>Company-Defined Amount Mode</span>
+                    </span>
+                    {(settings.amount_control_mode || 'company_defined') === 'company_defined' && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">Active</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 mt-2">
+                    Amounts are derived from the registered biodata employee profile records (Permanent or Temporary agreement).
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* Fixed Rates Configuration */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Admin Fixed Rates Configuration (₹ INR)
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Fixed Driver Trip Pay (₹)</label>
+                  <input
+                    type="number"
+                    value={settings.fixed_driver_salary || '1000'}
+                    onChange={(e) => handleInputChange('fixed_driver_salary', e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none focus:border-emerald-500 font-bold"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Applied for Driver 1 and Driver 2 in Fixed mode.</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Fixed Helper Trip Pay (₹)</label>
+                  <input
+                    type="number"
+                    value={settings.fixed_helper_salary || '600'}
+                    onChange={(e) => handleInputChange('fixed_helper_salary', e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none focus:border-emerald-500 font-bold"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Default helper remuneration.</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Fixed Hold Status Pay (₹)</label>
+                  <input
+                    type="number"
+                    value={settings.fixed_hold_salary || '500'}
+                    onChange={(e) => handleInputChange('fixed_hold_salary', e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none focus:border-emerald-500 font-bold"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Auto-applied when Vehicle Status is HOLD.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Operator Lock Policy */}
+            <div className="p-4 bg-amber-50/70 rounded-xl border border-amber-200 flex items-start justify-between gap-4">
+              <div>
+                <h4 className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                  <Lock className="w-4 h-4 text-amber-700" />
+                  <span>Lock Financial Amounts for Operators & Employees</span>
+                </h4>
+                <p className="text-xs text-amber-700 mt-1">
+                  When enabled, Operators and other non-admin employees cannot change or alter trip amounts, salary numbers, or wage rates without Admin permission.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  handleInputChange(
+                    'lock_amounts_for_staff',
+                    settings.lock_amounts_for_staff === 'false' ? 'true' : 'false'
+                  )
+                }
+                className="text-2xl text-amber-700 cursor-pointer shrink-0"
+              >
+                {settings.lock_amounts_for_staff !== 'false' ? (
+                  <ToggleRight className="w-8 h-8 text-amber-600" />
+                ) : (
+                  <ToggleLeft className="w-8 h-8 text-slate-400" />
+                )}
+              </button>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-700 flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                <span>{saving ? 'Saving Financial Controls...' : 'Save Financial Controls'}</span>
+              </button>
+            </div>
+          </form>
+        )}
+
         {/* COMPANY PROFILE */}
         {activeTab === 'company' && (
           <form onSubmit={handleSaveSettings} className="space-y-4">
@@ -526,17 +678,17 @@ export const Settings: React.FC = () => {
           </div>
         )}
 
-        {/* STAFF & SUPPORTER CREDENTIALS (ISSUED BY ADMIN) */}
+        {/* STAFF & OPERATOR CREDENTIALS (ISSUED BY ADMIN) */}
         {activeTab === 'staff_access' && (
           <div className="space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-[#142B4A] flex items-center gap-2">
                   <Users className="w-4 h-4 text-emerald-600" />
-                  <span>Supporter & Crew Login Credentials</span>
+                  <span>Operator & Crew Login Credentials</span>
                 </h3>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Issue and manage official access credentials for Supporters, Helpers, and Route Captains.
+                  Issue and manage official access credentials for Operators, Helpers, and Route Captains.
                 </p>
               </div>
 
@@ -555,7 +707,7 @@ export const Settings: React.FC = () => {
               <div>
                 <p className="font-bold">Admin-Provided Access Control</p>
                 <p className="text-[11px] text-blue-800 mt-0.5">
-                  Supporters and Captains cannot register publicly. Only Fleet Administrators can generate, issue, or reset their portal login credentials.
+                  Operators and Captains cannot register publicly. Only Fleet Administrators can generate, issue, or reset their portal login credentials.
                 </p>
               </div>
             </div>
@@ -568,18 +720,19 @@ export const Settings: React.FC = () => {
                     <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
                     <th className="py-2.5 px-3">Name</th>
                     <th className="py-2.5 px-3">Username / Email</th>
-                    <th className="py-2.5 px-3">Assigned Role</th>
                     <th className="py-2.5 px-3">Status</th>
                     <th className="py-2.5 px-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {staffCredentials.map((staff, idx) => (
+                  {staffCredentials.map((staff, idx) => {
+                    const displayName = staff.name === 'Fleet Captain' ? 'Employee' : staff.name === 'Support Staff Member' ? 'Operator' : staff.name;
+                    return (
                     <tr key={staff.id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="py-3 px-3 font-bold text-slate-500 text-center">{idx + 1}</td>
-                      <td className="py-3 px-3 font-bold text-slate-900">{staff.name}</td>
+                      <td className="py-3 px-3 font-bold text-slate-900">{displayName}</td>
                       <td className="py-3 px-3 font-mono text-xs text-slate-700">
-                        {staff.role === 'Captain' ? (
+                        {staff.role === 'Captain' || staff.phone_number ? (
                           <span className="flex items-center gap-1 text-purple-800 font-bold">
                             <Phone className="w-3 h-3 text-purple-600" />
                             {staff.phone_number || staff.username || staff.email_or_username}
@@ -587,19 +740,6 @@ export const Settings: React.FC = () => {
                         ) : (
                           staff.username || staff.email_or_username
                         )}
-                      </td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            staff.role === 'Super Admin'
-                              ? 'bg-purple-100 text-purple-800'
-                              : staff.role === 'Captain'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-emerald-100 text-emerald-800'
-                          }`}
-                        >
-                          {staff.role}
-                        </span>
                       </td>
                       <td className="py-3 px-3">
                         {staff.status === 'Active' ? (
@@ -666,7 +806,8 @@ export const Settings: React.FC = () => {
                         )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -703,22 +844,22 @@ export const Settings: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Assigned Role</label>
+                      <label className="block font-bold text-slate-700 mb-1">Account Category</label>
                       <select
                         value={newStaff.role}
                         onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600"
                       >
-                        <option value="Support Staff">Support Staff / Helper</option>
-                        <option value="Captain">Fleet Captain / Route Lead</option>
-                        <option value="Administrator">Operations Administrator</option>
+                        <option value="Support Staff">Operator</option>
+                        <option value="Captain">Employee</option>
+                        <option value="Administrator">Administrator</option>
                       </select>
                     </div>
 
                     {newStaff.role === 'Captain' ? (
                       <div>
                         <label className="block font-bold text-slate-700 mb-1">
-                          Captain Mobile Number <span className="text-purple-600 font-semibold">(Login ID)</span>
+                          Employee Mobile Number <span className="text-purple-600 font-semibold">(Login ID)</span>
                         </label>
                         <input
                           type="tel"
@@ -729,7 +870,7 @@ export const Settings: React.FC = () => {
                           className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 font-mono font-bold"
                           required
                         />
-                        <p className="text-[10px] text-slate-400 mt-1">Captain logs in using this 10-digit mobile number + password.</p>
+                        <p className="text-[10px] text-slate-400 mt-1">Employee logs in using this 10-digit mobile number + password.</p>
                       </div>
                     ) : (
                       <div>
@@ -738,7 +879,7 @@ export const Settings: React.FC = () => {
                           type="text"
                           value={newStaff.email_or_username}
                           onChange={(e) => setNewStaff({ ...newStaff, email_or_username: e.target.value })}
-                          placeholder="e.g. supporter2@charvik.com"
+                          placeholder="e.g. operator@charvik.com"
                           className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600"
                           required
                         />

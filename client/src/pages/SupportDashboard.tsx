@@ -20,11 +20,15 @@ import {
   FileText,
   Activity,
   ArrowRight,
+  ArrowLeft,
+  LayoutGrid,
   Sparkles,
   Save,
   Check,
   X,
-  ClipboardList
+  ClipboardList,
+  UserPlus,
+  Layers
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -32,11 +36,13 @@ import { useToast } from '../components/common/Toast';
 import { StatCard } from '../components/common/StatCard';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { ALL_MODULE_CATEGORIES } from '../constants/moduleCategories';
 
 export const SupportDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { success, error } = useToast();
+  const isAdmin = (user?.role || '').toLowerCase().includes('admin');
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
@@ -45,9 +51,11 @@ export const SupportDashboard: React.FC = () => {
   const [schedules, setSchedules] = useState<any[]>([]);
   const [repairs, setRepairs] = useState<any[]>([]);
   const [recentKm, setRecentKm] = useState<any[]>([]);
+  const [operatorCategories, setOperatorCategories] = useState<string[]>(['Route Management', 'Task Management', 'AC Maintenance']);
+  const [operatorName, setOperatorName] = useState<string>('');
 
   // Active module tab in Support Dashboard
-  const [activeTab, setActiveTab] = useState<'daily-km' | 'maintenance' | 'complaints' | 'bus-condition' | 'fleet-tracking'>('complaints');
+  const [activeTab, setActiveTab] = useState<'daily-km' | 'maintenance' | 'complaints' | 'bus-condition' | 'fleet-tracking'>('maintenance');
 
   // Daily KM Quick Entry State
   const [kmBusId, setKmBusId] = useState('');
@@ -81,13 +89,32 @@ export const SupportDashboard: React.FC = () => {
   const loadSupportData = async () => {
     try {
       setLoading(true);
-      const [dashRes, busesRes, compRes, schedRes, repairsRes] = await Promise.all([
+      const [dashRes, busesRes, compRes, schedRes, repairsRes, staffRes] = await Promise.all([
         api.getDashboard().catch(() => ({})),
         api.getBuses().catch(() => []),
         api.getComplaints().catch(() => []),
         api.getMaintenanceSchedules().catch(() => []),
-        api.getRepairs().catch(() => [])
+        api.getRepairs().catch(() => []),
+        api.getStaffCredentials().catch(() => [])
       ]);
+
+      const op = (staffRes || []).find((s: any) => (s.role === 'Support Staff' || s.role === 'Operator') && s.status === 'Active') ||
+                 (staffRes || []).find((s: any) => s.role === 'Support Staff' || s.role === 'Operator');
+      if (op) {
+        setOperatorName(op.name);
+        let cats: string[] = [];
+        if (Array.isArray(op.categories)) {
+          cats = op.categories;
+        } else if (typeof op.categories === 'string') {
+          try {
+            const parsed = JSON.parse(op.categories);
+            if (Array.isArray(parsed)) cats = parsed;
+          } catch {}
+        }
+        if (cats.length > 0) {
+          setOperatorCategories(cats);
+        }
+      }
 
       setData(dashRes);
       setBuses(busesRes || []);
@@ -219,6 +246,27 @@ export const SupportDashboard: React.FC = () => {
     (r) => r.status === 'In Progress' || r.status === 'Waiting for Parts' || r.status === 'Requested'
   ).length;
 
+  // Filter permitted categories for the Operator (Never use Admin's 9 categories)
+  const DEFAULT_OP_CATS = ['Route Management', 'Task Management', 'AC Maintenance'];
+  const effectiveUserCats = (!isAdmin && Array.isArray(user?.categories) && user.categories.length > 0)
+    ? user.categories
+    : operatorCategories.length > 0
+    ? operatorCategories
+    : DEFAULT_OP_CATS;
+
+  const userCats = effectiveUserCats.map((c: any) => String(c || '').trim()).filter(Boolean);
+  const permittedModules = ALL_MODULE_CATEGORIES.filter((cat) => {
+    return userCats.some((c) => c.toLowerCase() === cat.name.trim().toLowerCase());
+  });
+
+  const hasRouteManagement = userCats.some(c => c.toLowerCase() === 'route management');
+  const hasTaskManagement = userCats.some(c => c.toLowerCase() === 'task management');
+  const hasAcMaintenance = userCats.some(c => c.toLowerCase() === 'ac maintenance');
+  const hasTyreMaintenance = userCats.some(c => c.toLowerCase() === 'tyre maintenance');
+  const hasDailyKm = userCats.some(c => c.toLowerCase() === 'mileage & fueling');
+  const hasCheckup = userCats.some(c => c.toLowerCase() === 'daily vehicle checkup');
+  const hasVehicles = userCats.some(c => c.toLowerCase() === 'vehicle registration');
+
   return (
     <div className="space-y-6 pb-12">
       {/* =========================================================================
@@ -232,107 +280,87 @@ export const SupportDashboard: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-black text-[#142B4A] tracking-tight">
-                Support Staff Operational Panel
+                Operator Operational Panel
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Authorized Staff Access
+                Operator Access
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Logged in as <strong className="text-slate-800">{user?.name}</strong> • Routine Maintenance, Inspections & Defect Tracking
+              {isAdmin ? (
+                <span>Previewing Operator Dashboard • Configured Staff: <strong className="text-slate-800">{operatorName || 'NEELAM HARISH'}</strong></span>
+              ) : (
+                <span>Logged in as <strong className="text-slate-800">{user?.name}</strong> • Fleet Operations & Employee Management</span>
+              )}
             </p>
           </div>
         </div>
 
         <div className="flex items-center flex-wrap gap-2.5">
-          <button
-            onClick={() => navigate('/supporter/tasks')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] shadow-sm transition-all cursor-pointer"
-          >
-            <ClipboardList className="w-3.5 h-3.5" />
-            <span>Trip Tasks & Schedule</span>
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => navigate('/admin/dashboard')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Admin Dashboard</span>
+            </button>
+          )}
 
           <button
-            onClick={() => setIsConditionModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all"
+            onClick={() => navigate('/operator/employee-registration')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all cursor-pointer"
           >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>New Bus Inspection</span>
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Employee Registration</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('daily-km')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-[#142B4A] bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all"
-          >
-            <Gauge className="w-3.5 h-3.5 text-blue-600" />
-            <span>Log Daily KM</span>
-          </button>
+          {(hasTaskManagement || hasRouteManagement) && (
+            <button
+              onClick={() => navigate('/operator/tasks')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] shadow-sm transition-all cursor-pointer"
+            >
+              <ClipboardList className="w-3.5 h-3.5" />
+              <span>Trip Tasks & Schedule</span>
+            </button>
+          )}
+
+          {hasCheckup && (
+            <button
+              onClick={() => setIsConditionModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition-all"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>New Bus Inspection</span>
+            </button>
+          )}
+
+          {hasDailyKm && (
+            <button
+              onClick={() => setActiveTab('daily-km')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-[#142B4A] bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all"
+            >
+              <Gauge className="w-3.5 h-3.5 text-blue-600" />
+              <span>Log Daily KM</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Role Restriction Notice for Support */}
-      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
+      {/* Role Notice for Operator */}
+      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
           <span>
-            <strong>Support Access Scope:</strong> You can log daily kilometers, record maintenance, manage complaints & repairs, update bus condition, and view fleet/staff tracking. User management, master record deletion, and system settings require Administrator access.
+            <strong>Operator Category Permissions ({operatorName || user?.name || 'Operator'}):</strong> Authorized for{' '}
+            <strong className="text-blue-700">{permittedModules.length} Categories:</strong>{' '}
+            {permittedModules.map((m) => m.name).join(', ') || 'No categories assigned yet'}.
           </span>
         </div>
-        <span className="hidden sm:inline-block text-[11px] font-semibold text-slate-400">
-          Role: Support Staff
+        <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0">
+          {permittedModules.length} Active Categories
         </span>
-      </div>
-
-      {/* =========================================================================
-          4 REQUIRED STAT CARDS:
-          1. Pending Complaints
-          2. Due Maintenance
-          3. Today's KM Entries
-          4. Repairs in Progress
-         ========================================================================= */}
-      <div>
-        <div className="flex items-center justify-between mb-2.5 px-0.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Support Operational KPIs
-          </h3>
-          <span className="text-[11px] font-semibold text-emerald-600">Active Shift Metrics</span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Pending Complaints"
-            value={pendingComplaintsCount}
-            icon={AlertTriangle}
-            iconBgColor="bg-rose-50"
-            iconColor="text-rose-600"
-            linkTo="/supporter/complaints"
-          />
-          <StatCard
-            title="Due Maintenance"
-            value={dueMaintenanceCount}
-            icon={CalendarDays}
-            iconBgColor="bg-amber-50"
-            iconColor="text-amber-600"
-            linkTo="/supporter/maintenance-schedule"
-          />
-          <StatCard
-            title="Today's KM Entries"
-            value={todayKmEntriesCount}
-            icon={Gauge}
-            iconBgColor="bg-blue-50"
-            iconColor="text-blue-600"
-            linkTo="/supporter/daily-kilometers"
-          />
-          <StatCard
-            title="Repairs in Progress"
-            value={repairsInProgressCount}
-            icon={Wrench}
-            iconBgColor="bg-purple-50"
-            iconColor="text-purple-600"
-            linkTo="/supporter/repairs"
-          />
-        </div>
       </div>
 
       {/* =========================================================================
@@ -340,66 +368,144 @@ export const SupportDashboard: React.FC = () => {
          ========================================================================= */}
       <div className="border-b border-slate-200">
         <nav className="flex space-x-2 sm:space-x-4 overflow-x-auto pb-1" aria-label="Tabs">
-          <button
-            onClick={() => setActiveTab('complaints')}
-            className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
-              activeTab === 'complaints'
-                ? 'bg-[#142B4A] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <AlertTriangle className="w-3.5 h-3.5" />
-            <span>Complaints & Defects ({complaints.length})</span>
-          </button>
+          {(hasAcMaintenance || hasTyreMaintenance) && (
+            <button
+              onClick={() => setActiveTab('maintenance')}
+              className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
+                activeTab === 'maintenance'
+                  ? 'bg-[#142B4A] text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <CalendarDays className="w-3.5 h-3.5" />
+              <span>Maintenance Schedule</span>
+            </button>
+          )}
+
+          {(hasRouteManagement || hasTaskManagement) && (
+            <button
+              onClick={() => setActiveTab('fleet-tracking')}
+              className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
+                activeTab === 'fleet-tracking'
+                  ? 'bg-[#142B4A] text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>Live Fleet & Route Tracking</span>
+            </button>
+          )}
+
+          {hasDailyKm && (
+            <button
+              onClick={() => setActiveTab('daily-km')}
+              className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
+                activeTab === 'daily-km'
+                  ? 'bg-[#142B4A] text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Gauge className="w-3.5 h-3.5" />
+              <span>Daily KM Logging</span>
+            </button>
+          )}
+
+          {hasCheckup && (
+            <button
+              onClick={() => setActiveTab('bus-condition')}
+              className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
+                activeTab === 'bus-condition'
+                  ? 'bg-[#142B4A] text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Bus Cleanliness & Inspection</span>
+            </button>
+          )}
+
+          {(hasVehicles || complaints.length > 0) && (
+            <button
+              onClick={() => setActiveTab('complaints')}
+              className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
+                activeTab === 'complaints'
+                  ? 'bg-[#142B4A] text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>Complaints & Defects ({complaints.length})</span>
+            </button>
+          )}
 
           <button
-            onClick={() => setActiveTab('daily-km')}
-            className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
-              activeTab === 'daily-km'
-                ? 'bg-[#142B4A] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
+            onClick={() => navigate('/operator/employee-registration')}
+            className="py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 cursor-pointer"
           >
-            <Gauge className="w-3.5 h-3.5" />
-            <span>Daily KM Logging</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('maintenance')}
-            className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
-              activeTab === 'maintenance'
-                ? 'bg-[#142B4A] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <CalendarDays className="w-3.5 h-3.5" />
-            <span>Maintenance Schedule</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('bus-condition')}
-            className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
-              activeTab === 'bus-condition'
-                ? 'bg-[#142B4A] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Bus Cleanliness & Inspection</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('fleet-tracking')}
-            className={`py-2 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 ${
-              activeTab === 'fleet-tracking'
-                ? 'bg-[#142B4A] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Navigation className="w-3.5 h-3.5" />
-            <span>Live Fleet & Staff Tracking</span>
+            <UserPlus className="w-3.5 h-3.5 text-blue-600" />
+            <span>Employee Registration</span>
           </button>
         </nav>
+      </div>
+
+      {/* =========================================================================
+          PERMITTED CATEGORIES & ADMIN MODULES (Strictly Filtered)
+         ========================================================================= */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-bold text-[#142B4A] flex items-center gap-2">
+              <Layers className="w-4 h-4 text-blue-600" />
+              <span>Accessible Operations Modules ({permittedModules.length} Active Categories)</span>
+            </h3>
+            <p className="text-[11px] text-slate-500">
+              Only modules authorized by Administrator for this operator account are displayed here. All records sync live with the Admin database.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/operator/employee-registration')}
+            className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer w-fit"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Register New Employee</span>
+          </button>
+        </div>
+
+        {permittedModules.length === 0 ? (
+          <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            <Layers className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+            <p className="font-bold text-xs text-slate-700">No Operation Categories Assigned Yet</p>
+            <p className="text-[11px] text-slate-400 mt-1 max-w-md mx-auto">
+              Administrator assigns category permissions in Admin Panel under Employee Registration. Once permissions are granted, assigned modules will appear here automatically.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
+            {permittedModules.map((m) => {
+              const IconComponent = m.icon;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => navigate(m.route)}
+                  className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-blue-50/50 hover:border-blue-400 transition-all text-left flex items-start gap-3 group cursor-pointer"
+                >
+                  <div className="p-2.5 rounded-lg bg-white border border-slate-200 text-blue-600 group-hover:scale-105 transition-transform shadow-2xs shrink-0">
+                    <IconComponent className="w-4 h-4" />
+                  </div>
+                  <div className="truncate flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-slate-800 group-hover:text-blue-700 transition-colors truncate">
+                        {m.name}
+                      </span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 truncate mt-0.5">{m.description}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* =========================================================================
@@ -414,7 +520,7 @@ export const SupportDashboard: React.FC = () => {
                 <p className="text-xs text-slate-500">Track and update resolution status for reported vehicle issues</p>
               </div>
               <button
-                onClick={() => navigate('/supporter/complaints')}
+                onClick={() => navigate('/operator/complaints')}
                 className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
               >
                 <span>Full Complaints Board</span>
@@ -601,7 +707,7 @@ export const SupportDashboard: React.FC = () => {
                 <p className="text-xs text-slate-500">Live operational logs recorded across the fleet</p>
               </div>
               <button
-                onClick={() => navigate('/supporter/daily-kilometers')}
+                onClick={() => navigate('/operator/daily-kilometers')}
                 className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
               >
                 <span>View Full Log</span>
@@ -652,7 +758,7 @@ export const SupportDashboard: React.FC = () => {
               <p className="text-xs text-slate-500">Scheduled servicing across tyres, AC, oil filters, and batteries</p>
             </div>
             <button
-              onClick={() => navigate('/supporter/maintenance-schedule')}
+              onClick={() => navigate('/operator/maintenance-schedule')}
               className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
             >
               <span>Manage Schedules</span>
@@ -691,7 +797,7 @@ export const SupportDashboard: React.FC = () => {
                   </p>
                   <p className="flex justify-between">
                     <span>Estimated Cost:</span>
-                    <strong className="text-slate-800">₹{s.estimated_cost?.toLocaleString()}</strong>
+                    <strong className="text-slate-800">₹{Number(s.estimated_cost || 0).toLocaleString()}</strong>
                   </p>
                 </div>
               </div>
@@ -800,7 +906,7 @@ export const SupportDashboard: React.FC = () => {
                       </p>
                       <p className="flex items-center gap-1.5">
                         <Gauge className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Odometer: <strong>{b.current_odometer_km?.toLocaleString()} KM</strong></span>
+                        <span>Odometer: <strong>{Number(b.current_odometer_km || 0).toLocaleString()} KM</strong></span>
                       </p>
                     </div>
                   </div>

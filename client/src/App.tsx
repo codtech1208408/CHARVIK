@@ -61,7 +61,8 @@ export function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/admin/login" element={<Login defaultRole="Admin" />} />
             <Route path="/captain/login" element={<Login defaultRole="Captain" />} />
-            <Route path="/supporter/login" element={<Login defaultRole="Supporter" />} />
+            <Route path="/operator/login" element={<Login defaultRole="Operator" />} />
+            <Route path="/supporter/login" element={<Navigate to="/operator/login" replace />} />
 
             {/* Protected Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
@@ -116,10 +117,12 @@ export function App() {
               <Route path="battery-maintenance" element={<BatteryMaintenance />} />
             </Route>
 
-            {/* Protected Supporter Routes */}
-            <Route path="/supporter" element={<AdminLayout />}>
-              <Route index element={<Navigate to="/supporter/dashboard" replace />} />
+            {/* Protected Operator Routes */}
+            <Route path="/operator" element={<AdminLayout />}>
+              <Route index element={<Navigate to="/operator/dashboard" replace />} />
               <Route path="dashboard" element={<SupportDashboard />} />
+              <Route path="employee-registration" element={<EmployeeRegistration />} />
+              <Route path="employees" element={<EmployeeRegistration />} />
               <Route path="bus-condition" element={<BusCondition />} />
               <Route path="complaints" element={<Complaints />} />
               <Route path="repairs" element={<Repairs />} />
@@ -128,6 +131,10 @@ export function App() {
               <Route path="maintenance-schedule" element={<MaintenanceSchedule />} />
               <Route path="buses" element={<BusMaster />} />
             </Route>
+
+            {/* Supporter redirect to Operator */}
+            <Route path="/supporter/*" element={<Navigate to="/operator/dashboard" replace />} />
+            <Route path="/supporter" element={<Navigate to="/operator/dashboard" replace />} />
 
             {/* Fallback to Public Website Home */}
             <Route path="*" element={<Navigate to="/" replace />} />

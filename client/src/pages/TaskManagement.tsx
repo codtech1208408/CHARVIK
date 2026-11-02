@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import {
   ClipboardList,
   Plus,
@@ -27,13 +27,16 @@ import {
   Layers,
   ChevronDown,
   X,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Lock,
+  ShieldCheck
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { BASE_FLEET_TASKS, BASE_FLEET_ORGANIZERS, BASE_FLEET_ROUTES } from '../services/seedData';
 
 export interface CrewFinancial {
@@ -72,6 +75,39 @@ export const TaskManagement: React.FC = () => {
   const { success, error } = useToast();
   const [searchParams] = useSearchParams();
   const dateParam = searchParams.get('date');
+  const { user } = useAuth();
+  const location = useLocation();
+  const userRole = (user?.role || '').toLowerCase();
+  const isAdmin = userRole.includes('admin');
+  const isOperator =
+    location.pathname.startsWith('/operator') ||
+    location.pathname.startsWith('/supporter') ||
+    (!isAdmin && (
+      userRole.includes('operator') ||
+      userRole.includes('support') ||
+      userRole.includes('manager')
+    ));
+
+  const [operatorViewMode, setOperatorViewMode] = useState<boolean>(isOperator);
+
+  useEffect(() => {
+    if (isOperator) {
+      setOperatorViewMode(true);
+    }
+  }, [isOperator]);
+
+  // Admin Financial Amount Control Settings
+  const [systemSettings, setSystemSettings] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    api.getSettings().then(setSystemSettings).catch(() => {});
+  }, []);
+
+  const isFixedAmountMode = (systemSettings.amount_control_mode || 'company_defined') === 'fixed';
+  const isAmountsLocked = systemSettings.lock_amounts_for_staff !== 'false' && !isAdmin;
+  const defaultFixedDriverPay = Number(systemSettings.fixed_driver_salary || 1000);
+  const defaultFixedHelperPay = Number(systemSettings.fixed_helper_salary || 600);
+  const defaultFixedHoldPay = Number(systemSettings.fixed_hold_salary || 500);
 
   const todayStr = new Date().toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState<string>(() => dateParam || todayStr);
@@ -350,17 +386,20 @@ export const TaskManagement: React.FC = () => {
       let d2Salary: any = '';
 
       if (isHold) {
-        d1Salary = 500;
-        d2Salary = 500;
+        d1Salary = defaultFixedHoldPay;
+        d2Salary = defaultFixedHoldPay;
+      } else if (isFixedAmountMode) {
+        d1Salary = defaultFixedDriverPay;
+        d2Salary = defaultFixedDriverPay;
       } else {
         const d1Emp = drivers.find((d) => d.full_name === prev.driver1?.employee_name);
         const d2Emp = drivers.find((d) => d.full_name === prev.driver2?.employee_name);
         d1Salary = (d1Emp && d1Emp.salary !== undefined && d1Emp.salary !== null && d1Emp.salary !== '')
           ? Number(d1Emp.salary)
-          : (prev.driver1?.salary_amount === 500 ? ('' as any) : prev.driver1?.salary_amount);
+          : (prev.driver1?.salary_amount === defaultFixedHoldPay ? ('' as any) : prev.driver1?.salary_amount);
         d2Salary = (d2Emp && d2Emp.salary !== undefined && d2Emp.salary !== null && d2Emp.salary !== '')
           ? Number(d2Emp.salary)
-          : (prev.driver2?.salary_amount === 500 ? ('' as any) : prev.driver2?.salary_amount);
+          : (prev.driver2?.salary_amount === defaultFixedHoldPay ? ('' as any) : prev.driver2?.salary_amount);
       }
 
       return {
@@ -384,13 +423,15 @@ export const TaskManagement: React.FC = () => {
     });
   };
 
-  // Driver 1 Selection: Auto-populates registered salary (Permanent/Temporary)
+  // Driver 1 Selection: Auto-populates registered salary (Permanent/Temporary) or Fixed Amount
   const handleDriver1Select = (empName: string) => {
     const isHold = formData.vehicle_status?.startsWith('HOLD');
     const emp = drivers.find((d) => d.full_name === empName);
     let salary: any = '';
     if (isHold) {
-      salary = 500;
+      salary = defaultFixedHoldPay;
+    } else if (isFixedAmountMode) {
+      salary = defaultFixedDriverPay;
     } else if (emp && emp.salary !== undefined && emp.salary !== null && emp.salary !== '') {
       salary = Number(emp.salary);
     } else {
@@ -410,15 +451,23 @@ export const TaskManagement: React.FC = () => {
     }));
   };
 
-  // Driver 2 Selection: Auto-populates registered salary (Permanent/Temporary)
+  // Driver 2 Selection: Auto-populates registered salary (Permanent/Temporary) or Fixed Amount
   const handleDriver2Select = (empName: string) => {
+    if (!empName) {
+      setFormData((prev) => ({ ...prev, driver2: undefined }));
+      return;
+    }
     const isHold = formData.vehicle_status?.startsWith('HOLD');
     const emp = drivers.find((d) => d.full_name === empName);
     let salary: any = '';
     if (isHold) {
-      salary = 500;
+      salary = defaultFixedHoldPay;
+    } else if (isFixedAmountMode) {
+      salary = defaultFixedDriverPay;
     } else if (emp && emp.salary !== undefined && emp.salary !== null && emp.salary !== '') {
       salary = Number(emp.salary);
+    } else if (empName === formData.driver1?.employee_name && formData.driver1?.salary_amount) {
+      salary = formData.driver1.salary_amount;
     } else {
       salary = formData.driver2?.salary_amount ?? ('' as any);
     }
@@ -426,7 +475,7 @@ export const TaskManagement: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       driver2: {
-        employee_id: emp?.id,
+        employee_id: emp?.id || (empName === formData.driver1?.employee_name ? formData.driver1?.employee_id : undefined),
         employee_name: empName,
         role: 'Driver',
         salary_amount: salary,
@@ -443,9 +492,14 @@ export const TaskManagement: React.FC = () => {
       return;
     }
     const emp = helpers.find((h) => h.full_name === empName);
-    const sal = emp && emp.salary !== undefined && emp.salary !== null && emp.salary !== ''
-      ? Number(emp.salary)
-      : (formData.helper?.salary_amount || ('' as any));
+    let sal: any = '';
+    if (isFixedAmountMode) {
+      sal = defaultFixedHelperPay;
+    } else if (emp && emp.salary !== undefined && emp.salary !== null && emp.salary !== '') {
+      sal = Number(emp.salary);
+    } else {
+      sal = formData.helper?.salary_amount || ('' as any);
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -1121,185 +1175,368 @@ export const TaskManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Main Table View (Exact User Sequence: S.NO, VEHICLE NUMBER, SERVICE NUMBER, ROUTE CORRIDOR, VEHICLE STATUS, OPERATOR, DRIVER1, DRIVER2, HELPER, CAPTAIN, TOTAL, ACTIONS) */}
+      {/* Main Table View (For Operator: Matches Image 1; For Admin: Image 2 with toggle) */}
       {activeTab === 'assigned' && (
         <div id="assigned-duties-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          {/* Admin toggle: allows Admin to preview Operator view or view full admin financial breakdown */}
+          {isAdmin && !isOperator && (
+            <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-700">Display Table Format:</span>
+              <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setOperatorViewMode(false)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    !operatorViewMode ? 'bg-[#142B4A] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Admin Financial Breakdown (Image 2)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOperatorViewMode(true)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    operatorViewMode ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Operator Standard Duty Sheet (Image 1)
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs" style={{ minWidth: '1350px' }}>
-              <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
-                <tr>
-                  <th className="py-3 px-3 w-12 text-center">S.NO</th>
-                  <th className="py-3 px-4 min-w-[130px]">VEHICLE NUMBER</th>
-                  <th className="py-3 px-4 min-w-[110px]">SERVICE NUMBER</th>
-                  <th className="py-3 px-4 min-w-[160px]">ROUTE CORRIDOR</th>
-                  <th className="py-3 px-4 min-w-[110px]">VEHICLE STATUS</th>
-                  <th className="py-3 px-4 min-w-[130px]">OPERATOR</th>
-                  <th className="py-3 px-4 min-w-[130px]">DRIVER1</th>
-                  <th className="py-3 px-4 min-w-[130px]">DRIVER2</th>
-                  <th className="py-3 px-4 min-w-[110px]">HELPER</th>
-                  <th className="py-3 px-4 min-w-[110px]">CAPTAIN</th>
-                  <th className="py-3 px-4 min-w-[100px]">TOTAL</th>
-                  <th className="py-3 px-4 text-center min-w-[120px]">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredDateTrips.length === 0 ? (
+            {(isOperator || operatorViewMode) ? (
+              /* =========================================================================
+                 OPERATOR VIEW: EXACT MATCH FOR IMAGE 1
+                 Headers: DATE | SERVICE ID | ROUTE | VEHICLE NO | STATUS | EMP ID | DRIVER NAME 1 | AMOUNT | EMP ID | DRIVER NAME2 | AMOUNT | EMP ID 3 | HELPER | AMOUNT | EMP ID 4 | CAPTAIN | AMOUNT | ACTIONS
+                 Strictly shows ONLY the Trip Amount (e.g. ₹25,000 for RUN, ₹500 for HOLD), never actual accounting/cost breakdowns.
+                 ========================================================================= */
+              <table className="w-full text-left text-xs whitespace-nowrap border-collapse">
+                <thead className="bg-[#142B4A] text-white font-bold text-[11px] uppercase tracking-wider border-b border-slate-700 sticky top-0 z-10">
                   <tr>
-                    <td colSpan={12} className="py-14 text-center text-slate-400">
-                      <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                      <p className="font-semibold text-slate-600">No buses assigned for {selectedDate}.</p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        Click &quot;Log New Task &amp; Duty&quot; above or choose from Pending Buses below.
-                      </p>
-                    </td>
+                    <th className="py-3 px-3 text-center border-r border-slate-700">DATE</th>
+                    <th className="py-3 px-3 text-center border-r border-slate-700">SERVICE ID</th>
+                    <th className="py-3 px-4 border-r border-slate-700">ROUTE</th>
+                    <th className="py-3 px-3 text-center border-r border-slate-700">VEHICLE NO</th>
+                    <th className="py-3 px-3 text-center border-r border-slate-700">STATUS</th>
+                    <th className="py-3 px-2 text-center border-r border-slate-700">EMP ID</th>
+                    <th className="py-3 px-3 border-r border-slate-700">DRIVER NAME 1</th>
+                    <th className="py-3 px-3 text-center border-r border-slate-700">AMOUNT</th>
+                    <th className="py-3 px-2 text-center border-r border-slate-700">EMP ID</th>
+                    <th className="py-3 px-3 border-r border-slate-700">DRIVER NAME2</th>
+                    <th className="py-3 px-3 text-center border-r border-slate-700">AMOUNT</th>
+                    <th className="py-3 px-2 text-center border-r border-slate-700">EMP ID 3</th>
+                    <th className="py-3 px-3 border-r border-slate-700">HELPER</th>
+                    <th className="py-3 px-3 text-center border-r border-slate-700">AMOUNT</th>
+                    <th className="py-3 px-2 text-center border-r border-slate-700 bg-blue-900/60">EMP ID 4</th>
+                    <th className="py-3 px-3 border-r border-slate-700 bg-blue-900/60">CAPTAIN</th>
+                    <th className="py-3 px-3 text-center border-r border-slate-700 bg-blue-900/60">AMOUNT</th>
+                    <th className="py-3 px-3 text-center no-print">ACTIONS</th>
                   </tr>
-                ) : (
-                  filteredDateTrips.map((t, index) => {
-                    const totalSalary =
-                      Number(t.driver1?.salary_amount || 0) +
-                      Number(t.driver2?.salary_amount || 0) +
-                      Number(t.helper?.salary_amount || 0) +
-                      Number(t.captain?.salary_amount || 0);
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white font-medium text-slate-800">
+                  {filteredDateTrips.length === 0 ? (
+                    <tr>
+                      <td colSpan={18} className="py-14 text-center text-slate-400">
+                        <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        <p className="font-semibold text-slate-600">No trip tasks found for {selectedDate}.</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDateTrips.map((t) => {
+                      const isHold = String(t.vehicle_status || '').toUpperCase().includes('HOLD');
+                      const tripRate = Number(t.trip_amount) || 25000;
+                      const formattedDate = t.trip_start_date ? t.trip_start_date.split('-').reverse().join('-') : '27-10-2026';
+                      const driver1EmpId = t.driver1?.employee_id ? `YS${t.driver1.employee_id}` : (t.driver1_emp_id || 'YS1');
+                      const driver2EmpId = t.driver2?.employee_id ? `YS${t.driver2.employee_id}` : (t.driver2_emp_id || (t.driver2?.employee_name ? 'YS4' : '-'));
+                      const helperEmpId = t.helper?.employee_id ? `YS${t.helper.employee_id}` : (t.helper_emp_id || (t.helper?.employee_name ? 'YS2' : '-'));
+                      const captainEmpId = t.captain?.employee_id ? `YS${t.captain.employee_id}` : (t.captain_emp_id || (t.captain?.employee_name ? 'YS3' : '-'));
 
-                    return (
-                      <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
-                        {/* 1. S.NO */}
-                        <td className="py-3.5 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+                      return (
+                        <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                          {/* DATE */}
+                          <td className="py-2.5 px-3 text-center font-mono text-slate-600 border-r border-slate-100">
+                            {formattedDate}
+                          </td>
 
-                        {/* 2. VEHICLE NUMBER */}
-                        <td className="py-3.5 px-4">
-                          <span className="font-mono font-black text-[#142B4A] text-sm tracking-wider uppercase block">
+                          {/* SERVICE ID */}
+                          <td className="py-2.5 px-3 text-center font-bold text-slate-900 border-r border-slate-100">
+                            {t.service_number || 'SRV-101'}
+                          </td>
+
+                          {/* ROUTE */}
+                          <td className="py-2.5 px-4 font-semibold text-slate-900 border-r border-slate-100">
+                            {t.route_corridor || 'Hyderabad → Bangalore'}
+                          </td>
+
+                          {/* VEHICLE NO */}
+                          <td className="py-2.5 px-3 text-center font-mono font-bold text-blue-700 border-r border-slate-100">
                             {t.vehicle_number}
-                          </span>
-                          <span className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-0.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span>Active in Fleet</span>
-                          </span>
-                        </td>
+                          </td>
 
-                        {/* 3. SERVICE NUMBER */}
-                        <td className="py-3.5 px-4">
-                          {t.service_number ? (
-                            <span className="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg text-xs">
-                              {t.service_number}
-                            </span>
-                          ) : (
-                            <span className="text-slate-300 text-xs">—</span>
-                          )}
-                        </td>
-
-                        {/* 4. ROUTE CORRIDOR */}
-                        <td className="py-3.5 px-4">
-                          <p className="text-xs font-semibold text-slate-800">
-                            {t.route_corridor}
-                          </p>
-                        </td>
-
-                        {/* 5. VEHICLE STATUS */}
-                        <td className="py-3.5 px-4">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              t.vehicle_status.startsWith('HOLD')
-                                ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                                : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                            }`}
-                          >
+                          {/* STATUS */}
+                          <td className="py-2.5 px-3 text-center border-r border-slate-100">
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                t.vehicle_status.startsWith('HOLD') ? 'bg-amber-500' : 'bg-emerald-500'
+                              className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider ${
+                                isHold
+                                  ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                  : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                               }`}
-                            ></span>
-                            <span>{t.vehicle_status || 'RUN'}</span>
-                          </span>
-                        </td>
-
-                        {/* 6. OPERATOR */}
-                        <td className="py-3.5 px-4 text-slate-700 font-medium text-xs">
-                          {t.operator_organizer || 'Charvik Fleet'}
-                        </td>
-
-                        {/* 7. DRIVER1 */}
-                        <td className="py-3.5 px-4">
-                          <div className="space-y-0.5 text-xs">
-                            <p className="font-bold text-slate-900">{t.driver1.employee_name}</p>
-                            <span className="text-[10px] font-semibold text-slate-500">₹{t.driver1.salary_amount}</span>
-                          </div>
-                        </td>
-
-                        {/* 8. DRIVER2 */}
-                        <td className="py-3.5 px-4">
-                          {t.driver2?.employee_name ? (
-                            <div className="space-y-0.5 text-xs">
-                              <p className="font-bold text-slate-900">{t.driver2.employee_name}</p>
-                              <span className="text-[10px] font-semibold text-slate-500">₹{t.driver2.salary_amount}</span>
-                            </div>
-                          ) : (
-                            <span className="text-slate-300 italic text-xs">—</span>
-                          )}
-                        </td>
-
-                        {/* 9. HELPER */}
-                        <td className="py-3.5 px-4">
-                          {t.helper?.employee_name ? (
-                            <div className="space-y-0.5 text-xs">
-                              <p className="font-bold text-slate-900">{t.helper.employee_name}</p>
-                              <span className="text-[10px] font-semibold text-slate-500">₹{t.helper.salary_amount}</span>
-                            </div>
-                          ) : (
-                            <span className="text-slate-300 italic text-xs">—</span>
-                          )}
-                        </td>
-
-                        {/* 10. CAPTAIN */}
-                        <td className="py-3.5 px-4">
-                          {t.captain?.employee_name ? (
-                            <div className="space-y-0.5 text-xs">
-                              <p className="font-bold text-indigo-700">{t.captain.employee_name}</p>
-                              <span className="text-[10px] font-semibold text-indigo-500">₹{t.captain.salary_amount}</span>
-                            </div>
-                          ) : (
-                            <span className="text-slate-300 italic text-xs">—</span>
-                          )}
-                        </td>
-
-                        {/* 11. TOTAL */}
-                        <td className="py-3.5 px-4">
-                          <p className="font-bold text-slate-900 text-xs">₹{totalSalary.toLocaleString('en-IN')}</p>
-                          <p className="text-[10px] text-slate-400">Total Payout</p>
-                        </td>
-
-                        {/* 12. ACTIONS */}
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-
-                            {/* Edit Button */}
-                            <button
-                              type="button"
-                              onClick={() => handleOpenEdit(t)}
-                              className="p-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                              title="Edit Trip Duty"
                             >
-                              <Edit className="w-4 h-4" />
-                            </button>
+                              {isHold ? 'HOLD' : 'RUN'}
+                            </span>
+                          </td>
 
-                            {/* Delete Button */}
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteTrip(t.id)}
-                              className="px-2.5 py-1.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
-                              title="Delete Trip Duty"
+                          {/* DRIVER 1 */}
+                          <td className="py-2.5 px-2 text-center font-mono text-slate-600 border-r border-slate-100">
+                            {driver1EmpId}
+                          </td>
+                          <td className="py-2.5 px-3 font-semibold text-slate-900 border-r border-slate-100">
+                            {t.driver1?.employee_name || t.driver1_name || 'akhil'}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-bold text-slate-900 border-r border-slate-100">
+                            {isHold ? '₹500' : `₹${tripRate.toLocaleString('en-IN')}`}
+                          </td>
+
+                          {/* DRIVER 2 */}
+                          <td className="py-2.5 px-2 text-center font-mono text-slate-600 border-r border-slate-100">
+                            {driver2EmpId}
+                          </td>
+                          <td className="py-2.5 px-3 font-semibold text-slate-900 border-r border-slate-100">
+                            {t.driver2?.employee_name || t.driver2_name || '-'}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-bold text-slate-900 border-r border-slate-100">
+                            {t.driver2?.employee_name ? (isHold ? '₹500' : `₹${tripRate.toLocaleString('en-IN')}`) : '-'}
+                          </td>
+
+                          {/* HELPER */}
+                          <td className="py-2.5 px-2 text-center font-mono text-slate-600 border-r border-slate-100">
+                            {helperEmpId}
+                          </td>
+                          <td className="py-2.5 px-3 font-semibold text-slate-900 border-r border-slate-100">
+                            {t.helper?.employee_name || t.helper_name || '-'}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-bold text-slate-900 border-r border-slate-100">
+                            {t.helper?.employee_name ? (isHold ? '₹500' : `₹${tripRate.toLocaleString('en-IN')}`) : '-'}
+                          </td>
+
+                          {/* CAPTAIN */}
+                          <td className="py-2.5 px-2 text-center font-mono text-slate-600 border-r border-slate-100 bg-blue-50/30">
+                            {captainEmpId}
+                          </td>
+                          <td className="py-2.5 px-3 font-semibold text-slate-900 border-r border-slate-100 bg-blue-50/30">
+                            {t.captain?.employee_name || t.captain_name || '-'}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-bold text-slate-900 border-r border-slate-100 bg-blue-50/30">
+                            {t.captain?.employee_name ? (isHold ? '₹500' : `₹${tripRate.toLocaleString('en-IN')}`) : '-'}
+                          </td>
+
+                          {/* ACTIONS */}
+                          <td className="py-2.5 px-3 text-center no-print">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEdit(t)}
+                                className="p-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                                title="Edit Trip Duty"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTrip(t.id)}
+                                className="px-2.5 py-1.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
+                                title="Delete Trip Duty"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              /* Admin Original Table (Image 2) */
+              <table className="w-full text-left text-xs" style={{ minWidth: '1350px' }}>
+                <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-3 w-12 text-center">S.NO</th>
+                    <th className="py-3 px-4 min-w-[130px]">VEHICLE NUMBER</th>
+                    <th className="py-3 px-4 min-w-[110px]">SERVICE NUMBER</th>
+                    <th className="py-3 px-4 min-w-[160px]">ROUTE CORRIDOR</th>
+                    <th className="py-3 px-4 min-w-[110px]">VEHICLE STATUS</th>
+                    <th className="py-3 px-4 min-w-[130px]">OPERATOR</th>
+                    <th className="py-3 px-4 min-w-[130px]">DRIVER1</th>
+                    <th className="py-3 px-4 min-w-[130px]">DRIVER2</th>
+                    <th className="py-3 px-4 min-w-[110px]">HELPER</th>
+                    <th className="py-3 px-4 min-w-[110px]">CAPTAIN</th>
+                    <th className="py-3 px-4 min-w-[100px]">TOTAL</th>
+                    <th className="py-3 px-4 text-center min-w-[120px]">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {filteredDateTrips.length === 0 ? (
+                    <tr>
+                      <td colSpan={12} className="py-14 text-center text-slate-400">
+                        <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                        <p className="font-semibold text-slate-600">No buses assigned for {selectedDate}.</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Click &quot;Log New Task &amp; Duty&quot; above or choose from Pending Buses below.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDateTrips.map((t, index) => {
+                      const totalSalary =
+                        Number(t.driver1?.salary_amount || 0) +
+                        Number(t.driver2?.salary_amount || 0) +
+                        Number(t.helper?.salary_amount || 0) +
+                        Number(t.captain?.salary_amount || 0);
+
+                      return (
+                        <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                          {/* 1. S.NO */}
+                          <td className="py-3.5 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+
+                          {/* 2. VEHICLE NUMBER */}
+                          <td className="py-3.5 px-4">
+                            <span className="font-mono font-black text-[#142B4A] text-sm tracking-wider uppercase block">
+                              {t.vehicle_number}
+                            </span>
+                            <span className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-0.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                              <span>Active in Fleet</span>
+                            </span>
+                          </td>
+
+                          {/* 3. SERVICE NUMBER */}
+                          <td className="py-3.5 px-4">
+                            {t.service_number ? (
+                              <span className="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg text-xs">
+                                {t.service_number}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300 text-xs">—</span>
+                            )}
+                          </td>
+
+                          {/* 4. ROUTE CORRIDOR */}
+                          <td className="py-3.5 px-4">
+                            <p className="text-xs font-semibold text-slate-800">
+                              {t.route_corridor}
+                            </p>
+                          </td>
+
+                          {/* 5. VEHICLE STATUS */}
+                          <td className="py-3.5 px-4">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                t.vehicle_status.startsWith('HOLD')
+                                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                  : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              }`}
                             >
-                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                              <span>Delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  t.vehicle_status.startsWith('HOLD') ? 'bg-amber-500' : 'bg-emerald-500'
+                                }`}
+                              ></span>
+                              <span>{t.vehicle_status || 'RUN'}</span>
+                            </span>
+                          </td>
+
+                          {/* 6. OPERATOR */}
+                          <td className="py-3.5 px-4 text-slate-700 font-medium text-xs">
+                            {t.operator_organizer || 'Charvik Fleet'}
+                          </td>
+
+                          {/* 7. DRIVER1 */}
+                          <td className="py-3.5 px-4">
+                            <div className="space-y-0.5 text-xs">
+                              <p className="font-bold text-slate-900">{t.driver1.employee_name}</p>
+                              <span className="text-[10px] font-semibold text-slate-500">₹{t.driver1.salary_amount}</span>
+                            </div>
+                          </td>
+
+                          {/* 8. DRIVER2 */}
+                          <td className="py-3.5 px-4">
+                            {t.driver2?.employee_name ? (
+                              <div className="space-y-0.5 text-xs">
+                                <p className="font-bold text-slate-900">{t.driver2.employee_name}</p>
+                                <span className="text-[10px] font-semibold text-slate-500">₹{t.driver2.salary_amount}</span>
+                              </div>
+                            ) : (
+                              <span className="text-slate-300 italic text-xs">—</span>
+                            )}
+                          </td>
+
+                          {/* 9. HELPER */}
+                          <td className="py-3.5 px-4">
+                            {t.helper?.employee_name ? (
+                              <div className="space-y-0.5 text-xs">
+                                <p className="font-bold text-slate-900">{t.helper.employee_name}</p>
+                                <span className="text-[10px] font-semibold text-slate-500">₹{t.helper.salary_amount}</span>
+                              </div>
+                            ) : (
+                              <span className="text-slate-300 italic text-xs">—</span>
+                            )}
+                          </td>
+
+                          {/* 10. CAPTAIN */}
+                          <td className="py-3.5 px-4">
+                            {t.captain?.employee_name ? (
+                              <div className="space-y-0.5 text-xs">
+                                <p className="font-bold text-indigo-700">{t.captain.employee_name}</p>
+                                <span className="text-[10px] font-semibold text-indigo-500">₹{t.captain.salary_amount}</span>
+                              </div>
+                            ) : (
+                              <span className="text-slate-300 italic text-xs">—</span>
+                            )}
+                          </td>
+
+                          {/* 11. TOTAL */}
+                          <td className="py-3.5 px-4">
+                            <p className="font-bold text-slate-900 text-xs">₹{totalSalary.toLocaleString('en-IN')}</p>
+                            <p className="text-[10px] text-slate-400">Total Payout</p>
+                          </td>
+
+                          {/* 12. ACTIONS */}
+                          <td className="py-3.5 px-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {/* Edit Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEdit(t)}
+                                className="p-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                                title="Edit Trip Duty"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+
+                              {/* Delete Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTrip(t.id)}
+                                className="px-2.5 py-1.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
+                                title="Delete Trip Duty"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       )}
@@ -1466,6 +1703,25 @@ export const TaskManagement: React.FC = () => {
               </div>
             </div>
 
+            {/* Financial Amount Supervision Mode Banner */}
+            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/90 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span className="font-semibold text-slate-700">
+                  Amount Control: <strong className="text-slate-900">{isFixedAmountMode ? `Fixed Rate (Driver: ₹${defaultFixedDriverPay}, Helper: ₹${defaultFixedHelperPay})` : 'Company-Defined (Employee Profile)'}</strong>
+                </span>
+              </div>
+              {isAmountsLocked ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" /> Staff Locked
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                  Admin Supervised
+                </span>
+              )}
+            </div>
+
             {/* Hold Status Auto-Rate Banner */}
             {formData.vehicle_status?.startsWith('HOLD') && (
               <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-between text-amber-900 text-xs animate-in fade-in">
@@ -1520,20 +1776,27 @@ export const TaskManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Salary Amount ₹ *{' '}
-                    {formData.vehicle_status?.startsWith('HOLD') && (
-                      <span className="text-[10px] text-amber-700 font-black">(Hold: ₹500)</span>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1 flex items-center justify-between">
+                    <span>
+                      Salary Amount ₹ *{' '}
+                      {formData.vehicle_status?.startsWith('HOLD') && (
+                        <span className="text-[10px] text-amber-700 font-black">(Hold: ₹{defaultFixedHoldPay})</span>
+                      )}
+                    </span>
+                    {isAmountsLocked && (
+                      <span className="text-[9px] text-amber-800 font-bold flex items-center gap-0.5 bg-amber-100 px-1.5 py-0.5 rounded">
+                        <Lock className="w-2.5 h-2.5" /> Admin Locked
+                      </span>
                     )}
                   </label>
                   <input
                     type="number"
                     required
-                    readOnly={formData.vehicle_status?.startsWith('HOLD')}
+                    readOnly={formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked}
                     placeholder="Enter salary ₹"
                     value={formData.driver1?.salary_amount !== undefined && formData.driver1?.salary_amount !== null ? formData.driver1.salary_amount : ''}
                     onChange={(e) => {
-                      if (formData.vehicle_status?.startsWith('HOLD')) return;
+                      if (formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked) return;
                       const val = e.target.value;
                       const sal = val === '' ? ('' as any) : Number(val);
                       setFormData({
@@ -1546,7 +1809,11 @@ export const TaskManagement: React.FC = () => {
                         }
                       });
                     }}
-                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') ? 'bg-amber-100/60 text-amber-900 border-amber-300 cursor-not-allowed' : 'bg-white'}`}
+                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${
+                      formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
+                        ? 'bg-amber-50/70 text-amber-900 border-amber-300 cursor-not-allowed'
+                        : 'bg-white'
+                    }`}
                   />
                 </div>
               </div>
@@ -1586,46 +1853,55 @@ export const TaskManagement: React.FC = () => {
                   </span>
                 </span>
 
-                {formData.vehicle_status?.startsWith('HOLD') && (
-                  <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
-                    ⚡ Hold Duty: ₹500
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {formData.vehicle_status?.startsWith('HOLD') && (
+                    <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
+                      ⚡ Hold Duty: ₹500
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Driver 2 Employee</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700">Select Driver 2 Employee</label>
+                  </div>
                   <select
                     value={formData.driver2?.employee_name || ''}
                     onChange={(e) => handleDriver2Select(e.target.value)}
                     className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
                   >
                     <option value="">-- None (Single Driver Duty) --</option>
-                    {drivers
-                      .filter((d) => d.full_name !== formData.driver1?.employee_name)
-                      .map((d) => (
-                        <option key={d.id} value={d.full_name}>
-                          {d.full_name} ({d.employee_code}){d.salary ? ` • ₹${Number(d.salary).toLocaleString('en-IN')}` : ''}{d.employment_type ? ` [${d.employment_type}]` : ''}
-                        </option>
-                      ))}
+                    {drivers.map((d) => (
+                      <option key={d.id} value={d.full_name}>
+                        {d.full_name} ({d.employee_code}){d.salary ? ` • ₹${Number(d.salary).toLocaleString('en-IN')}` : ''}{d.employment_type ? ` [${d.employment_type}]` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Salary Amount ₹{' '}
-                    {formData.vehicle_status?.startsWith('HOLD') && (
-                      <span className="text-[10px] text-amber-700 font-black">(Hold: ₹500)</span>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1 flex items-center justify-between">
+                    <span>
+                      Salary Amount ₹{' '}
+                      {formData.vehicle_status?.startsWith('HOLD') && (
+                        <span className="text-[10px] text-amber-700 font-black">(Hold: ₹{defaultFixedHoldPay})</span>
+                      )}
+                    </span>
+                    {isAmountsLocked && (
+                      <span className="text-[9px] text-amber-800 font-bold flex items-center gap-0.5 bg-amber-100 px-1.5 py-0.5 rounded">
+                        <Lock className="w-2.5 h-2.5" /> Admin Locked
+                      </span>
                     )}
                   </label>
                   <input
                     type="number"
-                    readOnly={formData.vehicle_status?.startsWith('HOLD')}
+                    readOnly={formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked}
                     placeholder="Enter salary ₹"
                     value={formData.driver2?.salary_amount !== undefined && formData.driver2?.salary_amount !== null ? formData.driver2.salary_amount : ''}
                     onChange={(e) => {
-                      if (formData.vehicle_status?.startsWith('HOLD')) return;
+                      if (formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked) return;
                       const val = e.target.value;
                       const sal = val === '' ? ('' as any) : Number(val);
                       setFormData({
@@ -1639,7 +1915,11 @@ export const TaskManagement: React.FC = () => {
                         }
                       });
                     }}
-                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') ? 'bg-amber-100/60 text-amber-900 border-amber-300 cursor-not-allowed' : 'bg-white'}`}
+                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${
+                      formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
+                        ? 'bg-amber-50/70 text-amber-900 border-amber-300 cursor-not-allowed'
+                        : 'bg-white'
+                    }`}
                   />
                 </div>
               </div>
@@ -1698,15 +1978,22 @@ export const TaskManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Helper Salary Amount ₹
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1 flex items-center justify-between">
+                    <span>Helper Salary Amount ₹</span>
+                    {isAmountsLocked && (
+                      <span className="text-[9px] text-amber-800 font-bold flex items-center gap-0.5 bg-amber-100 px-1.5 py-0.5 rounded">
+                        <Lock className="w-2.5 h-2.5" /> Admin Locked
+                      </span>
+                    )}
                   </label>
                   <input
                     type="number"
                     min="0"
+                    readOnly={isAmountsLocked}
                     placeholder="Enter helper salary ₹"
                     value={formData.helper?.salary_amount !== undefined && formData.helper?.salary_amount !== null ? formData.helper.salary_amount : ''}
                     onChange={(e) => {
+                      if (isAmountsLocked) return;
                       const val = e.target.value;
                       const sal = val === '' ? ('' as any) : Number(val);
                       setFormData({

@@ -273,7 +273,7 @@ export const About: React.FC = () => {
             </Link>
 
             <a
-              href="https://wa.me/919876543210?text=Hello%20Charvik%2C%20I%20would%20like%20to%20know%20more%20about%20your%20company."
+              href="https://wa.me/919396151527?text=Hello%20Charvik%2C%20I%20would%20like%20to%20know%20more%20about%20your%20company."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg transition"

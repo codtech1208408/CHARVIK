@@ -62,6 +62,7 @@ const formattedTasks = tripDuties.map(t => {
 const tyreRecords = getRows('tyre_records');
 const wheelAllotments = getRows('wheel_allotments');
 const newTyres = getRows('new_tyres');
+const tyreAirCheckups = getRows('tyre_air_checkups');
 
 // 3. Vehicle Maintenance & Checkups
 const acRecords = getRows('ac_maintenance_records');
@@ -220,6 +221,8 @@ export const BASE_FLEET_ORGANIZERS: any[] = ${JSON.stringify(organizers, null, 2
 export const BASE_FLEET_TASKS: any[] = ${JSON.stringify(formattedTasks, null, 2)};
 
 export const BASE_TYRE_RECORDS: any[] = ${JSON.stringify(tyreRecords, null, 2)};
+
+export const BASE_TYRE_AIR_CHECKUPS: any[] = ${JSON.stringify(tyreAirCheckups, null, 2)};
 
 export const BASE_WHEEL_ALLOTMENTS: any[] = ${JSON.stringify(wheelAllotments, null, 2)};
 

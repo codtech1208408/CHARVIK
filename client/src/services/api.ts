@@ -383,32 +383,35 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         status: 'Active'
       };
     }
-    // Fleet Captain
+    // Employee (Fleet Captain)
     else if (
       ['9701055555', 'captain@charvik.com', 'captain'].includes(identifier) &&
       ['captain123', 'admin123'].includes(password)
     ) {
       matchedUser = {
         id: 2,
-        name: 'Fleet Captain',
+        name: 'Employee',
         email: 'captain@charvik.com',
         phone_number: '9701055555',
         role: 'Captain',
         status: 'Active'
       };
     }
-    // Support Staff
+    // Operator (Support Staff)
     else if (
-      ['supporter@charvik.com', 'supporter', 'support', '9848033445'].includes(identifier) &&
-      ['supporter123', 'support123', 'admin123'].includes(password)
+      ['supporter@charvik.com', 'supporter', 'support', 'operator@charvik.com', 'operator', '9848033445'].includes(identifier) &&
+      ['supporter123', 'support123', 'operator123', 'admin123'].includes(password)
     ) {
+      const creds = getLocalCollection<any>('staff_credentials');
+      const found = creds.find((c: any) => c.id === 3 || c.email_or_username === 'supporter@charvik.com');
       matchedUser = {
         id: 3,
-        name: 'Support Staff Member',
+        name: 'Operator',
         email: 'supporter@charvik.com',
         phone_number: '9848033445',
         role: 'Support Staff',
-        status: 'Active'
+        status: 'Active',
+        categories: found?.categories || []
       };
     }
 
@@ -1347,11 +1350,29 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     if (path === '/staff-credentials') {
       if (method === 'GET') {
         const localCreds = getLocalCollection<any>('staff_credentials');
-        if (localCreds.length > 0) return localCreds as any;
+        const allCategoryNames = [
+          'Vehicle Registration',
+          'Route Management',
+          'Task Management',
+          'Organizer Management',
+          'Daily Vehicle Checkup',
+          'Mileage & Fueling',
+          'AC Maintenance',
+          'Tyre Maintenance',
+          'Product Management'
+        ];
+        if (localCreds.length > 0) {
+          return localCreds
+            .filter((c: any) => c.email_or_username !== 'supporter@charvik.com' || c.is_user_created)
+            .map((c: any) => ({
+              ...c,
+              categories: (c.role === 'Super Admin' || c.role === 'Admin')
+                ? allCategoryNames
+                : (c.categories || [])
+            })) as any;
+        }
         const defaults = [
-          { id: 1, name: 'Admin Manager', email_or_username: 'admin@charvik.com', phone_number: '9876543210', role: 'Super Admin', status: 'Active' },
-          { id: 2, name: 'Fleet Captain', email_or_username: 'captain@charvik.com', phone_number: '9701055555', role: 'Captain', status: 'Active' },
-          { id: 3, name: 'Support Staff Member', email_or_username: 'supporter@charvik.com', phone_number: '9848033445', role: 'Support Staff', status: 'Active' }
+          { id: 1, name: 'Admin Manager', email_or_username: 'admin@charvik.com', phone_number: '9876543210', role: 'Super Admin', status: 'Active', categories: allCategoryNames }
         ];
         setLocalCollection('staff_credentials', defaults);
         return defaults as any;
@@ -1364,6 +1385,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
           phone_number: body.phone_number,
           role: body.role || 'Support Staff',
           status: 'Active',
+          categories: body.categories || [],
           created_at: new Date().toISOString()
         };
         const list = getLocalCollection<any>('staff_credentials');
@@ -1381,6 +1403,11 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       const list = getLocalCollection<any>('staff_credentials');
       if (subAction === 'password' && method === 'PUT') {
         return { success: true, message: 'Password updated successfully' } as any;
+      }
+      if (subAction === 'categories' && method === 'PUT') {
+        const updated = list.map(s => String(s.id) === String(staffId) ? { ...s, categories: body.categories } : s);
+        setLocalCollection('staff_credentials', updated);
+        return { success: true, categories: body.categories } as any;
       }
       if (subAction === 'status' && method === 'PUT') {
         const updated = list.map(s => String(s.id) === String(staffId) ? { ...s, status: body.status } : s);
@@ -1822,8 +1849,10 @@ export const api = {
 
   // Staff Credentials (issued by Admin)
   getStaffCredentials: () => request<any[]>('/staff-credentials'),
-  createStaffCredential: (data: { name: string; email_or_username: string; phone_number?: string; password: string; role: string }) =>
+  createStaffCredential: (data: { name: string; email_or_username: string; phone_number?: string; password: string; role: string; categories?: string[] }) =>
     request<any>('/staff-credentials', { method: 'POST', body: JSON.stringify(data) }),
+  updateStaffCategories: (id: number | string, categories: string[]) =>
+    request<any>(`/staff-credentials/${id}/categories`, { method: 'PUT', body: JSON.stringify({ categories }) }),
   resetStaffPassword: (id: number | string, newPassword: string) =>
     request<any>(`/staff-credentials/${id}/password`, { method: 'PUT', body: JSON.stringify({ newPassword }) }),
   toggleStaffCredentialStatus: (id: number | string, status: 'Active' | 'Inactive') =>

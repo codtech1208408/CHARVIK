@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Users,
   Search,
@@ -27,7 +27,10 @@ import {
   Upload,
   ExternalLink,
   Image as ImageIcon,
-  ArrowLeft
+  ArrowLeft,
+  Sliders,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { Employee } from '../types';
@@ -36,9 +39,11 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
 import { useAuth } from '../context/AuthContext';
+import { ALL_MODULE_CATEGORIES, ALL_CATEGORY_NAMES } from '../constants/moduleCategories';
 
 export const EmployeeManagement: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { success, error } = useToast();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -49,9 +54,12 @@ export const EmployeeManagement: React.FC = () => {
 
   const { user } = useAuth();
   const isAdmin = (user?.role || '').toLowerCase().includes('admin');
+  const isOperatorDashboard = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter') || !isAdmin;
 
   // Main Page View Mode: Biodata Directory vs Staff Login Accounts
-  const [pageView, setPageView] = useState<'biodata' | 'staff-accounts'>('biodata');
+  const [pageView, setPageView] = useState<'biodata' | 'staff-accounts'>(
+    isOperatorDashboard ? 'staff-accounts' : 'biodata'
+  );
 
   // Staff Login Credentials State
   const [staffCredentials, setStaffCredentials] = useState<any[]>([]);
@@ -62,12 +70,21 @@ export const EmployeeManagement: React.FC = () => {
   const [resetPasswordVal, setResetPasswordVal] = useState('');
   const [creatingStaff, setCreatingStaff] = useState(false);
 
+  // Category Permissions Editing State
+  const [showEditCategoriesModal, setShowEditCategoriesModal] = useState(false);
+  const [selectedStaffForCategories, setSelectedStaffForCategories] = useState<any>(null);
+  const [editingCategoriesList, setEditingCategoriesList] = useState<string[]>([]);
+  const [savingCategories, setSavingCategories] = useState(false);
+
   // New Staff Account Form
   const [newStaffName, setNewStaffName] = useState('');
-  const [newStaffRole, setNewStaffRole] = useState<'Support Staff' | 'Captain'>('Captain');
+  const [newStaffRole, setNewStaffRole] = useState<'Captain' | 'Manager' | 'Support Staff'>(
+    isOperatorDashboard ? 'Captain' : 'Support Staff'
+  );
   const [newStaffMobile, setNewStaffMobile] = useState('');
   const [newStaffUsername, setNewStaffUsername] = useState('');
   const [newStaffPassword, setNewStaffPassword] = useState('');
+  const [newStaffCategories, setNewStaffCategories] = useState<string[]>(ALL_CATEGORY_NAMES);
 
   // Modals & Views
   const [viewingProfile, setViewingProfile] = useState<any>(null);
@@ -129,6 +146,7 @@ export const EmployeeManagement: React.FC = () => {
 
   useEffect(() => {
     loadEmployees();
+    loadStaffCredentials();
     api.getBuses().then(setBuses).catch(() => {});
   }, [roleFilter, statusFilter]);
 
@@ -157,7 +175,21 @@ export const EmployeeManagement: React.FC = () => {
     try {
       setLoadingStaff(true);
       const list = await api.getStaffCredentials();
-      setStaffCredentials(list);
+
+      // In Admin Panel: Show Admin Manager AND any user-created Operator accounts
+      // In Operator Dashboard: Show Captain and Manager employee accounts
+      const filtered = isOperatorDashboard
+        ? (list || []).filter((s: any) => s.role === 'Captain' || s.role === 'Manager')
+        : (list || []).filter((s: any) => s.role === 'Super Admin' || s.role === 'Admin' || s.role === 'Support Staff' || s.role === 'Operator');
+
+      const mapped = filtered.map((s: any) => ({
+        ...s,
+        name: s.name === 'Fleet Captain' ? 'Employee' : s.name === 'Support Staff Member' ? 'Operator' : s.name,
+        categories: (s.role === 'Super Admin' || s.role === 'Admin')
+          ? ALL_CATEGORY_NAMES
+          : (Array.isArray(s.categories) ? s.categories : [])
+      }));
+      setStaffCredentials(mapped);
     } catch (err: any) {
       error(err.message || 'Failed to load staff accounts');
     } finally {
@@ -167,40 +199,77 @@ export const EmployeeManagement: React.FC = () => {
 
   const handleCreateStaff = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newStaffName) {
-      error('Staff name is required');
+    if (!newStaffName.trim()) {
+      error('Full Name is required');
       return;
     }
-    const identifier = newStaffRole === 'Captain' ? newStaffMobile : newStaffUsername;
+    const identifier = (newStaffUsername || newStaffMobile || '').trim();
     if (!identifier) {
-      error(newStaffRole === 'Captain' ? 'Mobile number is required for Captain login' : 'Username/email is required for Support login');
+      error('Username / Email is required');
       return;
     }
     if (!newStaffPassword || newStaffPassword.length < 4) {
       error('Password must be at least 4 characters');
       return;
     }
+    if (newStaffCategories.length === 0) {
+      error('Please select at least one dashboard category for this account');
+      return;
+    }
 
     setCreatingStaff(true);
     try {
       await api.createStaffCredential({
-        name: newStaffName,
+        name: newStaffName.trim(),
         email_or_username: identifier,
-        phone_number: newStaffMobile || undefined,
+        phone_number: newStaffMobile.trim() || (/^\d{10}$/.test(identifier) ? identifier : undefined),
         password: newStaffPassword,
-        role: newStaffRole
+        role: newStaffRole,
+        categories: newStaffCategories
       });
-      success(`${newStaffRole} account created successfully! Login using ${identifier}`);
+      const accountTypeName =
+        newStaffRole === 'Captain'
+          ? 'Captain (Employee)'
+          : newStaffRole === 'Manager'
+          ? 'Manager (Employee)'
+          : 'Operator';
+      success(`${accountTypeName} account created successfully! Login using ${identifier}`);
       setShowCreateStaffModal(false);
       setNewStaffName('');
       setNewStaffMobile('');
       setNewStaffUsername('');
       setNewStaffPassword('');
+      setNewStaffCategories(ALL_CATEGORY_NAMES);
       loadStaffCredentials();
     } catch (err: any) {
       error(err.message || 'Failed to create account');
     } finally {
       setCreatingStaff(false);
+    }
+  };
+
+  const handleOpenEditCategories = (staff: any) => {
+    setSelectedStaffForCategories(staff);
+    const assigned = Array.isArray(staff.categories) && staff.categories.length > 0
+      ? staff.categories
+      : ALL_CATEGORY_NAMES;
+    setEditingCategoriesList([...assigned]);
+    setShowEditCategoriesModal(true);
+  };
+
+  const handleSaveCategories = async () => {
+    if (!selectedStaffForCategories) return;
+    try {
+      setSavingCategories(true);
+      await api.updateStaffCategories(selectedStaffForCategories.id, editingCategoriesList);
+      success(`Updated dashboard categories for ${selectedStaffForCategories.name}`);
+      setShowEditCategoriesModal(false);
+      setSelectedStaffForCategories(null);
+      loadStaffCredentials();
+    } catch (err: any) {
+      error(err.message || 'Failed to update categories');
+    } finally {
+      setSavingCategories(false);
     }
   };
 
@@ -379,22 +448,20 @@ export const EmployeeManagement: React.FC = () => {
           </span>
         </button>
 
-        {isAdmin && (
-          <button
-            onClick={() => setPageView('staff-accounts')}
-            className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
-              pageView === 'staff-accounts'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <Key className="w-4 h-4" />
-            <span>Staff Login Accounts & Access Control</span>
-            <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
-              {staffCredentials.length}
-            </span>
-          </button>
-        )}
+        <button
+          onClick={() => setPageView('staff-accounts')}
+          className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
+            pageView === 'staff-accounts'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Key className="w-4 h-4" />
+          <span>{isOperatorDashboard ? 'Employee Registration' : 'Operator Accounts'}</span>
+          <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+            {staffCredentials.length}
+          </span>
+        </button>
       </div>
 
       {pageView === 'biodata' ? (
@@ -412,20 +479,38 @@ export const EmployeeManagement: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => navigate('/admin/drivers/new')}
-            className="inline-flex items-center px-3.5 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-1.5 cursor-pointer"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>New Driver</span>
-          </button>
-          <button
-            onClick={() => navigate('/admin/support-staff/new')}
-            className="inline-flex items-center px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-1.5 cursor-pointer"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>New Helper/Captain</span>
-          </button>
+          {isOperatorDashboard && (
+            <button
+              onClick={() => {
+                setPageView('staff-accounts');
+                setNewStaffRole('Captain');
+                setNewStaffCategories([...ALL_CATEGORY_NAMES]);
+                setShowCreateStaffModal(true);
+              }}
+              className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-2 cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Create New Employee</span>
+            </button>
+          )}
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => navigate('/admin/drivers/new')}
+                className="inline-flex items-center px-3.5 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-1.5 cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>New Driver</span>
+              </button>
+              <button
+                onClick={() => navigate('/admin/support-staff/new')}
+                className="inline-flex items-center px-3.5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-1.5 cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>New Helper</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -590,10 +675,12 @@ export const EmployeeManagement: React.FC = () => {
             <div>
               <h2 className="text-xl font-bold text-[#142B4A] flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                <span>Staff Login Credentials & Role-Based Access Control</span>
+                <span>{isOperatorDashboard ? 'Employee Registration' : 'Operator Accounts & Access Control'}</span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Admin controls for Support user logins and Captain mobile-number logins. Create accounts, reset passwords, and enable/disable access.
+                {isOperatorDashboard
+                  ? 'Register new employees (Captain & Manager) and assign visible dashboard categories with live admin synchronization.'
+                  : 'Provision Operator logins and assign permitted dashboard categories. Operators create Captain and Manager accounts in their Operator Dashboard.'}
               </p>
             </div>
 
@@ -606,11 +693,15 @@ export const EmployeeManagement: React.FC = () => {
                 <span>Back to Directory</span>
               </button>
               <button
-                onClick={() => setShowCreateStaffModal(true)}
-                className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-2 cursor-pointer"
+                onClick={() => {
+                  setNewStaffRole(isOperatorDashboard ? 'Captain' : 'Support Staff');
+                  setNewStaffCategories([...ALL_CATEGORY_NAMES]);
+                  setShowCreateStaffModal(true);
+                }}
+                className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-2 cursor-pointer ml-auto"
               >
                 <UserPlus className="w-4 h-4" />
-                <span>Create Staff Account</span>
+                <span>{isOperatorDashboard ? 'Create New Employee' : 'Create Operator Account'}</span>
               </button>
             </div>
           </div>
@@ -622,21 +713,23 @@ export const EmployeeManagement: React.FC = () => {
                 <Lock className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-blue-900">Admin Account</h4>
+                <h4 className="text-xs font-bold text-blue-900">Admin Synchronization</h4>
                 <p className="text-[11px] text-blue-700 mt-0.5">
-                  Full system control across Fleet, Staff, Settings, Accounts, and Master deletions.
+                  All categories and data changes created by Admin are immediately visible to Operators and Employees in real-time.
                 </p>
               </div>
             </div>
 
             <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-xl flex items-start gap-3">
               <div className="p-2 bg-purple-100 text-purple-700 rounded-lg shrink-0">
-                <Phone className="w-4 h-4" />
+                <Users className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-purple-900">Captain Logins (Mobile)</h4>
+                <h4 className="text-xs font-bold text-purple-900">{isOperatorDashboard ? 'Captain & Manager Logins' : 'Operator Hierarchy'}</h4>
                 <p className="text-[11px] text-purple-700 mt-0.5">
-                  Captains log in with their registered 10-digit mobile number + password on mobile dashboard.
+                  {isOperatorDashboard
+                    ? 'Employees log in via Username/Email + Password. Only categories chosen during creation appear on their dashboard.'
+                    : 'Admin creates Operator accounts. Once logged into the Operator Dashboard, Operators register Captain and Manager employee accounts.'}
                 </p>
               </div>
             </div>
@@ -646,9 +739,9 @@ export const EmployeeManagement: React.FC = () => {
                 <Key className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-emerald-900">Support Staff</h4>
+                <h4 className="text-xs font-bold text-emerald-900">Operator Dashboard</h4>
                 <p className="text-[11px] text-emerald-700 mt-0.5">
-                  Access KM entry, maintenance, and complaints without permission to delete records or alter settings.
+                  Operators can register employees, manage trips, vehicle maintenance, and access permitted admin modules.
                 </p>
               </div>
             </div>
@@ -657,7 +750,7 @@ export const EmployeeManagement: React.FC = () => {
           {/* Staff Accounts Table */}
           <div id="staff-accounts-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800">Active Staff User Accounts</h3>
+              <h3 className="text-sm font-bold text-slate-800">{isOperatorDashboard ? 'Active Employee Accounts' : 'Active Operator & Staff Accounts'}</h3>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-slate-400">Total: {staffCredentials.length}</span>
                 <PrintButton
@@ -674,66 +767,75 @@ export const EmployeeManagement: React.FC = () => {
                   <tr className="bg-slate-50/75 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
                     <th className="py-3 px-4 w-14 text-center">S.NO</th>
                     <th className="py-3 px-4">Staff Member</th>
-                    <th className="py-3 px-4">Assigned Role</th>
                     <th className="py-3 px-4">Login Identifier</th>
+                    <th className="py-3 px-4">Permitted Categories</th>
                     <th className="py-3 px-4">Access Status</th>
-                    <th className="py-3 px-4">Created Date</th>
-                    <th className="py-3 px-4 text-center">Manage Access</th>
+                    <th className="py-3 px-4 text-center">Manage Access & Permissions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {loadingStaff ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400">
+                      <td colSpan={6} className="py-12 text-center text-slate-400">
                         <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent mb-2"></div>
                         <p>Loading staff credentials...</p>
                       </td>
                     </tr>
                   ) : staffCredentials.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400">
+                      <td colSpan={6} className="py-12 text-center text-slate-400">
                         No staff accounts created yet.
                       </td>
                     </tr>
                   ) : (
-                    staffCredentials.map((s, index) => (
+                    staffCredentials.map((s, index) => {
+                      const displayName = s.name === 'Fleet Captain' ? 'Employee' : s.name === 'Support Staff Member' ? 'Operator' : s.name;
+                      const roleDisplay = s.role === 'Support Staff' ? 'Operator' : s.role;
+                      const assignedCats = Array.isArray(s.categories) ? s.categories : [];
+                      return (
                       <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs">
-                              {s.name?.slice(0, 2).toUpperCase() || 'ST'}
+                              {displayName?.slice(0, 2).toUpperCase() || 'ST'}
                             </div>
                             <div>
-                              <span className="font-bold text-slate-900 block">{s.name}</span>
-                              <span className="text-[11px] text-slate-400">{s.email || s.username}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-slate-900 block">{displayName}</span>
+                                {(s.role === 'Super Admin' || s.role === 'Admin') && (
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-blue-100 text-blue-700 border border-blue-200">
+                                    Super Admin
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[11px] text-slate-400">{s.email || s.username || s.email_or_username}</span>
                             </div>
                           </div>
                         </td>
 
                         <td className="py-3 px-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                            s.role === 'Super Admin'
-                              ? 'bg-rose-100 text-rose-700'
-                              : s.role === 'Captain'
-                              ? 'bg-purple-100 text-purple-700'
-                              : 'bg-emerald-100 text-emerald-700'
-                          }`}>
-                            {s.role}
-                          </span>
+                          <div className="font-mono text-slate-800 font-semibold bg-slate-100 px-2.5 py-1 rounded-lg w-fit text-[11px]">
+                            {s.username || s.email_or_username || s.phone_number || '—'}
+                          </div>
                         </td>
 
                         <td className="py-3 px-4">
-                          {s.role === 'Captain' ? (
-                            <div className="flex items-center gap-1.5 font-mono text-purple-900 font-bold bg-purple-50 px-2.5 py-1 rounded-lg w-fit border border-purple-200/60">
-                              <Phone className="w-3.5 h-3.5 text-purple-600" />
-                              <span>{s.phone_number || s.username}</span>
-                              <span className="text-[10px] text-purple-500 font-normal ml-1">(Mobile Login)</span>
-                            </div>
+                          {s.role === 'Super Admin' || s.role === 'Admin' ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>All Modules (Full Access)</span>
+                            </span>
                           ) : (
-                            <div className="font-mono text-slate-700 font-semibold bg-slate-100 px-2.5 py-1 rounded-lg w-fit">
-                              {s.username}
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditCategories(s)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
+                              title="Click to view or edit dashboard category permissions"
+                            >
+                              <Layers className="w-3.5 h-3.5 text-blue-600" />
+                              <span>{assignedCats.length} / {ALL_MODULE_CATEGORIES.length} Categories</span>
+                            </button>
                           )}
                         </td>
 
@@ -741,27 +843,42 @@ export const EmployeeManagement: React.FC = () => {
                           {s.status === 'Active' ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">
                               <Check className="w-3 h-3" />
-                              <span>Active (Enabled)</span>
+                              <span>Active</span>
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
                               <X className="w-3 h-3" />
-                              <span>Disabled (No Access)</span>
+                              <span>Disabled</span>
                             </span>
                           )}
                         </td>
 
-                        <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
-                          {s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A'}
-                        </td>
-
                         <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center space-x-2">
+                          <div className="flex items-center justify-center space-x-1.5">
+                            {/* Manage Categories / Permissions */}
+                            {s.role === 'Super Admin' || s.role === 'Admin' ? (
+                              <span
+                                className="px-2 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 cursor-default"
+                                title="Super Admin has master access across all categories"
+                              >
+                                Full Access
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleOpenEditCategories(s)}
+                                className="px-2 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 flex items-center gap-1 cursor-pointer"
+                                title="Edit Dashboard Categories"
+                              >
+                                <Sliders className="w-3.5 h-3.5" />
+                                <span>Categories</span>
+                              </button>
+                            )}
+
                             {/* Toggle Enable/Disable Access Button */}
                             {s.role !== 'Super Admin' && (
                               <button
                                 onClick={() => handleToggleStatus(s)}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer border ${
+                                className={`px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer border ${
                                   s.status === 'Active'
                                     ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                                     : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
@@ -789,15 +906,15 @@ export const EmployeeManagement: React.FC = () => {
                                 setResetPasswordVal('');
                                 setShowResetStaffModal(true);
                               }}
-                              className="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 flex items-center gap-1 cursor-pointer"
+                              className="px-2 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 flex items-center gap-1 cursor-pointer"
                               title="Reset Login Password"
                             >
                               <Key className="w-3.5 h-3.5" />
-                              <span>Reset Password</span>
+                              <span>Password</span>
                             </button>
 
                             {/* Delete/Revoke Button */}
-                            {s.role !== 'Super Admin' && (
+                            {isAdmin && s.role !== 'Super Admin' && (
                               <button
                                 onClick={() => handleDeleteStaff(s)}
                                 className="p-1 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
@@ -809,7 +926,8 @@ export const EmployeeManagement: React.FC = () => {
                           </div>
                         </td>
                       </tr>
-                    ))
+                    );
+                  })
                   )}
                 </tbody>
               </table>
@@ -818,112 +936,212 @@ export const EmployeeManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Create Staff Account Modal */}
+      {/* Create Staff Account / Create New Employee Modal */}
       <Modal
         isOpen={showCreateStaffModal}
         onClose={() => setShowCreateStaffModal(false)}
-        title="Create Staff Login Account"
-        subtitle="Provision a role-based account with password login for Support or Captain"
-        maxWidth="max-w-lg"
+        title={isOperatorDashboard ? 'Create New Employee' : 'Create Operator Account'}
+        subtitle={
+          isOperatorDashboard
+            ? 'Provision employee credentials (Captain or Manager) and assign visible categories for their dashboard'
+            : 'Provision Operator credentials and assign accessible categories for their dashboard'
+        }
+        maxWidth="max-w-xl"
       >
         <form onSubmit={handleCreateStaff} className="space-y-4">
+          {/* 1. First Role Option (Captain, Manager for Operator; Only Operator for Admin) */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Select Role</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setNewStaffRole('Captain')}
-                className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                  newStaffRole === 'Captain'
-                    ? 'border-purple-500 bg-purple-50/70 text-purple-900 ring-2 ring-purple-200'
-                    : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-purple-600" />
-                  <span className="font-bold text-xs">Captain</span>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-1">
-                  Logs in via Mobile Number + Password. Mobile dashboard view.
-                </p>
-              </button>
+            <label className="block text-xs font-bold text-slate-800 mb-1">
+              Select Role <span className="text-rose-500">*</span>
+            </label>
+            {isOperatorDashboard ? (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setNewStaffRole('Captain')}
+                  className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                    newStaffRole === 'Captain'
+                      ? 'border-purple-500 bg-purple-50/80 text-purple-900 ring-2 ring-purple-200 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-purple-600" />
+                    <span className="font-bold text-xs">Captain</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Fleet Captain account with trip duty & dashboard category access.
+                  </p>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setNewStaffRole('Support Staff')}
-                className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
-                  newStaffRole === 'Support Staff'
-                    ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 ring-2 ring-emerald-200'
-                    : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Key className="w-4 h-4 text-emerald-600" />
-                  <span className="font-bold text-xs">Support Staff</span>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-1">
-                  Logs in via Username/Email + Password. Maintenance & KM entry.
-                </p>
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setNewStaffRole('Manager')}
+                  className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                    newStaffRole === 'Manager'
+                      ? 'border-blue-500 bg-blue-50/80 text-blue-900 ring-2 ring-blue-200 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-blue-600" />
+                    <span className="font-bold text-xs">Manager</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Operations Manager account with oversight over assigned categories.
+                  </p>
+                </button>
+              </div>
+            ) : (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setNewStaffRole('Support Staff')}
+                  className="w-full p-3 rounded-xl border border-emerald-500 bg-emerald-50/80 text-emerald-950 ring-2 ring-emerald-200 shadow-xs text-left cursor-default transition-all"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Key className="w-4 h-4 text-emerald-600" />
+                      <span className="font-bold text-xs text-emerald-900">Operator</span>
+                    </div>
+                    <span className="text-[10px] font-bold bg-emerald-200 text-emerald-900 px-2.5 py-0.5 rounded-full">
+                      Admin Provisioned
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-700 mt-1 font-medium">
+                    Support Staff Operator account. Once logged into the Operator Dashboard, Operators register Captain and Manager accounts.
+                  </p>
+                </button>
+              </div>
+            )}
           </div>
 
+          {/* 2. Full Name Option */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Full Name <span className="text-rose-500">*</span>
+            </label>
             <input
               type="text"
               required
               placeholder="e.g. Ramesh Naidu"
               value={newStaffName}
               onChange={(e) => setNewStaffName(e.target.value)}
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500"
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500 font-medium"
             />
           </div>
 
-          {newStaffRole === 'Captain' ? (
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Captain Mobile Number <span className="text-purple-600 font-semibold">(Used for Login)</span>
-              </label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="tel"
-                  required
-                  placeholder="e.g. 9876543210"
-                  pattern="[0-9]{10}"
-                  value={newStaffMobile}
-                  onChange={(e) => setNewStaffMobile(e.target.value)}
-                  className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-purple-500 font-mono font-bold"
-                />
-              </div>
-              <p className="text-[11px] text-slate-400 mt-1">Captain will use this 10-digit mobile number to log in.</p>
-            </div>
-          ) : (
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Username / Email</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. support.ramesh@charvik.com or ramesh_ops"
-                value={newStaffUsername}
-                onChange={(e) => setNewStaffUsername(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500 font-mono"
-              />
-            </div>
-          )}
-
+          {/* 3. Username / Email Option */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Password</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Username / Email <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              placeholder={isOperatorDashboard ? 'e.g. captain_ops or captain@charvik.com' : 'e.g. operator_ops or supporter@charvik.com'}
+              value={newStaffUsername}
+              onChange={(e) => setNewStaffUsername(e.target.value)}
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500 font-mono"
+            />
+          </div>
+
+          {/* Optional Mobile for SMS or Direct Login */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Mobile Number <span className="text-slate-400 font-normal">(Optional 10-digit phone)</span>
+            </label>
+            <input
+              type="tel"
+              placeholder="e.g. 9876543210"
+              value={newStaffMobile}
+              onChange={(e) => setNewStaffMobile(e.target.value)}
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500 font-mono"
+            />
+          </div>
+
+          {/* 4. Password Option */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Password <span className="text-rose-500">*</span>
+            </label>
             <input
               type="password"
               required
-              minLength={6}
-              placeholder="Minimum 6 characters"
+              minLength={4}
+              placeholder="Minimum 4 characters"
               value={newStaffPassword}
               onChange={(e) => setNewStaffPassword(e.target.value)}
               className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500"
             />
+          </div>
+
+          {/* 5. Category Option (Single & Multiple Selection) */}
+          <div className="pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <label className="block text-xs font-bold text-slate-800">
+                  Dashboard Categories (Admin Modules){' '}
+                  <span className="text-blue-600 font-extrabold">
+                    ({newStaffCategories.length} of {ALL_MODULE_CATEGORIES.length} selected)
+                  </span>
+                </label>
+                <p className="text-[11px] text-slate-500">
+                  Select which categories will be visible to this employee in their dashboard.
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setNewStaffCategories([...ALL_CATEGORY_NAMES])}
+                  className="px-2 py-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 cursor-pointer"
+                >
+                  Select All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewStaffCategories([])}
+                  className="px-2 py-1 text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+              {ALL_MODULE_CATEGORIES.map((cat) => {
+                const isChecked = newStaffCategories.includes(cat.name);
+                const CatIcon = cat.icon;
+                return (
+                  <label
+                    key={cat.id}
+                    className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs font-medium cursor-pointer transition-all ${
+                      isChecked
+                        ? 'bg-blue-50/80 border-blue-300 text-blue-900 shadow-2xs font-bold'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setNewStaffCategories([...newStaffCategories, cat.name]);
+                        } else {
+                          setNewStaffCategories(newStaffCategories.filter((c) => c !== cat.name));
+                        }
+                      }}
+                      className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                    />
+                    <CatIcon className={`w-4 h-4 shrink-0 ${isChecked ? 'text-blue-600' : 'text-slate-400'}`} />
+                    <span className="truncate flex-1">{cat.name}</span>
+                  </label>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1 italic">
+              All data created or edited in these categories is synced live with the Admin panel.
+            </p>
           </div>
 
           <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
@@ -939,10 +1157,96 @@ export const EmployeeManagement: React.FC = () => {
               disabled={creatingStaff}
               className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors cursor-pointer shadow-sm disabled:opacity-50"
             >
-              {creatingStaff ? 'Creating...' : 'Create Staff Account'}
+              {creatingStaff ? 'Creating...' : isOperatorDashboard ? 'Create Employee Account' : 'Create Operator Account'}
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Edit Category Permissions Modal */}
+      <Modal
+        isOpen={showEditCategoriesModal}
+        onClose={() => setShowEditCategoriesModal(false)}
+        title="Manage Dashboard Category Permissions"
+        subtitle={selectedStaffForCategories ? `Select which categories are visible to ${selectedStaffForCategories.name} (${selectedStaffForCategories.role})` : ''}
+        maxWidth="max-w-lg"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-slate-600">
+              Selected:{' '}
+              <strong className="text-blue-700 font-bold">
+                {editingCategoriesList.length} of {ALL_MODULE_CATEGORIES.length} Categories
+              </strong>
+            </p>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setEditingCategoriesList([...ALL_CATEGORY_NAMES])}
+                className="px-2 py-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 cursor-pointer"
+              >
+                Select All
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditingCategoriesList([])}
+                className="px-2 py-1 text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            {ALL_MODULE_CATEGORIES.map((cat) => {
+              const isChecked = editingCategoriesList.includes(cat.name);
+              const CatIcon = cat.icon;
+              return (
+                <label
+                  key={cat.id}
+                  className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs font-medium cursor-pointer transition-all ${
+                    isChecked
+                      ? 'bg-blue-50/80 border-blue-300 text-blue-900 shadow-2xs font-bold'
+                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setEditingCategoriesList([...editingCategoriesList, cat.name]);
+                      } else {
+                        setEditingCategoriesList(editingCategoriesList.filter((c) => c !== cat.name));
+                      }
+                    }}
+                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                  />
+                  <CatIcon className={`w-4 h-4 shrink-0 ${isChecked ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <span className="truncate flex-1">{cat.name}</span>
+                </label>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowEditCategoriesModal(false)}
+              className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveCategories}
+              disabled={savingCategories}
+              className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors cursor-pointer shadow-sm disabled:opacity-50"
+            >
+              {savingCategories ? 'Saving...' : 'Save Permissions'}
+            </button>
+          </div>
+        </div>
       </Modal>
 
       {/* Reset Password Modal */}

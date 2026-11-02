@@ -18,18 +18,9 @@ export function runSeed() {
     VALUES (?, ?, ?, ?, ?, ?)
   `).run('Admin Manager', 'admin@charvik.com', '9876543210', passwordHash, 'Super Admin', 'Active');
 
-  // Seed default Captain & Supporter accounts
-  const captainHash = bcrypt.hashSync('captain123', 10);
-  db.prepare(`
-    INSERT INTO administrators (name, email_or_username, phone_number, password_hash, role, status)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run('Fleet Captain', 'captain@charvik.com', '9701055555', captainHash, 'Captain', 'Active');
+  // Only Super Admin is initialized by default.
+  // Operators are created by Super Admin in the Admin Panel.
 
-  const supporterHash = bcrypt.hashSync('supporter123', 10);
-  db.prepare(`
-    INSERT INTO administrators (name, email_or_username, phone_number, password_hash, role, status)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run('Support Staff Member', 'supporter@charvik.com', '9848033445', supporterHash, 'Support Staff', 'Active');
 
   // Seed Application Settings
   const insertSetting = db.prepare('INSERT OR REPLACE INTO application_settings (key, value, description) VALUES (?, ?, ?)');

@@ -80,13 +80,13 @@ export const Contact: React.FC = () => {
               Need Instant Answers?
             </span>
             <a
-              href="https://wa.me/919876543210?text=Hello%20Charvik%2C%20I%20have%20an%20urgent%20fleet%20requirement."
+              href="https://wa.me/919396151527?text=Hello%20Charvik%2C%20I%20have%20an%20urgent%20fleet%20requirement."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp Direct (+91 98765 43210)</span>
+              <span>WhatsApp Direct (+91 93961 51527)</span>
             </a>
             <a
               href="tel:+919876543210"

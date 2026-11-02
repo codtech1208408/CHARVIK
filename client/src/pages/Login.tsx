@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Lock, Mail, Phone, Eye, EyeOff, ShieldCheck, ArrowRight, Compass, Users, Info, ArrowLeft } from 'lucide-react';
+import { Lock, Mail, Phone, Eye, EyeOff, ShieldCheck, ArrowRight, Compass, Users, Info, ArrowLeft, Key } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
 
 interface LoginProps {
-  defaultRole?: 'Admin' | 'Captain' | 'Supporter';
+  defaultRole?: 'Admin' | 'Captain' | 'Operator';
 }
 
 export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
   const [searchParams] = useSearchParams();
   const urlRole = searchParams.get('role');
 
-  const initialRole: 'Admin' | 'Captain' | 'Supporter' =
+  const initialRole: 'Admin' | 'Captain' | 'Operator' =
     defaultRole ||
-    (urlRole === 'captain' ? 'Captain' : urlRole === 'supporter' ? 'Supporter' : 'Admin');
+    (urlRole === 'captain'
+      ? 'Captain'
+      : urlRole === 'operator' || urlRole === 'supporter'
+      ? 'Operator'
+      : 'Admin');
 
-  const [selectedRole, setSelectedRole] = useState<'Admin' | 'Captain' | 'Supporter'>(initialRole);
+  const [selectedRole, setSelectedRole] = useState<'Admin' | 'Captain' | 'Operator'>(initialRole);
   const [emailOrUser, setEmailOrUser] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,11 +33,11 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
 
   useEffect(() => {
     if (defaultRole) {
-      setSelectedRole(defaultRole);
+      setSelectedRole(defaultRole === ('Supporter' as any) ? 'Operator' : defaultRole);
     } else if (urlRole === 'captain') {
       setSelectedRole('Captain');
-    } else if (urlRole === 'supporter') {
-      setSelectedRole('Supporter');
+    } else if (urlRole === 'operator' || urlRole === 'supporter') {
+      setSelectedRole('Operator');
     }
   }, [defaultRole, urlRole]);
 
@@ -43,12 +47,12 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
       const userRole = (user.role || '').toLowerCase();
       const isAdmin = userRole.includes('admin');
       const isCaptain = userRole.includes('captain');
-      const isSupporter = userRole.includes('support') || userRole.includes('helper');
+      const isOperator = userRole.includes('support') || userRole.includes('operator');
 
       if (selectedRole === 'Captain' && isCaptain) {
         navigate('/captain/dashboard', { replace: true });
-      } else if (selectedRole === 'Supporter' && isSupporter) {
-        navigate('/supporter/dashboard', { replace: true });
+      } else if (selectedRole === 'Operator' && isOperator) {
+        navigate('/operator/dashboard', { replace: true });
       } else if (selectedRole === 'Admin' && isAdmin) {
         navigate('/admin/dashboard', { replace: true });
       }
@@ -67,14 +71,14 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
 
     try {
       const loggedUser = await login(emailOrUser, password);
-      const roleName = loggedUser?.role || selectedRole;
+      const roleName = loggedUser?.role === 'Support Staff' ? 'Operator' : (loggedUser?.role || selectedRole);
       success(`Welcome to Charvik Fleet Management! Logged in as ${roleName}.`);
       
       const normalizedRole = (loggedUser?.role || selectedRole).toLowerCase();
       if (normalizedRole.includes('captain')) {
         navigate('/captain/dashboard');
-      } else if (normalizedRole.includes('support') || normalizedRole.includes('helper')) {
-        navigate('/supporter/dashboard');
+      } else if (normalizedRole.includes('support') || normalizedRole.includes('operator') || normalizedRole.includes('helper')) {
+        navigate('/operator/dashboard');
       } else {
         navigate('/admin/dashboard');
       }
@@ -89,9 +93,9 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
     if (selectedRole === 'Captain') {
       setEmailOrUser('9701055555');
       setPassword('captain123');
-    } else if (selectedRole === 'Supporter') {
-      setEmailOrUser('supporter@charvik.com');
-      setPassword('supporter123');
+    } else if (selectedRole === 'Operator') {
+      setEmailOrUser('operator@charvik.com');
+      setPassword('operator123');
     } else {
       setEmailOrUser('admin@charvik.com');
       setPassword('admin123');
@@ -110,14 +114,14 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
           notice: 'Authorized Route Captain Portal. Please log in using your registered mobile number and password provided by Fleet Admin.',
           emailPlaceholder: 'e.g. 9701055555 (Registered Mobile)'
         };
-      case 'Supporter':
+      case 'Operator':
         return {
-          title: 'Support Staff & Crew Portal',
-          badgeText: 'Supporter & Crew Portal',
+          title: 'Operator Operational Portal',
+          badgeText: 'Operator Portal',
           badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-300',
-          icon: Users,
-          notice: 'Notice: Supporter login credentials are created directly by Admin. Please enter your authorized username or email and password.',
-          emailPlaceholder: 'supporter@charvik.com'
+          icon: Key,
+          notice: 'Notice: Operator login credentials are created directly by Admin in the Admin Panel. Please enter your authorized username or email and password.',
+          emailPlaceholder: 'operator@charvik.com or Username'
         };
       default:
         return {

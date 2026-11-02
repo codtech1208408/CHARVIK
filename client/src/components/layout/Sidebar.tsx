@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   LayoutGrid,
@@ -35,6 +35,8 @@ import {
   History
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../services/api';
+import { ALL_MODULE_CATEGORIES } from '../../constants/moduleCategories';
 
 export interface NavSubItem {
   label: string;
@@ -73,6 +75,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Track expanded/collapsed state of sidebar items with sub-menus
   const [subMenusOpen, setSubMenusOpen] = useState<Record<string, boolean>>({});
+  const DEFAULT_OPERATOR_CATEGORIES = ['Route Management', 'Task Management', 'AC Maintenance'];
+  const [operatorCategories, setOperatorCategories] = useState<string[]>(DEFAULT_OPERATOR_CATEGORIES);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getStaffCredentials().then((list) => {
+      if (!isMounted) return;
+      const op = (list || []).find((s: any) => (s.role === 'Support Staff' || s.role === 'Operator') && s.status === 'Active') ||
+                 (list || []).find((s: any) => s.role === 'Support Staff' || s.role === 'Operator');
+      if (op) {
+        let cats: string[] = [];
+        if (Array.isArray(op.categories)) {
+          cats = op.categories;
+        } else if (typeof op.categories === 'string') {
+          try {
+            const parsed = JSON.parse(op.categories);
+            if (Array.isArray(parsed)) cats = parsed;
+          } catch {}
+        }
+        if (cats.length > 0) {
+          setOperatorCategories(cats);
+        }
+      }
+    }).catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, [location.pathname]);
 
   const toggleSubMenu = (route: string, currentExpanded: boolean) => {
     setSubMenusOpen((prev) => ({
@@ -82,20 +112,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const isCaptain = location.pathname.startsWith('/captain');
-  const isSupporter = location.pathname.startsWith('/supporter');
+  const isOperator = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
   const isDashboard =
     location.pathname.endsWith('/dashboard') ||
     location.pathname === '/admin' ||
     location.pathname === '/admin/' ||
     location.pathname === '/captain' ||
     location.pathname === '/captain/' ||
+    location.pathname === '/operator' ||
+    location.pathname === '/operator/' ||
     location.pathname === '/supporter' ||
     location.pathname === '/supporter/';
 
   const handleLogout = () => {
     logout();
     if (isCaptain) navigate('/captain/login');
-    else if (isSupporter) navigate('/supporter/login');
+    else if (isOperator) navigate('/operator/login');
     else navigate('/admin/login');
   };
 
@@ -248,20 +280,88 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Battery Check', route: '/captain/battery-maintenance', icon: BatteryCharging },
   ];
 
+  const activeUser = user || (() => {
+    try {
+      const s = localStorage.getItem('charvik_user');
+      return s ? JSON.parse(s) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const userRole = (activeUser?.role || '').toLowerCase();
+  const isAdmin = userRole.includes('admin') || (!isOperator && !isCaptain);
+  const isOperatorUser = isOperator || userRole.includes('support') || userRole.includes('operator') || userRole.includes('manager');
+  const isCaptainUser = isCaptain || userRole.includes('captain');
+
+  const parseCategoriesList = (cat: any): string[] => {
+    if (Array.isArray(cat)) {
+      return cat.map((c) => String(c || '').trim()).filter(Boolean);
+    }
+    if (typeof cat === 'string') {
+      try {
+        const parsed = JSON.parse(cat);
+        if (Array.isArray(parsed)) {
+          return parsed.map((c) => String(c || '').trim()).filter(Boolean);
+        }
+      } catch {}
+    }
+    return [];
+  };
+
+  // When on Operator portal (/operator/* or /supporter/*), ALWAYS strictly show only Operator's categories!
+  // If user is Operator, use their categories. If Admin is viewing Operator portal, use operatorCategories.
+  // NEVER show Admin's all 9 categories in the Operator portal!
+  let userCategoryNames: string[] = [];
+  if (isOperator) {
+    if (!isAdmin && activeUser?.categories) {
+      userCategoryNames = parseCategoriesList(activeUser.categories);
+    }
+    if (userCategoryNames.length === 0 && operatorCategories.length > 0) {
+      userCategoryNames = parseCategoriesList(operatorCategories);
+    }
+    if (userCategoryNames.length === 0) {
+      userCategoryNames = DEFAULT_OPERATOR_CATEGORIES;
+    }
+  } else {
+    // Admin or Captain Portal
+    if (activeUser?.categories) {
+      userCategoryNames = parseCategoriesList(activeUser.categories);
+    }
+    if (userCategoryNames.length === 0) {
+      userCategoryNames = ALL_CATEGORY_NAMES;
+    }
+  }
+
+  // Filter module tabs to strictly those allowed for this operator
+  const operatorPermittedTabs: NavItemLeaf[] = ALL_MODULE_CATEGORIES
+    .filter((cat) => {
+      return userCategoryNames.some(
+        (assigned) => assigned.toLowerCase() === cat.name.trim().toLowerCase()
+      );
+    })
+    .map((cat) => ({
+      label: cat.name,
+      route: isOperator && cat.id === 'task_management' ? '/operator/tasks' : cat.route,
+      icon: cat.icon,
+      activeRoutes: cat.id === 'task_management' ? ['/admin/tasks', '/operator/tasks'] : cat.activeRoutes
+    }));
+
   const supporterNavItems: NavItemLeaf[] = [
-    { label: 'Dashboard', route: '/supporter/dashboard', icon: LayoutGrid, hasLiveBadge: true },
-    { label: 'Trip Tasks', route: '/supporter/tasks', icon: ClipboardList, activeRoutes: ['/supporter/tasks'] },
-    { label: 'Repairs', route: '/supporter/repairs', icon: Wrench, activeRoutes: ['/supporter/repairs'] },
-    { label: 'Complaints & Issues', route: '/supporter/complaints', icon: AlertTriangle },
-    { label: 'Mileage & Fueling', route: '/supporter/daily-kilometers', icon: Fuel },
-    { label: 'Maintenance Schedule', route: '/supporter/maintenance-schedule', icon: CalendarDays },
-    { label: 'Vehicle Fleet', route: '/supporter/buses', icon: Truck },
+    { label: 'Operator Dashboard', route: '/operator/dashboard', icon: ShieldCheck, hasLiveBadge: true },
+    {
+      label: 'Employee Registration',
+      route: '/operator/employee-registration',
+      icon: UserPlus,
+      activeRoutes: ['/operator/employee-registration', '/operator/employees', '/supporter/employee-registration', '/supporter/employees']
+    },
+    ...operatorPermittedTabs
   ];
 
   const isVehicleManagementModule =
     !isDashboard &&
     !isCaptain &&
-    !isSupporter &&
+    !isOperator &&
     (location.pathname.startsWith('/admin/vehicles') ||
       location.pathname.startsWith('/admin/buses') ||
       location.pathname.startsWith('/admin/vehicle-registration') ||
@@ -279,7 +379,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isVehicleMaintenanceModule =
     !isDashboard &&
     !isCaptain &&
-    !isSupporter &&
+    !isOperator &&
     (location.pathname.startsWith('/admin/mileage-fueling') ||
       location.pathname.startsWith('/admin/daily-kilometers') ||
       location.pathname.startsWith('/admin/daily-vehicle-checkup') ||
@@ -296,9 +396,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       location.pathname.startsWith('/admin/repairs') ||
       location.pathname.startsWith('/admin/bus-condition'));
 
-  const navItems = isCaptain
+  const isOperatorPortal = isOperator;
+  const showOperatorNav = isOperatorPortal || (isOperatorUser && !isAdmin);
+  const showCaptainNav = isCaptain || (isCaptainUser && !isAdmin);
+
+  const navItems = showCaptainNav
     ? captainNavItems
-    : isSupporter
+    : showOperatorNav
     ? supporterNavItems
     : isVehicleManagementModule
     ? vehicleManagementTabs
@@ -379,14 +483,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shadow-xs tracking-wide ${
                 isCaptain
                   ? 'bg-amber-50 text-amber-700 border-amber-200'
-                  : isSupporter
+                  : isOperator
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                   : 'bg-blue-50 text-blue-700 border-blue-200'
               }`}>
                 {isCaptain ? (
                   <>⚓ <span>Captain Portal</span></>
-                ) : isSupporter ? (
-                  <>🛠️ <span>Supporter Portal</span></>
+                ) : isOperatorPortal ? (
+                  <>⚙️ <span>Operator Portal</span></>
                 ) : (
                   <>🛡️ <span>Super Admin Portal</span></>
                 )}
@@ -560,6 +664,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Footer Area: View Public Website & User Actions */}
         <div className="p-3 border-t border-slate-100 bg-slate-50/60 shrink-0 space-y-2">
+          {/* Admin shortcut: View Operator Dashboard vs Return to Admin Dashboard */}
+          {isAdmin && !isCollapsed && (
+            isOperatorPortal ? (
+              <Link
+                to="/admin/dashboard"
+                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all text-xs font-bold group cursor-pointer"
+                title="Return to the Main Admin Dashboard"
+              >
+                <div className="flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4 text-white group-hover:-translate-x-0.5 transition-transform" />
+                  <span>Return to Admin Dashboard</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-white/80" />
+              </Link>
+            ) : (
+              <Link
+                to="/operator/dashboard"
+                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-blue-200 bg-blue-50/60 hover:border-blue-500 hover:bg-blue-100/70 hover:shadow-xs transition-all text-xs font-bold text-blue-900 group cursor-pointer"
+                title="Open Operator Dashboard to inspect real-time staff operations"
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#2563EB] group-hover:scale-110 transition-transform" />
+                  <span>View Operator Dashboard</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-blue-500 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            )
+          )}
+
           {!isCollapsed && (
             <Link
               to="/"
@@ -576,14 +709,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
 
           {/* User Profile info if available */}
-          {!isCollapsed && user && (
+          {!isCollapsed && activeUser && (
             <div className="px-3 py-2 bg-white rounded-xl flex items-center space-x-2.5 border border-slate-200 shadow-xs">
               <div className="w-7 h-7 rounded-full bg-[#142B4A] text-white flex items-center justify-center font-bold text-xs uppercase shadow-xs">
-                {user.name.slice(0, 2)}
+                {(activeUser.name || 'Admin').slice(0, 2)}
               </div>
               <div className="truncate flex-1">
-                <p className="text-xs font-bold text-slate-800 truncate">{user.name}</p>
-                <p className="text-[10px] text-slate-500 font-medium truncate">{user.role}</p>
+                <p className="text-xs font-bold text-slate-800 truncate">{activeUser.name}</p>
+                <p className="text-[10px] text-slate-500 font-medium truncate">{activeUser.role}</p>
               </div>
             </div>
           )}
@@ -606,7 +739,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-lg px-2 py-1.5 flex justify-around items-center">
         {/* Dash */}
         <NavLink
-          to={isCaptain ? '/captain/dashboard' : isSupporter ? '/supporter/dashboard' : '/admin/dashboard'}
+          to={isCaptain ? '/captain/dashboard' : isOperator ? '/operator/dashboard' : '/admin/dashboard'}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
               isActive
@@ -621,7 +754,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Staff / Employee Registration */}
         <NavLink
-          to={isCaptain ? '/captain/buses' : isSupporter ? '/supporter/buses' : '/admin/employee-registration'}
+          to={isCaptain ? '/captain/buses' : isOperator ? '/operator/employee-registration' : '/admin/employee-registration'}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
               isActive
@@ -636,7 +769,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Vehicles */}
         <NavLink
-          to={isCaptain ? '/captain/buses' : isSupporter ? '/supporter/buses' : '/admin/vehicles'}
+          to={isCaptain ? '/captain/buses' : isOperator ? '/operator/buses' : '/admin/vehicles'}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
               isActive
@@ -651,7 +784,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Fuel / Mileage */}
         <NavLink
-          to={isCaptain ? '/captain/daily-kilometers' : isSupporter ? '/supporter/daily-kilometers' : '/admin/mileage-fueling'}
+          to={isCaptain ? '/captain/daily-kilometers' : isOperator ? '/operator/daily-kilometers' : '/admin/mileage-fueling'}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
               isActive

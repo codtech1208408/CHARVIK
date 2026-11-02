@@ -204,7 +204,7 @@ export const Repairs: React.FC = () => {
         </button>
 
         <button
-          onClick={() => navigate(location.pathname.startsWith('/supporter') ? '/supporter/tasks' : '/admin/tasks')}
+          onClick={() => navigate((location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter')) ? '/operator/tasks' : '/admin/tasks')}
           className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <ClipboardList className="w-3.5 h-3.5 text-blue-600" />

@@ -13,6 +13,14 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCollapsed }) => {
   const { user, logout } = useAuth();
+  const activeUser = user || (() => {
+    try {
+      const s = localStorage.getItem('charvik_user');
+      return s ? JSON.parse(s) : null;
+    } catch {
+      return null;
+    }
+  })();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -43,14 +51,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
 
   const location = useLocation();
   const isCaptain = location.pathname.startsWith('/captain');
-  const isSupporter = location.pathname.startsWith('/supporter');
-  const basePrefix = isCaptain ? '/captain' : isSupporter ? '/supporter' : '/admin';
+  const isOperator = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
+  const basePrefix = isCaptain ? '/captain' : isOperator ? '/operator' : '/admin';
   const isDashboard =
     location.pathname.endsWith('/dashboard') ||
     location.pathname === '/admin' ||
     location.pathname === '/admin/' ||
     location.pathname === '/captain' ||
     location.pathname === '/captain/' ||
+    location.pathname === '/operator' ||
+    location.pathname === '/operator/' ||
     location.pathname === '/supporter' ||
     location.pathname === '/supporter/';
 
@@ -292,16 +302,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
             className="flex items-center space-x-2.5 p-1.5 rounded-xl hover:bg-white/10 transition-colors"
           >
             <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm border ${
-              isCaptain ? 'bg-[#142B4A] border-blue-400' : isSupporter ? 'bg-emerald-600 border-emerald-400' : 'bg-[#142B4A] border-blue-500'
+              isCaptain ? 'bg-[#142B4A] border-blue-400' : isOperator ? 'bg-emerald-600 border-emerald-400' : 'bg-[#142B4A] border-blue-500'
             }`}>
-              {user ? user.name.slice(0, 2) : isCaptain ? 'CP' : isSupporter ? 'SP' : 'AD'}
+              {activeUser ? activeUser.name.slice(0, 2) : isCaptain ? 'CP' : isOperator ? 'OP' : 'AD'}
             </div>
             <div className="hidden md:flex flex-col text-left">
               <span className="text-xs font-bold text-slate-800 leading-tight truncate">
-                {user ? user.name : isCaptain ? 'Route Captain' : isSupporter ? 'Support Staff' : 'Administrator'}
+                {activeUser ? activeUser.name : isCaptain ? 'Route Captain' : isOperator ? 'Operator Staff' : 'Administrator'}
               </span>
-              <span className={`text-[10px] font-medium ${isCaptain ? 'text-blue-600' : isSupporter ? 'text-emerald-600' : 'text-slate-500'}`}>
-                {user ? user.role : isCaptain ? 'Captain' : isSupporter ? 'Support Staff' : 'Super Admin'}
+              <span className={`text-[10px] font-medium ${isCaptain ? 'text-blue-600' : isOperator ? 'text-emerald-600' : 'text-slate-500'}`}>
+                {activeUser ? activeUser.role : isCaptain ? 'Captain' : isOperator ? 'Operator' : 'Super Admin'}
               </span>
             </div>
           </button>
@@ -310,15 +320,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 text-slate-700 text-xs">
               <div className="px-4 py-2 border-b border-slate-100">
-                <p className="font-bold text-slate-900">{user?.name}</p>
-                <p className="text-slate-500 truncate">{user?.email}</p>
+                <p className="font-bold text-slate-900">{activeUser?.name || 'User'}</p>
+                <p className="text-slate-500 truncate">{activeUser?.email || ''}</p>
                 <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${
-                  isCaptain ? 'bg-blue-50 text-blue-800' : isSupporter ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
+                  isCaptain ? 'bg-blue-50 text-blue-800' : isOperator ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
                 }`}>
-                  {user?.role}
+                  {activeUser?.role || (isOperator ? 'Operator' : 'Admin')}
                 </span>
               </div>
-              {!isCaptain && !isSupporter && (
+              {!isCaptain && !isOperator && (
                 <button
                   onClick={() => {
                     setShowProfileMenu(false);
@@ -335,7 +345,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
                   setShowProfileMenu(false);
                   logout();
                   if (isCaptain) navigate('/captain/login');
-                  else if (isSupporter) navigate('/supporter/login');
+                  else if (isOperator) navigate('/operator/login');
                   else navigate('/admin/login');
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-600 flex items-center space-x-2 border-t border-slate-100"

@@ -12,8 +12,8 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
   const location = useLocation();
 
   const isCaptain = location.pathname.startsWith('/captain');
-  const isSupporter = location.pathname.startsWith('/supporter');
-  const basePrefix = isCaptain ? '/captain' : isSupporter ? '/supporter' : '/admin';
+  const isOperator = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
+  const basePrefix = isCaptain ? '/captain' : isOperator ? '/operator' : '/admin';
 
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -367,7 +367,7 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
 
             {/* Quick Action Shortcuts */}
             <div className="grid grid-cols-2 gap-2 pt-1">
-              {!isCaptain && !isSupporter && (
+              {!isCaptain && !isOperator && (
                 <button
                   type="button"
                   onClick={() => handleActionClick(`/admin/tasks?date=${selectedYMD}`)}
