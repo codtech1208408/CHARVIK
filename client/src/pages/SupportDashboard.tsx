@@ -41,8 +41,26 @@ import { ALL_MODULE_CATEGORIES } from '../constants/moduleCategories';
 export const SupportDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { success, error } = useToast();
-  const isAdmin = (user?.role || '').toLowerCase().includes('admin');
+  const activeOperator = (() => {
+    if (user && (user.role.toLowerCase().includes('operator') || user.role.toLowerCase().includes('support'))) {
+      return user;
+    }
+    try {
+      const s = localStorage.getItem('charvik_user');
+      const parsed = s ? JSON.parse(s) : null;
+      if (parsed && (parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support'))) {
+        return parsed;
+      }
+    } catch {}
+    return {
+      id: 7,
+      name: 'NEELAM HARISH',
+      email: 'harish@charvik.com',
+      role: 'Operator',
+      categories: ['Route Management', 'Task Management', 'AC Maintenance']
+    };
+  })();
+  const isAdmin = false;
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
@@ -288,25 +306,12 @@ export const SupportDashboard: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              {isAdmin ? (
-                <span>Previewing Operator Dashboard • Configured Staff: <strong className="text-slate-800">{operatorName || 'NEELAM HARISH'}</strong></span>
-              ) : (
-                <span>Logged in as <strong className="text-slate-800">{user?.name}</strong> • Fleet Operations & Employee Management</span>
-              )}
+              <span>Logged in as <strong className="text-slate-800">{activeOperator.name}</strong> • Fleet Operations & Employee Management</span>
             </p>
           </div>
         </div>
 
         <div className="flex items-center flex-wrap gap-2.5">
-          {isAdmin && (
-            <button
-              onClick={() => navigate('/admin/dashboard')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Return to Admin Dashboard</span>
-            </button>
-          )}
 
           <button
             onClick={() => navigate('/operator/employee-registration')}

@@ -10,7 +10,7 @@ import { ALL_CATEGORY_NAMES } from '../../constants/moduleCategories';
 
 export const AdminLayout: React.FC = () => {
   // 1. ALL HOOKS CALLED UNCONDITIONALLY AT THE VERY TOP
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, setUser } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
@@ -67,14 +67,14 @@ export const AdminLayout: React.FC = () => {
       if (parsed && parsed.role) {
         if (isOperatorPortal) {
           const isOp = parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support');
-          if (isOp || parsed.role.toLowerCase().includes('admin')) return parsed;
+          if (isOp) return parsed;
           localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_OPERATOR));
           localStorage.setItem('charvik_token', 'charvik_cloud_token_operator_session');
           return DEFAULT_OPERATOR;
         }
         if (isCaptainPortal) {
           const isCap = parsed.role.toLowerCase().includes('captain');
-          if (isCap || parsed.role.toLowerCase().includes('admin')) return parsed;
+          if (isCap) return parsed;
           localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_CAPTAIN));
           localStorage.setItem('charvik_token', 'charvik_cloud_token_captain_session');
           return DEFAULT_CAPTAIN;
@@ -153,6 +153,13 @@ export const AdminLayout: React.FC = () => {
       prevPathRef.current = location.pathname;
     }
   }, [location.pathname, activeUser]);
+
+  // Synchronize active portal user into AuthContext state
+  useEffect(() => {
+    if (activeUser && (!user || user.role !== activeUser.role || user.name !== activeUser.name)) {
+      setUser(activeUser);
+    }
+  }, [location.pathname, activeUser, user, setUser]);
 
   // 2. NOW SAFELY EXECUTE CONDITIONAL RENDERS & REDIRECTS (AFTER ALL HOOKS)
   const isUserAuthenticated = isAuthenticated || !!activeUser;

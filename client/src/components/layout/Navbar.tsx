@@ -13,15 +13,65 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCollapsed }) => {
   const { user, logout } = useAuth();
-  const activeUser = user || (() => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isCaptain = location.pathname.startsWith('/captain');
+  const isOperator = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
+
+  const activeUser = (() => {
+    if (isOperator) {
+      if (user && (user.role.toLowerCase().includes('operator') || user.role.toLowerCase().includes('support'))) {
+        return user;
+      }
+      try {
+        const s = localStorage.getItem('charvik_user');
+        const parsed = s ? JSON.parse(s) : null;
+        if (parsed && (parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support'))) {
+          return parsed;
+        }
+      } catch {}
+      return {
+        id: 7,
+        name: 'NEELAM HARISH',
+        email: 'harish@charvik.com',
+        role: 'Operator'
+      };
+    }
+    if (isCaptain) {
+      if (user && user.role.toLowerCase().includes('captain')) {
+        return user;
+      }
+      try {
+        const s = localStorage.getItem('charvik_user');
+        const parsed = s ? JSON.parse(s) : null;
+        if (parsed && parsed.role.toLowerCase().includes('captain')) {
+          return parsed;
+        }
+      } catch {}
+      return {
+        id: 2,
+        name: 'Captain Lead',
+        email: 'captain@charvik.com',
+        role: 'Captain'
+      };
+    }
+    if (user && user.role.toLowerCase().includes('admin')) {
+      return user;
+    }
     try {
       const s = localStorage.getItem('charvik_user');
-      return s ? JSON.parse(s) : null;
-    } catch {
-      return null;
-    }
+      const parsed = s ? JSON.parse(s) : null;
+      if (parsed && parsed.role.toLowerCase().includes('admin')) {
+        return parsed;
+      }
+    } catch {}
+    return {
+      id: 1,
+      name: 'Admin Manager',
+      email: 'admin@charvik.com',
+      role: 'Super Admin'
+    };
   })();
-  const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notifications, setNotifications] = useState<any>({
@@ -49,9 +99,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
     return () => clearInterval(interval);
   }, []);
 
-  const location = useLocation();
-  const isCaptain = location.pathname.startsWith('/captain');
-  const isOperator = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
   const basePrefix = isCaptain ? '/captain' : isOperator ? '/operator' : '/admin';
   const isDashboard =
     location.pathname.endsWith('/dashboard') ||

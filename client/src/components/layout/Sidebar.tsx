@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
-import { ALL_MODULE_CATEGORIES } from '../../constants/moduleCategories';
+import { ALL_MODULE_CATEGORIES, ALL_CATEGORY_NAMES } from '../../constants/moduleCategories';
 
 export interface NavSubItem {
   label: string;
@@ -280,17 +280,64 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Battery Check', route: '/captain/battery-maintenance', icon: BatteryCharging },
   ];
 
-  const activeUser = user || (() => {
+  const DEFAULT_OPERATOR = {
+    id: 7,
+    name: 'NEELAM HARISH',
+    email: 'harish@charvik.com',
+    role: 'Operator',
+    categories: ['Route Management', 'Task Management', 'AC Maintenance']
+  };
+
+  const DEFAULT_ADMIN = {
+    id: 1,
+    name: 'Admin Manager',
+    email: 'admin@charvik.com',
+    role: 'Super Admin',
+    categories: ALL_CATEGORY_NAMES
+  };
+
+  const activeUser = (() => {
+    if (isOperator) {
+      if (user && (user.role.toLowerCase().includes('operator') || user.role.toLowerCase().includes('support'))) {
+        return user;
+      }
+      try {
+        const s = localStorage.getItem('charvik_user');
+        const parsed = s ? JSON.parse(s) : null;
+        if (parsed && (parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support'))) {
+          return parsed;
+        }
+      } catch {}
+      return DEFAULT_OPERATOR;
+    }
+    if (isCaptain) {
+      if (user && user.role.toLowerCase().includes('captain')) {
+        return user;
+      }
+      try {
+        const s = localStorage.getItem('charvik_user');
+        const parsed = s ? JSON.parse(s) : null;
+        if (parsed && parsed.role.toLowerCase().includes('captain')) {
+          return parsed;
+        }
+      } catch {}
+      return { id: 2, name: 'Captain Lead', email: 'captain@charvik.com', role: 'Captain' };
+    }
+    if (user && user.role.toLowerCase().includes('admin')) {
+      return user;
+    }
     try {
       const s = localStorage.getItem('charvik_user');
-      return s ? JSON.parse(s) : null;
-    } catch {
-      return null;
-    }
+      const parsed = s ? JSON.parse(s) : null;
+      if (parsed && parsed.role.toLowerCase().includes('admin')) {
+        return parsed;
+      }
+    } catch {}
+    return DEFAULT_ADMIN;
   })();
 
   const userRole = (activeUser?.role || '').toLowerCase();
-  const isAdmin = userRole.includes('admin') || (!isOperator && !isCaptain);
+  const isAdmin = !isOperator && !isCaptain && userRole.includes('admin');
   const isOperatorUser = isOperator || userRole.includes('support') || userRole.includes('operator') || userRole.includes('manager');
   const isCaptainUser = isCaptain || userRole.includes('captain');
 
