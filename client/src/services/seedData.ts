@@ -1797,6 +1797,146 @@ export const BASE_PRODUCTS: any[] = [
   }
 ];
 
+export const BASE_SERVICE_RECORDS: any[] = [
+  {
+    "id": 1793976829847,
+    "record_number": "REC-2026-001",
+    "record_date": "2026-11-06",
+    "period_month": "BHBH",
+    "bill_to_name": "GIHGUFDYT",
+    "bill_to_address": "ZYUIL;MKJLKHYTJRHEGTR",
+    "bill_to_phone": "8574963214",
+    "bill_to_pan": "789654125847",
+    "items_json": "[{\"id\":\"1793976808674\",\"description\":\"1000\",\"category\":\"Driver\",\"staff_count\":3,\"salary_paid\":2000}]",
+    "total_staff_count": 3,
+    "total_amount": 2000,
+    "amount_in_words": "Two Thousand Rupees Only",
+    "received_amount": 0,
+    "balance_amount": 2000,
+    "payment_status": "Pending",
+    "bank_name": "Kotak Mahindra Bank, VANASTHALIPURAM HYDERABAD",
+    "bank_account_name": "Charvik Staffing Consultancy",
+    "bank_account_no": "2848153146",
+    "bank_ifsc": "KKBK0007460",
+    "bank_branch": "Vanasthalipuram, Hyderabad",
+    "upi_id": "9505151527@ybl",
+    "qr_code_url": "",
+    "remarks": "",
+    "created_at": "2026-11-06 14:53:50",
+    "updated_at": "2026-11-06 14:53:50",
+    "items": [
+      {
+        "id": "1793976808674",
+        "description": "1000",
+        "category": "Driver",
+        "staff_count": 3,
+        "salary_paid": 2000
+      }
+    ]
+  }
+];
+
+export const BASE_CAPTAIN_AUDITS: any[] = [
+  {
+    "id": 1793972470181,
+    "audit_date": "2026-11-06",
+    "audit_time": "7:11:10 PM",
+    "bus_number": "AP16TV1234",
+    "route": "Hyderabad - Bangalore",
+    "captain_name": "Hari",
+    "captain_phone": "9848012345",
+    "driver_name": "Akhil",
+    "driver_phone": "9848011111",
+    "staff_pictures_json": "[\"https://images.unsplash.com/photo-1544717305-2782549b5136?w=400\"]",
+    "cleaning_pictures_json": "[\"https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=400\"]",
+    "amenities_json": "[{\"status\":\"OK\",\"remarks\":\"Clean & packaged\",\"name\":\"Blanket\"},{\"status\":\"OK\",\"remarks\":\"All berths working\",\"name\":\"Charging Point\"},{\"status\":\"OK\",\"remarks\":\"Cooling checked at 22C\",\"name\":\"AC\"},{\"status\":\"OK\",\"remarks\":\"Medications checked\",\"name\":\"First Add Box\"},{\"status\":\"OK\",\"remarks\":\"Gauge green\",\"name\":\"Fire Cylinder\"},{\"status\":\"OK\",\"remarks\":\"120 PSI\",\"name\":\"Spare Tyre (Stepny)\"},{\"status\":\"OK\",\"remarks\":\"Swept and sanitised\",\"name\":\"Cleaning\"},{\"status\":\"OK\",\"remarks\":\"Proper uniform\",\"name\":\"Driver Dress\"},{\"status\":\"OK\",\"remarks\":\"Proper uniform\",\"name\":\"Captain Dress\"},{\"status\":\"OK\",\"remarks\":\"30 bottles loaded\",\"name\":\"Water Bottle\"},{\"status\":\"OK\",\"remarks\":\"Berths clean\",\"name\":\"Birth Cleaning\"},{\"status\":\"OK\",\"remarks\":\"Signal active\",\"name\":\"GPs Tracking\"},{\"status\":\"OK\",\"remarks\":\"Clean branding\",\"name\":\"Bus Branding\"},{\"status\":\"OK\",\"remarks\":\"Good tread depth\",\"name\":\"Tyre Condition\"}]",
+    "overall_status": "Passed",
+    "remarks": "Bus ready for departure on time.",
+    "submitted_by_role": "Captain",
+    "submitted_by_user_id": null,
+    "created_at": "2026-11-06 13:41:10",
+    "updated_at": "2026-11-06 13:41:10",
+    "amenities": [
+      {
+        "status": "OK",
+        "remarks": "Clean & packaged",
+        "name": "Blanket"
+      },
+      {
+        "status": "OK",
+        "remarks": "All berths working",
+        "name": "Charging Point"
+      },
+      {
+        "status": "OK",
+        "remarks": "Cooling checked at 22C",
+        "name": "AC"
+      },
+      {
+        "status": "OK",
+        "remarks": "Medications checked",
+        "name": "First Add Box"
+      },
+      {
+        "status": "OK",
+        "remarks": "Gauge green",
+        "name": "Fire Cylinder"
+      },
+      {
+        "status": "OK",
+        "remarks": "120 PSI",
+        "name": "Spare Tyre (Stepny)"
+      },
+      {
+        "status": "OK",
+        "remarks": "Swept and sanitised",
+        "name": "Cleaning"
+      },
+      {
+        "status": "OK",
+        "remarks": "Proper uniform",
+        "name": "Driver Dress"
+      },
+      {
+        "status": "OK",
+        "remarks": "Proper uniform",
+        "name": "Captain Dress"
+      },
+      {
+        "status": "OK",
+        "remarks": "30 bottles loaded",
+        "name": "Water Bottle"
+      },
+      {
+        "status": "OK",
+        "remarks": "Berths clean",
+        "name": "Birth Cleaning"
+      },
+      {
+        "status": "OK",
+        "remarks": "Signal active",
+        "name": "GPs Tracking"
+      },
+      {
+        "status": "OK",
+        "remarks": "Clean branding",
+        "name": "Bus Branding"
+      },
+      {
+        "status": "OK",
+        "remarks": "Good tread depth",
+        "name": "Tyre Condition"
+      }
+    ],
+    "staff_pictures": [
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400"
+    ],
+    "cleaning_pictures": [
+      "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=400"
+    ]
+  }
+];
+
 export const BASE_STAFF_CREDENTIALS: any[] = [
   {
     "id": 1,

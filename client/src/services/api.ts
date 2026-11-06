@@ -14,6 +14,8 @@ import {
   BASE_DAILY_KM_ENTRIES,
   BASE_MAINTENANCE_SCHEDULES,
   BASE_PRODUCTS,
+  BASE_SERVICE_RECORDS,
+  BASE_CAPTAIN_AUDITS,
   BASE_STAFF_CREDENTIALS,
   BASE_APP_SETTINGS
 } from './seedData';
@@ -248,37 +250,50 @@ async function handleFallbackTableCrud(
 
   if (!isItemRoute) {
     if (method === 'GET') {
-      let list: any[] = [];
-      try {
-        const { data, error } = await supabase.from(supabaseTable).select('*').order('id', { ascending: false });
-        if (!error && Array.isArray(data)) {
-          list = data.filter(x => x?.is_archived !== 1);
-          setLocalCollection(tableKey, list);
-        } else {
-          list = getLocalCollection<any>(tableKey).filter(x => x?.is_archived !== 1);
+      // 1. First retrieve reliable local items (IndexedDB + localStorage)
+      let localList = (await getReliableCollection<any>(tableKey)) || [];
+      localList = localList.filter((x: any) => x && x?.is_archived !== 1);
+
+      // 2. If local store is empty, seed with baseline operational data
+      if (localList.length === 0) {
+        if (tableKey === 'buses') localList = [...BASE_FLEET_BUSES];
+        else if (tableKey === 'routes' || tableKey === 'transit_routes') localList = [...BASE_FLEET_ROUTES];
+        else if (tableKey === 'organizers') localList = [...BASE_FLEET_ORGANIZERS];
+        else if (tableKey === 'tasks') localList = [...BASE_FLEET_TASKS];
+        else if (tableKey === 'employees') localList = [...BASE_FLEET_EMPLOYEES];
+        else if (tableKey === 'tyres' || tableKey === 'tyre_records') localList = [...BASE_TYRE_RECORDS];
+        else if (tableKey === 'ac_maintenance_records') localList = [...BASE_AC_MAINTENANCE_RECORDS];
+        else if (tableKey === 'bus_conditions' || tableKey === 'bus_condition_inspections') localList = [...BASE_BUS_CONDITION_INSPECTIONS];
+        else if (tableKey === 'wheel_allotments') localList = [...BASE_WHEEL_ALLOTMENTS];
+        else if (tableKey === 'tyre_air_checkups') localList = [...BASE_TYRE_AIR_CHECKUPS];
+        else if (tableKey === 'new_tyres') localList = [...BASE_NEW_TYRES];
+        else if (tableKey === 'daily_km' || tableKey === 'daily_kilometer_entries') localList = [...BASE_DAILY_KM_ENTRIES];
+        else if (tableKey === 'maintenance_schedules') localList = [...BASE_MAINTENANCE_SCHEDULES];
+        else if (tableKey === 'products') localList = [...BASE_PRODUCTS];
+        else if (tableKey === 'service_records') localList = [...BASE_SERVICE_RECORDS];
+        else if (tableKey === 'captain_audit_records') localList = [...BASE_CAPTAIN_AUDITS];
+
+        if (localList.length > 0) {
+          setLocalCollection(tableKey, localList);
         }
-      } catch {
-        list = getLocalCollection<any>(tableKey).filter(x => x?.is_archived !== 1);
       }
 
-      // If database is currently empty, provide baseline seed data so the system is initialized
-      if (list.length === 0) {
-        if (tableKey === 'buses') list = [...BASE_FLEET_BUSES];
-        if (tableKey === 'routes') list = [...BASE_FLEET_ROUTES];
-        if (tableKey === 'organizers') list = [...BASE_FLEET_ORGANIZERS];
-        if (tableKey === 'tasks') list = [...BASE_FLEET_TASKS];
-        if (tableKey === 'tyres' || tableKey === 'tyre_records') list = [...BASE_TYRE_RECORDS];
-        if (tableKey === 'ac_maintenance_records') list = [...BASE_AC_MAINTENANCE_RECORDS];
-        if (tableKey === 'bus_conditions' || tableKey === 'bus_condition_inspections') list = [...BASE_BUS_CONDITION_INSPECTIONS];
-        if (tableKey === 'wheel_allotments') list = [...BASE_WHEEL_ALLOTMENTS];
-        if (tableKey === 'tyre_air_checkups') list = [...BASE_TYRE_AIR_CHECKUPS];
-        if (tableKey === 'new_tyres') list = [...BASE_NEW_TYRES];
-        if (tableKey === 'daily_km') list = [...BASE_DAILY_KM_ENTRIES];
-        if (tableKey === 'maintenance_schedules') list = [...BASE_MAINTENANCE_SCHEDULES];
-        if (tableKey === 'products') list = [...BASE_PRODUCTS];
-        setLocalCollection(tableKey, list);
-      }
+      // 3. Attempt non-blocking Supabase sync (max 1500ms timeout)
+      // ONLY merge if Supabase returns 1 or more actual rows! NEVER overwrite with empty array []!
+      try {
+        const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), 1500)
+        );
+        const supabasePromise = supabase.from(supabaseTable).select('*').order('id', { ascending: false });
+        const { data, error } = await Promise.race([supabasePromise, timeoutPromise]);
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const remoteValid = data.filter((x: any) => x && x?.is_archived !== 1);
+          localList = mergeSeedCollection(localList, remoteValid);
+          setLocalCollection(tableKey, localList);
+        }
+      } catch {}
 
+      let list = localList;
       if (options?.enrich) list = options.enrich(list);
       if (options?.filter) list = options.filter(list, params);
       return list;
@@ -293,38 +308,42 @@ async function handleFallbackTableCrud(
         record.id = body.id;
       } else if (options?.idGenerator) {
         record.id = options.idGenerator();
+      } else {
+        record.id = Date.now();
       }
 
+      // 1. Immediately persist to local collection (IndexedDB + localStorage)
+      const currentList = (await getReliableCollection<any>(tableKey)) || [];
+      const updatedList = [record, ...currentList.filter((x: any) => String(x.id) !== String(record.id))];
+      setLocalCollection(tableKey, updatedList);
+
+      // 2. Background attempt to insert into Supabase
       let savedData: any = null;
-      let postError: any = null;
       let payloadToInsert = { ...record };
 
-      for (let attempt = 0; attempt < 5; attempt++) {
-        const { data, error } = await supabase.from(supabaseTable).insert([payloadToInsert]).select();
-        if (!error && Array.isArray(data) && data[0]) {
-          savedData = data[0];
-          postError = null;
+      try {
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const { data, error } = await supabase.from(supabaseTable).insert([payloadToInsert]).select();
+          if (!error && Array.isArray(data) && data[0]) {
+            savedData = data[0];
+            break;
+          }
+          if (error?.message) {
+            const match = error.message.match(/Could not find the '([^']+)' column/i);
+            if (match && match[1]) {
+              delete payloadToInsert[match[1]];
+              continue;
+            }
+          }
           break;
         }
-        postError = error;
-        if (error?.message) {
-          const match = error.message.match(/Could not find the '([^']+)' column/i);
-          if (match && match[1]) {
-            delete payloadToInsert[match[1]];
-            continue;
-          }
-        }
-        break;
-      }
-
-      if (postError) {
-        console.warn(`Supabase insert note (${supabaseTable}):`, postError.message);
-      }
+      } catch {}
 
       const finalRecord = { ...record, ...(savedData || {}) };
-      const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(finalRecord.id));
-      list.unshift(finalRecord);
-      setLocalCollection(tableKey, list);
+      if (savedData) {
+        const reList = [finalRecord, ...currentList.filter((x: any) => String(x.id) !== String(finalRecord.id))];
+        setLocalCollection(tableKey, reList);
+      }
       return finalRecord;
     }
   } else if (itemId) {
@@ -333,53 +352,55 @@ async function handleFallbackTableCrud(
         const { data, error } = await supabase.from(supabaseTable).select('*').eq('id', itemId).single();
         if (!error && data) return data;
       } catch {}
-      const list = getLocalCollection<any>(tableKey);
-      const found = list.find(x => String(x.id) === String(itemId));
+      const list = (await getReliableCollection<any>(tableKey)) || [];
+      const found = list.find((x: any) => String(x.id) === String(itemId));
       return found || {};
     }
 
     if (method === 'PUT') {
       const updateData = { ...body };
       delete updateData.id;
-      let updatedData: any = null;
-      let putError: any = null;
 
-      for (let attempt = 0; attempt < 5; attempt++) {
-        const { data, error } = await supabase.from(supabaseTable).update(updateData).eq('id', itemId).select();
-        if (!error && Array.isArray(data) && data[0]) {
-          updatedData = data[0];
-          putError = null;
+      // 1. Immediately update local collection
+      const currentList = (await getReliableCollection<any>(tableKey)) || [];
+      const updatedList = currentList.map((x: any) =>
+        String(x.id) === String(itemId) ? { ...x, ...updateData } : x
+      );
+      setLocalCollection(tableKey, updatedList);
+
+      // 2. Background update to Supabase
+      try {
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const { data, error } = await supabase.from(supabaseTable).update(updateData).eq('id', itemId).select();
+          if (!error && Array.isArray(data) && data[0]) {
+            break;
+          }
+          if (error?.message) {
+            const match = error.message.match(/Could not find the '([^']+)' column/i);
+            if (match && match[1]) {
+              delete updateData[match[1]];
+              continue;
+            }
+          }
           break;
         }
-        putError = error;
-        if (error?.message) {
-          const match = error.message.match(/Could not find the '([^']+)' column/i);
-          if (match && match[1]) {
-            delete updateData[match[1]];
-            continue;
-          }
-        }
-        break;
-      }
+      } catch {}
 
-      if (putError) {
-        console.warn(`Supabase update note (${supabaseTable} id ${itemId}):`, putError.message);
-      }
-
-      const finalRecord = { ...body, id: itemId, ...(updatedData || {}) };
-      const list = getLocalCollection<any>(tableKey).map(x => (String(x.id) === String(itemId) ? finalRecord : x));
-      setLocalCollection(tableKey, list);
-      return finalRecord;
+      const found = updatedList.find((x: any) => String(x.id) === String(itemId));
+      return found || { ...body, id: itemId };
     }
 
     if (method === 'DELETE') {
+      // 1. Immediately delete from local collection
+      const currentList = (await getReliableCollection<any>(tableKey)) || [];
+      const updatedList = currentList.filter((x: any) => String(x.id) !== String(itemId));
+      setLocalCollection(tableKey, updatedList);
+
+      // 2. Background delete from Supabase
       try {
         await supabase.from(supabaseTable).delete().eq('id', itemId);
-      } catch (err: any) {
-        console.warn(`Supabase delete note (${supabaseTable} id ${itemId}):`, err?.message);
-      }
-      const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(itemId));
-      setLocalCollection(tableKey, list);
+      } catch {}
+
       return { success: true };
     }
   }
@@ -1527,6 +1548,41 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     }) as any;
   }
 
+  // 17I. SERVICE & SALARY RECORDS (RECORD MANAGEMENT) FALLBACK
+  if (path === '/records' || path.startsWith('/records/')) {
+    return handleFallbackTableCrud('service_records', 'service_records', path, method, body, params, {
+      idGenerator: () => Date.now()
+    }) as any;
+  }
+
+  // 17J. CAPTAIN AUDIT RECORDS FALLBACK
+  if (path === '/captain-audits' || path.startsWith('/captain-audits/')) {
+    return handleFallbackTableCrud('captain_audit_records', 'captain_audit_records', path, method, body, params, {
+      idGenerator: () => Date.now()
+    }) as any;
+  }
+
+  // 17K. NEXT EMPLOYEE CODE GENERATION FALLBACK
+  if (path === '/employees/next-code') {
+    const role = (params.get('role') || 'Driver').toLowerCase();
+    const existing = (await getReliableCollection<any>('employees')) || BASE_FLEET_EMPLOYEES;
+    let prefix = 'DRV';
+    if (role.includes('helper') || role.includes('cleaner')) prefix = 'HLP';
+    else if (role.includes('captain') || role.includes('supervisor')) prefix = 'CPT';
+
+    const regex = new RegExp(`^${prefix}-(\\d+)$`, 'i');
+    let maxNum = 1000;
+    for (const emp of existing) {
+      const code = String(emp.employee_code || '').trim();
+      const match = code.match(regex);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (!isNaN(num) && num > maxNum) maxNum = num;
+      }
+    }
+    return { nextCode: `${prefix}-${maxNum + 1}` } as any;
+  }
+
   // 18. NOTIFICATIONS, SETTINGS, AUDIT LOGS, REPORTS
   if (path === '/notifications') return [] as any;
   if (path === '/settings') {
@@ -1722,86 +1778,136 @@ export const api = {
   getRecords: async () => {
     try {
       const remote = await request<any[]>('/records');
-      if (Array.isArray(remote)) {
+      if (Array.isArray(remote) && remote.length > 0) {
+        setLocalCollection('service_records', remote);
         localStorage.setItem('charvik_service_records_v1', JSON.stringify(remote));
         return remote;
       }
     } catch {}
     try {
+      const reliable = await getReliableCollection<any>('service_records');
+      if (Array.isArray(reliable) && reliable.length > 0) return reliable;
       const saved = localStorage.getItem('charvik_service_records_v1');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setLocalCollection('service_records', parsed);
+          return parsed;
+        }
+      }
     } catch {}
-    return [];
+    const seed = [...BASE_SERVICE_RECORDS];
+    setLocalCollection('service_records', seed);
+    localStorage.setItem('charvik_service_records_v1', JSON.stringify(seed));
+    return seed;
   },
   getRecord: (id: number | string) => request<any>(`/records/${id}`),
   createRecord: async (data: any) => {
+    const record = { ...data, id: data.id || Date.now() };
+    const current = (await getReliableCollection<any>('service_records')) || [];
+    const updated = [record, ...current.filter((x: any) => String(x.id) !== String(record.id))];
+    setLocalCollection('service_records', updated);
+    localStorage.setItem('charvik_service_records_v1', JSON.stringify(updated));
     try {
-      const remote = await request<any>('/records', { method: 'POST', body: JSON.stringify(data) });
-      return remote;
+      const remote = await request<any>('/records', { method: 'POST', body: JSON.stringify(record) });
+      if (remote && remote.id) return remote;
     } catch (err) {
-      console.warn('API createRecord fallback:', err);
-      return data;
+      console.warn('API createRecord remote note:', err);
     }
+    return record;
   },
   updateRecord: async (id: number | string, data: any) => {
+    const current = (await getReliableCollection<any>('service_records')) || [];
+    const updated = current.map((x: any) => String(x.id) === String(id) ? { ...x, ...data } : x);
+    setLocalCollection('service_records', updated);
+    localStorage.setItem('charvik_service_records_v1', JSON.stringify(updated));
     try {
       const remote = await request<any>(`/records/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-      return remote;
+      if (remote) return remote;
     } catch (err) {
-      console.warn('API updateRecord fallback:', err);
-      return data;
+      console.warn('API updateRecord remote note:', err);
     }
+    return data;
   },
   deleteRecord: async (id: number | string) => {
+    const current = (await getReliableCollection<any>('service_records')) || [];
+    const updated = current.filter((x: any) => String(x.id) !== String(id));
+    setLocalCollection('service_records', updated);
+    localStorage.setItem('charvik_service_records_v1', JSON.stringify(updated));
     try {
-      return await request<any>(`/records/${id}`, { method: 'DELETE' });
+      await request<any>(`/records/${id}`, { method: 'DELETE' });
     } catch (err) {
-      console.warn('API deleteRecord fallback:', err);
-      return { success: true };
+      console.warn('API deleteRecord remote note:', err);
     }
+    return { success: true };
   },
 
   // Captain Audit Records
   getCaptainAudits: async () => {
     try {
       const remote = await request<any[]>('/captain-audits');
-      if (Array.isArray(remote)) {
+      if (Array.isArray(remote) && remote.length > 0) {
+        setLocalCollection('captain_audit_records', remote);
         localStorage.setItem('charvik_captain_audit_records_v1', JSON.stringify(remote));
         return remote;
       }
     } catch {}
     try {
+      const reliable = await getReliableCollection<any>('captain_audit_records');
+      if (Array.isArray(reliable) && reliable.length > 0) return reliable;
       const saved = localStorage.getItem('charvik_captain_audit_records_v1');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setLocalCollection('captain_audit_records', parsed);
+          return parsed;
+        }
+      }
     } catch {}
-    return [];
+    const seed = [...BASE_CAPTAIN_AUDITS];
+    setLocalCollection('captain_audit_records', seed);
+    localStorage.setItem('charvik_captain_audit_records_v1', JSON.stringify(seed));
+    return seed;
   },
   getCaptainAudit: (id: number | string) => request<any>(`/captain-audits/${id}`),
   createCaptainAudit: async (data: any) => {
+    const record = { ...data, id: data.id || Date.now() };
+    const current = (await getReliableCollection<any>('captain_audit_records')) || [];
+    const updated = [record, ...current.filter((x: any) => String(x.id) !== String(record.id))];
+    setLocalCollection('captain_audit_records', updated);
+    localStorage.setItem('charvik_captain_audit_records_v1', JSON.stringify(updated));
     try {
-      const remote = await request<any>('/captain-audits', { method: 'POST', body: JSON.stringify(data) });
-      return remote;
+      const remote = await request<any>('/captain-audits', { method: 'POST', body: JSON.stringify(record) });
+      if (remote && remote.id) return remote;
     } catch (err) {
-      console.warn('API createCaptainAudit fallback:', err);
-      return data;
+      console.warn('API createCaptainAudit remote note:', err);
     }
+    return record;
   },
   updateCaptainAudit: async (id: number | string, data: any) => {
+    const current = (await getReliableCollection<any>('captain_audit_records')) || [];
+    const updated = current.map((x: any) => String(x.id) === String(id) ? { ...x, ...data } : x);
+    setLocalCollection('captain_audit_records', updated);
+    localStorage.setItem('charvik_captain_audit_records_v1', JSON.stringify(updated));
     try {
       const remote = await request<any>(`/captain-audits/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-      return remote;
+      if (remote) return remote;
     } catch (err) {
-      console.warn('API updateCaptainAudit fallback:', err);
-      return data;
+      console.warn('API updateCaptainAudit remote note:', err);
     }
+    return data;
   },
   deleteCaptainAudit: async (id: number | string) => {
+    const current = (await getReliableCollection<any>('captain_audit_records')) || [];
+    const updated = current.filter((x: any) => String(x.id) !== String(id));
+    setLocalCollection('captain_audit_records', updated);
+    localStorage.setItem('charvik_captain_audit_records_v1', JSON.stringify(updated));
     try {
-      return await request<any>(`/captain-audits/${id}`, { method: 'DELETE' });
+      await request<any>(`/captain-audits/${id}`, { method: 'DELETE' });
     } catch (err) {
-      console.warn('API deleteCaptainAudit fallback:', err);
-      return { success: true };
+      console.warn('API deleteCaptainAudit remote note:', err);
     }
+    return { success: true };
   },
 
   // Daily Kilometers

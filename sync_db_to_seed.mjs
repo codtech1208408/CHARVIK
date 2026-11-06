@@ -79,6 +79,33 @@ const maintenanceSchedules = getRows('maintenance_schedules');
 const settings = getRows('application_settings');
 const administrators = getRows('administrators');
 
+// 4. Service Billing & Captain Audits
+const rawServiceRecords = getRows('service_records');
+const serviceRecords = rawServiceRecords.map(r => {
+  let items = r.items_json;
+  try { if (typeof items === 'string') items = JSON.parse(items); } catch {}
+  return {
+    ...r,
+    items: Array.isArray(items) ? items : []
+  };
+});
+
+const rawCaptainAudits = getRows('captain_audit_records');
+const captainAudits = rawCaptainAudits.map(a => {
+  let amenities = a.amenities_json;
+  let staffPics = a.staff_pictures_json;
+  let cleanPics = a.cleaning_pictures_json;
+  try { if (typeof amenities === 'string') amenities = JSON.parse(amenities); } catch {}
+  try { if (typeof staffPics === 'string') staffPics = JSON.parse(staffPics); } catch {}
+  try { if (typeof cleanPics === 'string') cleanPics = JSON.parse(cleanPics); } catch {}
+  return {
+    ...a,
+    amenities: Array.isArray(amenities) ? amenities : [],
+    staff_pictures: Array.isArray(staffPics) ? staffPics : [],
+    cleaning_pictures: Array.isArray(cleanPics) ? cleanPics : []
+  };
+});
+
 // Default baseline products if not in sqlite
 const defaultProducts = [
   {
@@ -205,6 +232,8 @@ console.log(`Summary of Extracted Data:
 - Daily Vehicle Inspections: ${busInspections.length}
 - Daily KM Entries: ${defaultDailyKm.length}
 - Products: ${defaultProducts.length}
+- Service Records: ${serviceRecords.length}
+- Captain Audits: ${captainAudits.length}
 `);
 
 const content = `// Auto-generated master seed data from local SQLite database (charvik.db)
@@ -237,6 +266,10 @@ export const BASE_DAILY_KM_ENTRIES: any[] = ${JSON.stringify(defaultDailyKm, nul
 export const BASE_MAINTENANCE_SCHEDULES: any[] = ${JSON.stringify(maintenanceSchedules, null, 2)};
 
 export const BASE_PRODUCTS: any[] = ${JSON.stringify(defaultProducts, null, 2)};
+
+export const BASE_SERVICE_RECORDS: any[] = ${JSON.stringify(serviceRecords, null, 2)};
+
+export const BASE_CAPTAIN_AUDITS: any[] = ${JSON.stringify(captainAudits, null, 2)};
 
 export const BASE_STAFF_CREDENTIALS: any[] = ${JSON.stringify(administrators, null, 2)};
 
