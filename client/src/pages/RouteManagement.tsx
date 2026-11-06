@@ -10,7 +10,6 @@ import {
   ArrowRight,
   IndianRupee,
   Activity,
-  Layers,
   RotateCcw
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
@@ -27,7 +26,7 @@ export interface RouteItem {
   starting_city: string;
   ending_city: string;
   destination_km: number;
-  vehicle_type: VehicleType;
+  vehicle_type?: VehicleType;
   status: 'Active' | 'Inactive';
   trip_amount?: number;
   operator_commission?: number;
@@ -96,7 +95,6 @@ export const RouteManagement: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [vehicleTypeFilter, setVehicleTypeFilter] = useState('All');
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingRoute, setEditingRoute] = useState<RouteItem | null>(null);
 
@@ -116,8 +114,7 @@ export const RouteManagement: React.FC = () => {
     starting_city: string;
     ending_city: string;
     destination_km: string | number;
-    vehicle_type: string;
-    status: string;
+    status: 'Active' | 'Inactive';
     trip_amount?: string | number;
     operator_commission?: string | number;
   }>({
@@ -125,8 +122,7 @@ export const RouteManagement: React.FC = () => {
     starting_city: '',
     ending_city: '',
     destination_km: '',
-    vehicle_type: '',
-    status: '',
+    status: 'Active',
     trip_amount: undefined,
     operator_commission: undefined
   });
@@ -144,8 +140,7 @@ export const RouteManagement: React.FC = () => {
       starting_city: '',
       ending_city: '',
       destination_km: '',
-      vehicle_type: '',
-      status: '',
+      status: 'Active',
       trip_amount: undefined,
       operator_commission: undefined
     });
@@ -159,7 +154,6 @@ export const RouteManagement: React.FC = () => {
       starting_city: rt.starting_city,
       ending_city: rt.ending_city,
       destination_km: rt.destination_km,
-      vehicle_type: rt.vehicle_type,
       status: rt.status,
       trip_amount: rt.trip_amount,
       operator_commission: rt.operator_commission
@@ -196,11 +190,6 @@ export const RouteManagement: React.FC = () => {
       return;
     }
 
-    if (!formData.vehicle_type) {
-      error('Please select a vehicle type.');
-      return;
-    }
-
     if (!formData.status) {
       error('Please select route status (Active or Inactive).');
       return;
@@ -211,8 +200,8 @@ export const RouteManagement: React.FC = () => {
       starting_city: formData.starting_city.trim(),
       ending_city: formData.ending_city.trim(),
       destination_km: Number(formData.destination_km),
-      vehicle_type: formData.vehicle_type as VehicleType,
-      status: formData.status as 'Active' | 'Inactive',
+      vehicle_type: (editingRoute?.vehicle_type || 'Full Sleeper') as VehicleType,
+      status: (formData.status || 'Active') as 'Active' | 'Inactive',
       trip_amount: editingRoute
         ? editingRoute.trip_amount
         : (formData.trip_amount !== undefined && formData.trip_amount !== '' ? Number(formData.trip_amount) : undefined),
@@ -264,15 +253,13 @@ export const RouteManagement: React.FC = () => {
     const matchesSearch =
       r.service_number.toLowerCase().includes(search.toLowerCase()) ||
       r.starting_city.toLowerCase().includes(search.toLowerCase()) ||
-      r.ending_city.toLowerCase().includes(search.toLowerCase()) ||
-      r.vehicle_type.toLowerCase().includes(search.toLowerCase());
+      r.ending_city.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'All' || r.status === statusFilter;
-    const matchesVehicleType = vehicleTypeFilter === 'All' || r.vehicle_type === vehicleTypeFilter;
-    return matchesSearch && matchesStatus && matchesVehicleType;
+    return matchesSearch && matchesStatus;
   });
 
   const activeRoutesCount = routes.filter((r) => r.status === 'Active').length;
-  const fullSleeperCount = routes.filter((r) => r.vehicle_type === 'Full Sleeper').length;
+  const inactiveRoutesCount = routes.length - activeRoutesCount;
   const avgDistance = routes.length
     ? Math.round(routes.reduce((acc, r) => acc + (r.destination_km || 0), 0) / routes.length)
     : 0;
@@ -287,7 +274,7 @@ export const RouteManagement: React.FC = () => {
             <span>Route Management & Dispatch</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Configure transit service numbers, starting and ending destinations, kilometer spans, vehicle types, and operational statuses.
+            Configure transit service numbers, starting and ending destinations, kilometer spans, and operational statuses.
           </p>
         </div>
 
@@ -324,13 +311,13 @@ export const RouteManagement: React.FC = () => {
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Full Sleeper Routes</p>
-            <h3 className="text-2xl font-black text-indigo-600 mt-1">
-              {fullSleeperCount} Routes
+            <p className="text-xs font-semibold text-slate-500 uppercase">Inactive Transit Routes</p>
+            <h3 className="text-2xl font-black text-slate-600 mt-1">
+              {inactiveRoutesCount} Routes
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Luxury overnight corridors</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Currently paused corridors</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
             <Bus className="w-5 h-5" />
           </div>
         </div>
@@ -372,24 +359,11 @@ export const RouteManagement: React.FC = () => {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by service number, starting city, ending city, vehicle type..."
+            placeholder="Search by service number, starting city, or ending city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
           />
-        </div>
-
-        <div className="w-full md:w-48">
-          <select
-            value={vehicleTypeFilter}
-            onChange={(e) => setVehicleTypeFilter(e.target.value)}
-            className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 outline-none font-medium cursor-pointer"
-          >
-            <option value="All">All Vehicle Types</option>
-            <option value="Full Sleeper">Full Sleeper</option>
-            <option value="Seating/Sleeper">Seating/Sleeper</option>
-            <option value="Seater">Seater</option>
-          </select>
         </div>
 
         <div className="w-full md:w-44">
@@ -416,7 +390,6 @@ export const RouteManagement: React.FC = () => {
                 <th className="py-3 px-4">Starting City (From)</th>
                 <th className="py-3 px-4">Ending City (To)</th>
                 <th className="py-3 px-4">Destination KM</th>
-                <th className="py-3 px-4">Vehicle Type</th>
                 <th className="py-3 px-4">Route Status</th>
                 {isAdmin && <th className="py-3 px-4">Trip Amount & Commission</th>}
                 <th className="py-3 px-4 text-center">Actions</th>
@@ -425,7 +398,7 @@ export const RouteManagement: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredRoutes.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 9 : 8} className="py-16 text-center text-slate-400">
+                  <td colSpan={isAdmin ? 8 : 7} className="py-16 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                         <Navigation className="w-6 h-6" />
@@ -436,19 +409,18 @@ export const RouteManagement: React.FC = () => {
                       <p className="text-xs text-slate-400 max-w-sm text-center">
                         {routes.length > 0 ? (
                           <span>
-                            {routes.length} total route(s) configured. None match {vehicleTypeFilter !== 'All' ? `"${vehicleTypeFilter}"` : ''} {statusFilter !== 'All' ? `"${statusFilter}"` : ''} {search ? `"${search}"` : ''}.
+                            {routes.length} total route(s) configured. None match {statusFilter !== 'All' ? `"${statusFilter}"` : ''} {search ? `"${search}"` : ''}.
                           </span>
                         ) : (
                           <span>No service routes configured yet. Use the &quot;+ Add New Route&quot; button above to create one.</span>
                         )}
                       </p>
-                      {routes.length > 0 && (vehicleTypeFilter !== 'All' || statusFilter !== 'All' || search) && (
+                      {routes.length > 0 && (statusFilter !== 'All' || search) && (
                         <button
                           type="button"
                           onClick={() => {
                             setSearch('');
                             setStatusFilter('All');
-                            setVehicleTypeFilter('All');
                           }}
                           className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
                         >
@@ -491,22 +463,7 @@ export const RouteManagement: React.FC = () => {
 
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border shadow-2xs ${
-                          r.vehicle_type === 'Full Sleeper'
-                            ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                            : r.vehicle_type === 'Seating/Sleeper'
-                            ? 'bg-purple-50 text-purple-700 border-purple-200'
-                            : 'bg-cyan-50 text-cyan-700 border-cyan-200'
-                        }`}
-                      >
-                        <Layers className="w-3 h-3" />
-                        <span>{r.vehicle_type}</span>
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                           r.status === 'Active'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-slate-100 text-slate-600 border-slate-200'
@@ -567,7 +524,7 @@ export const RouteManagement: React.FC = () => {
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         title={editingRoute ? 'Edit Transit Route' : 'Configure New Transit Route'}
-        subtitle="Define service number, starting and ending city, destination KM, vehicle type, and status"
+        subtitle="Define service number, starting and ending city, destination KM, and status"
         maxWidth="max-w-lg"
       >
         <form onSubmit={handleSave} className="space-y-4">
@@ -615,54 +572,66 @@ export const RouteManagement: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Destination KM *
-              </label>
-              <input
-                type="number"
-                required
-                min="0"
-                value={formData.destination_km ?? ''}
-                onChange={(e) => setFormData({ ...formData, destination_km: e.target.value })}
-                placeholder="e.g. 570 or 0"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Vehicle Type *
-              </label>
-              <select
-                required
-                value={formData.vehicle_type || ''}
-                onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none cursor-pointer"
-              >
-                <option value="">-- Select Vehicle Type --</option>
-                <option value="Full Sleeper">Full Sleeper</option>
-                <option value="Seating/Sleeper">Seating/Sleeper</option>
-                <option value="Seater">Seater</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Destination KM *
+            </label>
+            <input
+              type="number"
+              required
+              min="0"
+              value={formData.destination_km ?? ''}
+              onChange={(e) => setFormData({ ...formData, destination_km: e.target.value })}
+              placeholder="e.g. 570 or 0"
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+            />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Route Status *
+            <label className="block text-xs font-bold text-slate-800 mb-2">
+              Status
             </label>
-            <select
-              required
-              value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none cursor-pointer"
-            >
-              <option value="">-- Select Status --</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Active Option */}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, status: 'Active' })}
+                className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-2xl transition-all cursor-pointer ${
+                  formData.status === 'Active'
+                    ? 'border-2 border-[#10b981] bg-[#ecfdf5] text-[#064e3b] font-bold shadow-xs'
+                    : 'border border-slate-200 bg-white text-slate-500 hover:border-slate-300 font-semibold'
+                }`}
+              >
+                <span
+                  className={`w-3.5 h-3.5 rounded-full shrink-0 shadow-xs ${
+                    formData.status === 'Active'
+                      ? 'bg-gradient-to-tr from-[#10b981] to-[#34d399]'
+                      : 'bg-[#10b981]/40'
+                  }`}
+                />
+                <span className="text-sm">Active</span>
+              </button>
+
+              {/* Inactive Option */}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, status: 'Inactive' })}
+                className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-2xl transition-all cursor-pointer ${
+                  formData.status === 'Inactive'
+                    ? 'border-2 border-slate-700 bg-slate-100 text-slate-900 font-bold shadow-xs'
+                    : 'border border-slate-200 bg-white text-[#475569] hover:border-slate-300 font-semibold'
+                }`}
+              >
+                <span
+                  className={`w-3.5 h-3.5 rounded-full shrink-0 shadow-xs ${
+                    formData.status === 'Inactive'
+                      ? 'bg-slate-800'
+                      : 'bg-[#334155]'
+                  }`}
+                />
+                <span className="text-sm">Inactive</span>
+              </button>
+            </div>
           </div>
 
           {/* Admin Only: Fixed Trip Amount & Operator Commission */}

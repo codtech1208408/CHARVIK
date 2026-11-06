@@ -32,7 +32,8 @@ import {
   Snowflake,
   ClipboardCheck,
   RotateCw,
-  History
+  History,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
@@ -83,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     api.getStaffCredentials().then((list) => {
       if (!isMounted) return;
       const op = (list || []).find((s: any) => (s.role === 'Support Staff' || s.role === 'Operator') && s.status === 'Active') ||
-                 (list || []).find((s: any) => s.role === 'Support Staff' || s.role === 'Operator');
+        (list || []).find((s: any) => s.role === 'Support Staff' || s.role === 'Operator');
       if (op) {
         let cats: string[] = [];
         if (Array.isArray(op.categories)) {
@@ -92,13 +93,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           try {
             const parsed = JSON.parse(op.categories);
             if (Array.isArray(parsed)) cats = parsed;
-          } catch {}
+          } catch { }
         }
         if (cats.length > 0) {
           setOperatorCategories(cats);
         }
       }
-    }).catch(() => {});
+    }).catch(() => { });
     return () => {
       isMounted = false;
     };
@@ -174,6 +175,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: TrendingUp,
       activeRoutes: ['/admin/earnings']
     },
+    {
+      label: 'Record',
+      route: '/admin/records',
+      icon: FileText,
+      activeRoutes: ['/admin/records', '/admin/record-management', '/admin/record']
+    },
+    {
+      label: 'Captain Audit Record',
+      route: '/admin/captain-audit',
+      icon: ShieldCheck,
+      activeRoutes: ['/admin/captain-audit', '/captain/audit-record']
+    },
   ];
 
   const vehicleMaintenanceTabs: NavItemLeaf[] = [
@@ -233,7 +246,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         '/admin/employee-registration',
         '/admin/employees',
         '/admin/employee-payments',
-        '/admin/earnings'
+        '/admin/earnings',
+        '/admin/records',
+        '/admin/captain-audit'
       ]
     },
     {
@@ -269,6 +284,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const captainNavItems: NavItemLeaf[] = [
     { label: 'Dashboard', route: '/captain/dashboard', icon: LayoutGrid, hasLiveBadge: true },
+    { label: 'Captain Audit Record', route: '/captain/audit-record', icon: ShieldCheck, activeRoutes: ['/captain/audit-record'] },
     { label: 'Vehicle Management', route: '/captain/buses', icon: Truck },
     { label: 'Mileage & Fueling', route: '/captain/daily-kilometers', icon: Fuel },
     {
@@ -307,7 +323,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         if (parsed && (parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support'))) {
           return parsed;
         }
-      } catch {}
+      } catch { }
       return DEFAULT_OPERATOR;
     }
     if (isCaptain) {
@@ -320,7 +336,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         if (parsed && parsed.role.toLowerCase().includes('captain')) {
           return parsed;
         }
-      } catch {}
+      } catch { }
       return { id: 2, name: 'Captain Lead', email: 'captain@charvik.com', role: 'Captain' };
     }
     if (user && user.role.toLowerCase().includes('admin')) {
@@ -332,7 +348,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       if (parsed && parsed.role.toLowerCase().includes('admin')) {
         return parsed;
       }
-    } catch {}
+    } catch { }
     return DEFAULT_ADMIN;
   })();
 
@@ -351,7 +367,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         if (Array.isArray(parsed)) {
           return parsed.map((c) => String(c || '').trim()).filter(Boolean);
         }
-      } catch {}
+      } catch { }
     }
     return [];
   };
@@ -421,7 +437,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       location.pathname.startsWith('/admin/drivers') ||
       location.pathname.startsWith('/admin/support-staff') ||
       location.pathname.startsWith('/admin/employee-payments') ||
-      location.pathname.startsWith('/admin/earnings'));
+      location.pathname.startsWith('/admin/earnings') ||
+      location.pathname.startsWith('/admin/records') ||
+      location.pathname.startsWith('/admin/captain-audit'));
 
   const isVehicleMaintenanceModule =
     !isDashboard &&
@@ -450,12 +468,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = showCaptainNav
     ? captainNavItems
     : showOperatorNav
-    ? supporterNavItems
-    : isVehicleManagementModule
-    ? vehicleManagementTabs
-    : isVehicleMaintenanceModule
-    ? vehicleMaintenanceTabs
-    : adminNavItems;
+      ? supporterNavItems
+      : isVehicleManagementModule
+        ? vehicleManagementTabs
+        : isVehicleMaintenanceModule
+          ? vehicleMaintenanceTabs
+          : adminNavItems;
 
   return (
     <>
@@ -469,17 +487,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar Drawer */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl ${
-          isCollapsed ? 'w-20' : 'w-72'
-        } ${
-          isPinned
+        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl ${isCollapsed ? 'w-20' : 'w-72'
+          } ${isPinned
             ? isMobileOpen
               ? 'translate-x-0'
               : '-translate-x-full lg:translate-x-0'
             : isMobileOpen
-            ? 'translate-x-0'
-            : '-translate-x-full'
-        }`}
+              ? 'translate-x-0'
+              : '-translate-x-full'
+          }`}
       >
         {/* Header / Brand Area */}
         <div className="p-4 border-b border-slate-100 flex flex-col items-center justify-between">
@@ -519,7 +535,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <img
                   src="/logo-compact.png"
                   alt="Charvik Staffing Consultancy"
-                  className="max-h-[72px] h-[68px] w-auto object-contain transition-all duration-200"
+                  className="w-full h-auto max-h-[76px] object-contain transition-all duration-200"
                 />
               </div>
             </div>
@@ -527,13 +543,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {!isCollapsed && (
             <div className="w-full mt-2 flex items-center justify-center">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shadow-xs tracking-wide ${
-                isCaptain
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shadow-xs tracking-wide ${isCaptain
                   ? 'bg-amber-50 text-amber-700 border-amber-200'
                   : isOperator
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-blue-50 text-blue-700 border-blue-200'
-              }`}>
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-blue-50 text-blue-700 border-blue-200'
+                }`}>
                 {isCaptain ? (
                   <>⚓ <span>Captain Portal</span></>
                 ) : isOperatorPortal ? (
@@ -618,17 +633,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       }
                     }
                   }}
-                  className={`flex items-center px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group relative ${
-                    isItemActive
+                  className={`flex items-center px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group relative ${isItemActive
                       ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
                       : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
-                  } ${isCollapsed ? 'justify-center px-2' : ''}`}
+                    } ${isCollapsed ? 'justify-center px-2' : ''}`}
                   title={isCollapsed ? item.label : undefined}
                 >
                   <Icon
-                    className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
-                      isItemActive ? 'text-white' : 'text-[#2563EB]'
-                    } ${isCollapsed ? '' : 'mr-3'}`}
+                    className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${isItemActive ? 'text-white' : 'text-[#2563EB]'
+                      } ${isCollapsed ? '' : 'mr-3'}`}
                   />
                   {!isCollapsed && (
                     <span className="truncate flex-1 tracking-tight">{item.label}</span>
@@ -637,11 +650,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {/* LIVE Badge on Dashboard */}
                   {!isCollapsed && item.hasLiveBadge && (
                     <span
-                      className={`ml-auto px-2 py-0.5 text-[10px] font-black uppercase rounded-full tracking-wider ${
-                        isItemActive
+                      className={`ml-auto px-2 py-0.5 text-[10px] font-black uppercase rounded-full tracking-wider ${isItemActive
                           ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
                           : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      }`}
+                        }`}
                     >
                       LIVE
                     </span>
@@ -656,18 +668,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         e.stopPropagation();
                         toggleSubMenu(item.route, isSubMenuExpanded);
                       }}
-                      className={`p-1 -mr-1 rounded-lg transition-all cursor-pointer ${
-                        isItemActive
+                      className={`p-1 -mr-1 rounded-lg transition-all cursor-pointer ${isItemActive
                           ? 'hover:bg-white/20 text-white'
                           : 'hover:bg-slate-200/80 text-slate-500'
-                      }`}
+                        }`}
                       title={isSubMenuExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
                       aria-label={isSubMenuExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
                     >
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform duration-200 ${
-                          isSubMenuExpanded ? 'rotate-180 text-white' : isItemActive ? 'text-white' : 'text-slate-400'
-                        }`}
+                        className={`w-4 h-4 transition-transform duration-200 ${isSubMenuExpanded ? 'rotate-180 text-white' : isItemActive ? 'text-white' : 'text-slate-400'
+                          }`}
                       />
                     </button>
                   )}
@@ -688,11 +698,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           key={sub.route}
                           to={sub.route}
                           onClick={() => setIsMobileOpen(false)}
-                          className={`flex items-center px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                            isSubActive
+                          className={`flex items-center px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isSubActive
                               ? 'bg-blue-600 text-white shadow-xs font-extrabold'
                               : 'text-slate-700 hover:text-blue-700 hover:bg-white/80'
-                          }`}
+                            }`}
                         >
                           <SubIcon className={`w-3.5 h-3.5 mr-2 shrink-0 ${isSubActive ? 'text-white' : 'text-blue-600'}`} />
                           <span className="truncate flex-1">{sub.label}</span>
@@ -771,9 +780,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Sign Out */}
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer ${
-              isCollapsed ? 'justify-center' : ''
-            }`}
+            className={`w-full flex items-center px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer ${isCollapsed ? 'justify-center' : ''
+              }`}
             title="Sign Out"
           >
             <LogOut className={`w-4 h-4 shrink-0 ${isCollapsed ? '' : 'mr-2.5'}`} />
@@ -788,10 +796,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavLink
           to={isCaptain ? '/captain/dashboard' : isOperator ? '/operator/dashboard' : '/admin/dashboard'}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-              isActive
-                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                : 'text-slate-500 hover:text-slate-800'
+            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${isActive
+              ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
+              : 'text-slate-500 hover:text-slate-800'
             }`
           }
         >
@@ -803,10 +810,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavLink
           to={isCaptain ? '/captain/buses' : isOperator ? '/operator/employee-registration' : '/admin/employee-registration'}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-              isActive
-                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                : 'text-slate-500 hover:text-slate-800'
+            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${isActive
+              ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
+              : 'text-slate-500 hover:text-slate-800'
             }`
           }
         >
@@ -818,10 +824,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavLink
           to={isCaptain ? '/captain/buses' : isOperator ? '/operator/buses' : '/admin/vehicles'}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-              isActive
-                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                : 'text-slate-500 hover:text-slate-800'
+            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${isActive
+              ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
+              : 'text-slate-500 hover:text-slate-800'
             }`
           }
         >
@@ -833,10 +838,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavLink
           to={isCaptain ? '/captain/daily-kilometers' : isOperator ? '/operator/daily-kilometers' : '/admin/mileage-fueling'}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-              isActive
-                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                : 'text-slate-500 hover:text-slate-800'
+            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${isActive
+              ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
+              : 'text-slate-500 hover:text-slate-800'
             }`
           }
         >

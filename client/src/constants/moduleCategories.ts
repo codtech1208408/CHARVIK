@@ -7,7 +7,9 @@ import {
   Fuel,
   Snowflake,
   CircleDot,
-  Package
+  Package,
+  ShieldCheck,
+  FileText
 } from 'lucide-react';
 
 export interface ModuleCategoryItem {
@@ -91,6 +93,22 @@ export const ALL_MODULE_CATEGORIES: ModuleCategoryItem[] = [
     icon: Package,
     activeRoutes: ['/admin/products'],
     description: 'Spare parts, inventory, and materials'
+  },
+  {
+    id: 'captain_audit_record',
+    name: 'Captain Audit Record',
+    route: '/admin/captain-audit',
+    icon: ShieldCheck,
+    activeRoutes: ['/admin/captain-audit', '/captain/audit-record'],
+    description: 'Captain onboard vehicle & amenities inspection audits'
+  },
+  {
+    id: 'record_management',
+    name: 'Record',
+    route: '/admin/records',
+    icon: FileText,
+    activeRoutes: ['/admin/records', '/admin/record-management', '/admin/record'],
+    description: 'Billing, service sheets & salary records'
   }
 ];
 

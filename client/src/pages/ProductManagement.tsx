@@ -41,6 +41,9 @@ export interface ProductItem {
   quantity_received: number; // initial or total received
   used_quantity: number; // total units used on vehicles
   stock_quantity: number; // available stock = quantity_received - used_quantity
+  is_reused?: boolean; // whether this is a reused product
+  reused_quantity?: number; // number of reused product units
+  reused_product_name?: string; // manually typed reused product name
   photo?: string;
   notes?: string;
   created_at: string;
@@ -231,6 +234,9 @@ export const ProductManagement: React.FC = () => {
     brand: '',
     received_date: new Date().toISOString().split('T')[0],
     quantity_received: 1,
+    is_reused: false,
+    reused_quantity: 0,
+    reused_product_name: '',
     photo: '',
     notes: ''
   });
@@ -293,6 +299,7 @@ export const ProductManagement: React.FC = () => {
   const totalReceivedCount = products.reduce((acc, p) => acc + (Number(p.quantity_received) || 0), 0);
   const totalUsedCount = products.reduce((acc, p) => acc + (Number(p.used_quantity) || 0), 0);
   const totalStockCount = Math.max(0, products.reduce((acc, p) => acc + (Number(p.stock_quantity) || 0), 0));
+  const totalReusedCount = products.reduce((acc, p) => acc + (Number(p.reused_quantity) || 0), 0);
 
   // Filtered Products for Inventory Records
   const filteredProducts = useMemo(() => {
@@ -376,6 +383,9 @@ export const ProductManagement: React.FC = () => {
       brand: '',
       received_date: new Date().toISOString().split('T')[0],
       quantity_received: 1,
+      is_reused: false,
+      reused_quantity: 0,
+      reused_product_name: '',
       photo: '',
       notes: ''
     });
@@ -395,6 +405,12 @@ export const ProductManagement: React.FC = () => {
       return;
     }
 
+    const enteredReusedQty = Number(receiveForm.reused_quantity) || 0;
+    const reusedName = (receiveForm.reused_product_name || '').trim();
+    const isReused = enteredReusedQty > 0 || Boolean(reusedName);
+    const reusedQty = isReused ? Math.min(qty, Math.max(1, enteredReusedQty || 1)) : 0;
+    const finalReusedName = isReused ? (reusedName || receiveForm.product_name.trim()) : '';
+
     // Check if product with identical name and part number exists:
     // If it exists, add to its received count and stock.
     // If not, create a new product entry so it appears in history!
@@ -409,6 +425,7 @@ export const ProductManagement: React.FC = () => {
       const existing = products[existingIndex];
       const newTotalReceived = existing.quantity_received + qty;
       const newStock = existing.stock_quantity + qty;
+      const newReusedQty = (Number(existing.reused_quantity) || 0) + reusedQty;
       const updated = {
         ...existing,
         category: receiveForm.category || existing.category,
@@ -416,6 +433,9 @@ export const ProductManagement: React.FC = () => {
         received_date: receiveForm.received_date,
         quantity_received: newTotalReceived,
         stock_quantity: newStock,
+        is_reused: existing.is_reused || isReused,
+        reused_quantity: newReusedQty,
+        reused_product_name: finalReusedName || existing.reused_product_name,
         photo: receiveForm.photo || existing.photo,
         notes: receiveForm.notes || existing.notes
       };
@@ -425,7 +445,7 @@ export const ProductManagement: React.FC = () => {
       api.updateProduct(existing.id, updated).catch((err: any) => {
         error(err.message || 'Failed to sync product update with database');
       });
-      success(`Updated stock for ${existing.name}! Added ${qty} units.`);
+      success(`Updated stock for ${existing.name}! Added ${qty} units (${reusedQty} reused).`);
     } else {
       const newProduct: ProductItem = {
         id: `prod-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -437,6 +457,9 @@ export const ProductManagement: React.FC = () => {
         quantity_received: qty,
         used_quantity: 0,
         stock_quantity: qty,
+        is_reused: isReused,
+        reused_quantity: reusedQty,
+        reused_product_name: finalReusedName || undefined,
         photo: receiveForm.photo || undefined,
         notes: receiveForm.notes.trim() || undefined,
         created_at: new Date().toISOString()
@@ -447,7 +470,11 @@ export const ProductManagement: React.FC = () => {
       api.createProduct(newProduct).catch((err: any) => {
         error(err.message || 'Failed to sync product creation with database');
       });
-      success(`Product "${newProduct.name}" created and added to inventory!`);
+      success(
+        isReused
+          ? `Reused Product "${newProduct.name}" (${reusedQty} pcs) added to inventory!`
+          : `Product "${newProduct.name}" created and added to inventory!`
+      );
     }
 
     auditLogger.log({
@@ -746,7 +773,15 @@ export const ProductManagement: React.FC = () => {
             <h3 className="text-2xl sm:text-3xl font-black text-blue-600 mt-1 tracking-tight">
               {totalReceivedCount}
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">Cumulative units received</p>
+            <p className="text-[11px] text-slate-400 font-medium mt-1">
+              {totalReusedCount > 0 ? (
+                <span className="text-purple-700 font-bold">
+                  {totalReceivedCount - totalReusedCount} New • {totalReusedCount} Reused
+                </span>
+              ) : (
+                'Cumulative units received'
+              )}
+            </p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
             <Layers className="w-6 h-6" />
@@ -916,6 +951,15 @@ export const ProductManagement: React.FC = () => {
                           <span className="text-[10px] text-slate-400">
                             Rec: {p.received_date}
                           </span>
+                          {Boolean(p.is_reused || (p.reused_quantity && p.reused_quantity > 0)) && (
+                            <span className="font-bold text-[10px] text-purple-800 bg-purple-100 px-1.5 py-0.5 rounded border border-purple-200 inline-flex items-center gap-1">
+                              <RotateCw className="w-2.5 h-2.5 text-purple-600" />
+                              Reused ({p.reused_quantity || p.quantity_received})
+                              {p.reused_product_name && p.reused_product_name !== p.name && (
+                                <span className="font-semibold text-purple-700">· {p.reused_product_name}</span>
+                              )}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -932,8 +976,16 @@ export const ProductManagement: React.FC = () => {
                   </td>
 
                   {/* Received */}
-                  <td className="py-3 px-3 text-center font-bold text-blue-700 border-r border-slate-100">
-                    {p.quantity_received}
+                  <td className="py-3 px-3 text-center border-r border-slate-100">
+                    <span className="font-extrabold text-blue-700 block">{p.quantity_received}</span>
+                    {p.is_reused || (p.reused_quantity && p.reused_quantity > 0) ? (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-black bg-purple-100 text-purple-800 border border-purple-200 mt-1" title="Number of Reused Units">
+                        <RotateCw className="w-2.5 h-2.5" />
+                        {p.reused_quantity || p.quantity_received} Reused
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-slate-400 block mt-0.5">Fresh</span>
+                    )}
                   </td>
 
                   {/* Used */}
@@ -944,13 +996,12 @@ export const ProductManagement: React.FC = () => {
                   {/* Available Stock */}
                   <td className="py-3 px-3 text-center font-black text-sm border-r border-slate-100">
                     <span
-                      className={`inline-block px-2.5 py-0.5 rounded-lg ${
-                        p.stock_quantity > 5
+                      className={`inline-block px-2.5 py-0.5 rounded-lg ${p.stock_quantity > 5
                           ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           : p.stock_quantity > 0
-                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                          : 'bg-rose-50 text-rose-800 border border-rose-200'
-                      }`}
+                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                            : 'bg-rose-50 text-rose-800 border border-rose-200'
+                        }`}
                     >
                       {p.stock_quantity}
                     </span>
@@ -1260,9 +1311,78 @@ export const ProductManagement: React.FC = () => {
                   required
                   placeholder="e.g. 10"
                   value={receiveForm.quantity_received}
-                  onChange={(e) => setReceiveForm((prev) => ({ ...prev, quantity_received: parseInt(e.target.value) || 0 }))}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 0;
+                    setReceiveForm((prev) => ({
+                      ...prev,
+                      quantity_received: val,
+                      reused_quantity: prev.is_reused ? Math.min(prev.reused_quantity || val, val) : 0
+                    }));
+                  }}
                   className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-black text-[#142B4A] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
+              </div>
+
+              {/* Reused Product Section */}
+              <div className="sm:col-span-2 p-3.5 rounded-xl border border-purple-200 bg-purple-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-purple-900 uppercase tracking-wide flex items-center gap-1.5">
+                    <RotateCw className="w-3.5 h-3.5 text-purple-600" />
+                    Reused Product
+                  </span>
+                  {(receiveForm.reused_product_name.trim() || receiveForm.reused_quantity > 0) && (
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 border border-purple-300">
+                      Reused: {receiveForm.reused_quantity > 0 ? `${receiveForm.reused_quantity} units` : 'Active'}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Reused Product Name (Manually Typed) */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Reused Product Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Type reused product name manually..."
+                      value={receiveForm.reused_product_name}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setReceiveForm((prev) => ({
+                          ...prev,
+                          reused_product_name: val,
+                          is_reused: Boolean(val.trim() || prev.reused_quantity > 0),
+                          reused_quantity: prev.reused_quantity > 0 ? prev.reused_quantity : (val.trim() ? 1 : 0)
+                        }));
+                      }}
+                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-purple-300 bg-white font-bold text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
+                    />
+                  </div>
+
+                  {/* No of Reused Products */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      No of Reused Products
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max={receiveForm.quantity_received || undefined}
+                      placeholder="0"
+                      value={receiveForm.reused_quantity > 0 ? receiveForm.reused_quantity : ''}
+                      onChange={(e) => {
+                        const val = Math.max(0, parseInt(e.target.value) || 0);
+                        setReceiveForm((prev) => ({
+                          ...prev,
+                          reused_quantity: val,
+                          is_reused: val > 0 || Boolean(prev.reused_product_name.trim())
+                        }));
+                      }}
+                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-purple-300 bg-white font-bold text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Product Photo Upload (Option per user request) */}

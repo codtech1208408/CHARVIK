@@ -53,6 +53,7 @@ export interface TripDutyItem {
   id: number;
   trip_start_date: string; // YYYY-MM-DD
   vehicle_number: string; // registration_number
+  vehicle_type?: string; // Seater | Sleeper/Seating | Full Sleeper
   service_number?: string; // service / route number
   vehicle_status: 'RUN' | 'HOLD (Low Occupancy)' | 'HOLD (Maintenance)' | 'HOLD (Break Down)' | 'HOLD (Finance Side)';
   route_corridor: string;
@@ -68,6 +69,48 @@ export interface TripDutyItem {
   payment_status?: 'Pending' | 'Paid';
   created_at: string;
 }
+
+export const mapBusTypeToVehicleType = (type?: string): string => {
+  if (!type) return '';
+  const lower = type.toLowerCase().trim();
+  if (lower.includes('full sleeper')) return 'Full Sleeper';
+  if (lower.includes('sleeper') && (lower.includes('seat') || lower.includes('seating'))) return 'Sleeper/Seating';
+  if (lower.includes('seater') || lower.includes('seating')) return 'Seater';
+  if (lower.includes('sleeper')) return 'Full Sleeper';
+  return type;
+};
+
+export const getTripMonthKey = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  const clean = dateStr.trim();
+  if (/^\d{4}-\d{2}/.test(clean)) return clean.slice(0, 7);
+  if (/^\d{2}-\d{2}-\d{4}$/.test(clean)) {
+    const parts = clean.split('-');
+    return `${parts[2]}-${parts[1]}`;
+  }
+  return '';
+};
+
+export const normalizeToISODate = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  const clean = dateStr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+  if (/^\d{2}-\d{2}-\d{4}$/.test(clean)) {
+    const [d, m, y] = clean.split('-');
+    return `${y}-${m}-${d}`;
+  }
+  return clean;
+};
+
+export const formatDisplayDate = (dateStr?: string): string => {
+  if (!dateStr) return '—';
+  const clean = dateStr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+    const [y, m, d] = clean.split('-');
+    return `${d}-${m}-${y}`;
+  }
+  return clean;
+};
 
 const STORAGE_KEY = 'charvik_trip_duty_management_v2';
 
@@ -146,10 +189,7 @@ export const TaskManagement: React.FC = () => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const map = new Map<string, any>();
-          BASE_FLEET_TASKS.forEach((t) => map.set(String(t.id), t));
-          parsed.forEach((t) => map.set(String(t.id), { ...map.get(String(t.id)), ...t }));
-          return Array.from(map.values());
+          return parsed;
         }
       }
       return BASE_FLEET_TASKS;
@@ -161,6 +201,7 @@ export const TaskManagement: React.FC = () => {
   const [formData, setFormData] = useState<Partial<TripDutyItem>>({
     trip_start_date: todayStr,
     vehicle_number: '',
+    vehicle_type: '',
     service_number: '',
     vehicle_status: 'RUN',
     route_corridor: '',
@@ -234,9 +275,7 @@ export const TaskManagement: React.FC = () => {
   const busSearchOptions: SearchOption[] = useMemo(() => {
     return buses.map((b) => ({
       value: b.registration_number,
-      label: b.registration_number,
-      sublabel: [b.make, b.model].filter(Boolean).join(' '),
-      badge: b.bus_type || undefined
+      label: b.registration_number
     }));
   }, [buses]);
 
@@ -244,11 +283,7 @@ export const TaskManagement: React.FC = () => {
     return routes.map((r: any) => ({
       value: `${r.starting_city} → ${r.ending_city}`,
       label: `${r.starting_city} → ${r.ending_city}`,
-      badge: r.service_number || undefined,
-      sublabel: [
-        r.destination_km ? `${r.destination_km} km` : '',
-        r.trip_amount ? `₹${Number(r.trip_amount).toLocaleString('en-IN')}` : ''
-      ].filter(Boolean).join(' • ')
+      badge: r.service_number || undefined
     }));
   }, [routes]);
 
@@ -280,21 +315,55 @@ export const TaskManagement: React.FC = () => {
     return Array.from(set).sort();
   }, [routes, trips]);
 
-  // Trips strictly on the selected date
-  const dateTrips = useMemo(() => {
-    return trips.filter((t) => t.trip_start_date === selectedDate);
-  }, [trips, selectedDate]);
+  // Current active month key: e.g. "2026-11"
+  const currentMonthKey = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }, []);
 
-  // Group trips by vehicle number on selected date
+  const currentMonthLabel = useMemo(() => {
+    return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }, []);
+
+  // Whether user has searched by custom date range
+  const isDateRangeActive = Boolean(fromDateFilter || toDateFilter);
+
+  // Active pool of trips:
+  // - If From Date or To Date is searched in the filter toolbar: strictly filters by that date range
+  // - Otherwise (default): automatically shows fresh data for the CURRENT MONTH only;
+  //   completed months are hidden until searched by From & To dates.
+  const activePoolTrips = useMemo(() => {
+    if (isDateRangeActive) {
+      const normFrom = normalizeToISODate(fromDateFilter);
+      const normTo = normalizeToISODate(toDateFilter);
+      return trips.filter((t) => {
+        const norm = normalizeToISODate(t.trip_start_date);
+        if (!norm) return false;
+        if (normFrom && norm < normFrom) return false;
+        if (normTo && norm > normTo) return false;
+        return true;
+      });
+    }
+
+    // Default: current active month data only (completed month data is hidden until searched by from/to dates)
+    return trips.filter((t) => {
+      return getTripMonthKey(t.trip_start_date) === currentMonthKey;
+    });
+  }, [trips, isDateRangeActive, fromDateFilter, toDateFilter, currentMonthKey]);
+
+  // Backward compatibility alias for any existing reference
+  const dateTrips = activePoolTrips;
+
+  // Group trips by vehicle number in active pool (current month or searched range)
   const busGroupMap = useMemo(() => {
     const map = new Map<string, TripDutyItem[]>();
-    dateTrips.forEach((t) => {
+    activePoolTrips.forEach((t) => {
       const reg = t.vehicle_number;
       if (!map.has(reg)) map.set(reg, []);
       map.get(reg)!.push(t);
     });
     return map;
-  }, [dateTrips]);
+  }, [activePoolTrips]);
 
   const assignedBusNumbers = useMemo(() => Array.from(busGroupMap.keys()), [busGroupMap]);
 
@@ -327,6 +396,8 @@ export const TaskManagement: React.FC = () => {
   const handleOpenAdd = (preselectedBusNumber?: string) => {
     setEditingTrip(null);
     const defaultBus = preselectedBusNumber || buses[0]?.registration_number || '';
+    const defaultBusObj = buses.find((b) => b.registration_number === defaultBus);
+    const defaultVehicleType = mapBusTypeToVehicleType(defaultBusObj?.bus_type);
     const defaultRouteObj = routes[0];
     const defaultRoute = defaultRouteObj ? `${defaultRouteObj.starting_city} → ${defaultRouteObj.ending_city}` : '';
     const defaultOrg = organizers[0]?.organization_name || '';
@@ -334,6 +405,7 @@ export const TaskManagement: React.FC = () => {
     setFormData({
       trip_start_date: selectedDate,
       vehicle_number: defaultBus,
+      vehicle_type: defaultVehicleType || 'Full Sleeper',
       service_number: defaultRouteObj?.service_number || '',
       vehicle_status: 'RUN',
       route_corridor: defaultRoute,
@@ -364,8 +436,10 @@ export const TaskManagement: React.FC = () => {
 
   const handleOpenEdit = (trip: TripDutyItem) => {
     setEditingTrip(trip);
+    const matchedBus = buses.find((b) => b.registration_number === trip.vehicle_number);
     setFormData({
       ...trip,
+      vehicle_type: trip.vehicle_type || mapBusTypeToVehicleType(matchedBus?.bus_type) || 'Full Sleeper',
       driver2: trip.driver2 || {
         employee_name: '',
         role: 'Driver',
@@ -577,12 +651,14 @@ export const TaskManagement: React.FC = () => {
       const updatedItem: TripDutyItem = {
         ...editingTrip,
         ...formData,
+        vehicle_type: formData.vehicle_type || editingTrip.vehicle_type || '',
         trip_amount: formData.trip_amount !== undefined && formData.trip_amount !== ('' as any) ? Number(formData.trip_amount) : undefined,
         operator_commission: formData.operator_commission !== undefined && formData.operator_commission !== ('' as any) ? Number(formData.operator_commission) : undefined,
         driver2: formData.driver2?.employee_name ? formData.driver2 : undefined
       } as TripDutyItem;
       const updated = trips.map((t) => (t.id === editingTrip.id ? updatedItem : t));
       setTrips(updated);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch {}
       api.updateTask(editingTrip.id, updatedItem).catch(() => {});
       success(`Trip duty for ${formData.vehicle_number} updated.`);
     } else {
@@ -590,6 +666,7 @@ export const TaskManagement: React.FC = () => {
         id: Date.now(),
         trip_start_date: formData.trip_start_date || selectedDate,
         vehicle_number: formData.vehicle_number,
+        vehicle_type: formData.vehicle_type || '',
         service_number: formData.service_number || '',
         vehicle_status: formData.vehicle_status || 'RUN',
         route_corridor: formData.route_corridor || 'Direct Corridor',
@@ -604,8 +681,14 @@ export const TaskManagement: React.FC = () => {
         duty_status: formData.duty_status || 'Scheduled',
         created_at: new Date().toISOString()
       };
-      setTrips([newTrip, ...trips]);
-      api.createTask(newTrip).catch(() => {});
+      const updated = [newTrip, ...trips];
+      setTrips(updated);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch {}
+      api.createTask(newTrip).then((saved) => {
+        if (saved && saved.id) {
+          setTrips((prev) => prev.map((t) => (t.id === newTrip.id ? { ...t, ...saved } : t)));
+        }
+      }).catch((err) => console.error('Failed to sync task:', err));
       success(`Trip duty for ${newTrip.vehicle_number} logged successfully!`);
     }
     setIsAddOpen(false);
@@ -613,8 +696,10 @@ export const TaskManagement: React.FC = () => {
 
   const handleDeleteTrip = (id: number) => {
     if (!confirm('Are you sure you want to delete this trip record?')) return;
-    setTrips(trips.filter((t) => t.id !== id));
-    api.deleteTask(id).catch(() => {});
+    const filtered = trips.filter((t) => t.id !== id);
+    setTrips(filtered);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered)); } catch {}
+    api.deleteTask(id).catch((err) => console.error('Failed to delete task:', err));
     success('Trip record deleted.');
   };
 
@@ -652,18 +737,9 @@ export const TaskManagement: React.FC = () => {
     success(`Trip status updated for ${busNumber}`);
   };
 
-  // Filtered date trips considering date range, vehicle search, staff category, payment status, origin and destination
+  // Filtered trips considering vehicle search, staff category, payment status, origin and destination
   const filteredDateTrips = useMemo(() => {
-    // Determine base pool of trips
-    const basePool = (fromDateFilter || toDateFilter)
-      ? trips.filter((t) => {
-          if (fromDateFilter && t.trip_start_date < fromDateFilter) return false;
-          if (toDateFilter && t.trip_start_date > toDateFilter) return false;
-          return true;
-        })
-      : dateTrips;
-
-    return basePool.filter((t) => {
+    return activePoolTrips.filter((t) => {
       const q = search.toLowerCase().trim();
       const matchSearch =
         !q ||
@@ -709,10 +785,7 @@ export const TaskManagement: React.FC = () => {
       return true;
     });
   }, [
-    trips,
-    dateTrips,
-    fromDateFilter,
-    toDateFilter,
+    activePoolTrips,
     search,
     staffCategoryFilter,
     paymentStatusFilter,
@@ -889,59 +962,9 @@ export const TaskManagement: React.FC = () => {
         </button>
       </div>
 
-      {/* Date Selector & Operational Fleet Overview Bar */}
-      <div className="bg-gradient-to-r from-blue-900 via-[#142B4A] to-slate-900 text-white p-5 rounded-2xl shadow-sm space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/10 pb-4">
-          <div className="flex items-center gap-2.5">
-            <Calendar className="w-5 h-5 text-blue-400" />
-            <div>
-              <span className="text-xs font-bold text-blue-200 uppercase tracking-wider block">
-                Select Operational Date
-              </span>
-              <p className="text-sm font-black text-white">Daily Fleet Dispatch & Duty Status</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => {
-                const y = new Date();
-                y.setDate(y.getDate() - 1);
-                setSelectedDate(y.toISOString().split('T')[0]);
-              }}
-              className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-            >
-              Yesterday
-            </button>
-            <button
-              onClick={() => setSelectedDate(todayStr)}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                selectedDate === todayStr ? 'bg-blue-600 text-white shadow-xs' : 'bg-white/10 hover:bg-white/20'
-              }`}
-            >
-              Today
-            </button>
-            <button
-              onClick={() => {
-                const t = new Date();
-                t.setDate(t.getDate() + 1);
-                setSelectedDate(t.toISOString().split('T')[0]);
-              }}
-              className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-            >
-              Tomorrow
-            </button>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-white/15 border border-white/25 text-white font-mono font-bold text-xs px-3 py-1.5 rounded-xl outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
-            />
-          </div>
-        </div>
-
-        {/* Fleet KPI Metrics for Selected Date */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1 text-center sm:text-left">
+      {/* Fleet KPI Metrics Overview */}
+      <div className="bg-gradient-to-r from-blue-900 via-[#142B4A] to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center sm:text-left">
           <div className="bg-white/10 p-3.5 rounded-xl border border-white/10">
             <span className="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">
               Total Fleet Buses
@@ -1026,12 +1049,12 @@ export const TaskManagement: React.FC = () => {
           <PrintButton
             title={
               activeTab === 'assigned'
-                ? `Assigned Fleet Duties (${selectedDate})`
+                ? `Assigned Fleet Duties (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
                 : activeTab === 'pending'
-                ? `Pending Unassigned Fleet Buses (${selectedDate})`
-                : `All Individual Trip Logs (${selectedDate})`
+                ? `Pending Unassigned Fleet Buses (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
+                : `All Individual Trip Logs (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
             }
-            subtitle={`Date: ${selectedDate} • Status: ${statusFilter}`}
+            subtitle={`Period: ${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel} • Status: ${statusFilter}`}
             targetId={
               activeTab === 'assigned'
                 ? 'assigned-duties-table-wrap'
@@ -1044,7 +1067,7 @@ export const TaskManagement: React.FC = () => {
       </div>
 
       {/* Comprehensive Filter Toolbar (Exact Match to User Screenshot) */}
-      <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center gap-2.5">
+      <div className="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center gap-2">
         {/* 1. Search task #, vehicle... (amber-focused border matching screenshot) */}
         <div className="relative min-w-[170px] sm:min-w-[190px]">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -1240,7 +1263,16 @@ export const TaskManagement: React.FC = () => {
                     <tr>
                       <td colSpan={18} className="py-14 text-center text-slate-400">
                         <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="font-semibold text-slate-600">No trip tasks found for {selectedDate}.</p>
+                        <p className="font-semibold text-slate-600">
+                          {isDateRangeActive
+                            ? `No trip tasks found for ${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}.`
+                            : `No trip tasks found for ${currentMonthLabel}.`}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {isDateRangeActive
+                            ? 'Adjust date range filters above or clear filters.'
+                            : 'Fresh month started. Click "Log New Task & Duty" above to assign duties.'}
+                        </p>
                       </td>
                     </tr>
                   ) : (
@@ -1362,31 +1394,38 @@ export const TaskManagement: React.FC = () => {
               </table>
             ) : (
               /* Admin Original Table (Image 2) */
-              <table className="w-full text-left text-xs" style={{ minWidth: '1350px' }}>
+              <table className="w-full text-left text-xs" style={{ minWidth: '1250px' }}>
                 <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
                   <tr>
-                    <th className="py-3 px-3 w-12 text-center">S.NO</th>
-                    <th className="py-3 px-4 min-w-[130px]">VEHICLE NUMBER</th>
-                    <th className="py-3 px-4 min-w-[110px]">SERVICE NUMBER</th>
-                    <th className="py-3 px-4 min-w-[160px]">ROUTE CORRIDOR</th>
-                    <th className="py-3 px-4 min-w-[110px]">VEHICLE STATUS</th>
-                    <th className="py-3 px-4 min-w-[130px]">OPERATOR</th>
-                    <th className="py-3 px-4 min-w-[130px]">DRIVER1</th>
-                    <th className="py-3 px-4 min-w-[130px]">DRIVER2</th>
-                    <th className="py-3 px-4 min-w-[110px]">HELPER</th>
-                    <th className="py-3 px-4 min-w-[110px]">CAPTAIN</th>
-                    <th className="py-3 px-4 min-w-[100px]">TOTAL</th>
-                    <th className="py-3 px-4 text-center min-w-[120px]">ACTIONS</th>
+                    <th className="py-2.5 px-3 w-12 text-center">S.NO</th>
+                    <th className="py-2.5 px-3 min-w-[95px] text-center">DATE</th>
+                    <th className="py-2.5 px-3 min-w-[120px]">VEHICLE NUMBER</th>
+                    <th className="py-2.5 px-3 min-w-[100px]">SERVICE NUMBER</th>
+                    <th className="py-2.5 px-3 min-w-[140px]">ROUTE</th>
+                    <th className="py-2.5 px-3 min-w-[100px]">VEHICLE STATUS</th>
+                    <th className="py-2.5 px-3 min-w-[110px]">OPERATOR</th>
+                    <th className="py-2.5 px-3 min-w-[110px]">DRIVER1</th>
+                    <th className="py-2.5 px-3 min-w-[110px]">DRIVER2</th>
+                    <th className="py-2.5 px-3 min-w-[95px]">HELPER</th>
+                    <th className="py-2.5 px-3 min-w-[95px]">CAPTAIN</th>
+                    <th className="py-2.5 px-3 min-w-[95px]">TOTAL</th>
+                    <th className="py-2.5 px-3 text-center min-w-[110px]">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
                   {filteredDateTrips.length === 0 ? (
                     <tr>
-                      <td colSpan={12} className="py-14 text-center text-slate-400">
+                      <td colSpan={13} className="py-14 text-center text-slate-400">
                         <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="font-semibold text-slate-600">No buses assigned for {selectedDate}.</p>
+                        <p className="font-semibold text-slate-600">
+                          {isDateRangeActive
+                            ? `No buses assigned for ${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}.`
+                            : `No buses assigned for ${currentMonthLabel}.`}
+                        </p>
                         <p className="text-xs text-slate-400 mt-1">
-                          Click &quot;Log New Task &amp; Duty&quot; above or choose from Pending Buses below.
+                          {isDateRangeActive
+                            ? 'Adjust date range filters above or clear filters.'
+                            : 'Fresh month started. Click "Log New Task & Duty" above or choose from Pending Buses below.'}
                         </p>
                       </td>
                     </tr>
@@ -1401,21 +1440,24 @@ export const TaskManagement: React.FC = () => {
                       return (
                         <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
                           {/* 1. S.NO */}
-                          <td className="py-3.5 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+                          <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
 
-                          {/* 2. VEHICLE NUMBER */}
-                          <td className="py-3.5 px-4">
-                            <span className="font-mono font-black text-[#142B4A] text-sm tracking-wider uppercase block">
-                              {t.vehicle_number}
-                            </span>
-                            <span className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-1 mt-0.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                              <span>Active in Fleet</span>
+                          {/* 2. DATE */}
+                          <td className="py-2.5 px-3 text-center">
+                            <span className="font-mono font-bold text-slate-800 text-xs">
+                              {formatDisplayDate(t.trip_start_date)}
                             </span>
                           </td>
 
-                          {/* 3. SERVICE NUMBER */}
-                          <td className="py-3.5 px-4">
+                          {/* 3. VEHICLE NUMBER */}
+                          <td className="py-2.5 px-3">
+                            <span className="font-mono font-black text-[#142B4A] text-sm tracking-wider uppercase block">
+                              {t.vehicle_number}
+                            </span>
+                          </td>
+
+                          {/* 4. SERVICE NUMBER */}
+                          <td className="py-2.5 px-3">
                             {t.service_number ? (
                               <span className="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg text-xs">
                                 {t.service_number}
@@ -1425,15 +1467,15 @@ export const TaskManagement: React.FC = () => {
                             )}
                           </td>
 
-                          {/* 4. ROUTE CORRIDOR */}
-                          <td className="py-3.5 px-4">
+                          {/* 5. ROUTE */}
+                          <td className="py-2.5 px-3">
                             <p className="text-xs font-semibold text-slate-800">
                               {t.route_corridor}
                             </p>
                           </td>
 
-                          {/* 5. VEHICLE STATUS */}
-                          <td className="py-3.5 px-4">
+                          {/* 6. VEHICLE STATUS */}
+                          <td className="py-2.5 px-3">
                             <span
                               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                                 t.vehicle_status.startsWith('HOLD')
@@ -1450,21 +1492,21 @@ export const TaskManagement: React.FC = () => {
                             </span>
                           </td>
 
-                          {/* 6. OPERATOR */}
-                          <td className="py-3.5 px-4 text-slate-700 font-medium text-xs">
+                          {/* 7. OPERATOR */}
+                          <td className="py-2.5 px-3 text-slate-700 font-medium text-xs">
                             {t.operator_organizer || 'Charvik Fleet'}
                           </td>
 
-                          {/* 7. DRIVER1 */}
-                          <td className="py-3.5 px-4">
+                          {/* 8. DRIVER1 */}
+                          <td className="py-2.5 px-3">
                             <div className="space-y-0.5 text-xs">
                               <p className="font-bold text-slate-900">{t.driver1.employee_name}</p>
                               <span className="text-[10px] font-semibold text-slate-500">₹{t.driver1.salary_amount}</span>
                             </div>
                           </td>
 
-                          {/* 8. DRIVER2 */}
-                          <td className="py-3.5 px-4">
+                          {/* 9. DRIVER2 */}
+                          <td className="py-2.5 px-3">
                             {t.driver2?.employee_name ? (
                               <div className="space-y-0.5 text-xs">
                                 <p className="font-bold text-slate-900">{t.driver2.employee_name}</p>
@@ -1475,8 +1517,8 @@ export const TaskManagement: React.FC = () => {
                             )}
                           </td>
 
-                          {/* 9. HELPER */}
-                          <td className="py-3.5 px-4">
+                          {/* 10. HELPER */}
+                          <td className="py-2.5 px-3">
                             {t.helper?.employee_name ? (
                               <div className="space-y-0.5 text-xs">
                                 <p className="font-bold text-slate-900">{t.helper.employee_name}</p>
@@ -1487,8 +1529,8 @@ export const TaskManagement: React.FC = () => {
                             )}
                           </td>
 
-                          {/* 10. CAPTAIN */}
-                          <td className="py-3.5 px-4">
+                          {/* 11. CAPTAIN */}
+                          <td className="py-2.5 px-3">
                             {t.captain?.employee_name ? (
                               <div className="space-y-0.5 text-xs">
                                 <p className="font-bold text-indigo-700">{t.captain.employee_name}</p>
@@ -1499,14 +1541,14 @@ export const TaskManagement: React.FC = () => {
                             )}
                           </td>
 
-                          {/* 11. TOTAL */}
-                          <td className="py-3.5 px-4">
+                          {/* 12. TOTAL */}
+                          <td className="py-2.5 px-3">
                             <p className="font-bold text-slate-900 text-xs">₹{totalSalary.toLocaleString('en-IN')}</p>
                             <p className="text-[10px] text-slate-400">Total Payout</p>
                           </td>
 
-                          {/* 12. ACTIONS */}
-                          <td className="py-3.5 px-4 text-center">
+                          {/* 13. ACTIONS */}
+                          <td className="py-2.5 px-3 text-center">
                             <div className="flex items-center justify-center gap-2">
                               {/* Edit Button */}
                               <button
@@ -1547,10 +1589,10 @@ export const TaskManagement: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-slate-900">
-                Unassigned Fleet Vehicles for {selectedDate} ({pendingBusesList.length} Buses Available)
+                Unassigned Fleet Vehicles for {isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel} ({pendingBusesList.length} Buses Available)
               </h3>
               <p className="text-xs text-slate-500">
-                These vehicles do not have any trips or staff duties scheduled for the selected date.
+                These vehicles do not have any trips or staff duties scheduled for this operational period.
               </p>
             </div>
           </div>
@@ -1603,7 +1645,7 @@ export const TaskManagement: React.FC = () => {
               <span>1. Trip Details & Operational Route</span>
             </div>
 
-            {/* Row 1: Trip Start Date + Vehicle Number (Searchable) + Route Corridor (Searchable) */}
+            {/* Row 1: Trip Start Date + Vehicle Number (Searchable) + Vehicle Type */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Trip Start Date */}
               <div>
@@ -1611,7 +1653,7 @@ export const TaskManagement: React.FC = () => {
                 <input
                   type="date"
                   required
-                  value={formData.trip_start_date || selectedDate}
+                  value={formData.trip_start_date || todayStr}
                   onChange={(e) => setFormData({ ...formData, trip_start_date: e.target.value })}
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
                 />
@@ -1623,14 +1665,41 @@ export const TaskManagement: React.FC = () => {
                   label="Vehicle Number"
                   required
                   placeholder="-- Search or Select Vehicle --"
-                  searchPlaceholder="Search vehicle number, type, model..."
+                  searchPlaceholder="Search vehicle number..."
                   options={busSearchOptions}
                   value={formData.vehicle_number || ''}
-                  onChange={(val) => setFormData({ ...formData, vehicle_number: val })}
+                  onChange={(val) => {
+                    const selectedBus = buses.find((b) => b.registration_number === val);
+                    const autoType = mapBusTypeToVehicleType(selectedBus?.bus_type);
+                    setFormData((prev) => ({
+                      ...prev,
+                      vehicle_number: val,
+                      ...(autoType ? { vehicle_type: autoType } : {})
+                    }));
+                  }}
                 />
               </div>
 
-              {/* Route Corridor (Searchable - Placed at Vehicle Status position) */}
+              {/* Vehicle Type */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Type *</label>
+                <select
+                  required
+                  value={formData.vehicle_type || ''}
+                  onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none cursor-pointer"
+                >
+                  <option value="">-- Select Vehicle Type --</option>
+                  <option value="Seater">Seater</option>
+                  <option value="Sleeper/Seating">Sleeper/Seating</option>
+                  <option value="Full Sleeper">Full Sleeper</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Row 2: Route Corridor + Vehicle Status + Operator / Organizer */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Route Corridor (Searchable) */}
               <div>
                 <SearchableSelect
                   label="Route Corridor"
@@ -1653,10 +1722,8 @@ export const TaskManagement: React.FC = () => {
                   }}
                 />
               </div>
-            </div>
 
-            {/* Row 2: Vehicle Status (Placed at Route Corridor position) + Operator / Organizer */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Vehicle Status */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Status *</label>
                 <select
@@ -1673,13 +1740,14 @@ export const TaskManagement: React.FC = () => {
                 </select>
               </div>
 
+              {/* Operator / Organizer */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator / Organizer *</label>
                 <select
                   required
                   value={formData.operator_organizer || ''}
                   onChange={(e) => setFormData({ ...formData, operator_organizer: e.target.value })}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium cursor-pointer"
                 >
                   <option value="">-- Choose Organizer --</option>
                   {organizers.map((o: any) => (
@@ -2106,8 +2174,8 @@ export const TaskManagement: React.FC = () => {
         <Modal
           isOpen={isViewTripsOpen}
           onClose={() => setIsViewTripsOpen(false)}
-          title={`All Trips for ${selectedBusForView} (${selectedDate})`}
-          subtitle={`${busGroupMap.get(selectedBusForView)?.length || 0} Trip(s) Allocated on this date`}
+          title={`All Trips for ${selectedBusForView} (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`}
+          subtitle={`${busGroupMap.get(selectedBusForView)?.length || 0} Trip(s) Allocated in this period`}
           maxWidth="max-w-3xl"
         >
           <div className="space-y-4">
@@ -2119,7 +2187,7 @@ export const TaskManagement: React.FC = () => {
               <div className="flex items-center gap-2">
                 <PrintButton
                   title={`Trip Allocation Sheet - Bus ${selectedBusForView}`}
-                  subtitle={`Operational Date: ${selectedDate}`}
+                  subtitle={`Period: ${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel}`}
                   targetId="view-bus-trips-sheet-content"
                 />
                 <button

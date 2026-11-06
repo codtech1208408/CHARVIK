@@ -38,6 +38,8 @@ import { TaskManagement } from './pages/TaskManagement';
 import { Earnings } from './pages/Earnings';
 import { EmployeePayments } from './pages/EmployeePayments';
 import { WebsiteInquiries } from './pages/WebsiteInquiries';
+import { RecordManagement } from './pages/RecordManagement';
+import { CaptainAuditRecord } from './pages/CaptainAuditRecord';
 import { SupporterTasks } from './pages/SupporterTasks';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
@@ -85,6 +87,11 @@ export function App() {
               <Route path="employees" element={<EmployeeRegistration />} />
               <Route path="earnings" element={<Earnings />} />
               <Route path="employee-payments" element={<EmployeePayments />} />
+              <Route path="records" element={<RecordManagement />} />
+              <Route path="record" element={<Navigate to="/admin/records" replace />} />
+              <Route path="record-management" element={<Navigate to="/admin/records" replace />} />
+              <Route path="captain-audit" element={<CaptainAuditRecord />} />
+              <Route path="captain-audit-record" element={<Navigate to="/admin/captain-audit" replace />} />
               <Route path="inquiries" element={<WebsiteInquiries />} />
 
               {/* Specific Submodules & Secondary Views */}
@@ -108,6 +115,8 @@ export function App() {
             <Route path="/captain" element={<AdminLayout />}>
               <Route index element={<Navigate to="/captain/dashboard" replace />} />
               <Route path="dashboard" element={<CaptainDashboard />} />
+              <Route path="audit-record" element={<CaptainAuditRecord />} />
+              <Route path="captain-audit" element={<Navigate to="/captain/audit-record" replace />} />
               <Route path="buses" element={<BusMaster />} />
               <Route path="daily-kilometers" element={<DailyKilometers />} />
               <Route path="bus-condition" element={<BusCondition />} />
@@ -121,6 +130,8 @@ export function App() {
             <Route path="/operator" element={<AdminLayout />}>
               <Route index element={<Navigate to="/operator/dashboard" replace />} />
               <Route path="dashboard" element={<SupportDashboard />} />
+              <Route path="captain-audit" element={<CaptainAuditRecord />} />
+              <Route path="audit-record" element={<CaptainAuditRecord />} />
               <Route path="employee-registration" element={<EmployeeRegistration />} />
               <Route path="employees" element={<EmployeeRegistration />} />
               <Route path="bus-condition" element={<BusCondition />} />

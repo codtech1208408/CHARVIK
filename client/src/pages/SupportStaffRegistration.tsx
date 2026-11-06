@@ -21,12 +21,15 @@ import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { getNextEmployeeCode } from '../utils/employeeCode';
+import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
 
 export const SupportStaffRegistration: React.FC = () => {
   const navigate = useNavigate();
   const { success, error } = useToast();
 
   const [buses, setBuses] = useState<BusType[]>([]);
+  const [existingEmployees, setExistingEmployees] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,7 +87,7 @@ export const SupportStaffRegistration: React.FC = () => {
     reference_alt_phone: '',
 
     // Employment
-    employee_code: `EMP-STF-${Math.floor(1000 + Math.random() * 9000)}`,
+    employee_code: 'HLP-1001',
     employment_type: 'Permanent',
     salary: '',
     joining_date: new Date().toISOString().split('T')[0],
@@ -95,15 +98,49 @@ export const SupportStaffRegistration: React.FC = () => {
 
   useEffect(() => {
     api.getBuses().then(setBuses).catch(console.error);
+    api.getEmployees().then((empList) => {
+      setExistingEmployees(Array.isArray(empList) ? empList : []);
+    }).catch(() => {
+      setExistingEmployees([]);
+    });
+
+    api.getNextEmployeeCode('Helper')
+      .then((res) => {
+        if (res?.nextCode) {
+          setFormData((prev: any) => ({
+            ...prev,
+            employee_code: res.nextCode
+          }));
+        }
+      })
+      .catch(() => {
+        const nextCode = getNextEmployeeCode('Helper', existingEmployees);
+        setFormData((prev: any) => ({
+          ...prev,
+          employee_code: nextCode
+        }));
+      });
   }, []);
 
   const handleRoleChange = (newRole: 'Helper' | 'Captain') => {
-    const prefix = newRole === 'Helper' ? 'EMP-HLP-' : 'EMP-CPT-';
-    setFormData((prev) => ({
-      ...prev,
-      role: newRole,
-      employee_code: `${prefix}00${Math.floor(10 + Math.random() * 90)}`
-    }));
+    api.getNextEmployeeCode(newRole)
+      .then((res) => {
+        if (res?.nextCode) {
+          setFormData((prev: any) => ({
+            ...prev,
+            role: newRole,
+            employee_code: res.nextCode
+          }));
+        }
+      })
+      .catch(() => {
+        const nextCode = getNextEmployeeCode(newRole, existingEmployees);
+        setFormData((prev: any) => ({
+          ...prev,
+          role: newRole,
+          employee_code: nextCode
+        }));
+      });
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -365,7 +402,7 @@ export const SupportStaffRegistration: React.FC = () => {
                     type="text"
                     value={formData.employee_code}
                     onChange={(e) => handleInputChange('employee_code', e.target.value)}
-                    placeholder="e.g. EMP-STF-1001"
+                    placeholder="e.g. HLP-1001 or CPT-1001"
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold text-blue-700"
                     required
                   />

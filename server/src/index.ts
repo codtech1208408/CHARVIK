@@ -97,7 +97,7 @@ function getAuthUser(req: Request) {
       if (decoded && decoded.role) {
         return decoded;
       }
-    } catch {}
+    } catch { }
     return { id: 1, name: 'Admin Manager', role: 'Super Admin', email: 'admin@charvik.com' };
   }
 }
@@ -595,7 +595,7 @@ app.post('/api/upload', upload.single('file'), async (req: Request, res: Respons
   try {
     // Upload image or document directly to Cloudinary
     const cloudinaryRes = await uploadToCloudinary(req.file.path, 'charvik_fleet');
-    
+
     // Clean up temporary local disk file after Cloudinary upload
     try {
       if (fs.existsSync(req.file.path)) {
@@ -655,7 +655,7 @@ app.get('/api/dashboard', (req: Request, res: Response) => {
     const scheduledMaintenance = db.prepare("SELECT COUNT(*) as count FROM maintenance_schedules WHERE status IN ('Scheduled', 'Due', 'Due Soon', 'Pending', 'In Progress')").get() as any;
     const pendingComplaints = db.prepare("SELECT COUNT(*) as count FROM complaints WHERE status NOT IN ('Resolved', 'Closed')").get() as any;
     const completedMonth = db.prepare("SELECT COUNT(*) as count FROM maintenance_schedules WHERE status = 'Completed'").get() as any;
-    
+
     // Total kilometres today
     const todayDateStr = new Date().toISOString().split('T')[0];
     const kmToday = db.prepare(`
@@ -1275,13 +1275,14 @@ app.post('/api/tasks', (req: Request, res: Response) => {
     const id = t.id || Date.now();
     db.prepare(`
       INSERT INTO trip_duties (
-        id, trip_start_date, vehicle_number, service_number, vehicle_status, route_corridor, operator_organizer,
+        id, trip_start_date, vehicle_number, vehicle_type, service_number, vehicle_status, route_corridor, operator_organizer,
         driver1, driver2, helper, captain, trip_remarks, duty_status, payment_status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `).run(
       id,
       t.trip_start_date,
       t.vehicle_number,
+      t.vehicle_type || '',
       t.service_number || '',
       t.vehicle_status || 'RUN',
       t.route_corridor || '',
@@ -1308,13 +1309,14 @@ app.put('/api/tasks/:id', (req: Request, res: Response) => {
   try {
     db.prepare(`
       UPDATE trip_duties SET
-        trip_start_date = ?, vehicle_number = ?, service_number = ?, vehicle_status = ?, route_corridor = ?,
+        trip_start_date = ?, vehicle_number = ?, vehicle_type = ?, service_number = ?, vehicle_status = ?, route_corridor = ?,
         operator_organizer = ?, driver1 = ?, driver2 = ?, helper = ?, captain = ?,
         trip_remarks = ?, duty_status = ?, payment_status = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
       t.trip_start_date,
       t.vehicle_number,
+      t.vehicle_type || '',
       t.service_number || '',
       t.vehicle_status || 'RUN',
       t.route_corridor || '',
@@ -1341,6 +1343,433 @@ app.delete('/api/tasks/:id', (req: Request, res: Response) => {
     db.prepare('DELETE FROM trip_duties WHERE id = ?').run(id);
     logAudit('DELETE_TASK', 'Task Management', id, `Deleted task ID ${id}`);
     return res.json({ message: 'Task deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ================= SERVICE & SALARY RECORDS CRUD =================
+app.get('/api/records', (req: Request, res: Response) => {
+  try {
+    const rows = db.prepare('SELECT * FROM service_records ORDER BY id DESC').all() as any[];
+    const parsed = rows.map((r) => {
+      let items = [];
+      try { items = JSON.parse(r.items_json || '[]'); } catch (_) {}
+      return { ...r, items };
+    });
+    return res.json(parsed);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/records/:id', (req: Request, res: Response) => {
+  try {
+    const row = db.prepare('SELECT * FROM service_records WHERE id = ?').get(req.params.id) as any;
+    if (!row) return res.status(404).json({ error: 'Record not found' });
+    let items = [];
+    try { items = JSON.parse(row.items_json || '[]'); } catch (_) {}
+    return res.json({ ...row, items });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/records', (req: Request, res: Response) => {
+  const r = req.body;
+  if (!r.bill_to_name) {
+    return res.status(400).json({ error: 'Bill to name is required' });
+  }
+  try {
+    const id = r.id || Date.now();
+    const record_number = r.record_number || `REC-${new Date().getFullYear()}-${String(id).slice(-4)}`;
+    const items_json = JSON.stringify(Array.isArray(r.items) ? r.items : []);
+    
+    db.prepare(`
+      INSERT INTO service_records (
+        id, record_number, record_date, period_month, bill_to_name, bill_to_address,
+        bill_to_phone, bill_to_pan, items_json, total_staff_count, total_amount,
+        amount_in_words, received_amount, balance_amount, payment_status,
+        bank_name, bank_account_name, bank_account_no, bank_ifsc, bank_branch,
+        upi_id, qr_code_url, remarks
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      record_number,
+      r.record_date || new Date().toISOString().split('T')[0],
+      r.period_month || '',
+      r.bill_to_name.trim(),
+      r.bill_to_address || '',
+      r.bill_to_phone || '',
+      r.bill_to_pan || '',
+      items_json,
+      Number(r.total_staff_count || 0),
+      Number(r.total_amount || 0),
+      r.amount_in_words || '',
+      Number(r.received_amount || 0),
+      Number(r.balance_amount || 0),
+      r.payment_status || 'Pending',
+      r.bank_name || '',
+      r.bank_account_name || '',
+      r.bank_account_no || '',
+      r.bank_ifsc || '',
+      r.bank_branch || '',
+      r.upi_id || '',
+      r.qr_code_url || '',
+      r.remarks || ''
+    );
+    const created = { id, ...r, record_number, items: r.items || [] };
+    logAudit('CREATE_RECORD', 'Record Management', id, `Created record ${record_number} for ${r.bill_to_name}`);
+    return res.status(201).json(created);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/records/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const r = req.body;
+  try {
+    const items_json = JSON.stringify(Array.isArray(r.items) ? r.items : []);
+    db.prepare(`
+      UPDATE service_records SET
+        record_number = ?, record_date = ?, period_month = ?, bill_to_name = ?,
+        bill_to_address = ?, bill_to_phone = ?, bill_to_pan = ?, items_json = ?,
+        total_staff_count = ?, total_amount = ?, amount_in_words = ?, received_amount = ?,
+        balance_amount = ?, payment_status = ?, bank_name = ?, bank_account_name = ?,
+        bank_account_no = ?, bank_ifsc = ?, bank_branch = ?, upi_id = ?,
+        qr_code_url = ?, remarks = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      r.record_number,
+      r.record_date,
+      r.period_month || '',
+      r.bill_to_name,
+      r.bill_to_address || '',
+      r.bill_to_phone || '',
+      r.bill_to_pan || '',
+      items_json,
+      Number(r.total_staff_count || 0),
+      Number(r.total_amount || 0),
+      r.amount_in_words || '',
+      Number(r.received_amount || 0),
+      Number(r.balance_amount || 0),
+      r.payment_status || 'Pending',
+      r.bank_name || '',
+      r.bank_account_name || '',
+      r.bank_account_no || '',
+      r.bank_ifsc || '',
+      r.bank_branch || '',
+      r.upi_id || '',
+      r.qr_code_url || '',
+      r.remarks || '',
+      id
+    );
+    logAudit('UPDATE_RECORD', 'Record Management', id, `Updated record ${r.record_number || id}`);
+    return res.json({ id, ...r });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/records/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM service_records WHERE id = ?').run(id);
+    logAudit('DELETE_RECORD', 'Record Management', id, `Deleted record ${id}`);
+    return res.json({ message: 'Record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ================= CAPTAIN AUDIT RECORDS CRUD =================
+app.get('/api/captain-audits', (req: Request, res: Response) => {
+  try {
+    const rows = db.prepare('SELECT * FROM captain_audit_records ORDER BY id DESC').all() as any[];
+    const parsed = rows.map((r) => {
+      let staff_pictures = [];
+      let cleaning_pictures = [];
+      let amenities = [];
+      try { staff_pictures = JSON.parse(r.staff_pictures_json || '[]'); } catch (_) {}
+      try { cleaning_pictures = JSON.parse(r.cleaning_pictures_json || '[]'); } catch (_) {}
+      try { amenities = JSON.parse(r.amenities_json || '[]'); } catch (_) {}
+      return { ...r, staff_pictures, cleaning_pictures, amenities };
+    });
+    return res.json(parsed);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/captain-audits/:id', (req: Request, res: Response) => {
+  try {
+    const row = db.prepare('SELECT * FROM captain_audit_records WHERE id = ?').get(req.params.id) as any;
+    if (!row) return res.status(404).json({ error: 'Audit record not found' });
+    let staff_pictures = [];
+    let cleaning_pictures = [];
+    let amenities = [];
+    try { staff_pictures = JSON.parse(row.staff_pictures_json || '[]'); } catch (_) {}
+    try { cleaning_pictures = JSON.parse(row.cleaning_pictures_json || '[]'); } catch (_) {}
+    try { amenities = JSON.parse(row.amenities_json || '[]'); } catch (_) {}
+    return res.json({ ...row, staff_pictures, cleaning_pictures, amenities });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/captain-audits', (req: Request, res: Response) => {
+  const a = req.body;
+  if (!a.bus_number || !a.route || !a.captain_name) {
+    return res.status(400).json({ error: 'Bus Number, Route, and Captain Name are required' });
+  }
+  try {
+    const id = a.id || Date.now();
+    const staff_pictures_json = JSON.stringify(Array.isArray(a.staff_pictures) ? a.staff_pictures : []);
+    const cleaning_pictures_json = JSON.stringify(Array.isArray(a.cleaning_pictures) ? a.cleaning_pictures : []);
+    const amenities_json = JSON.stringify(Array.isArray(a.amenities) ? a.amenities : []);
+
+    db.prepare(`
+      INSERT INTO captain_audit_records (
+        id, audit_date, audit_time, bus_number, route, captain_name,
+        captain_phone, driver_name, driver_phone, staff_pictures_json,
+        cleaning_pictures_json, amenities_json, overall_status, remarks,
+        submitted_by_role, submitted_by_user_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      a.audit_date || new Date().toISOString().split('T')[0],
+      a.audit_time || new Date().toLocaleTimeString('en-US', { hour12: true }),
+      a.bus_number.trim(),
+      a.route.trim(),
+      a.captain_name.trim(),
+      a.captain_phone?.trim() || '',
+      a.driver_name?.trim() || '',
+      a.driver_phone?.trim() || '',
+      staff_pictures_json,
+      cleaning_pictures_json,
+      amenities_json,
+      a.overall_status || 'Passed',
+      a.remarks?.trim() || '',
+      a.submitted_by_role || 'Captain',
+      a.submitted_by_user_id || null
+    );
+
+    const created = {
+      id,
+      ...a,
+      staff_pictures: a.staff_pictures || [],
+      cleaning_pictures: a.cleaning_pictures || [],
+      amenities: a.amenities || []
+    };
+    logAudit('CREATE_CAPTAIN_AUDIT', 'Captain Audit', id, `Captain audit submitted for bus ${a.bus_number} by ${a.captain_name}`);
+    return res.status(201).json(created);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/captain-audits/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const a = req.body;
+  try {
+    const staff_pictures_json = JSON.stringify(Array.isArray(a.staff_pictures) ? a.staff_pictures : []);
+    const cleaning_pictures_json = JSON.stringify(Array.isArray(a.cleaning_pictures) ? a.cleaning_pictures : []);
+    const amenities_json = JSON.stringify(Array.isArray(a.amenities) ? a.amenities : []);
+
+    db.prepare(`
+      UPDATE captain_audit_records SET
+        audit_date = ?, audit_time = ?, bus_number = ?, route = ?, captain_name = ?,
+        captain_phone = ?, driver_name = ?, driver_phone = ?, staff_pictures_json = ?,
+        cleaning_pictures_json = ?, amenities_json = ?, overall_status = ?, remarks = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      a.audit_date,
+      a.audit_time,
+      a.bus_number,
+      a.route,
+      a.captain_name,
+      a.captain_phone || '',
+      a.driver_name || '',
+      a.driver_phone || '',
+      staff_pictures_json,
+      cleaning_pictures_json,
+      amenities_json,
+      a.overall_status || 'Passed',
+      a.remarks || '',
+      id
+    );
+    logAudit('UPDATE_CAPTAIN_AUDIT', 'Captain Audit', id, `Updated captain audit ${id}`);
+    return res.json({ id, ...a });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/captain-audits/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM captain_audit_records WHERE id = ?').run(id);
+    logAudit('DELETE_CAPTAIN_AUDIT', 'Captain Audit', id, `Deleted captain audit ${id}`);
+    return res.json({ message: 'Captain audit record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ================= INVENTORY PRODUCTS CRUD =================
+app.get('/api/products', (req: Request, res: Response) => {
+  try {
+    const rows = db.prepare('SELECT * FROM inventory_products ORDER BY created_at DESC').all() as any[];
+    const mapped = rows.map((r) => ({
+      ...r,
+      is_reused: Boolean(r.is_reused),
+      reused_quantity: Number(r.reused_quantity) || 0,
+      reused_product_name: r.reused_product_name || ''
+    }));
+    return res.json(mapped);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/products', (req: Request, res: Response) => {
+  const p = req.body;
+  if (!p.name) return res.status(400).json({ error: 'Product name is required' });
+  try {
+    const id = p.id || `prod-${Date.now()}`;
+    db.prepare(`
+      INSERT INTO inventory_products (
+        id, name, part_number, category, brand, received_date,
+        quantity_received, used_quantity, stock_quantity,
+        is_reused, reused_quantity, reused_product_name, photo, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        name = excluded.name,
+        part_number = excluded.part_number,
+        category = excluded.category,
+        brand = excluded.brand,
+        received_date = excluded.received_date,
+        quantity_received = excluded.quantity_received,
+        used_quantity = excluded.used_quantity,
+        stock_quantity = excluded.stock_quantity,
+        is_reused = excluded.is_reused,
+        reused_quantity = excluded.reused_quantity,
+        reused_product_name = excluded.reused_product_name,
+        photo = excluded.photo,
+        notes = excluded.notes,
+        updated_at = CURRENT_TIMESTAMP
+    `).run(
+      id,
+      p.name.trim(),
+      p.part_number?.trim() || '',
+      p.category || 'Spare Part',
+      p.brand?.trim() || '',
+      p.received_date || new Date().toISOString().split('T')[0],
+      Number(p.quantity_received) || 1,
+      Number(p.used_quantity) || 0,
+      Number(p.stock_quantity) || 1,
+      p.is_reused ? 1 : 0,
+      Number(p.reused_quantity) || 0,
+      p.reused_product_name?.trim() || '',
+      p.photo || '',
+      p.notes || ''
+    );
+    return res.status(201).json({ ...p, id });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/products/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const p = req.body;
+  try {
+    db.prepare(`
+      UPDATE inventory_products SET
+        name = ?, part_number = ?, category = ?, brand = ?, received_date = ?,
+        quantity_received = ?, used_quantity = ?, stock_quantity = ?,
+        is_reused = ?, reused_quantity = ?, reused_product_name = ?, photo = ?, notes = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      p.name,
+      p.part_number || '',
+      p.category || 'Spare Part',
+      p.brand || '',
+      p.received_date,
+      Number(p.quantity_received) || 0,
+      Number(p.used_quantity) || 0,
+      Number(p.stock_quantity) || 0,
+      p.is_reused ? 1 : 0,
+      Number(p.reused_quantity) || 0,
+      p.reused_product_name?.trim() || '',
+      p.photo || '',
+      p.notes || '',
+      id
+    );
+    return res.json({ id, ...p });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/products/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM inventory_products WHERE id = ?').run(id);
+    return res.json({ message: 'Product deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ================= INVENTORY PRODUCT USAGE CRUD =================
+app.get('/api/product-usage', (req: Request, res: Response) => {
+  try {
+    const rows = db.prepare('SELECT * FROM inventory_product_usage ORDER BY created_at DESC').all();
+    return res.json(rows);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/product-usage', (req: Request, res: Response) => {
+  const u = req.body;
+  try {
+    const id = u.id || `usage-${Date.now()}`;
+    db.prepare(`
+      INSERT INTO inventory_product_usage (
+        id, product_id, product_name, part_number, vehicle_id,
+        vehicle_number, usage_date, quantity_used, is_reused,
+        odometer_km, remarks, photo
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      u.product_id,
+      u.product_name,
+      u.part_number || '',
+      u.vehicle_id || '',
+      u.vehicle_number,
+      u.usage_date,
+      Number(u.quantity_used) || 1,
+      u.is_reused ? 1 : 0,
+      u.odometer_km || '',
+      u.remarks || '',
+      u.photo || ''
+    );
+    return res.status(201).json({ ...u, id });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/product-usage/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM inventory_product_usage WHERE id = ?').run(id);
+    return res.json({ message: 'Usage record deleted successfully' });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
@@ -1634,7 +2063,7 @@ app.post('/api/tyre-maintenance', (req: Request, res: Response) => {
       t.remarks || 'Mounted Tyre',
       10000
     );
-  } catch (_) {}
+  } catch (_) { }
 
   return res.status(201).json({ id: info.lastInsertRowid, message: 'Tyre record saved successfully' });
 });
@@ -1842,7 +2271,7 @@ app.get('/api/wheel-allotments', (req: Request, res: Response) => {
             WHERE w.bus_id = t.bus_id AND w.tyre_serial_number = t.tyre_serial_number
           )
       `).run();
-    } catch (_) {}
+    } catch (_) { }
 
     let query = `
       SELECT w.*, b.bus_number, b.registration_number,
@@ -1924,7 +2353,7 @@ app.post('/api/wheel-allotments', (req: Request, res: Response) => {
         w.bus_id,
         w.tyre_serial_number
       );
-    } catch (_) {}
+    } catch (_) { }
 
     logAudit('WHEEL_ALLOTMENT_ADD', 'Wheel Allotment & Rotation', info.lastInsertRowid, `Logged ${w.action_type} for tyre ${w.tyre_serial_number} on bus ID ${w.bus_id}`);
     return res.status(201).json({ id: info.lastInsertRowid, message: 'Allotment / Rotation record saved' });
@@ -2811,7 +3240,7 @@ app.post('/api/bus-condition', (req: Request, res: Response) => {
           updated_at = CURRENT_TIMESTAMP
         WHERE allocated_bus_id = ?
       `).run(startingKm, startingKm, startingKm, startingKm, c.bus_id);
-    } catch (_) {}
+    } catch (_) { }
   }
 
   logAudit('INSPECTION_ADD', 'Bus Condition', info.lastInsertRowid, `Logged daily checkup ${inspectionRef}`);
@@ -2910,7 +3339,7 @@ app.put('/api/bus-condition/:id', (req: Request, res: Response) => {
             updated_at = CURRENT_TIMESTAMP
           WHERE allocated_bus_id = ?
         `).run(startingKm, startingKm, startingKm, startingKm, c.bus_id);
-      } catch (_) {}
+      } catch (_) { }
     }
 
     logAudit('INSPECTION_UPDATE', 'Bus Condition', id, `Updated vehicle checkup ID ${id}`);
@@ -2970,6 +3399,37 @@ app.get('/api/employees', (req: Request, res: Response) => {
   }));
 
   return res.json(sanitized);
+});
+
+app.get('/api/employees/next-code', (req: Request, res: Response) => {
+  try {
+    const role = String(req.query.role || 'Driver').toLowerCase().trim();
+    let prefix = 'DRV-';
+    if (role === 'helper') {
+      prefix = 'HLP-';
+    } else if (role === 'captain') {
+      prefix = 'CPT-';
+    }
+
+    const rows = db.prepare("SELECT employee_code FROM employees WHERE employee_code LIKE ?").all(`${prefix}%`) as any[];
+    let maxSeq = 1000;
+    const regex = new RegExp(`^${prefix}(\\d+)$`, 'i');
+
+    for (const r of rows) {
+      const match = (r.employee_code || '').match(regex);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (!isNaN(num) && num >= 1001 && num > maxSeq) {
+          maxSeq = num;
+        }
+      }
+    }
+
+    const nextCode = `${prefix}${maxSeq + 1}`;
+    res.json({ nextCode });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/employees/:id', (req: Request, res: Response) => {

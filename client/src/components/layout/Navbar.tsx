@@ -162,24 +162,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
         )}
       </div>
 
-      {/* Middle: Search Box */}
-      <div className="hidden md:flex items-center flex-1 max-w-md mx-6">
-        <div className="relative w-full">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search Bus No / Driver / Service..."
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                const val = (e.target as HTMLInputElement).value;
-                if (val) navigate(`${basePrefix}/vehicles?search=${encodeURIComponent(val)}`);
-              }
-            }}
-            className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 text-xs rounded-xl pl-9 pr-4 py-2 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-          />
-        </div>
-      </div>
-
       {/* Right: Date, Notifications, Profile */}
       <div className="flex items-center space-x-2 sm:space-x-3">
         {/* Interactive Fleet Calendar */}

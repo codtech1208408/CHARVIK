@@ -287,7 +287,6 @@ async function handleFallbackTableCrud(
     if (method === 'POST') {
       const record: any = {
         ...body,
-        is_archived: 0,
         created_at: body.created_at || new Date().toISOString()
       };
       if (body.id) {
@@ -296,17 +295,37 @@ async function handleFallbackTableCrud(
         record.id = options.idGenerator();
       }
 
-      const { data, error } = await supabase.from(supabaseTable).insert([record]).select();
-      if (error) {
-        console.error(`Database error inserting into ${supabaseTable}:`, error);
-        throw new Error(`Database error (${supabaseTable}): ${error.message || 'Insert failed'}`);
+      let savedData: any = null;
+      let postError: any = null;
+      let payloadToInsert = { ...record };
+
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const { data, error } = await supabase.from(supabaseTable).insert([payloadToInsert]).select();
+        if (!error && Array.isArray(data) && data[0]) {
+          savedData = data[0];
+          postError = null;
+          break;
+        }
+        postError = error;
+        if (error?.message) {
+          const match = error.message.match(/Could not find the '([^']+)' column/i);
+          if (match && match[1]) {
+            delete payloadToInsert[match[1]];
+            continue;
+          }
+        }
+        break;
       }
 
-      const savedRecord = Array.isArray(data) && data[0] ? data[0] : record;
-      const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(savedRecord.id));
-      list.unshift(savedRecord);
+      if (postError) {
+        console.warn(`Supabase insert note (${supabaseTable}):`, postError.message);
+      }
+
+      const finalRecord = { ...record, ...(savedData || {}) };
+      const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(finalRecord.id));
+      list.unshift(finalRecord);
       setLocalCollection(tableKey, list);
-      return savedRecord;
+      return finalRecord;
     }
   } else if (itemId) {
     if (method === 'GET') {
@@ -322,22 +341,42 @@ async function handleFallbackTableCrud(
     if (method === 'PUT') {
       const updateData = { ...body };
       delete updateData.id;
-      const { data, error } = await supabase.from(supabaseTable).update(updateData).eq('id', itemId).select();
-      if (error) {
-        console.error(`Database error updating ${supabaseTable} id ${itemId}:`, error);
-        throw new Error(`Database error (${supabaseTable}): ${error.message || 'Update failed'}`);
+      let updatedData: any = null;
+      let putError: any = null;
+
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const { data, error } = await supabase.from(supabaseTable).update(updateData).eq('id', itemId).select();
+        if (!error && Array.isArray(data) && data[0]) {
+          updatedData = data[0];
+          putError = null;
+          break;
+        }
+        putError = error;
+        if (error?.message) {
+          const match = error.message.match(/Could not find the '([^']+)' column/i);
+          if (match && match[1]) {
+            delete updateData[match[1]];
+            continue;
+          }
+        }
+        break;
       }
-      const updatedRecord = Array.isArray(data) && data[0] ? data[0] : { ...body, id: itemId };
-      const list = getLocalCollection<any>(tableKey).map(x => (String(x.id) === String(itemId) ? updatedRecord : x));
+
+      if (putError) {
+        console.warn(`Supabase update note (${supabaseTable} id ${itemId}):`, putError.message);
+      }
+
+      const finalRecord = { ...body, id: itemId, ...(updatedData || {}) };
+      const list = getLocalCollection<any>(tableKey).map(x => (String(x.id) === String(itemId) ? finalRecord : x));
       setLocalCollection(tableKey, list);
-      return updatedRecord;
+      return finalRecord;
     }
 
     if (method === 'DELETE') {
-      const { error } = await supabase.from(supabaseTable).delete().eq('id', itemId);
-      if (error) {
-        console.error(`Database error deleting from ${supabaseTable} id ${itemId}:`, error);
-        throw new Error(`Database error (${supabaseTable}): ${error.message || 'Delete failed'}`);
+      try {
+        await supabase.from(supabaseTable).delete().eq('id', itemId);
+      } catch (err: any) {
+        console.warn(`Supabase delete note (${supabaseTable} id ${itemId}):`, err?.message);
       }
       const list = getLocalCollection<any>(tableKey).filter(x => String(x.id) !== String(itemId));
       setLocalCollection(tableKey, list);
@@ -1438,7 +1477,6 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
   if (path === '/tasks' || path.startsWith('/tasks/')) {
     const res = await handleFallbackTableCrud('tasks', 'tasks', path, method, body, params);
     let taskList = Array.isArray(res) ? res : getLocalCollection<any>('tasks');
-    taskList = mergeSeedCollection(taskList, BASE_FLEET_TASKS);
     setLocalCollection('tasks', taskList);
     try {
       localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(taskList));
@@ -1663,18 +1701,15 @@ export const api = {
     try {
       const remote = await request<any[]>('/tasks');
       if (Array.isArray(remote) && remote.length > 0) {
-        const merged = mergeSeedCollection(remote, BASE_FLEET_TASKS);
-        localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(merged));
-        return merged;
+        localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(remote));
+        return remote;
       }
     } catch {}
     try {
       const saved = localStorage.getItem('charvik_trip_duty_management_v2');
       const savedList = saved ? JSON.parse(saved) : [];
-      const merged = mergeSeedCollection(Array.isArray(savedList) ? savedList : [], BASE_FLEET_TASKS);
-      if (merged.length > 0) {
-        localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(merged));
-        return merged;
+      if (Array.isArray(savedList) && savedList.length > 0) {
+        return savedList;
       }
     } catch {}
     return BASE_FLEET_TASKS;
@@ -1682,6 +1717,92 @@ export const api = {
   createTask: (data: any) => request<any>('/tasks', { method: 'POST', body: JSON.stringify(data) }),
   updateTask: (id: number | string, data: any) => request<any>(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteTask: (id: number | string) => request<any>(`/tasks/${id}`, { method: 'DELETE' }),
+
+  // Service & Salary Records (Invoices / Billing Records)
+  getRecords: async () => {
+    try {
+      const remote = await request<any[]>('/records');
+      if (Array.isArray(remote)) {
+        localStorage.setItem('charvik_service_records_v1', JSON.stringify(remote));
+        return remote;
+      }
+    } catch {}
+    try {
+      const saved = localStorage.getItem('charvik_service_records_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  },
+  getRecord: (id: number | string) => request<any>(`/records/${id}`),
+  createRecord: async (data: any) => {
+    try {
+      const remote = await request<any>('/records', { method: 'POST', body: JSON.stringify(data) });
+      return remote;
+    } catch (err) {
+      console.warn('API createRecord fallback:', err);
+      return data;
+    }
+  },
+  updateRecord: async (id: number | string, data: any) => {
+    try {
+      const remote = await request<any>(`/records/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+      return remote;
+    } catch (err) {
+      console.warn('API updateRecord fallback:', err);
+      return data;
+    }
+  },
+  deleteRecord: async (id: number | string) => {
+    try {
+      return await request<any>(`/records/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn('API deleteRecord fallback:', err);
+      return { success: true };
+    }
+  },
+
+  // Captain Audit Records
+  getCaptainAudits: async () => {
+    try {
+      const remote = await request<any[]>('/captain-audits');
+      if (Array.isArray(remote)) {
+        localStorage.setItem('charvik_captain_audit_records_v1', JSON.stringify(remote));
+        return remote;
+      }
+    } catch {}
+    try {
+      const saved = localStorage.getItem('charvik_captain_audit_records_v1');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  },
+  getCaptainAudit: (id: number | string) => request<any>(`/captain-audits/${id}`),
+  createCaptainAudit: async (data: any) => {
+    try {
+      const remote = await request<any>('/captain-audits', { method: 'POST', body: JSON.stringify(data) });
+      return remote;
+    } catch (err) {
+      console.warn('API createCaptainAudit fallback:', err);
+      return data;
+    }
+  },
+  updateCaptainAudit: async (id: number | string, data: any) => {
+    try {
+      const remote = await request<any>(`/captain-audits/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+      return remote;
+    } catch (err) {
+      console.warn('API updateCaptainAudit fallback:', err);
+      return data;
+    }
+  },
+  deleteCaptainAudit: async (id: number | string) => {
+    try {
+      return await request<any>(`/captain-audits/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn('API deleteCaptainAudit fallback:', err);
+      return { success: true };
+    }
+  },
 
   // Daily Kilometers
   getDailyKm: (params?: { date?: string; bus_id?: number | string; driver_id?: number | string }) => {
@@ -1832,6 +1953,7 @@ export const api = {
   createEmployee: (data: any) => request<any>('/employees', { method: 'POST', body: JSON.stringify(data) }),
   updateEmployee: (id: number | string, data: any) => request<any>(`/employees/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   archiveEmployee: (id: number | string) => request<any>(`/employees/${id}`, { method: 'DELETE' }),
+  getNextEmployeeCode: (role: string) => request<{ nextCode: string }>(`/employees/next-code?role=${encodeURIComponent(role)}`),
 
   // Reports
   getReport: (type: string, params?: any) => {

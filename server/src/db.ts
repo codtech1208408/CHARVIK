@@ -514,6 +514,13 @@ export function initDatabase() {
       // Column already exists — safe to ignore
     }
 
+    // Migrate: add vehicle_type column to trip_duties if it doesn't exist
+    try {
+      db.prepare(`ALTER TABLE trip_duties ADD COLUMN vehicle_type TEXT DEFAULT ''`).run();
+    } catch (_) {
+      // Column already exists — safe to ignore
+    }
+
     // Migrate: add daily vehicle check report columns to bus_condition_inspections
     try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN driver_name TEXT DEFAULT ''`).run(); } catch (_) {}
     try { db.prepare(`ALTER TABLE bus_condition_inspections ADD COLUMN vehicle_model TEXT DEFAULT ''`).run(); } catch (_) {}
@@ -719,5 +726,115 @@ export function initDatabase() {
         )
       `).run();
     }
+
+    // Create service_records table for Billing, Salary & Service Records
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS service_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        record_number TEXT UNIQUE NOT NULL,
+        record_date TEXT NOT NULL,
+        period_month TEXT DEFAULT '',
+        bill_to_name TEXT NOT NULL,
+        bill_to_address TEXT DEFAULT '',
+        bill_to_phone TEXT DEFAULT '',
+        bill_to_pan TEXT DEFAULT '',
+        items_json TEXT NOT NULL DEFAULT '[]',
+        total_staff_count INTEGER DEFAULT 0,
+        total_amount REAL DEFAULT 0,
+        amount_in_words TEXT DEFAULT '',
+        received_amount REAL DEFAULT 0,
+        balance_amount REAL DEFAULT 0,
+        payment_status TEXT DEFAULT 'Pending',
+        bank_name TEXT DEFAULT '',
+        bank_account_name TEXT DEFAULT '',
+        bank_account_no TEXT DEFAULT '',
+        bank_ifsc TEXT DEFAULT '',
+        bank_branch TEXT DEFAULT '',
+        upi_id TEXT DEFAULT '',
+        qr_code_url TEXT DEFAULT '',
+        remarks TEXT DEFAULT '',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    // Create captain_audit_records table
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS captain_audit_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        audit_date DATE NOT NULL,
+        audit_time TEXT DEFAULT '',
+        bus_number TEXT NOT NULL,
+        route TEXT NOT NULL,
+        captain_name TEXT NOT NULL,
+        captain_phone TEXT DEFAULT '',
+        driver_name TEXT DEFAULT '',
+        driver_phone TEXT DEFAULT '',
+        staff_pictures_json TEXT DEFAULT '[]',
+        cleaning_pictures_json TEXT DEFAULT '[]',
+        amenities_json TEXT NOT NULL DEFAULT '[]',
+        overall_status TEXT DEFAULT 'Passed',
+        remarks TEXT DEFAULT '',
+        submitted_by_role TEXT DEFAULT 'Captain',
+        submitted_by_user_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    // Create inventory_products and inventory_product_usage tables
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS inventory_products (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        part_number TEXT DEFAULT '',
+        category TEXT NOT NULL DEFAULT 'Spare Part',
+        brand TEXT DEFAULT '',
+        received_date TEXT NOT NULL,
+        quantity_received INTEGER NOT NULL DEFAULT 1,
+        used_quantity INTEGER NOT NULL DEFAULT 0,
+        stock_quantity INTEGER NOT NULL DEFAULT 1,
+        is_reused INTEGER NOT NULL DEFAULT 0,
+        reused_quantity INTEGER NOT NULL DEFAULT 0,
+        reused_product_name TEXT DEFAULT '',
+        photo TEXT DEFAULT '',
+        notes TEXT DEFAULT '',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS inventory_product_usage (
+        id TEXT PRIMARY KEY,
+        product_id TEXT NOT NULL,
+        product_name TEXT NOT NULL,
+        part_number TEXT DEFAULT '',
+        vehicle_id TEXT DEFAULT '',
+        vehicle_number TEXT NOT NULL,
+        usage_date TEXT NOT NULL,
+        quantity_used INTEGER NOT NULL DEFAULT 1,
+        is_reused INTEGER NOT NULL DEFAULT 0,
+        odometer_km TEXT DEFAULT '',
+        remarks TEXT DEFAULT '',
+        photo TEXT DEFAULT '',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+    try {
+      db.prepare("ALTER TABLE inventory_products ADD COLUMN is_reused INTEGER NOT NULL DEFAULT 0").run();
+    } catch {}
+    try {
+      db.prepare("ALTER TABLE inventory_products ADD COLUMN reused_quantity INTEGER NOT NULL DEFAULT 0").run();
+    } catch {}
+    try {
+      db.prepare("ALTER TABLE inventory_products ADD COLUMN reused_product_name TEXT DEFAULT ''").run();
+    } catch {}
+    try {
+      db.prepare("ALTER TABLE inventory_product_usage ADD COLUMN is_reused INTEGER NOT NULL DEFAULT 0").run();
+    } catch {}
+    try {
+      db.prepare("ALTER TABLE inventory_product_usage ADD COLUMN reused_product_name TEXT DEFAULT ''").run();
+    } catch {}
   } catch (e) {}
 }

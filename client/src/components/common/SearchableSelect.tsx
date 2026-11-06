@@ -102,12 +102,12 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         <div className="flex-1 truncate pr-2">
           {selectedOption ? (
             <div className="flex items-center gap-2 truncate">
-              <span className="font-bold text-slate-900 truncate">{selectedOption.label}</span>
               {selectedOption.badge && (
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0 font-bold">
                   {selectedOption.badge}
                 </span>
               )}
+              <span className="font-bold text-slate-900 truncate">{selectedOption.label}</span>
               {selectedOption.sublabel && (
                 <span className="text-[11px] text-slate-500 truncate hidden sm:inline">
                   {selectedOption.sublabel}
@@ -193,12 +193,12 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   >
                     <div className="flex flex-col truncate pr-2">
                       <div className="flex items-center gap-2 truncate">
-                        <span className="font-semibold text-slate-900 truncate">{opt.label}</span>
                         {opt.badge && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0 font-bold">
                             {opt.badge}
                           </span>
                         )}
+                        <span className="font-semibold text-slate-900 truncate">{opt.label}</span>
                       </div>
                       {opt.sublabel && (
                         <span className="text-[10px] text-slate-500 truncate mt-0.5">

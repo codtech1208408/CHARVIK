@@ -457,7 +457,8 @@ export const BASE_FLEET_TASKS: any[] = [
     "created_at": "2026-10-27T05:59:38.699Z",
     "updated_at": "2026-10-27 17:21:23",
     "service_number": "",
-    "payment_status": "Pending"
+    "payment_status": "Pending",
+    "vehicle_type": ""
   },
   {
     "id": 1793250775878,
@@ -504,7 +505,8 @@ export const BASE_FLEET_TASKS: any[] = [
     "created_at": "2026-10-29 05:12:56",
     "updated_at": "2026-10-29 05:12:56",
     "service_number": "SRV-101",
-    "payment_status": "Pending"
+    "payment_status": "Pending",
+    "vehicle_type": ""
   },
   {
     "id": 1793327716431,
@@ -551,7 +553,8 @@ export const BASE_FLEET_TASKS: any[] = [
     "created_at": "2026-10-30 02:35:16",
     "updated_at": "2026-10-30 02:35:16",
     "service_number": "SRV-101",
-    "payment_status": "Pending"
+    "payment_status": "Pending",
+    "vehicle_type": ""
   },
   {
     "id": 1793418489902,
@@ -598,7 +601,56 @@ export const BASE_FLEET_TASKS: any[] = [
     "created_at": "2026-10-31 03:48:09",
     "updated_at": "2026-10-31 03:48:09",
     "service_number": "SRV-101",
-    "payment_status": "Pending"
+    "payment_status": "Pending",
+    "vehicle_type": ""
+  },
+  {
+    "id": 1793974643420,
+    "trip_start_date": "2026-11-06",
+    "vehicle_number": "AP16TV1234",
+    "vehicle_status": "RUN",
+    "route_corridor": "Hyderabad → Bangalore",
+    "operator_organizer": "charvik",
+    "driver1": {
+      "employee_id": 1,
+      "employee_name": "akhil",
+      "role": "Driver",
+      "salary_amount": 1200,
+      "advance_amount": 0,
+      "balance_due": 1200
+    },
+    "driver2": {
+      "employee_id": 4,
+      "employee_name": "kittu",
+      "role": "Driver",
+      "salary_amount": 900,
+      "advance_amount": 0,
+      "balance_due": 900
+    },
+    "helper": {
+      "employee_id": 2,
+      "employee_name": "santhu",
+      "role": "Helper",
+      "salary_amount": 15000,
+      "advance_amount": 0,
+      "balance_due": 15000
+    },
+    "captain": {
+      "employee_id": 3,
+      "employee_name": "hari",
+      "role": "Captain",
+      "salary_amount": 0,
+      "advance_amount": 0,
+      "balance_due": 0,
+      "work_remarks": "Supervise route stops, passenger comfort & safety"
+    },
+    "trip_remarks": "",
+    "duty_status": "Scheduled",
+    "created_at": "2026-11-06 14:17:23",
+    "updated_at": "2026-11-06 14:17:23",
+    "service_number": "SRV-101",
+    "payment_status": "Pending",
+    "vehicle_type": "Sleeper/Seating"
   }
 ];
 

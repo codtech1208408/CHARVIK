@@ -22,6 +22,8 @@ import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { getNextEmployeeCode } from '../utils/employeeCode';
+import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
 
 export const DriverRegistration: React.FC = () => {
   const navigate = useNavigate();
@@ -84,7 +86,7 @@ export const DriverRegistration: React.FC = () => {
     reference_alt_phone: '',
 
     // Step 7: Employment Details
-    employee_code: `EMP-DRV-${Math.floor(1000 + Math.random() * 9000)}`,
+    employee_code: 'DRV-1001',
     employment_type: 'Permanent',
     salary: '',
     joining_date: new Date().toISOString().split('T')[0],
@@ -97,6 +99,30 @@ export const DriverRegistration: React.FC = () => {
 
   useEffect(() => {
     api.getBuses().then(setBuses).catch(console.error);
+    api.getNextEmployeeCode('Driver')
+      .then((res) => {
+        if (res?.nextCode) {
+          setFormData((prev: any) => ({
+            ...prev,
+            employee_code: res.nextCode
+          }));
+        }
+      })
+      .catch(() => {
+        api.getEmployees().then((empList) => {
+          const list = Array.isArray(empList) ? empList : [];
+          const nextCode = getNextEmployeeCode('Driver', list);
+          setFormData((prev: any) => ({
+            ...prev,
+            employee_code: nextCode
+          }));
+        }).catch(() => {
+          setFormData((prev: any) => ({
+            ...prev,
+            employee_code: 'DRV-1001'
+          }));
+        });
+      });
   }, []);
 
   const handleInputChange = (field: string, value: any) => {
@@ -339,7 +365,7 @@ export const DriverRegistration: React.FC = () => {
                     type="text"
                     value={formData.employee_code}
                     onChange={(e) => handleInputChange('employee_code', e.target.value)}
-                    placeholder="e.g. EMP-DRV-1001"
+                    placeholder="e.g. DRV-1001"
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold text-blue-700"
                     required
                   />
