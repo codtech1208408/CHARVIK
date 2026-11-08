@@ -784,16 +784,16 @@ export const Earnings: React.FC = () => {
 
             {/* Ledger Table */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm" style={{ minWidth: '1050px' }}>
+              <table className="w-full text-left text-sm" style={{ minWidth: '780px' }}>
                 <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                   <tr>
-                    <th className="py-4 px-6 min-w-[240px]">EMPLOYEE ID &amp; NAME</th>
-                    <th className="py-4 px-5 min-w-[120px]">CATEGORY</th>
-                    <th className="py-4 px-5 min-w-[130px]">TASKS HANDLED</th>
-                    <th className="py-4 px-5 min-w-[140px]">SALARY EARNED</th>
-                    <th className="py-4 px-5 min-w-[140px]">PENDING DUE</th>
-                    <th className="py-4 px-5 min-w-[140px]">SETTLED TOTAL</th>
-                    <th className="py-4 px-5 text-center min-w-[90px]">ACTION</th>
+                    <th className="py-2.5 px-3 min-w-[200px]">EMPLOYEE ID &amp; NAME</th>
+                    <th className="py-2.5 px-3 w-32">CATEGORY</th>
+                    <th className="py-2.5 px-3 w-32">TASKS HANDLED</th>
+                    <th className="py-2.5 px-3 w-36">SALARY EARNED</th>
+                    <th className="py-2.5 px-3 w-36">PENDING DUE</th>
+                    <th className="py-2.5 px-3 w-36">SETTLED TOTAL</th>
+                    <th className="py-2.5 px-3 text-center w-28">ACTION</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -811,7 +811,7 @@ export const Earnings: React.FC = () => {
                     paginatedRecords.map((r) => (
                       <tr key={r.full_name} className="hover:bg-slate-50/80 transition-colors">
                         {/* 1. EMPLOYEE ID & NAME */}
-                        <td className="py-4 px-6 whitespace-nowrap">
+                        <td className="py-2 px-3 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             {r.profile_photo ? (
                               <img
@@ -834,7 +834,7 @@ export const Earnings: React.FC = () => {
                         </td>
 
                         {/* 2. CATEGORY */}
-                        <td className="py-4 px-5 whitespace-nowrap">
+                        <td className="py-2 px-3 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold ${
                               r.role === 'Driver'
@@ -849,27 +849,27 @@ export const Earnings: React.FC = () => {
                         </td>
 
                         {/* 3. TASKS HANDLED */}
-                        <td className="py-4 px-5 font-semibold text-slate-700 whitespace-nowrap">
+                        <td className="py-2 px-3 font-semibold text-slate-700 whitespace-nowrap">
                           {r.tasksHandled} {r.tasksHandled === 1 ? 'task' : 'tasks'}
                         </td>
 
                         {/* 4. SALARY EARNED */}
-                        <td className="py-4 px-5 font-mono font-bold text-slate-900 whitespace-nowrap">
+                        <td className="py-2 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
                           ₹{r.salaryEarned.toLocaleString('en-IN')}
                         </td>
 
                         {/* 5. PENDING DUE */}
-                        <td className="py-4 px-5 font-mono font-bold text-rose-600 whitespace-nowrap">
+                        <td className="py-2 px-3 font-mono font-bold text-rose-600 whitespace-nowrap">
                           ₹{r.pendingDue.toLocaleString('en-IN')}
                         </td>
 
                         {/* 6. SETTLED TOTAL */}
-                        <td className="py-4 px-5 font-mono font-bold text-emerald-600 whitespace-nowrap">
+                        <td className="py-2 px-3 font-mono font-bold text-emerald-600 whitespace-nowrap">
                           ₹{r.settledTotal.toLocaleString('en-IN')}
                         </td>
 
                         {/* 7. ACTION */}
-                        <td className="py-4 px-5 text-center whitespace-nowrap">
+                        <td className="py-2 px-3 text-center whitespace-nowrap">
                           <button
                             type="button"
                             onClick={() => navigate(`/admin/employee-payments?name=${encodeURIComponent(r.full_name)}&code=${encodeURIComponent(r.employee_code)}&period=${period}`)}

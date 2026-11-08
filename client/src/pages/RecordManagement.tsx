@@ -697,17 +697,17 @@ export const RecordManagement: React.FC = () => {
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="py-4 px-4 text-center w-12">S.NO</th>
-                <th className="py-4 px-4 min-w-[120px]">RECORD #</th>
-                <th className="py-4 px-4 min-w-[100px] text-center">DATE</th>
-                <th className="py-4 px-4 min-w-[200px]">BILLED TO (CLIENT)</th>
-                <th className="py-4 px-4 min-w-[120px]">PERIOD</th>
-                <th className="py-4 px-4 min-w-[140px] text-center">STAFF COUNT</th>
-                <th className="py-4 px-4 min-w-[130px] text-right">TOTAL AMOUNT</th>
-                <th className="py-4 px-4 min-w-[120px] text-right">RECEIVED</th>
-                <th className="py-4 px-4 min-w-[120px] text-right">BALANCE</th>
-                <th className="py-4 px-4 min-w-[100px] text-center">STATUS</th>
-                <th className="py-4 px-4 min-w-[140px] text-center">ACTIONS</th>
+                <th className="py-2.5 px-3 text-center w-12">S.NO</th>
+                <th className="py-2.5 px-3 min-w-[95px]">RECORD #</th>
+                <th className="py-2.5 px-3 min-w-[85px] text-center">DATE</th>
+                <th className="py-2.5 px-3 min-w-[110px]">BILLED TO (CLIENT)</th>
+                <th className="py-2.5 px-3 min-w-[95px]">PERIOD</th>
+                <th className="py-2.5 px-3 min-w-[100px] text-center">STAFF COUNT</th>
+                <th className="py-2.5 px-3 min-w-[105px] text-right">TOTAL AMOUNT</th>
+                <th className="py-2.5 px-3 min-w-[95px] text-right">RECEIVED</th>
+                <th className="py-2.5 px-3 min-w-[95px] text-right">BALANCE</th>
+                <th className="py-2.5 px-3 min-w-[100px] text-center">STATUS</th>
+                <th className="py-2.5 px-3 min-w-[100px] text-center">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -731,22 +731,22 @@ export const RecordManagement: React.FC = () => {
                 filteredRecords.map((r, index) => (
                   <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
                     {/* 1. S.NO */}
-                    <td className="py-3.5 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
+                    <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
 
                     {/* 2. RECORD # */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-blue-700">
+                    <td className="py-2 px-3 font-mono font-bold text-blue-700">
                       <span className="bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg">
                         {r.record_number}
                       </span>
                     </td>
 
                     {/* 3. DATE */}
-                    <td className="py-3.5 px-4 text-center font-medium text-slate-600">
+                    <td className="py-2 px-3 text-center font-medium text-slate-600">
                       {r.record_date}
                     </td>
 
                     {/* 4. BILLED TO */}
-                    <td className="py-3.5 px-4 font-bold text-slate-900">
+                    <td className="py-2 px-3 font-bold text-slate-900">
                       <div>
                         <span>{r.bill_to_name}</span>
                         {r.bill_to_phone && (
@@ -758,34 +758,34 @@ export const RecordManagement: React.FC = () => {
                     </td>
 
                     {/* 5. PERIOD */}
-                    <td className="py-3.5 px-4 font-medium text-slate-700">
+                    <td className="py-2 px-3 font-medium text-slate-700">
                       {r.period_month || '—'}
                     </td>
 
                     {/* 6. STAFF COUNT */}
-                    <td className="py-3.5 px-4 text-center font-bold text-slate-800">
+                    <td className="py-2 px-3 text-center font-bold text-slate-800">
                       <span className="bg-slate-100 px-2 py-0.5 rounded-md">
                         {r.total_staff_count} Staff
                       </span>
                     </td>
 
                     {/* 7. TOTAL AMOUNT */}
-                    <td className="py-3.5 px-4 text-right font-black text-slate-900">
+                    <td className="py-2 px-3 text-right font-black text-slate-900">
                       ₹{Number(r.total_amount || 0).toLocaleString('en-IN')}
                     </td>
 
                     {/* 8. RECEIVED */}
-                    <td className="py-3.5 px-4 text-right font-bold text-emerald-700">
+                    <td className="py-2 px-3 text-right font-bold text-emerald-700">
                       ₹{Number(r.received_amount || 0).toLocaleString('en-IN')}
                     </td>
 
                     {/* 9. BALANCE */}
-                    <td className="py-3.5 px-4 text-right font-bold text-rose-600">
+                    <td className="py-2 px-3 text-right font-bold text-rose-600">
                       ₹{Number(r.balance_amount || 0).toLocaleString('en-IN')}
                     </td>
 
                     {/* 10. STATUS */}
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-2 px-3 text-center">
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                           r.payment_status === 'Paid'
@@ -800,7 +800,7 @@ export const RecordManagement: React.FC = () => {
                     </td>
 
                     {/* 11. ACTIONS */}
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-2 px-3 text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         {/* Print Record Button (Matching Images 1, 2, 3) */}
                         <button
@@ -989,10 +989,10 @@ export const RecordManagement: React.FC = () => {
                   <thead className="bg-slate-100 text-slate-900 font-bold uppercase text-[10px] border-b border-slate-200">
                     <tr>
                       <th className="py-2.5 px-3 text-center w-12 text-slate-900">Sr.No</th>
-                      <th className="py-2.5 px-3 min-w-[200px] text-slate-900">Description of Services *</th>
-                      <th className="py-2.5 px-3 min-w-[140px] text-slate-900">Category *</th>
-                      <th className="py-2.5 px-3 min-w-[140px] text-center text-slate-900">No of Drivers/Cleaners/Captain</th>
-                      <th className="py-2.5 px-3 min-w-[140px] text-right text-slate-900">Salary Paid (₹) *</th>
+                      <th className="py-2.5 px-3 min-w-[100px] text-slate-900">Description of Services *</th>
+                      <th className="py-2.5 px-3 min-w-[100px] text-slate-900">Category *</th>
+                      <th className="py-2.5 px-3 min-w-[100px] text-center text-slate-900">No of Drivers/Cleaners/Captain</th>
+                      <th className="py-2.5 px-3 min-w-[100px] text-right text-slate-900">Salary Paid (₹) *</th>
                       <th className="py-2.5 px-2 text-center w-10"></th>
                     </tr>
                   </thead>
@@ -1062,10 +1062,10 @@ export const RecordManagement: React.FC = () => {
                       <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px] text-slate-900">
                         Total:
                       </td>
-                      <td className="py-3.5 px-4 text-center text-sm font-black text-slate-900">
+                      <td className="py-2 px-3 text-center text-sm font-black text-slate-900">
                         {formCalculations.staffCount}
                       </td>
-                      <td className="py-3.5 px-4 text-right text-sm font-black text-slate-900">
+                      <td className="py-2 px-3 text-right text-sm font-black text-slate-900">
                         ₹{formCalculations.totalAmt.toLocaleString('en-IN')}
                       </td>
                       <td></td>
@@ -1389,28 +1389,28 @@ export const RecordManagement: React.FC = () => {
                   <thead className="bg-[#142B4A] text-white font-bold uppercase text-[11px] tracking-wide">
                     <tr>
                       <th className="py-2.5 px-3 text-center w-14 border-r border-slate-600">Sr.No</th>
-                      <th className="py-2.5 px-4 border-r border-slate-600">Description of Services</th>
+                      <th className="py-2.5 px-3 border-r border-slate-600">Description of Services</th>
                       <th className="py-2.5 px-3 text-center border-r border-slate-600">Category</th>
                       <th className="py-2.5 px-3 text-center border-r border-slate-600">No of Drivers / Cleaners / Captain</th>
-                      <th className="py-2.5 px-4 text-right">Salary Paid</th>
+                      <th className="py-2.5 px-3 text-right">Salary Paid</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-300 font-medium text-slate-800">
                     {printingRecord.items.map((item, idx) => (
                       <tr key={item.id || idx}>
-                        <td className="py-3.5 px-4 text-center font-bold text-slate-600 border-r border-slate-300">
+                        <td className="py-2 px-3 text-center font-bold text-slate-600 border-r border-slate-300">
                           {idx + 1}
                         </td>
-                        <td className="py-3.5 px-4 border-r border-slate-300 font-semibold text-slate-900 break-words">
+                        <td className="py-2 px-3 border-r border-slate-300 font-semibold text-slate-900 break-words">
                           {item.description}
                         </td>
-                        <td className="py-3.5 px-4 text-center border-r border-slate-300">
+                        <td className="py-2 px-3 text-center border-r border-slate-300">
                           {item.category}
                         </td>
-                        <td className="py-3.5 px-4 text-center border-r border-slate-300 font-bold">
+                        <td className="py-2 px-3 text-center border-r border-slate-300 font-bold">
                           {item.staff_count}
                         </td>
-                        <td className="py-3.5 px-4 text-right font-bold text-slate-900">
+                        <td className="py-2 px-3 text-right font-bold text-slate-900">
                           ₹{Number(item.salary_paid).toLocaleString('en-IN')}
                         </td>
                       </tr>
@@ -1418,20 +1418,20 @@ export const RecordManagement: React.FC = () => {
 
                     {/* Total Row (Exact Match for Image 4) */}
                     <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-400">
-                      <td colSpan={3} className="py-2.5 px-4 text-right uppercase tracking-wider text-xs border-r border-slate-300">
+                      <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-xs border-r border-slate-300">
                         Total
                       </td>
-                      <td className="py-3.5 px-4 text-center border-r border-slate-300 text-sm">
+                      <td className="py-2 px-3 text-center border-r border-slate-300 text-sm">
                         {printingRecord.total_staff_count}
                       </td>
-                      <td className="py-3.5 px-4 text-right text-sm text-[#142B4A]">
+                      <td className="py-2 px-3 text-right text-sm text-[#142B4A]">
                         ₹{Number(printingRecord.total_amount).toLocaleString('en-IN')}
                       </td>
                     </tr>
 
                     {/* In Words Row (Exact Match for Image 4) */}
                     <tr className="bg-slate-50 border-t border-slate-300">
-                      <td colSpan={5} className="py-2 px-4 text-xs font-semibold italic text-slate-700">
+                      <td colSpan={5} className="py-2 px-3 text-xs font-semibold italic text-slate-700">
                         <strong>In words:</strong> {printingRecord.amount_in_words || numberToWordsIndian(printingRecord.total_amount)}
                       </td>
                     </tr>

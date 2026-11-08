@@ -193,14 +193,14 @@ export const WebsiteInquiries: React.FC = () => {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
               <tr>
-                <th className="py-4 px-4 w-14 text-center">S.NO</th>
-                <th className="py-4 px-4">Date</th>
-                <th className="py-4 px-4">Prospect Name</th>
-                <th className="py-4 px-4">Contact Phone & Email</th>
-                <th className="py-4 px-4">Service Requested</th>
-                <th className="py-4 px-4">Inquiry Message</th>
-                <th className="py-4 px-4">Lead Status</th>
-                <th className="py-4 px-4 text-center">Action</th>
+                <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
+                <th className="py-2.5 px-3">Date</th>
+                <th className="py-2.5 px-3">Prospect Name</th>
+                <th className="py-2.5 px-3">Contact Phone & Email</th>
+                <th className="py-2.5 px-3">Service Requested</th>
+                <th className="py-2.5 px-3">Inquiry Message</th>
+                <th className="py-2.5 px-3">Lead Status</th>
+                <th className="py-2.5 px-3 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -213,10 +213,10 @@ export const WebsiteInquiries: React.FC = () => {
               ) : (
                 filtered.map((item, index) => (
                   <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-800">{item.date}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900">{item.name}</td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+                    <td className="py-2 px-3 font-semibold text-slate-800">{item.date}</td>
+                    <td className="py-2 px-3 font-bold text-slate-900">{item.name}</td>
+                    <td className="py-2 px-3">
                       <p className="font-bold text-slate-800 flex items-center gap-1.5">
                         <Phone className="w-3 h-3 text-blue-600" />
                         <a href={`tel:${item.phone}`} className="hover:underline">
@@ -230,11 +230,11 @@ export const WebsiteInquiries: React.FC = () => {
                         </a>
                       </p>
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-blue-700">{item.service_type}</td>
-                    <td className="py-3.5 px-4 text-slate-600 max-w-[260px]">
+                    <td className="py-2 px-3 font-semibold text-blue-700">{item.service_type}</td>
+                    <td className="py-2 px-3 text-slate-600 max-w-[260px]">
                       <p className="line-clamp-2">{item.message}</p>
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-2 px-3">
                       <select
                         value={item.status}
                         onChange={(e) => handleStatusChange(item.id, e.target.value as any)}
@@ -255,7 +255,7 @@ export const WebsiteInquiries: React.FC = () => {
                         <option value="Closed">Closed</option>
                       </select>
                     </td>
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-2 px-3 text-center">
                       <button
                         onClick={() => handleDelete(item.id)}
                         className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"

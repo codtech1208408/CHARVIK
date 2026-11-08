@@ -711,15 +711,15 @@ export const VehicleMaintenance: React.FC = () => {
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
-                    <th className="py-4 px-4">Date</th>
-                    <th className="py-4 px-4">Service</th>
-                    <th className="py-4 px-4">Previous KM</th>
-                    <th className="py-4 px-4">Odometer KM</th>
-                    <th className="py-4 px-4">Next Due</th>
-                    <th className="py-4 px-4">Cost</th>
-                    <th className="py-4 px-4">Workshop / Mechanic</th>
-                    <th className="py-4 px-4 text-center">Invoice / Photos</th>
-                    <th className="py-4 px-4">Remarks</th>
+                    <th className="py-2.5 px-3">Date</th>
+                    <th className="py-2.5 px-3">Service</th>
+                    <th className="py-2.5 px-3">Previous KM</th>
+                    <th className="py-2.5 px-3">Odometer KM</th>
+                    <th className="py-2.5 px-3">Next Due</th>
+                    <th className="py-2.5 px-3">Cost</th>
+                    <th className="py-2.5 px-3">Workshop / Mechanic</th>
+                    <th className="py-2.5 px-3 text-center">Invoice / Photos</th>
+                    <th className="py-2.5 px-3">Remarks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -741,31 +741,31 @@ export const VehicleMaintenance: React.FC = () => {
 
                       return (
                         <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-4 px-4 font-semibold whitespace-nowrap text-slate-900">
+                          <td className="py-2 px-3 font-semibold whitespace-nowrap text-slate-900">
                             {h.completion_date}
                           </td>
-                          <td className="py-4 px-4 font-bold text-slate-900 whitespace-nowrap">
+                          <td className="py-2 px-3 font-bold text-slate-900 whitespace-nowrap">
                             {h.service_type}
                           </td>
-                          <td className="py-4 px-4 font-mono text-slate-500">
+                          <td className="py-2 px-3 font-mono text-slate-500">
                             {h.previous_km ? `${Number(h.previous_km).toLocaleString('en-IN')}` : '—'}
                           </td>
-                          <td className="py-4 px-4 font-mono font-bold text-slate-900">
+                          <td className="py-2 px-3 font-mono font-bold text-slate-900">
                             {Number(h.odometer_km || 0).toLocaleString('en-IN')}
                           </td>
-                          <td className="py-4 px-4 font-mono text-slate-700 whitespace-nowrap">
+                          <td className="py-2 px-3 font-mono text-slate-700 whitespace-nowrap">
                             {h.next_due_km ? `${Number(h.next_due_km).toLocaleString('en-IN')} KM` : (h.next_due_date || '—')}
                           </td>
-                          <td className="py-4 px-4 font-bold text-slate-900 font-mono">
+                          <td className="py-2 px-3 font-bold text-slate-900 font-mono">
                             ₹{Number(h.cost || 0).toLocaleString('en-IN')}
                           </td>
-                          <td className="py-4 px-4">
+                          <td className="py-2 px-3">
                             <span className="font-semibold text-slate-800 block">{h.workshop || 'Charvik Central Workshop'}</span>
                             {h.mechanic_name && (
                               <span className="text-xs text-slate-400 block mt-0.5">{h.mechanic_name}</span>
                             )}
                           </td>
-                          <td className="py-4 px-4 text-center">
+                          <td className="py-2 px-3 text-center">
                             {parsedPhotos.length > 0 ? (
                               <div className="flex items-center justify-center gap-1.5">
                                 {parsedPhotos.map((photoUrl, pIdx) => (
@@ -784,7 +784,7 @@ export const VehicleMaintenance: React.FC = () => {
                               <span className="text-slate-400">—</span>
                             )}
                           </td>
-                          <td className="py-4 px-4 text-slate-600 text-sm max-w-xs truncate">
+                          <td className="py-2 px-3 text-slate-600 text-sm max-w-xs truncate">
                             {h.remarks || '—'}
                           </td>
                         </tr>

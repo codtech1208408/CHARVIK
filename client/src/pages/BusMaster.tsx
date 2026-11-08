@@ -837,12 +837,12 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
             <table className="w-full text-left text-sm">
               <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                 <tr>
-                  <th className="py-4 px-4 w-16 text-center">S.NO</th>
-                  <th className="py-4 px-4">Registration No.</th>
-                  <th className="py-4 px-4">Bus Type</th>
-                  <th className="py-4 px-4">Compliance & 1-Day Alerts</th>
-                  <th className="py-4 px-4">Status</th>
-                  <th className="py-4 px-4 text-center">Actions</th>
+                  <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
+                  <th className="py-2.5 px-3">Registration No.</th>
+                  <th className="py-2.5 px-3">Bus Type</th>
+                  <th className="py-2.5 px-3">Compliance & 1-Day Alerts</th>
+                  <th className="py-2.5 px-3">Status</th>
+                  <th className="py-2.5 px-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -862,10 +862,10 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                 ) : (
                   filteredBuses.map((b, index) => (
                     <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
-                      <td className="py-3.5 px-4 font-mono font-bold text-[#142B4A] text-sm">{b.registration_number}</td>
-                      <td className="py-3.5 px-4 font-medium text-slate-800">{b.bus_type || '—'}</td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+                      <td className="py-2 px-3 font-mono font-bold text-[#142B4A] text-sm">{b.registration_number}</td>
+                      <td className="py-2 px-3 font-medium text-slate-800">{b.bus_type || '—'}</td>
+                      <td className="py-2 px-3">
                         {(() => {
                           const busAlerts = getBusAlerts(b);
                           const topAlert = busAlerts[0];
@@ -917,10 +917,10 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                           );
                         })()}
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-2 px-3">
                         <Badge status={b.operational_status} />
                       </td>
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-2 px-3 text-center">
                         <div className="flex items-center justify-center space-x-1.5">
                           <button
                             onClick={() => handleViewProfile(b)}

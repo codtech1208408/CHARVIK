@@ -559,16 +559,16 @@ export const EmployeeManagement: React.FC = () => {
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
               <tr>
-                <th className="py-4 px-5 w-16 text-center">S.NO</th>
-                <th className="py-4 px-5 min-w-[140px]">Code</th>
-                <th className="py-4 px-6 min-w-[200px]">Employee Name</th>
-                <th className="py-4 px-5 min-w-[120px]">Role</th>
-                <th className="py-4 px-6 min-w-[180px]">Worker Type & Salary</th>
-                <th className="py-4 px-5 min-w-[140px]">Phone Number</th>
-                <th className="py-4 px-5 min-w-[130px]">Joining Date</th>
-                <th className="py-4 px-5 min-w-[150px]">Licence Validity</th>
-                <th className="py-4 px-5 min-w-[120px]">Status</th>
-                <th className="py-4 px-5 text-center min-w-[130px]">Actions</th>
+                <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
+                <th className="py-2.5 px-3 min-w-[110px]">Code</th>
+                <th className="py-2.5 px-3 min-w-[160px]">Employee Name</th>
+                <th className="py-2.5 px-3 min-w-[90px]">Role</th>
+                <th className="py-2.5 px-3 min-w-[100px]">Worker Type & Salary</th>
+                <th className="py-2.5 px-3 min-w-[110px]">Phone Number</th>
+                <th className="py-2.5 px-3 min-w-[100px]">Joining Date</th>
+                <th className="py-2.5 px-3 min-w-[110px]">Licence Validity</th>
+                <th className="py-2.5 px-3 min-w-[90px]">Status</th>
+                <th className="py-2.5 px-3 text-center min-w-[95px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -588,9 +588,9 @@ export const EmployeeManagement: React.FC = () => {
               ) : (
                 filteredEmployees.map((e, index) => (
                   <tr key={e.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-4 px-5 font-bold text-slate-500 text-center">{index + 1}</td>
-                    <td className="py-4 px-5 font-mono font-bold text-slate-900 tracking-wide">{e.employee_code}</td>
-                    <td className="py-4 px-6">
+                    <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+                    <td className="py-2 px-3 font-mono font-bold text-slate-900 tracking-wide">{e.employee_code}</td>
+                    <td className="py-2 px-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-2xs">
                           {e.full_name.slice(0, 2)}
@@ -598,12 +598,12 @@ export const EmployeeManagement: React.FC = () => {
                         <span className="font-bold text-slate-900 text-[13px]">{e.full_name}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-5">
+                    <td className="py-2 px-3">
                       <span className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-100 text-slate-800">
                         {e.role}
                       </span>
                     </td>
-                    <td className="py-4 px-6">
+                    <td className="py-2 px-3">
                       <div className="flex flex-col gap-1">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold w-fit ${
                           e.employment_type === 'Temporary'
@@ -617,9 +617,9 @@ export const EmployeeManagement: React.FC = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-5 font-medium">{e.phone_number}</td>
-                    <td className="py-4 px-5 text-slate-500">{e.joining_date || '-'}</td>
-                    <td className="py-4 px-5">
+                    <td className="py-2 px-3 font-medium">{e.phone_number}</td>
+                    <td className="py-2 px-3 text-slate-500">{e.joining_date || '-'}</td>
+                    <td className="py-2 px-3">
                       {e.licence_validity_date ? (
                         <span className="font-semibold text-slate-800 font-mono">
                           {e.licence_validity_date}
@@ -628,10 +628,10 @@ export const EmployeeManagement: React.FC = () => {
                         <span className="text-slate-400">-</span>
                       )}
                     </td>
-                    <td className="py-4 px-5">
+                    <td className="py-2 px-3">
                       <Badge status={e.employment_status} />
                     </td>
-                    <td className="py-4 px-5 text-center">
+                    <td className="py-2 px-3 text-center">
                       <div className="flex items-center justify-center space-x-2">
                         <button
                           onClick={() => handleOpenProfile(e)}
@@ -765,12 +765,12 @@ export const EmployeeManagement: React.FC = () => {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="bg-slate-50/75 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
-                    <th className="py-3 px-4 w-14 text-center">S.NO</th>
-                    <th className="py-3 px-4">Staff Member</th>
-                    <th className="py-3 px-4">Login Identifier</th>
-                    <th className="py-3 px-4">Permitted Categories</th>
-                    <th className="py-3 px-4">Access Status</th>
-                    <th className="py-3 px-4 text-center">Manage Access & Permissions</th>
+                    <th className="py-2 px-3 w-12 text-center">S.NO</th>
+                    <th className="py-2 px-3">Staff Member</th>
+                    <th className="py-2 px-3">Login Identifier</th>
+                    <th className="py-2 px-3">Permitted Categories</th>
+                    <th className="py-2 px-3">Access Status</th>
+                    <th className="py-2 px-3 text-center">Manage Access & Permissions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -794,8 +794,8 @@ export const EmployeeManagement: React.FC = () => {
                       const assignedCats = Array.isArray(s.categories) ? s.categories : [];
                       return (
                       <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+                        <td className="py-2 px-3">
                           <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs">
                               {displayName?.slice(0, 2).toUpperCase() || 'ST'}
@@ -814,13 +814,13 @@ export const EmployeeManagement: React.FC = () => {
                           </div>
                         </td>
 
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3">
                           <div className="font-mono text-slate-800 font-semibold bg-slate-100 px-2.5 py-1 rounded-lg w-fit text-[11px]">
                             {s.username || s.email_or_username || s.phone_number || '—'}
                           </div>
                         </td>
 
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3">
                           {s.role === 'Super Admin' || s.role === 'Admin' ? (
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -839,7 +839,7 @@ export const EmployeeManagement: React.FC = () => {
                           )}
                         </td>
 
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3">
                           {s.status === 'Active' ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">
                               <Check className="w-3 h-3" />
@@ -853,7 +853,7 @@ export const EmployeeManagement: React.FC = () => {
                           )}
                         </td>
 
-                        <td className="py-3 px-4 text-center">
+                        <td className="py-2 px-3 text-center">
                           <div className="flex items-center justify-center space-x-1.5">
                             {/* Manage Categories / Permissions */}
                             {s.role === 'Super Admin' || s.role === 'Admin' ? (

@@ -448,13 +448,13 @@ export const OrganizerManagement: React.FC = () => {
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
               <tr>
-                <th className="py-4 px-4 w-14 text-center">S.NO</th>
-                <th className="py-4 px-4">Organization Name</th>
-                <th className="py-4 px-4">GST Number</th>
-                <th className="py-4 px-4">Contact Person</th>
-                <th className="py-4 px-4">Phone Number</th>
-                <th className="py-4 px-4">Email Address</th>
-                <th className="py-4 px-4 text-center">Actions</th>
+                <th className="py-2.5 px-3 w-12 text-center">S.NO</th>
+                <th className="py-2.5 px-3 min-w-[200px]">Organization Name</th>
+                <th className="py-2.5 px-3 w-44">GST Number</th>
+                <th className="py-2.5 px-3 w-40">Contact Person</th>
+                <th className="py-2.5 px-3 w-36">Phone Number</th>
+                <th className="py-2.5 px-3 min-w-[180px]">Email Address</th>
+                <th className="py-2.5 px-3 w-28 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -475,8 +475,8 @@ export const OrganizerManagement: React.FC = () => {
               ) : (
                 filteredOrganizers.map((o, index) => (
                   <tr key={o.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+                    <td className="py-2 px-3">
                       <p className="font-bold text-slate-900 flex items-center gap-1.5">
                         <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                         <span>{o.organization_name}</span>
@@ -489,7 +489,7 @@ export const OrganizerManagement: React.FC = () => {
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-2 px-3">
                       {o.gst_number ? (
                         <span className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">
                           {o.gst_number}
@@ -499,11 +499,11 @@ export const OrganizerManagement: React.FC = () => {
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-2 px-3">
                       <p className="font-bold text-slate-800">{o.contact_person}</p>
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-2 px-3">
                       <a
                         href={`tel:${o.phone_number}`}
                         className="font-medium text-blue-600 hover:underline flex items-center gap-1"
@@ -513,7 +513,7 @@ export const OrganizerManagement: React.FC = () => {
                       </a>
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-2 px-3">
                       {o.email ? (
                         <a
                           href={`mailto:${o.email}`}
@@ -527,7 +527,7 @@ export const OrganizerManagement: React.FC = () => {
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-2 px-3 text-center">
                       <div className="flex items-center justify-center space-x-1.5">
                         <button
                           type="button"
@@ -919,31 +919,31 @@ export const OrganizerManagement: React.FC = () => {
                         <table className="w-full text-left text-sm">
                           <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                             <tr>
-                              <th className="py-4 px-4">#</th>
-                              <th className="py-4 px-4">PERIOD</th>
-                              <th className="py-4 px-4">DATE</th>
-                              <th className="py-4 px-4">AMOUNT</th>
-                              <th className="py-4 px-4">MODE</th>
-                              <th className="py-4 px-4">PROOF</th>
-                              <th className="py-4 px-4">NOTES</th>
-                              <th className="py-4 px-4 text-center">ACTIONS</th>
+                              <th className="py-2 px-3">#</th>
+                              <th className="py-2 px-3">PERIOD</th>
+                              <th className="py-2 px-3">DATE</th>
+                              <th className="py-2 px-3">AMOUNT</th>
+                              <th className="py-2 px-3">MODE</th>
+                              <th className="py-2 px-3">PROOF</th>
+                              <th className="py-2 px-3">NOTES</th>
+                              <th className="py-2 px-3 text-center">ACTIONS</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 text-slate-700">
                             {orgRecords.map((rec, idx) => (
                               <tr key={rec.id || idx} className="hover:bg-slate-50 transition-colors">
-                                <td className="py-3.5 px-4 font-bold text-slate-400">{idx + 1}</td>
-                                <td className="py-3.5 px-4 font-bold text-slate-800">{rec.period || '-'}</td>
-                                <td className="py-3.5 px-4 text-slate-600 font-medium">{rec.received_date}</td>
-                                <td className="py-3.5 px-4 font-mono font-bold text-emerald-600">
+                                <td className="py-2 px-3 font-bold text-slate-400">{idx + 1}</td>
+                                <td className="py-2 px-3 font-bold text-slate-800">{rec.period || '-'}</td>
+                                <td className="py-2 px-3 text-slate-600 font-medium">{rec.received_date}</td>
+                                <td className="py-2 px-3 font-mono font-bold text-emerald-600">
                                   ₹{Number(rec.amount || 0).toLocaleString('en-IN')}
                                 </td>
-                                <td className="py-3.5 px-4">
+                                <td className="py-2 px-3">
                                   <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                                     {rec.payment_mode || 'Cash'}
                                   </span>
                                 </td>
-                                <td className="py-3.5 px-4">
+                                <td className="py-2 px-3">
                                   {rec.payment_proof ? (
                                     <button
                                       type="button"
@@ -957,10 +957,10 @@ export const OrganizerManagement: React.FC = () => {
                                     <span className="text-slate-300">—</span>
                                   )}
                                 </td>
-                                <td className="py-3.5 px-4 text-slate-500 max-w-[160px] truncate">
+                                <td className="py-2 px-3 text-slate-500 max-w-[160px] truncate">
                                   {rec.notes || '—'}
                                 </td>
-                                <td className="py-3.5 px-4 text-center">
+                                <td className="py-2 px-3 text-center">
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteOrganizerPayment(rec.id)}

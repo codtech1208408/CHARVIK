@@ -1238,24 +1238,24 @@ export const TaskManagement: React.FC = () => {
               <table className="w-full text-left text-sm whitespace-nowrap border-collapse">
                 <thead className="bg-[#142B4A] text-white font-bold text-xs uppercase tracking-wider border-b border-slate-700 sticky top-0 z-10">
                   <tr>
-                    <th className="py-3 px-3 text-center border-r border-slate-700">DATE</th>
-                    <th className="py-3 px-3 text-center border-r border-slate-700">SERVICE ID</th>
-                    <th className="py-3 px-4 border-r border-slate-700">ROUTE</th>
-                    <th className="py-3 px-3 text-center border-r border-slate-700">VEHICLE NO</th>
-                    <th className="py-3 px-3 text-center border-r border-slate-700">STATUS</th>
-                    <th className="py-3 px-2 text-center border-r border-slate-700">EMP ID</th>
-                    <th className="py-3 px-3 border-r border-slate-700">DRIVER NAME 1</th>
-                    <th className="py-3 px-3 text-center border-r border-slate-700">AMOUNT</th>
-                    <th className="py-3 px-2 text-center border-r border-slate-700">EMP ID</th>
-                    <th className="py-3 px-3 border-r border-slate-700">DRIVER NAME2</th>
-                    <th className="py-3 px-3 text-center border-r border-slate-700">AMOUNT</th>
-                    <th className="py-3 px-2 text-center border-r border-slate-700">EMP ID 3</th>
-                    <th className="py-3 px-3 border-r border-slate-700">HELPER</th>
-                    <th className="py-3 px-3 text-center border-r border-slate-700">AMOUNT</th>
-                    <th className="py-3 px-2 text-center border-r border-slate-700 bg-blue-900/60">EMP ID 4</th>
-                    <th className="py-3 px-3 border-r border-slate-700 bg-blue-900/60">CAPTAIN</th>
-                    <th className="py-3 px-3 text-center border-r border-slate-700 bg-blue-900/60">AMOUNT</th>
-                    <th className="py-3 px-3 text-center no-print">ACTIONS</th>
+                    <th className="py-2 px-2.5 text-center border-r border-slate-700">DATE</th>
+                    <th className="py-2 px-2.5 text-center border-r border-slate-700">SERVICE ID</th>
+                    <th className="py-2 px-2.5 border-r border-slate-700">ROUTE</th>
+                    <th className="py-2 px-2.5 text-center border-r border-slate-700">VEHICLE NO</th>
+                    <th className="py-2 px-2.5 text-center border-r border-slate-700">STATUS</th>
+                    <th className="py-2 px-2 text-center border-r border-slate-700">EMP ID</th>
+                    <th className="py-2 px-2.5 border-r border-slate-700">DRIVER NAME 1</th>
+                    <th className="py-2 px-2.5 text-center border-r border-slate-700">AMOUNT</th>
+                    <th className="py-2 px-2 text-center border-r border-slate-700">EMP ID</th>
+                    <th className="py-2 px-2.5 border-r border-slate-700">DRIVER NAME2</th>
+                    <th className="py-2 px-2.5 text-center border-r border-slate-700">AMOUNT</th>
+                    <th className="py-2 px-2 text-center border-r border-slate-700">EMP ID 3</th>
+                    <th className="py-2 px-2.5 border-r border-slate-700">HELPER</th>
+                    <th className="py-2 px-2.5 text-center border-r border-slate-700">AMOUNT</th>
+                    <th className="py-2 px-2 text-center border-r border-slate-700 bg-blue-900/60">EMP ID 4</th>
+                    <th className="py-2 px-2.5 border-r border-slate-700 bg-blue-900/60">CAPTAIN</th>
+                    <th className="py-2 px-2.5 text-center border-r border-slate-700 bg-blue-900/60">AMOUNT</th>
+                    <th className="py-2 px-2.5 text-center no-print">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white font-medium text-slate-800">
@@ -1288,27 +1288,27 @@ export const TaskManagement: React.FC = () => {
                       return (
                         <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
                           {/* DATE */}
-                          <td className="py-3.5 px-3.5 text-center font-mono text-slate-600 border-r border-slate-100">
+                          <td className="py-2 px-2.5 text-center font-mono text-slate-600 border-r border-slate-100">
                             {formattedDate}
                           </td>
 
                           {/* SERVICE ID */}
-                          <td className="py-3.5 px-3.5 text-center font-bold text-slate-900 border-r border-slate-100">
+                          <td className="py-2 px-2.5 text-center font-bold text-slate-900 border-r border-slate-100">
                             {t.service_number || 'SRV-101'}
                           </td>
 
                           {/* ROUTE */}
-                          <td className="py-2.5 px-4 font-semibold text-slate-900 border-r border-slate-100">
+                          <td className="py-2.5 px-3 font-semibold text-slate-900 border-r border-slate-100">
                             {t.route_corridor || 'Hyderabad → Bangalore'}
                           </td>
 
                           {/* VEHICLE NO */}
-                          <td className="py-3.5 px-3.5 text-center font-mono font-bold text-blue-700 border-r border-slate-100">
+                          <td className="py-2 px-2.5 text-center font-mono font-bold text-blue-700 border-r border-slate-100">
                             {t.vehicle_number}
                           </td>
 
                           {/* STATUS */}
-                          <td className="py-3.5 px-3.5 text-center border-r border-slate-100">
+                          <td className="py-2 px-2.5 text-center border-r border-slate-100">
                             <span
                               className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider ${
                                 isHold
@@ -1324,10 +1324,10 @@ export const TaskManagement: React.FC = () => {
                           <td className="py-2.5 px-2 text-center font-mono text-slate-600 border-r border-slate-100">
                             {driver1EmpId}
                           </td>
-                          <td className="py-3.5 px-3.5 font-semibold text-slate-900 border-r border-slate-100">
+                          <td className="py-2 px-2.5 font-semibold text-slate-900 border-r border-slate-100">
                             {t.driver1?.employee_name || t.driver1_name || 'akhil'}
                           </td>
-                          <td className="py-3.5 px-3.5 text-center font-bold text-slate-900 border-r border-slate-100">
+                          <td className="py-2 px-2.5 text-center font-bold text-slate-900 border-r border-slate-100">
                             {isHold ? '₹500' : `₹${tripRate.toLocaleString('en-IN')}`}
                           </td>
 
@@ -1335,10 +1335,10 @@ export const TaskManagement: React.FC = () => {
                           <td className="py-2.5 px-2 text-center font-mono text-slate-600 border-r border-slate-100">
                             {driver2EmpId}
                           </td>
-                          <td className="py-3.5 px-3.5 font-semibold text-slate-900 border-r border-slate-100">
+                          <td className="py-2 px-2.5 font-semibold text-slate-900 border-r border-slate-100">
                             {t.driver2?.employee_name || t.driver2_name || '-'}
                           </td>
-                          <td className="py-3.5 px-3.5 text-center font-bold text-slate-900 border-r border-slate-100">
+                          <td className="py-2 px-2.5 text-center font-bold text-slate-900 border-r border-slate-100">
                             {t.driver2?.employee_name ? (isHold ? '₹500' : `₹${tripRate.toLocaleString('en-IN')}`) : '-'}
                           </td>
 
@@ -1346,10 +1346,10 @@ export const TaskManagement: React.FC = () => {
                           <td className="py-2.5 px-2 text-center font-mono text-slate-600 border-r border-slate-100">
                             {helperEmpId}
                           </td>
-                          <td className="py-3.5 px-3.5 font-semibold text-slate-900 border-r border-slate-100">
+                          <td className="py-2 px-2.5 font-semibold text-slate-900 border-r border-slate-100">
                             {t.helper?.employee_name || t.helper_name || '-'}
                           </td>
-                          <td className="py-3.5 px-3.5 text-center font-bold text-slate-900 border-r border-slate-100">
+                          <td className="py-2 px-2.5 text-center font-bold text-slate-900 border-r border-slate-100">
                             {t.helper?.employee_name ? (isHold ? '₹500' : `₹${tripRate.toLocaleString('en-IN')}`) : '-'}
                           </td>
 
@@ -1357,15 +1357,15 @@ export const TaskManagement: React.FC = () => {
                           <td className="py-2.5 px-2 text-center font-mono text-slate-600 border-r border-slate-100 bg-blue-50/30">
                             {captainEmpId}
                           </td>
-                          <td className="py-3.5 px-3.5 font-semibold text-slate-900 border-r border-slate-100 bg-blue-50/30">
+                          <td className="py-2 px-3.5 font-semibold text-slate-900 border-r border-slate-100 bg-blue-50/30">
                             {t.captain?.employee_name || t.captain_name || '-'}
                           </td>
-                          <td className="py-3.5 px-3.5 text-center font-bold text-slate-900 border-r border-slate-100 bg-blue-50/30">
+                          <td className="py-2 px-3.5 text-center font-bold text-slate-900 border-r border-slate-100 bg-blue-50/30">
                             {t.captain?.employee_name ? (isHold ? '₹500' : `₹${tripRate.toLocaleString('en-IN')}`) : '-'}
                           </td>
 
                           {/* ACTIONS */}
-                          <td className="py-3.5 px-3.5 text-center no-print">
+                          <td className="py-2 px-3.5 text-center no-print">
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 type="button"
@@ -1394,22 +1394,22 @@ export const TaskManagement: React.FC = () => {
               </table>
             ) : (
               /* Admin Original Table (Image 2) */
-              <table className="w-full text-left text-sm" style={{ minWidth: '1250px' }}>
+              <table className="w-full text-left text-sm" style={{ minWidth: '1050px' }}>
                 <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
                   <tr>
-                    <th className="py-3.5 px-3.5 w-12 text-center">S.NO</th>
-                    <th className="py-3.5 px-3.5 min-w-[95px] text-center">DATE</th>
-                    <th className="py-3.5 px-3.5 min-w-[120px]">VEHICLE NUMBER</th>
-                    <th className="py-3.5 px-3.5 min-w-[100px]">SERVICE NUMBER</th>
-                    <th className="py-3.5 px-3.5 min-w-[140px]">ROUTE</th>
-                    <th className="py-3.5 px-3.5 min-w-[100px]">VEHICLE STATUS</th>
-                    <th className="py-3.5 px-3.5 min-w-[110px]">OPERATOR</th>
-                    <th className="py-3.5 px-3.5 min-w-[110px]">DRIVER1</th>
-                    <th className="py-3.5 px-3.5 min-w-[110px]">DRIVER2</th>
-                    <th className="py-3.5 px-3.5 min-w-[95px]">HELPER</th>
-                    <th className="py-3.5 px-3.5 min-w-[95px]">CAPTAIN</th>
-                    <th className="py-3.5 px-3.5 min-w-[95px]">TOTAL</th>
-                    <th className="py-3.5 px-3.5 text-center min-w-[110px]">ACTIONS</th>
+                    <th className="py-2.5 px-2.5 w-12 text-center">S.NO</th>
+                    <th className="py-2.5 px-2.5 min-w-[85px] text-center">DATE</th>
+                    <th className="py-2.5 px-2.5 min-w-[105px]">VEHICLE NUMBER</th>
+                    <th className="py-2.5 px-2.5 min-w-[85px]">SERVICE NUMBER</th>
+                    <th className="py-2.5 px-2.5 min-w-[90px]">ROUTE</th>
+                    <th className="py-2.5 px-2.5 min-w-[85px]">VEHICLE STATUS</th>
+                    <th className="py-2.5 px-2.5 min-w-[95px]">OPERATOR</th>
+                    <th className="py-2.5 px-2.5 min-w-[95px]">DRIVER1</th>
+                    <th className="py-2.5 px-2.5 min-w-[95px]">DRIVER2</th>
+                    <th className="py-2.5 px-2.5 min-w-[85px]">HELPER</th>
+                    <th className="py-2.5 px-2.5 min-w-[85px]">CAPTAIN</th>
+                    <th className="py-2.5 px-2.5 min-w-[85px]">TOTAL</th>
+                    <th className="py-2.5 px-2.5 text-center min-w-[90px]">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -1440,24 +1440,24 @@ export const TaskManagement: React.FC = () => {
                       return (
                         <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
                           {/* 1. S.NO */}
-                          <td className="py-3.5 px-3.5 font-bold text-slate-500 text-center">{index + 1}</td>
+                          <td className="py-2 px-2.5 font-bold text-slate-500 text-center">{index + 1}</td>
 
                           {/* 2. DATE */}
-                          <td className="py-3.5 px-3.5 text-center">
+                          <td className="py-2 px-2.5 text-center">
                             <span className="font-mono font-bold text-slate-800 text-xs">
                               {formatDisplayDate(t.trip_start_date)}
                             </span>
                           </td>
 
                           {/* 3. VEHICLE NUMBER */}
-                          <td className="py-3.5 px-3.5">
+                          <td className="py-2 px-2.5">
                             <span className="font-mono font-black text-[#142B4A] text-sm tracking-wider uppercase block">
                               {t.vehicle_number}
                             </span>
                           </td>
 
                           {/* 4. SERVICE NUMBER */}
-                          <td className="py-3.5 px-3.5">
+                          <td className="py-2 px-2.5">
                             {t.service_number ? (
                               <span className="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-lg text-xs">
                                 {t.service_number}
@@ -1468,14 +1468,14 @@ export const TaskManagement: React.FC = () => {
                           </td>
 
                           {/* 5. ROUTE */}
-                          <td className="py-3.5 px-3.5">
+                          <td className="py-2 px-2.5">
                             <p className="text-xs font-semibold text-slate-800">
                               {t.route_corridor}
                             </p>
                           </td>
 
                           {/* 6. VEHICLE STATUS */}
-                          <td className="py-3.5 px-3.5">
+                          <td className="py-2 px-2.5">
                             <span
                               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                                 t.vehicle_status.startsWith('HOLD')
@@ -1493,12 +1493,12 @@ export const TaskManagement: React.FC = () => {
                           </td>
 
                           {/* 7. OPERATOR */}
-                          <td className="py-3.5 px-3.5 text-slate-700 font-medium text-xs">
+                          <td className="py-2 px-2.5 text-slate-700 font-medium text-xs">
                             {t.operator_organizer || 'Charvik Fleet'}
                           </td>
 
                           {/* 8. DRIVER1 */}
-                          <td className="py-3.5 px-3.5">
+                          <td className="py-2 px-2.5">
                             <div className="space-y-0.5 text-xs">
                               <p className="font-bold text-slate-900">{t.driver1.employee_name}</p>
                               <span className="text-[10px] font-semibold text-slate-500">₹{t.driver1.salary_amount}</span>
@@ -1506,7 +1506,7 @@ export const TaskManagement: React.FC = () => {
                           </td>
 
                           {/* 9. DRIVER2 */}
-                          <td className="py-3.5 px-3.5">
+                          <td className="py-2 px-2.5">
                             {t.driver2?.employee_name ? (
                               <div className="space-y-0.5 text-xs">
                                 <p className="font-bold text-slate-900">{t.driver2.employee_name}</p>
@@ -1518,7 +1518,7 @@ export const TaskManagement: React.FC = () => {
                           </td>
 
                           {/* 10. HELPER */}
-                          <td className="py-3.5 px-3.5">
+                          <td className="py-2 px-2.5">
                             {t.helper?.employee_name ? (
                               <div className="space-y-0.5 text-xs">
                                 <p className="font-bold text-slate-900">{t.helper.employee_name}</p>
@@ -1530,7 +1530,7 @@ export const TaskManagement: React.FC = () => {
                           </td>
 
                           {/* 11. CAPTAIN */}
-                          <td className="py-3.5 px-3.5">
+                          <td className="py-2 px-2.5">
                             {t.captain?.employee_name ? (
                               <div className="space-y-0.5 text-xs">
                                 <p className="font-bold text-indigo-700">{t.captain.employee_name}</p>
@@ -1542,13 +1542,13 @@ export const TaskManagement: React.FC = () => {
                           </td>
 
                           {/* 12. TOTAL */}
-                          <td className="py-3.5 px-3.5">
+                          <td className="py-2 px-2.5">
                             <p className="font-bold text-slate-900 text-xs">₹{totalSalary.toLocaleString('en-IN')}</p>
                             <p className="text-[10px] text-slate-400">Total Payout</p>
                           </td>
 
                           {/* 13. ACTIONS */}
-                          <td className="py-3.5 px-3.5 text-center">
+                          <td className="py-2 px-2.5 text-center">
                             <div className="flex items-center justify-center gap-2">
                               {/* Edit Button */}
                               <button

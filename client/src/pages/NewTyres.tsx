@@ -367,16 +367,16 @@ export const NewTyres: React.FC = () => {
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
-                <th className="py-4 px-4 text-center">S.No</th>
-                <th className="py-4 px-4">Purchase Date</th>
-                <th className="py-4 px-4">Tyre Serial & Photo</th>
-                <th className="py-4 px-4">Brand & Size</th>
-                <th className="py-4 px-4">Initial KM</th>
-                <th className="py-4 px-4">Present KM</th>
-                <th className="py-4 px-4">Cost</th>
-                <th className="py-4 px-4">Status</th>
-                <th className="py-4 px-4">Allocated Bus</th>
-                <th className="py-4 px-4 text-center">Actions</th>
+                <th className="py-2.5 px-3 text-center">S.No</th>
+                <th className="py-2.5 px-3">Purchase Date</th>
+                <th className="py-2.5 px-3">Tyre Serial & Photo</th>
+                <th className="py-2.5 px-3">Brand & Size</th>
+                <th className="py-2.5 px-3">Initial KM</th>
+                <th className="py-2.5 px-3">Present KM</th>
+                <th className="py-2.5 px-3">Cost</th>
+                <th className="py-2.5 px-3">Status</th>
+                <th className="py-2.5 px-3">Allocated Bus</th>
+                <th className="py-2.5 px-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -401,9 +401,9 @@ export const NewTyres: React.FC = () => {
 
                   return (
                     <tr key={t.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-4 px-4 text-center font-bold text-slate-400">{idx + 1}</td>
-                      <td className="py-4 px-4 font-medium whitespace-nowrap text-slate-700">{t.purchase_date || '—'}</td>
-                      <td className="py-4 px-4">
+                      <td className="py-2 px-3 text-center font-bold text-slate-400">{idx + 1}</td>
+                      <td className="py-2 px-3 font-medium whitespace-nowrap text-slate-700">{t.purchase_date || '—'}</td>
+                      <td className="py-2 px-3">
                         <div className="flex items-center gap-2.5">
                           {t.tyre_photo_url && (
                             <button
@@ -437,18 +437,18 @@ export const NewTyres: React.FC = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-2 px-3">
                         <span className="font-bold text-slate-800 text-sm">{t.brand}</span>
                         <span className="text-xs text-slate-400 block mt-0.5">{t.size}</span>
                       </td>
-                      <td className="py-4 px-4 font-mono font-medium text-slate-700">{initialKm.toLocaleString('en-IN')} KM</td>
-                      <td className="py-4 px-4 font-mono font-bold text-indigo-700 text-sm">
+                      <td className="py-2 px-3 font-mono font-medium text-slate-700">{initialKm.toLocaleString('en-IN')} KM</td>
+                      <td className="py-2 px-3 font-mono font-bold text-indigo-700 text-sm">
                         {presentKm > 0 ? `${presentKm.toLocaleString('en-IN')} KM` : '0 KM'}
                       </td>
-                      <td className="py-4 px-4 font-bold text-slate-900 text-sm">
+                      <td className="py-2 px-3 font-bold text-slate-900 text-sm">
                         {t.purchase_cost ? `₹${Number(t.purchase_cost).toLocaleString('en-IN')}` : '—'}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-2 px-3">
                         <span
                           className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
                             t.status === 'In Stock'
@@ -461,7 +461,7 @@ export const NewTyres: React.FC = () => {
                           {t.status}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-2 px-3">
                         {t.status === 'Allocated' ? (
                           <div>
                             <span className="font-bold text-blue-900 text-sm">{t.allocated_bus_number || `Bus #${t.allocated_bus_id}`}</span>
@@ -471,7 +471,7 @@ export const NewTyres: React.FC = () => {
                           <span className="text-slate-400 italic text-xs">In Warehouse</span>
                         )}
                       </td>
-                      <td className="py-4 px-4 text-center whitespace-nowrap">
+                      <td className="py-2 px-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1.5">
                           {t.status === 'In Stock' && (
                             <button

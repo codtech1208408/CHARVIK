@@ -931,12 +931,12 @@ export const EmployeePayments: React.FC = () => {
                     <table className="w-full text-left text-xs" style={{ minWidth: "750px" }}>
                       <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                         <tr>
-                          <th className="py-3.5 px-5">DATE</th>
-                          <th className="py-3.5 px-5">TASK DETAILS</th>
-                          <th className="py-3.5 px-5">VEHICLE NO.</th>
-                          <th className="py-3.5 px-5">SALARY AMOUNT</th>
-                          <th className="py-3.5 px-5">PAID AMOUNT</th>
-                          <th className="py-3.5 px-5">REMAINING DUE</th>
+                          <th className="py-2 px-3">DATE</th>
+                          <th className="py-2 px-3">TASK DETAILS</th>
+                          <th className="py-2 px-3">VEHICLE NO.</th>
+                          <th className="py-2 px-3">SALARY AMOUNT</th>
+                          <th className="py-2 px-3">PAID AMOUNT</th>
+                          <th className="py-2 px-3">REMAINING DUE</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -957,22 +957,22 @@ export const EmployeePayments: React.FC = () => {
 
                             return (
                               <tr key={String(trip.id) + idx} className="hover:bg-slate-50/60 transition-colors">
-                                <td className="py-3.5 px-5 font-medium whitespace-nowrap text-slate-600">
+                                <td className="py-2 px-3 font-medium whitespace-nowrap text-slate-600">
                                   {formattedDate}
                                 </td>
-                                <td className="py-3.5 px-5 font-medium text-slate-800">
+                                <td className="py-2 px-3 font-medium text-slate-800">
                                   {trip.route_corridor}
                                 </td>
-                                <td className="py-3.5 px-5 font-mono font-bold text-slate-900 whitespace-nowrap">
+                                <td className="py-2 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
                                   {trip.vehicle_number}
                                 </td>
-                                <td className="py-3.5 px-5 font-mono font-bold text-slate-900 whitespace-nowrap">
+                                <td className="py-2 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
                                   ₹{trip.salary.toLocaleString("en-IN")}
                                 </td>
-                                <td className="py-3.5 px-5 font-mono font-bold text-emerald-600 whitespace-nowrap">
+                                <td className="py-2 px-3 font-mono font-bold text-emerald-600 whitespace-nowrap">
                                   ₹{trip.advance.toLocaleString("en-IN")}
                                 </td>
-                                <td className="py-3.5 px-5 font-mono font-bold text-rose-600 whitespace-nowrap">
+                                <td className="py-2 px-3 font-mono font-bold text-rose-600 whitespace-nowrap">
                                   ₹{trip.balance_due.toLocaleString("en-IN")}
                                 </td>
                               </tr>
@@ -1020,14 +1020,14 @@ export const EmployeePayments: React.FC = () => {
                     <table className="w-full text-left text-xs" style={{ minWidth: "750px" }}>
                       <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                         <tr>
-                          <th className="py-3.5 px-5">#</th>
-                          <th className="py-3.5 px-5">DATE</th>
-                          <th className="py-3.5 px-5">AMOUNT PAID</th>
-                          <th className="py-3.5 px-5">TYPE</th>
-                          <th className="py-3.5 px-5">MODE</th>
-                          <th className="py-3.5 px-5">PROOF</th>
-                          <th className="py-3.5 px-5">NOTES</th>
-                          <th className="py-3.5 px-5 text-center">ACTION</th>
+                          <th className="py-2 px-3">#</th>
+                          <th className="py-2 px-3">DATE</th>
+                          <th className="py-2 px-3">AMOUNT PAID</th>
+                          <th className="py-2 px-3">TYPE</th>
+                          <th className="py-2 px-3">MODE</th>
+                          <th className="py-2 px-3">PROOF</th>
+                          <th className="py-2 px-3">NOTES</th>
+                          <th className="py-2.5 px-3 text-center">ACTION</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -1040,18 +1040,18 @@ export const EmployeePayments: React.FC = () => {
                         ) : (
                           employeePaymentsList.map((p, idx) => (
                             <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
-                              <td className="py-3.5 px-5 font-bold text-slate-500">{idx + 1}</td>
-                              <td className="py-3.5 px-5 font-medium text-slate-700">{p.payment_date || (p as any).date}</td>
-                              <td className="py-3.5 px-5 font-mono font-bold text-emerald-600">
+                              <td className="py-2 px-3 font-bold text-slate-500">{idx + 1}</td>
+                              <td className="py-2 px-3 font-medium text-slate-700">{p.payment_date || (p as any).date}</td>
+                              <td className="py-2 px-3 font-mono font-bold text-emerald-600">
                                 ₹{p.amount.toLocaleString("en-IN")}
                               </td>
-                              <td className="py-3.5 px-5">
+                              <td className="py-2 px-3">
                                 <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                                   {p.payment_type}
                                 </span>
                               </td>
-                              <td className="py-3.5 px-5 font-medium text-slate-700">{p.payment_mode}</td>
-                              <td className="py-3.5 px-5">
+                              <td className="py-2 px-3 font-medium text-slate-700">{p.payment_mode}</td>
+                              <td className="py-2 px-3">
                                 {p.payment_proof ? (
                                   <button
                                     type="button"
@@ -1066,8 +1066,8 @@ export const EmployeePayments: React.FC = () => {
                                   <span className="text-slate-400 text-[11px]">—</span>
                                 )}
                               </td>
-                              <td className="py-3.5 px-5 text-slate-500">{p.notes || "-"}</td>
-                              <td className="py-3.5 px-5 text-center">
+                              <td className="py-2 px-3 text-slate-500">{p.notes || "-"}</td>
+                              <td className="py-2 px-3 text-center">
                                 <button
                                   onClick={() => handlePrintReceipt(p)}
                                   className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
@@ -1368,19 +1368,19 @@ export const EmployeePayments: React.FC = () => {
 
               {/* Table */}
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm" style={{ minWidth: "1050px" }}>
+                <table className="w-full text-left text-sm" style={{ minWidth: "850px" }}>
                   <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                     <tr>
-                      <th className="py-4 px-6 min-w-[60px]">S.NO</th>
-                      <th className="py-4 px-5 min-w-[220px]">EMPLOYEE</th>
-                      <th className="py-4 px-5 min-w-[120px]">ROLE</th>
-                      <th className="py-4 px-5 min-w-[130px]">PHONE</th>
-                      <th className="py-4 px-5 text-center min-w-[110px]">TASKS</th>
-                      <th className="py-4 px-5 min-w-[130px]">GROSS SALARY</th>
-                      <th className="py-4 px-5 min-w-[130px]">ADVANCE PAID</th>
-                      <th className="py-4 px-5 min-w-[130px]">BALANCE DUE</th>
-                      <th className="py-4 px-5 text-center min-w-[120px]">STATUS</th>
-                      <th className="py-4 px-6 text-center min-w-[180px]">ACTION</th>
+                      <th className="py-2.5 px-3 min-w-[50px]">S.NO</th>
+                      <th className="py-2.5 px-3 min-w-[160px]">EMPLOYEE</th>
+                      <th className="py-2.5 px-3 min-w-[90px]">ROLE</th>
+                      <th className="py-2.5 px-3 min-w-[110px]">PHONE</th>
+                      <th className="py-2.5 px-3 text-center min-w-[90px]">TASKS</th>
+                      <th className="py-2.5 px-3 min-w-[105px]">GROSS SALARY</th>
+                      <th className="py-2.5 px-3 min-w-[105px]">ADVANCE PAID</th>
+                      <th className="py-2.5 px-3 min-w-[105px]">BALANCE DUE</th>
+                      <th className="py-2.5 px-3 text-center min-w-[90px]">STATUS</th>
+                      <th className="py-2.5 px-3 text-center min-w-[95px]">ACTION</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -1401,12 +1401,12 @@ export const EmployeePayments: React.FC = () => {
 
                         return (
                           <tr key={emp.employee_code + emp.full_name + idx} className="hover:bg-slate-50/80 transition-colors">
-                            <td className="py-4 px-6 whitespace-nowrap">
+                            <td className="py-2 px-3 whitespace-nowrap">
                               <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 font-extrabold text-xs flex items-center justify-center">
                                 {sNo}
                               </span>
                             </td>
-                            <td className="py-4 px-5 whitespace-nowrap">
+                            <td className="py-2 px-3 whitespace-nowrap">
                               <div className="flex items-center gap-3">
                                 {emp.profile_photo ? (
                                   <img
@@ -1427,7 +1427,7 @@ export const EmployeePayments: React.FC = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="py-4 px-5 whitespace-nowrap">
+                            <td className="py-2 px-3 whitespace-nowrap">
                               <span
                                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${rc.bg} ${rc.text} ${rc.border}`}
                               >
@@ -1435,21 +1435,21 @@ export const EmployeePayments: React.FC = () => {
                                 {emp.role}
                               </span>
                             </td>
-                            <td className="py-4 px-5 whitespace-nowrap text-slate-500 font-medium">
+                            <td className="py-2 px-3 whitespace-nowrap text-slate-500 font-medium">
                               {emp.phone || <span className="text-slate-300">—</span>}
                             </td>
-                            <td className="py-4 px-5 text-center whitespace-nowrap">
+                            <td className="py-2 px-3 text-center whitespace-nowrap">
                               <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold text-xs">
                                 {emp.tasksHandled}
                               </span>
                             </td>
-                            <td className="py-4 px-5 whitespace-nowrap font-mono font-bold text-slate-900">
+                            <td className="py-2 px-3 whitespace-nowrap font-mono font-bold text-slate-900">
                               ₹{emp.salaryEarned.toLocaleString("en-IN")}
                             </td>
-                            <td className="py-4 px-5 whitespace-nowrap font-mono font-bold text-blue-700">
+                            <td className="py-2 px-3 whitespace-nowrap font-mono font-bold text-blue-700">
                               ₹{emp.advancePaid.toLocaleString("en-IN")}
                             </td>
-                            <td className="py-4 px-5 whitespace-nowrap">
+                            <td className="py-2 px-3 whitespace-nowrap">
                               <span
                                 className={`font-mono font-bold ${
                                   emp.pendingDue > 0 ? "text-rose-600" : "text-emerald-600"
@@ -1458,7 +1458,7 @@ export const EmployeePayments: React.FC = () => {
                                 ₹{emp.pendingDue.toLocaleString("en-IN")}
                               </span>
                             </td>
-                            <td className="py-4 px-5 text-center whitespace-nowrap">
+                            <td className="py-2 px-3 text-center whitespace-nowrap">
                               {isSettled ? (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                   <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1471,7 +1471,7 @@ export const EmployeePayments: React.FC = () => {
                                 </span>
                               )}
                             </td>
-                            <td className="py-4 px-6 text-center whitespace-nowrap">
+                            <td className="py-2 px-3 text-center whitespace-nowrap">
                               <div className="flex items-center justify-center gap-2">
                                 {/* ₹ Record Payment quick button */}
                                 <button
@@ -1503,16 +1503,16 @@ export const EmployeePayments: React.FC = () => {
                   {paginatedEmployees.length > 0 && (
                     <tfoot className="bg-[#142B4A]/5 border-t-2 border-[#142B4A]/20">
                       <tr>
-                        <td colSpan={5} className="py-4 px-6 font-extrabold text-[#142B4A] text-xs uppercase tracking-wide">
+                        <td colSpan={5} className="py-2 px-3 font-extrabold text-[#142B4A] text-xs uppercase tracking-wide">
                           Page Total ({paginatedEmployees.length} personnel)
                         </td>
-                        <td className="py-4 px-5 font-mono font-black text-slate-900 text-xs">
+                        <td className="py-2 px-3 font-mono font-black text-slate-900 text-xs">
                           ₹{paginatedEmployees.reduce((s, e) => s + e.salaryEarned, 0).toLocaleString("en-IN")}
                         </td>
-                        <td className="py-4 px-5 font-mono font-black text-blue-700 text-xs">
+                        <td className="py-2 px-3 font-mono font-black text-blue-700 text-xs">
                           ₹{paginatedEmployees.reduce((s, e) => s + e.advancePaid, 0).toLocaleString("en-IN")}
                         </td>
-                        <td className="py-4 px-5 font-mono font-black text-rose-600 text-xs">
+                        <td className="py-2 px-3 font-mono font-black text-rose-600 text-xs">
                           ₹{paginatedEmployees.reduce((s, e) => s + e.pendingDue, 0).toLocaleString("en-IN")}
                         </td>
                         <td colSpan={2}></td>

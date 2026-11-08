@@ -654,7 +654,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Service Rows (Matching Image 2) */}
-                    <div className="space-y-3 text-sm">
+                    <div className="space-y-1.5 text-xs">
                       {(bus.services || []).map((service: any, sIdx: number) => {
                         let dotClass = 'bg-emerald-500';
                         let textClass = 'text-emerald-600';
@@ -672,7 +672,7 @@ export const Dashboard: React.FC = () => {
                             : (service.intervalLabel || 'Weekly');
 
                         return (
-                          <div key={sIdx} className="flex items-center justify-between gap-2.5 py-1">
+                          <div key={sIdx} className="flex items-center justify-between gap-2 py-0.5">
                             <div className="flex items-center gap-2 min-w-0">
                               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotClass}`} />
                               <span className="text-slate-800 font-bold truncate text-sm" title={service.name}>

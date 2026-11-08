@@ -819,16 +819,16 @@ export const BusCondition: React.FC = () => {
       {/* Main Table of Logged Checkup Reports */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm" style={{ minWidth: '1050px' }}>
+          <table className="w-full text-left text-sm" style={{ minWidth: '750px' }}>
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs border-b border-slate-200">
               <tr>
-                <th className="py-4 px-4 w-12 text-center">S.NO</th>
-                <th className="py-4 px-4 min-w-[130px]">DATE</th>
-                <th className="py-4 px-4 min-w-[150px]">VEHICLE NO</th>
-                <th className="py-4 px-4 min-w-[140px]">STARTING KM</th>
-                <th className="py-4 px-4 min-w-[140px]">ROUTE / TRIP</th>
-                <th className="py-4 px-4 min-w-[140px]">CHECKUP STATUS</th>
-                <th className="py-4 px-4 text-center min-w-[140px]">ACTIONS</th>
+                <th className="py-2.5 px-3 w-12 text-center">S.NO</th>
+                <th className="py-2.5 px-3 min-w-[95px]">DATE</th>
+                <th className="py-2.5 px-3 min-w-[110px]">VEHICLE NO</th>
+                <th className="py-2.5 px-3 min-w-[100px]">STARTING KM</th>
+                <th className="py-2.5 px-3 min-w-[100px]">ROUTE / TRIP</th>
+                <th className="py-2.5 px-3 min-w-[100px]">CHECKUP STATUS</th>
+                <th className="py-2.5 px-3 text-center min-w-[100px]">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -857,29 +857,29 @@ export const BusCondition: React.FC = () => {
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-4 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
+                      <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
 
-                      <td className="py-4 px-4 whitespace-nowrap font-medium text-slate-900">
+                      <td className="py-2 px-3 whitespace-nowrap font-medium text-slate-900">
                         <span>{item.inspection_date}</span>
                       </td>
 
-                      <td className="py-4 px-4">
+                      <td className="py-2 px-3">
                         <span className="font-mono font-black text-slate-900 tracking-wider uppercase block text-sm">
                           {item.registration_number || bus?.registration_number || item.bus_number || '—'}
                         </span>
                       </td>
 
-                      <td className="py-4 px-4 font-mono">
+                      <td className="py-2 px-3 font-mono">
                         <span className="font-bold text-blue-700 text-sm">
                           {Number(item.starting_km || item.odometer_km || 0).toLocaleString('en-IN')} KM
                         </span>
                       </td>
 
-                      <td className="py-4 px-4 font-medium text-slate-700">
+                      <td className="py-2 px-3 font-medium text-slate-700">
                         {item.route_trip || 'General Operations'}
                       </td>
 
-                      <td className="py-4 px-4">
+                      <td className="py-2 px-3">
                         {notOkCount === 0 ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <Check className="w-3.5 h-3.5 text-emerald-600" />
@@ -893,7 +893,7 @@ export const BusCondition: React.FC = () => {
                         )}
                       </td>
 
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-2 px-3 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"

@@ -487,16 +487,16 @@ export const DailyMaintenance: React.FC = () => {
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
-                <th className="py-4 px-4 text-center">S.No</th>
-                <th className="py-4 px-4">Date</th>
-                <th className="py-4 px-4">Vehicle Number</th>
-                <th className="py-4 px-4">Odometer KM</th>
-                <th className="py-4 px-4">Showroom Name</th>
-                <th className="py-4 px-4">Complaints</th>
-                <th className="py-4 px-4">Other Details</th>
-                <th className="py-4 px-4">Amount</th>
-                <th className="py-4 px-4 text-center">Invoice Photos</th>
-                <th className="py-4 px-4 text-center">Action</th>
+                <th className="py-2.5 px-3 text-center">S.No</th>
+                <th className="py-2.5 px-3">Date</th>
+                <th className="py-2.5 px-3">Vehicle Number</th>
+                <th className="py-2.5 px-3">Odometer KM</th>
+                <th className="py-2.5 px-3">Showroom Name</th>
+                <th className="py-2.5 px-3">Complaints</th>
+                <th className="py-2.5 px-3">Other Details</th>
+                <th className="py-2.5 px-3">Amount</th>
+                <th className="py-2.5 px-3 text-center">Invoice Photos</th>
+                <th className="py-2.5 px-3 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -527,31 +527,31 @@ export const DailyMaintenance: React.FC = () => {
 
                   return (
                     <tr key={r.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-4 px-4 text-center font-bold text-slate-400">{idx + 1}</td>
-                      <td className="py-4 px-4 whitespace-nowrap font-medium text-slate-700">
+                      <td className="py-2 px-3 text-center font-bold text-slate-400">{idx + 1}</td>
+                      <td className="py-2 px-3 whitespace-nowrap font-medium text-slate-700">
                         {r.date || '—'}
                       </td>
-                      <td className="py-4 px-4 whitespace-nowrap">
+                      <td className="py-2 px-3 whitespace-nowrap">
                         <span className="font-mono font-black text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg text-sm">
                           {r.vehicle_number}
                         </span>
                       </td>
-                      <td className="py-4 px-4 whitespace-nowrap font-mono font-bold text-blue-700">
+                      <td className="py-2 px-3 whitespace-nowrap font-mono font-bold text-blue-700">
                         {Number(r.km || 0).toLocaleString('en-IN')} KM
                       </td>
-                      <td className="py-4 px-4 font-semibold text-slate-800 max-w-[200px] truncate" title={r.showroom_name}>
+                      <td className="py-2 px-3 font-semibold text-slate-800 max-w-[200px] truncate" title={r.showroom_name}>
                         {r.showroom_name || '—'}
                       </td>
-                      <td className="py-4 px-4 text-slate-700 max-w-[240px]" title={r.complaints}>
+                      <td className="py-2 px-3 text-slate-700 max-w-[240px]" title={r.complaints}>
                         <p className="line-clamp-2">{r.complaints || '—'}</p>
                       </td>
-                      <td className="py-4 px-4 text-slate-600 max-w-[220px]" title={r.other}>
+                      <td className="py-2 px-3 text-slate-600 max-w-[220px]" title={r.other}>
                         <p className="line-clamp-2">{r.other || '—'}</p>
                       </td>
-                      <td className="py-4 px-4 whitespace-nowrap font-black text-slate-900">
+                      <td className="py-2 px-3 whitespace-nowrap font-black text-slate-900">
                         ₹{Number(r.amount || 0).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-4 px-4 text-center whitespace-nowrap">
+                      <td className="py-2 px-3 text-center whitespace-nowrap">
                         {photos.length > 0 ? (
                           <div className="flex items-center justify-center gap-2">
                             {photos.map((pUrl, pIdx) => (
@@ -577,7 +577,7 @@ export const DailyMaintenance: React.FC = () => {
                           <span className="text-xs text-slate-400 italic">No invoice</span>
                         )}
                       </td>
-                      <td className="py-4 px-4 text-center whitespace-nowrap">
+                      <td className="py-2 px-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             type="button"
