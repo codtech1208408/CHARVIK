@@ -362,7 +362,7 @@ export const RouteManagement: React.FC = () => {
             placeholder="Search by service number, starting city, or ending city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
           />
         </div>
 
@@ -382,17 +382,17 @@ export const RouteManagement: React.FC = () => {
       {/* Table */}
       <div id="route-management-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4 w-14 text-center">S.NO</th>
-                <th className="py-3 px-4">Service Number</th>
-                <th className="py-3 px-4">Starting City (From)</th>
-                <th className="py-3 px-4">Ending City (To)</th>
-                <th className="py-3 px-4">Destination KM</th>
-                <th className="py-3 px-4">Route Status</th>
-                {isAdmin && <th className="py-3 px-4">Trip Amount & Commission</th>}
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-4 px-4 w-14 text-center">S.NO</th>
+                <th className="py-4 px-4">Service Number</th>
+                <th className="py-4 px-4">Starting City (From)</th>
+                <th className="py-4 px-4">Ending City (To)</th>
+                <th className="py-4 px-4">Destination KM</th>
+                <th className="py-4 px-4">Route Status</th>
+                {isAdmin && <th className="py-4 px-4">Trip Amount & Commission</th>}
+                <th className="py-4 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -434,34 +434,34 @@ export const RouteManagement: React.FC = () => {
               ) : (
                 filteredRoutes.map((r, index) => (
                   <tr key={r.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
-                    <td className="py-3 px-4 font-mono font-bold text-blue-700">
+                    <td className="py-3.5 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
+                    <td className="py-3.5 px-4 font-mono font-bold text-blue-700">
                       <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-200 shadow-2xs">
                         {r.service_number}
                       </span>
                     </td>
 
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4">
                       <div className="flex items-center gap-1.5 font-bold text-slate-900">
                         <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                         <span>{r.starting_city}</span>
                       </div>
                     </td>
 
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4">
                       <div className="flex items-center gap-1.5 font-bold text-slate-900">
                         <ArrowRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>{r.ending_city}</span>
                       </div>
                     </td>
 
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4">
                       <span className="font-bold text-slate-800 font-mono">
                         {r.destination_km} KM
                       </span>
                     </td>
 
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                           r.status === 'Active'
@@ -475,7 +475,7 @@ export const RouteManagement: React.FC = () => {
                     </td>
 
                     {isAdmin && (
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         <div className="space-y-1">
                           <div className="flex items-center gap-1.5">
                             <span className="text-[10px] font-semibold text-slate-500 uppercase">Trip:</span>
@@ -493,7 +493,7 @@ export const RouteManagement: React.FC = () => {
                       </td>
                     )}
 
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center">
                       <div className="flex items-center justify-center space-x-1.5">
                         <button
                           onClick={() => handleOpenEdit(r)}

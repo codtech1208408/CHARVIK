@@ -654,7 +654,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Service Rows (Matching Image 2) */}
-                    <div className="space-y-2 text-xs">
+                    <div className="space-y-3 text-sm">
                       {(bus.services || []).map((service: any, sIdx: number) => {
                         let dotClass = 'bg-emerald-500';
                         let textClass = 'text-emerald-600';
@@ -672,18 +672,18 @@ export const Dashboard: React.FC = () => {
                             : (service.intervalLabel || 'Weekly');
 
                         return (
-                          <div key={sIdx} className="flex items-center justify-between gap-2 py-0.5">
+                          <div key={sIdx} className="flex items-center justify-between gap-2.5 py-1">
                             <div className="flex items-center gap-2 min-w-0">
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`} />
-                              <span className="text-slate-700 font-medium truncate" title={service.name}>
+                              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotClass}`} />
+                              <span className="text-slate-800 font-bold truncate text-sm" title={service.name}>
                                 {service.name}
                               </span>
                             </div>
                             <div className="flex items-center gap-3 shrink-0 text-right">
-                              <span className="text-slate-500 text-[11px] font-medium font-mono">
+                              <span className="text-slate-500 text-xs font-medium font-mono">
                                 {nextDueLabel}
                               </span>
-                              <span className={`text-[11px] font-bold w-16 text-right ${textClass}`}>
+                              <span className={`text-xs font-bold w-16 text-right ${textClass}`}>
                                 {service.status}
                               </span>
                             </div>

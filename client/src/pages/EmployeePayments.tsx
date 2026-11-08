@@ -929,7 +929,7 @@ export const EmployeePayments: React.FC = () => {
                 <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs" style={{ minWidth: "750px" }}>
-                      <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+                      <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                         <tr>
                           <th className="py-3.5 px-5">DATE</th>
                           <th className="py-3.5 px-5">TASK DETAILS</th>
@@ -1018,7 +1018,7 @@ export const EmployeePayments: React.FC = () => {
                 <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs" style={{ minWidth: "750px" }}>
-                      <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+                      <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                         <tr>
                           <th className="py-3.5 px-5">#</th>
                           <th className="py-3.5 px-5">DATE</th>
@@ -1368,8 +1368,8 @@ export const EmployeePayments: React.FC = () => {
 
               {/* Table */}
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs" style={{ minWidth: "1050px" }}>
-                  <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+                <table className="w-full text-left text-sm" style={{ minWidth: "1050px" }}>
+                  <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                     <tr>
                       <th className="py-4 px-6 min-w-[60px]">S.NO</th>
                       <th className="py-4 px-5 min-w-[220px]">EMPLOYEE</th>

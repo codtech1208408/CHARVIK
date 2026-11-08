@@ -67,7 +67,7 @@ export const getSavedInspectionItems = (): { no: number; name: string }[] => {
         return combined.map((it, idx) => ({ no: idx + 1, name: it.name }));
       }
     }
-  } catch {}
+  } catch { }
   return DEFAULT_18_INSPECTION_ITEMS;
 };
 
@@ -83,7 +83,7 @@ export const BusCondition: React.FC = () => {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch {}
+    } catch { }
     return [
       { service_number: 'SRV-101', starting_city: 'Hyderabad', ending_city: 'Bangalore', destination_km: 570 },
       { service_number: 'SRV-204', starting_city: 'Hyderabad', ending_city: 'Vijayawada', destination_km: 275 },
@@ -192,11 +192,11 @@ export const BusCondition: React.FC = () => {
     const list = routes && routes.length > 0
       ? routes
       : [
-          { service_number: 'SRV-101', starting_city: 'Hyderabad', ending_city: 'Bangalore', destination_km: 570 },
-          { service_number: 'SRV-204', starting_city: 'Hyderabad', ending_city: 'Vijayawada', destination_km: 275 },
-          { service_number: 'SRV-305', starting_city: 'Bangalore', ending_city: 'Chennai', destination_km: 345 },
-          { service_number: 'SRV-412', starting_city: 'Hyderabad', ending_city: 'Visakhapatnam', destination_km: 620 }
-        ];
+        { service_number: 'SRV-101', starting_city: 'Hyderabad', ending_city: 'Bangalore', destination_km: 570 },
+        { service_number: 'SRV-204', starting_city: 'Hyderabad', ending_city: 'Vijayawada', destination_km: 275 },
+        { service_number: 'SRV-305', starting_city: 'Bangalore', ending_city: 'Chennai', destination_km: 345 },
+        { service_number: 'SRV-412', starting_city: 'Hyderabad', ending_city: 'Visakhapatnam', destination_km: 620 }
+      ];
 
     const opts: SearchOption[] = list.map((r: any) => {
       const from = r.starting_city || r.origin || '';
@@ -505,7 +505,7 @@ export const BusCondition: React.FC = () => {
       if (formData.bus_id) {
         await api.updateBus(formData.bus_id, {
           current_odometer_km: startingKmNum
-        }).catch(() => {});
+        }).catch(() => { });
       }
 
       // Sync tyre present KM updates into New Tyres inventory
@@ -518,7 +518,7 @@ export const BusCondition: React.FC = () => {
               ...vt,
               present_km: pKm,
               running_km: pKm >= bKm ? pKm - bKm : pKm
-            }).catch(() => {});
+            }).catch(() => { });
           }
         }
       }
@@ -531,7 +531,7 @@ export const BusCondition: React.FC = () => {
         if (customItems.length > 0) {
           localStorage.setItem('charvik_custom_inspection_items', JSON.stringify(customItems));
         }
-      } catch (_) {}
+      } catch (_) { }
 
       setIsAddOpen(false);
       setEditingInspection(null);

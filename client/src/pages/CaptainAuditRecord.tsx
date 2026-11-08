@@ -494,7 +494,7 @@ export const CaptainAuditRecord: React.FC = () => {
       {/* KPI Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+          <span className="text-xs font-bold tracking-wider font-bold text-slate-500 uppercase tracking-wider block">
             Total Audits
           </span>
           <div className="flex items-baseline justify-between mt-1.5">
@@ -503,11 +503,11 @@ export const CaptainAuditRecord: React.FC = () => {
               <ShieldCheck className="w-4 h-4" />
             </span>
           </div>
-          <span className="text-[11px] text-slate-400 mt-1 block">Inspections logged</span>
+          <span className="text-xs font-bold tracking-wider text-slate-400 mt-1 block">Inspections logged</span>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">
+          <span className="text-xs font-bold tracking-wider font-bold text-emerald-600 uppercase tracking-wider block">
             Passed (All OK)
           </span>
           <div className="flex items-baseline justify-between mt-1.5">
@@ -516,11 +516,11 @@ export const CaptainAuditRecord: React.FC = () => {
               <CheckCircle2 className="w-4 h-4" />
             </span>
           </div>
-          <span className="text-[11px] text-emerald-600/80 mt-1 block">100% compliant</span>
+          <span className="text-xs font-bold tracking-wider text-emerald-600/80 mt-1 block">100% compliant</span>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-[11px] font-bold text-rose-600 uppercase tracking-wider block">
+          <span className="text-xs font-bold tracking-wider font-bold text-rose-600 uppercase tracking-wider block">
             Needs Attention
           </span>
           <div className="flex items-baseline justify-between mt-1.5">
@@ -529,11 +529,11 @@ export const CaptainAuditRecord: React.FC = () => {
               <AlertCircle className="w-4 h-4" />
             </span>
           </div>
-          <span className="text-[11px] text-rose-600/80 mt-1 block">Deficiencies noted</span>
+          <span className="text-xs font-bold tracking-wider text-rose-600/80 mt-1 block">Deficiencies noted</span>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider block">
+          <span className="text-xs font-bold tracking-wider font-bold text-indigo-600 uppercase tracking-wider block">
             Today's Audits
           </span>
           <div className="flex items-baseline justify-between mt-1.5">
@@ -542,7 +542,7 @@ export const CaptainAuditRecord: React.FC = () => {
               <Clock className="w-4 h-4" />
             </span>
           </div>
-          <span className="text-[11px] text-indigo-600/80 mt-1 block">Active date shifts</span>
+          <span className="text-xs font-bold tracking-wider text-indigo-600/80 mt-1 block">Active date shifts</span>
         </div>
       </div>
 
@@ -612,19 +612,19 @@ export const CaptainAuditRecord: React.FC = () => {
       {/* Records Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-200/80 uppercase tracking-wider text-[11px]">
-                <th className="py-3.5 px-4 w-12 text-center">S.No</th>
-                <th className="py-3.5 px-4">Date & Time</th>
-                <th className="py-3.5 px-4">Bus Number</th>
-                <th className="py-3.5 px-4">Route</th>
-                <th className="py-3.5 px-4">Captain</th>
-                <th className="py-3.5 px-4">Driver</th>
-                <th className="py-3.5 px-4">Amenities Checklist</th>
-                <th className="py-3.5 px-4">Photos</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-center">Actions</th>
+              <tr className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-200/80 uppercase tracking-wider text-xs font-bold tracking-wider">
+                <th className="py-4 px-4 w-12 text-center">S.No</th>
+                <th className="py-4 px-4">Date & Time</th>
+                <th className="py-4 px-4">Bus Number</th>
+                <th className="py-4 px-4">Route</th>
+                <th className="py-4 px-4">Captain</th>
+                <th className="py-4 px-4">Driver</th>
+                <th className="py-4 px-4">Amenities Checklist</th>
+                <th className="py-4 px-4">Photos</th>
+                <th className="py-4 px-4">Status</th>
+                <th className="py-4 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -654,11 +654,11 @@ export const CaptainAuditRecord: React.FC = () => {
 
                   return (
                     <tr key={rec.id} className="hover:bg-blue-50/30 transition-colors">
-                      <td className="py-3.5 px-4 text-center font-bold text-slate-400">
+                      <td className="py-4 px-4 text-center font-bold text-slate-400">
                         {index + 1}
                       </td>
 
-                      <td className="py-3.5 px-4 font-semibold text-slate-700 whitespace-nowrap">
+                      <td className="py-4 px-4 font-semibold text-slate-700 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
                           <span>{rec.audit_date}</span>
@@ -670,41 +670,41 @@ export const CaptainAuditRecord: React.FC = () => {
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <span className="font-extrabold text-[#142B4A] bg-blue-50/80 px-2.5 py-1 rounded-lg border border-blue-200/60 inline-flex items-center gap-1.5">
                           <Bus className="w-3.5 h-3.5 text-blue-600" />
                           {rec.bus_number}
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-slate-700 font-medium max-w-[180px] truncate" title={rec.route}>
+                      <td className="py-4 px-4 text-slate-700 font-medium max-w-[180px] truncate" title={rec.route}>
                         <div className="flex items-center gap-1.5">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span className="truncate">{rec.route}</span>
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <div className="font-semibold text-slate-800">{rec.captain_name}</div>
                         {rec.captain_phone && (
-                          <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                          <div className="text-xs font-bold tracking-wider text-slate-400 flex items-center gap-1">
                             <Phone className="w-3 h-3" />
                             {rec.captain_phone}
                           </div>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <div className="font-medium text-slate-700">{rec.driver_name || '-'}</div>
                         {rec.driver_phone && (
-                          <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                          <div className="text-xs font-bold tracking-wider text-slate-400 flex items-center gap-1">
                             <Phone className="w-3 h-3" />
                             {rec.driver_phone}
                           </div>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isFullyPassed
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
@@ -716,16 +716,16 @@ export const CaptainAuditRecord: React.FC = () => {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1 text-xs font-bold tracking-wider font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
                           <Camera className="w-3 h-3 text-slate-500" />
                           {totalPhotos} photo{totalPhotos !== 1 ? 's' : ''}
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-4 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold ${rec.overall_status === 'Passed'
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold tracking-wider font-extrabold ${rec.overall_status === 'Passed'
                               ? 'bg-emerald-100 text-emerald-800'
                               : 'bg-rose-100 text-rose-800'
                             }`}
@@ -739,7 +739,7 @@ export const CaptainAuditRecord: React.FC = () => {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <td className="py-4 px-4 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => {
@@ -996,7 +996,7 @@ export const CaptainAuditRecord: React.FC = () => {
 
             {/* Amenities Table as in Image 4 */}
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                     <th className="py-2.5 px-3.5">Amenity / Item</th>
@@ -1259,7 +1259,7 @@ export const CaptainAuditRecord: React.FC = () => {
                     <h2 className="text-lg font-black text-slate-900 tracking-tight uppercase">
                       Charvik Staffing Consultancy
                     </h2>
-                    <p className="text-[11px] text-slate-600">
+                    <p className="text-xs font-bold tracking-wider text-slate-600">
                       Fleet Operations, Staffing & Transit Vehicle Quality Audits
                     </p>
                     <p className="text-[10px] text-slate-500">
@@ -1271,7 +1271,7 @@ export const CaptainAuditRecord: React.FC = () => {
                 <div className="text-right">
                   <div className="text-xs font-black text-blue-900 uppercase">Audit Record</div>
                   <div className="text-sm font-extrabold text-slate-800">#{viewRecord.id}</div>
-                  <div className="text-[11px] text-slate-500">{viewRecord.audit_date}</div>
+                  <div className="text-xs font-bold tracking-wider text-slate-500">{viewRecord.audit_date}</div>
                 </div>
               </div>
 
@@ -1307,7 +1307,7 @@ export const CaptainAuditRecord: React.FC = () => {
                   Onboard Amenities & Maintenance Checklist
                 </h4>
                 <div className="border border-slate-200 rounded-xl overflow-hidden">
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-sm">
                     <thead>
                       <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                         <th className="py-2 px-3 w-10 text-center">#</th>

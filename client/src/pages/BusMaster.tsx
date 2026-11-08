@@ -834,15 +834,15 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
         /* Table View */
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                 <tr>
-                  <th className="py-3 px-4 w-16 text-center">S.NO</th>
-                  <th className="py-3 px-4">Registration No.</th>
-                  <th className="py-3 px-4">Bus Type</th>
-                  <th className="py-3 px-4">Compliance & 1-Day Alerts</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-center">Actions</th>
+                  <th className="py-4 px-4 w-16 text-center">S.NO</th>
+                  <th className="py-4 px-4">Registration No.</th>
+                  <th className="py-4 px-4">Bus Type</th>
+                  <th className="py-4 px-4">Compliance & 1-Day Alerts</th>
+                  <th className="py-4 px-4">Status</th>
+                  <th className="py-4 px-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -862,10 +862,10 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                 ) : (
                   filteredBuses.map((b, index) => (
                     <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
-                      <td className="py-3 px-4 font-mono font-bold text-[#142B4A] text-sm">{b.registration_number}</td>
-                      <td className="py-3 px-4 font-medium text-slate-800">{b.bus_type || '—'}</td>
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#142B4A] text-sm">{b.registration_number}</td>
+                      <td className="py-3.5 px-4 font-medium text-slate-800">{b.bus_type || '—'}</td>
+                      <td className="py-3.5 px-4">
                         {(() => {
                           const busAlerts = getBusAlerts(b);
                           const topAlert = busAlerts[0];
@@ -917,10 +917,10 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                           );
                         })()}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         <Badge status={b.operational_status} />
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3.5 px-4 text-center">
                         <div className="flex items-center justify-center space-x-1.5">
                           <button
                             onClick={() => handleViewProfile(b)}
@@ -1272,7 +1272,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                 <div className="space-y-2">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kilometer Entry History</p>
                   {viewingBusDetails.kmHistory?.length > 0 ? (
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-sm">
                       <thead>
                         <tr className="text-slate-400 border-b border-slate-100">
                           <th className="py-1 px-2 text-center w-12">S.NO</th>

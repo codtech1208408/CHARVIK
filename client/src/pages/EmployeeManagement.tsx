@@ -556,8 +556,8 @@ export const EmployeeManagement: React.FC = () => {
       {/* Employees Table */}
       <div id="employees-directory-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
               <tr>
                 <th className="py-4 px-5 w-16 text-center">S.NO</th>
                 <th className="py-4 px-5 min-w-[140px]">Code</th>
@@ -762,7 +762,7 @@ export const EmployeeManagement: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="bg-slate-50/75 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
                     <th className="py-3 px-4 w-14 text-center">S.NO</th>

@@ -784,8 +784,8 @@ export const Earnings: React.FC = () => {
 
             {/* Ledger Table */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs" style={{ minWidth: '1050px' }}>
-                <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+              <table className="w-full text-left text-sm" style={{ minWidth: '1050px' }}>
+                <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
                   <tr>
                     <th className="py-4 px-6 min-w-[240px]">EMPLOYEE ID &amp; NAME</th>
                     <th className="py-4 px-5 min-w-[120px]">CATEGORY</th>
@@ -825,7 +825,7 @@ export const Earnings: React.FC = () => {
                               </div>
                             )}
                             <div>
-                              <p className="font-bold text-slate-900 text-xs">{r.full_name}</p>
+                              <p className="font-bold text-slate-900 text-sm">{r.full_name}</p>
                               <span className="font-mono text-[10px] text-slate-400 font-semibold block">
                                 {r.employee_code}
                               </span>
