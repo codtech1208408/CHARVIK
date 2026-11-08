@@ -2596,6 +2596,18 @@ app.post('/api/fleet-maintenance/vehicle', (req: Request, res: Response) => {
   }
 });
 
+app.delete('/api/fleet-maintenance/vehicle/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const stmt = db.prepare('UPDATE buses SET is_archived = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? OR registration_number = ? OR bus_number = ?');
+    stmt.run(id, id, id);
+    logAudit('VEHICLE_DELETE', 'Vehicle Maintenance', id, `Archived/Deleted fleet vehicle identifier: ${id}`);
+    return res.json({ success: true, message: 'Vehicle deleted from fleet maintenance' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= DAILY MAINTENANCE =================
 app.get('/api/daily-maintenance', (req: Request, res: Response) => {
   try {

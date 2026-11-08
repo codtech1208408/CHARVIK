@@ -1738,6 +1738,46 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     } catch {}
     return { company_name: 'Charvik Staffing Consultancy' } as any;
   }
+  // 17M. FLEET MAINTENANCE VEHICLE UPSERT & DELETE FALLBACK
+  if (path === '/fleet-maintenance/vehicle' || path.startsWith('/fleet-maintenance/vehicle/')) {
+    const idParam = path.startsWith('/fleet-maintenance/vehicle/') ? path.replace('/fleet-maintenance/vehicle/', '') : null;
+    if (method === 'DELETE' && idParam) {
+      const buses = (await getReliableCollection<any>('buses')) || [];
+      const updated = buses.filter((b: any) => String(b.id) !== String(idParam) && b.registration_number !== idParam && b.bus_number !== idParam);
+      setLocalCollection('buses', updated);
+      try {
+        await supabase.from('buses').delete().or(`id.eq.${idParam},registration_number.eq.${idParam},bus_number.eq.${idParam}`);
+      } catch {}
+      localStorage.removeItem('charvik_fleet_maintenance_cache');
+      return { success: true } as any;
+    }
+    if (method === 'POST') {
+      const reg = body.registration_number || body.bus_number;
+      const buses = (await getReliableCollection<any>('buses')) || [];
+      const existingIdx = buses.findIndex((b: any) => b.registration_number === reg || b.bus_number === reg);
+      const newBus = {
+        id: existingIdx >= 0 ? buses[existingIdx].id : Date.now(),
+        ...body,
+        registration_number: reg,
+        bus_number: reg,
+        make: body.make || body.model?.split(' ')[0] || 'Fleet',
+        model: body.model || 'Bus',
+        operational_status: 'Active'
+      };
+      if (existingIdx >= 0) {
+        buses[existingIdx] = { ...buses[existingIdx], ...newBus };
+      } else {
+        buses.push(newBus);
+      }
+      setLocalCollection('buses', buses);
+      try {
+        await supabase.from('buses').upsert(newBus);
+      } catch {}
+      localStorage.removeItem('charvik_fleet_maintenance_cache');
+      return { success: true, id: newBus.id } as any;
+    }
+  }
+
   if (path === '/audit-logs') return [] as any;
   if (path.startsWith('/reports')) return [] as any;
 
@@ -2433,6 +2473,19 @@ export const api = {
     } catch {
       localStorage.removeItem('charvik_fleet_maintenance_cache');
       return { success: true, id: Date.now() };
+    }
+  },
+
+  deleteFleetVehicle: async (idOrReg: number | string) => {
+    try {
+      const res = await request<any>(`/fleet-maintenance/vehicle/${idOrReg}`, {
+        method: 'DELETE'
+      });
+      localStorage.removeItem('charvik_fleet_maintenance_cache');
+      return res;
+    } catch {
+      localStorage.removeItem('charvik_fleet_maintenance_cache');
+      return { success: true };
     }
   },
 

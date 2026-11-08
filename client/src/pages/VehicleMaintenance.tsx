@@ -92,6 +92,7 @@ export const VehicleMaintenance: React.FC = () => {
 
   // Modals
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [isUpdateOdometerOpen, setIsUpdateOdometerOpen] = useState(false);
   const [newOdometerVal, setNewOdometerVal] = useState<number | string>('');
 
@@ -289,7 +290,61 @@ export const VehicleMaintenance: React.FC = () => {
     }
   };
 
-  // Add Vehicle
+  // Open Add Vehicle Modal
+  const handleOpenAddVehicle = () => {
+    setEditingVehicle(null);
+    setVehicleForm({
+      registration_number: '',
+      model: '',
+      chassis_number: '',
+      engine_number: '',
+      current_odometer_km: '',
+      last_service_date: '',
+      last_service_km: '',
+      parking_location: 'Delhi Depot – Bay 1',
+      driver_name: '',
+      operations_manager: 'Priya Sharma'
+    });
+    setIsAddVehicleOpen(true);
+  };
+
+  // Open Edit Vehicle Modal
+  const handleOpenEditVehicle = (veh: Vehicle) => {
+    setEditingVehicle(veh);
+    setVehicleForm({
+      registration_number: veh.registration_number || veh.bus_number || '',
+      model: veh.model || '',
+      chassis_number: veh.chassis_number || '',
+      engine_number: veh.engine_number || '',
+      current_odometer_km: veh.current_odometer_km != null ? String(veh.current_odometer_km) : '',
+      last_service_date: veh.last_service_date || '',
+      last_service_km: veh.last_service_km != null ? String(veh.last_service_km) : '',
+      parking_location: veh.parking_location || 'Delhi Depot – Bay 1',
+      driver_name: veh.driver_name || '',
+      operations_manager: veh.operations_manager || 'Priya Sharma'
+    });
+    setIsAddVehicleOpen(true);
+  };
+
+  // Close Vehicle Modal
+  const handleCloseVehicleModal = () => {
+    setIsAddVehicleOpen(false);
+    setEditingVehicle(null);
+    setVehicleForm({
+      registration_number: '',
+      model: '',
+      chassis_number: '',
+      engine_number: '',
+      current_odometer_km: '',
+      last_service_date: '',
+      last_service_km: '',
+      parking_location: 'Delhi Depot – Bay 1',
+      driver_name: '',
+      operations_manager: 'Priya Sharma'
+    });
+  };
+
+  // Add / Edit Vehicle
   const handleSaveVehicle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!vehicleForm.registration_number) {
@@ -298,9 +353,9 @@ export const VehicleMaintenance: React.FC = () => {
     }
 
     try {
-      await api.createFleetVehicle({
-        registration_number: vehicleForm.registration_number,
-        bus_number: vehicleForm.registration_number,
+      const payload: any = {
+        registration_number: vehicleForm.registration_number.trim(),
+        bus_number: vehicleForm.registration_number.trim(),
         model: vehicleForm.model || 'Volvo 9600 Multi-Axle',
         make: vehicleForm.model?.split(' ')[0] || 'Fleet',
         chassis_number: vehicleForm.chassis_number,
@@ -308,27 +363,140 @@ export const VehicleMaintenance: React.FC = () => {
         current_odometer_km: Number(vehicleForm.current_odometer_km) || 0,
         parking_location: vehicleForm.parking_location || 'Delhi Depot – Bay 1',
         operations_manager: vehicleForm.operations_manager || 'Priya Sharma',
-        last_service_date: vehicleForm.last_service_date,
+        driver_name: vehicleForm.driver_name || '',
+        last_service_date: vehicleForm.last_service_date || null,
         last_service_km: Number(vehicleForm.last_service_km) || 0
-      });
+      };
 
-      success('New vehicle added to fleet maintenance!');
-      setIsAddVehicleOpen(false);
-      setVehicleForm({
-        registration_number: '',
-        model: '',
-        chassis_number: '',
-        engine_number: '',
-        current_odometer_km: '',
-        last_service_date: '',
-        last_service_km: '',
-        parking_location: 'Delhi Depot – Bay 1',
-        driver_name: '',
-        operations_manager: 'Priya Sharma'
-      });
-      loadFleetData();
+      if (editingVehicle) {
+        if (editingVehicle.id) {
+          await api.updateBus(editingVehicle.id, payload).catch(() => {});
+        }
+        await api.createFleetVehicle(payload).catch(() => {});
+
+        try {
+          const cached = localStorage.getItem('charvik_fleet_maintenance_cache');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && Array.isArray(parsed.buses)) {
+              parsed.buses = parsed.buses.map((b: any) => {
+                if (
+                  b.id === editingVehicle.id ||
+                  b.registration_number === editingVehicle.registration_number ||
+                  b.bus_number === editingVehicle.bus_number
+                ) {
+                  return {
+                    ...b,
+                    ...payload,
+                    registration_number: payload.registration_number,
+                    bus_number: payload.bus_number
+                  };
+                }
+                return b;
+              });
+              localStorage.setItem('charvik_fleet_maintenance_cache', JSON.stringify(parsed));
+            }
+          }
+        } catch {}
+
+        success(`Vehicle ${payload.registration_number} updated successfully!`);
+      } else {
+        await api.createFleetVehicle(payload);
+        success('New vehicle added to fleet maintenance!');
+      }
+
+      handleCloseVehicleModal();
+      await loadFleetData();
+
+      if (editingVehicle) {
+        const refreshed = await api.getFleetMaintenance();
+        const updated = (refreshed.buses || []).find(
+          (b: Vehicle) =>
+            b.id === editingVehicle.id ||
+            b.registration_number === payload.registration_number ||
+            b.bus_number === payload.registration_number
+        );
+        if (updated) {
+          setSelectedVehicle(updated);
+          setSearchParams({ vehicle: updated.registration_number });
+        }
+      }
     } catch (err: any) {
-      error(err.message || 'Failed to add vehicle');
+      error(err.message || 'Failed to save vehicle');
+    }
+  };
+
+  // Delete Vehicle
+  const handleDeleteVehicle = async (veh: Vehicle) => {
+    const reg = veh.registration_number || veh.bus_number || 'this vehicle';
+    if (!window.confirm(`Are you sure you want to delete vehicle ${reg}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const targetId = veh.id || reg;
+      await api.deleteFleetVehicle(targetId).catch(() => {});
+      if (veh.id) {
+        await api.archiveBus(veh.id).catch(() => {});
+      }
+
+      try {
+        const cached = localStorage.getItem('charvik_fleet_maintenance_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && Array.isArray(parsed.buses)) {
+            parsed.buses = parsed.buses.filter(
+              (b: any) =>
+                b.id !== veh.id &&
+                b.registration_number !== veh.registration_number &&
+                b.bus_number !== veh.bus_number
+            );
+            parsed.summary = {
+              ...parsed.summary,
+              totalBuses: parsed.buses.length
+            };
+            localStorage.setItem('charvik_fleet_maintenance_cache', JSON.stringify(parsed));
+          }
+        }
+      } catch {}
+
+      try {
+        const bRaw = localStorage.getItem('charvik_buses_data');
+        if (bRaw) {
+          const bList = JSON.parse(bRaw);
+          const filtered = bList.filter(
+            (b: any) =>
+              b.id !== veh.id &&
+              b.bus_number !== veh.bus_number &&
+              b.registration_number !== veh.registration_number
+          );
+          localStorage.setItem('charvik_buses_data', JSON.stringify(filtered));
+        }
+      } catch {}
+
+      const remaining = vehicles.filter(
+        (b) => b.id !== veh.id && b.registration_number !== veh.registration_number
+      );
+      setVehicles(remaining);
+      setSummary((prev: any) => ({
+        ...prev,
+        totalBuses: Math.max(0, (prev.totalBuses || remaining.length + 1) - 1)
+      }));
+
+      success(`Vehicle ${reg} deleted successfully!`);
+
+      if (
+        selectedVehicle &&
+        (selectedVehicle.id === veh.id ||
+          selectedVehicle.registration_number === veh.registration_number ||
+          selectedVehicle.bus_number === veh.bus_number)
+      ) {
+        handleSelectVehicle(null);
+      } else {
+        await loadFleetData();
+      }
+    } catch (err: any) {
+      error(err.message || 'Failed to delete vehicle');
     }
   };
 
@@ -471,6 +639,152 @@ export const VehicleMaintenance: React.FC = () => {
     return Array.from(set);
   }, [vehicles]);
 
+  const renderAddEditVehicleModal = () => (
+    <Modal
+      isOpen={isAddVehicleOpen}
+      onClose={handleCloseVehicleModal}
+      title={editingVehicle ? `Edit Vehicle — ${editingVehicle.registration_number}` : 'Add Vehicle'}
+      subtitle={
+        editingVehicle
+          ? 'Update vehicle specifications, assignments, parking location, and service readings.'
+          : 'Registration number and bus model are required — service intervals are calculated automatically from the readings you enter.'
+      }
+      maxWidth="max-w-xl"
+    >
+      <form onSubmit={handleSaveVehicle} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Registration number *</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. NL01B3309"
+              value={vehicleForm.registration_number}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, registration_number: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Bus model *</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Volvo 9600 Multi-Axle"
+              value={vehicleForm.model}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, model: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Chassis number</label>
+            <input
+              type="text"
+              placeholder="Chassis number..."
+              value={vehicleForm.chassis_number}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, chassis_number: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Engine number</label>
+            <input
+              type="text"
+              placeholder="Engine number..."
+              value={vehicleForm.engine_number}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, engine_number: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Current odometer (KM)</label>
+            <input
+              type="number"
+              placeholder="e.g. 245000"
+              value={vehicleForm.current_odometer_km}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, current_odometer_km: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Last service date</label>
+            <input
+              type="date"
+              value={vehicleForm.last_service_date}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, last_service_date: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Last service odometer (KM)</label>
+            <input
+              type="number"
+              placeholder="e.g. 240000"
+              value={vehicleForm.last_service_km}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, last_service_km: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Parking location</label>
+            <input
+              type="text"
+              placeholder="e.g. Delhi Depot – Bay 4"
+              value={vehicleForm.parking_location}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, parking_location: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Assigned driver</label>
+            <input
+              type="text"
+              placeholder="e.g. Rajesh Kumar"
+              value={vehicleForm.driver_name}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, driver_name: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Operations manager</label>
+            <input
+              type="text"
+              placeholder="e.g. Priya Sharma"
+              value={vehicleForm.operations_manager}
+              onChange={(e) => setVehicleForm({ ...vehicleForm, operations_manager: e.target.value })}
+              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button
+            type="button"
+            onClick={handleCloseVehicleModal}
+            className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-5 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            {editingVehicle ? <Check className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-white" />}
+            <span>{editingVehicle ? 'Save Changes' : 'Add Vehicle'}</span>
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+
   // =========================================================================
   // VIEW: VEHICLE PROFILE (Matching Frame 7, 5, 6, 18)
   // =========================================================================
@@ -493,22 +807,46 @@ export const VehicleMaintenance: React.FC = () => {
         {/* Top Vehicle Header Card (Matching Frame 7) */}
         <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex-1 space-y-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight font-mono">
-                {v.registration_number}
-              </h1>
-              <span
-                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
-                  v.overdueCount > 0
-                    ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                    : v.dueSoonCount > 0
-                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                }`}
-              >
-                <Flame className="w-3.5 h-3.5 text-rose-500" />
-                <span>{v.overdueCount > 0 ? 'Needs Attention' : v.dueSoonCount > 0 ? 'Due Soon' : 'Healthy'}</span>
-              </span>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-3xl font-black text-slate-900 tracking-tight font-mono">
+                  {v.registration_number}
+                </h1>
+                <span
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                    v.overdueCount > 0
+                      ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                      : v.dueSoonCount > 0
+                      ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  }`}
+                >
+                  <Flame className="w-3.5 h-3.5 text-rose-500" />
+                  <span>{v.overdueCount > 0 ? 'Needs Attention' : v.dueSoonCount > 0 ? 'Due Soon' : 'Healthy'}</span>
+                </span>
+              </div>
+
+              {/* Edit & Delete Action Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenEditVehicle(v)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 hover:text-[#142B4A] text-xs font-bold transition-all shadow-xs cursor-pointer hover:border-slate-300"
+                  title="Edit vehicle details"
+                >
+                  <Edit className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteVehicle(v)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all shadow-xs cursor-pointer hover:border-rose-300"
+                  title="Delete vehicle"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Delete</span>
+                </button>
+              </div>
             </div>
             <p className="text-sm font-semibold text-slate-500 -mt-2">{v.model}</p>
 
@@ -977,6 +1315,9 @@ export const VehicleMaintenance: React.FC = () => {
           </div>
         </Modal>
 
+        {/* Modal: Add / Edit Vehicle */}
+        {renderAddEditVehicleModal()}
+
         {/* Modal: Full Preview Photo */}
         {previewPhotoModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
@@ -1021,7 +1362,7 @@ export const VehicleMaintenance: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={() => setIsAddVehicleOpen(true)}
+            onClick={handleOpenAddVehicle}
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4 text-white" />
@@ -1258,14 +1599,38 @@ export const VehicleMaintenance: React.FC = () => {
                       : 'All services OK'}
                   </span>
 
-                  <button
-                    type="button"
-                    onClick={() => handleSelectVehicle(bus)}
-                    className="font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer transition-colors text-sm"
-                  >
-                    <span>Open profile</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEditVehicle(bus);
+                      }}
+                      className="p-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-[#142B4A] transition-colors cursor-pointer"
+                      title="Edit vehicle"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteVehicle(bus);
+                      }}
+                      className="p-1.5 rounded-lg border border-rose-200 hover:border-rose-300 bg-rose-50/60 hover:bg-rose-100 text-rose-600 transition-colors cursor-pointer"
+                      title="Delete vehicle"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectVehicle(bus)}
+                      className="font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer transition-colors text-sm ml-1"
+                    >
+                      <span>Open profile</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -1273,146 +1638,8 @@ export const VehicleMaintenance: React.FC = () => {
         </div>
       )}
 
-      {/* Modal: Add Vehicle (Matching Frame 1) */}
-      <Modal
-        isOpen={isAddVehicleOpen}
-        onClose={() => setIsAddVehicleOpen(false)}
-        title="Add Vehicle"
-        subtitle="Registration number and bus model are required — service intervals are calculated automatically from the readings you enter."
-        maxWidth="max-w-xl"
-      >
-        <form onSubmit={handleSaveVehicle} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Registration number *</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. NL01B3309"
-                value={vehicleForm.registration_number}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, registration_number: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono font-bold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Bus model *</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Volvo 9600 Multi-Axle"
-                value={vehicleForm.model}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, model: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Chassis number</label>
-              <input
-                type="text"
-                placeholder="Chassis number..."
-                value={vehicleForm.chassis_number}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, chassis_number: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Engine number</label>
-              <input
-                type="text"
-                placeholder="Engine number..."
-                value={vehicleForm.engine_number}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, engine_number: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Current odometer (KM)</label>
-              <input
-                type="number"
-                placeholder="e.g. 245000"
-                value={vehicleForm.current_odometer_km}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, current_odometer_km: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Last service date</label>
-              <input
-                type="date"
-                value={vehicleForm.last_service_date}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, last_service_date: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Last service odometer (KM)</label>
-              <input
-                type="number"
-                placeholder="e.g. 240000"
-                value={vehicleForm.last_service_km}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, last_service_km: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Parking location</label>
-              <input
-                type="text"
-                placeholder="e.g. Delhi Depot – Bay 4"
-                value={vehicleForm.parking_location}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, parking_location: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Assigned driver</label>
-              <input
-                type="text"
-                placeholder="e.g. Rajesh Kumar"
-                value={vehicleForm.driver_name}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, driver_name: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Operations manager</label>
-              <input
-                type="text"
-                placeholder="e.g. Priya Sharma"
-                value={vehicleForm.operations_manager}
-                onChange={(e) => setVehicleForm({ ...vehicleForm, operations_manager: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => setIsAddVehicleOpen(false)}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4 text-white" />
-              <span>Add Vehicle</span>
-            </button>
-          </div>
-        </form>
-      </Modal>
+      {/* Modal: Add / Edit Vehicle */}
+      {renderAddEditVehicleModal()}
     </div>
   );
 };
