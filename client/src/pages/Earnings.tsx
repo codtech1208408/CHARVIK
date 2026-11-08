@@ -26,6 +26,7 @@ import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
+import { formatEmployeeId } from '../utils/employeeCode';
 
 interface OrganizerPayment {
   id: number;
@@ -410,9 +411,9 @@ export const Earnings: React.FC = () => {
       return;
     }
 
-    const headers = ['Employee Code', 'Full Name', 'Category', 'Tasks Handled', 'Salary Earned (Rs)', 'Pending Due (Rs)', 'Settled Total (Rs)'];
+    const headers = ['Employee ID', 'Full Name', 'Category', 'Tasks Handled', 'Salary Earned (Rs)', 'Pending Due (Rs)', 'Settled Total (Rs)'];
     const rows = staffLedgerRecords.map((r) => [
-      r.employee_code,
+      formatEmployeeId(r.employee_code, r.role),
       `"${r.full_name}"`,
       r.role,
       r.tasksHandled,
@@ -766,7 +767,7 @@ export const Earnings: React.FC = () => {
                   <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Search staff name or code..."
+                    placeholder="Search staff name or employee id..."
                     value={search}
                     onChange={(e) => {
                       setSearch(e.target.value);
@@ -827,7 +828,7 @@ export const Earnings: React.FC = () => {
                             <div>
                               <p className="font-bold text-slate-900 text-sm">{r.full_name}</p>
                               <span className="font-mono text-[10px] text-slate-400 font-semibold block">
-                                {r.employee_code}
+                                {formatEmployeeId(r.employee_code, r.role)}
                               </span>
                             </div>
                           </div>
@@ -1025,7 +1026,7 @@ export const Earnings: React.FC = () => {
           isOpen={Boolean(selectedStaffForLedger)}
           onClose={() => setSelectedStaffForLedger(null)}
           title={`Financial Ledger: ${selectedStaffForLedger.full_name}`}
-          subtitle={`Employee Code: ${selectedStaffForLedger.employee_code} • Category: ${selectedStaffForLedger.role}`}
+          subtitle={`Employee ID: ${formatEmployeeId(selectedStaffForLedger.employee_code, selectedStaffForLedger.role)} • Category: ${selectedStaffForLedger.role}`}
           maxWidth="max-w-3xl"
         >
           <div className="space-y-4">

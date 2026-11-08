@@ -40,6 +40,7 @@ import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
 import { useAuth } from '../context/AuthContext';
 import { ALL_MODULE_CATEGORIES, ALL_CATEGORY_NAMES } from '../constants/moduleCategories';
+import { formatEmployeeId } from '../utils/employeeCode';
 
 export const EmployeeManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -539,7 +540,7 @@ export const EmployeeManagement: React.FC = () => {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by name, code, phone..."
+              placeholder="Search by name, employee id, phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:bg-white outline-none"
@@ -560,7 +561,7 @@ export const EmployeeManagement: React.FC = () => {
             <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
               <tr>
                 <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
-                <th className="py-2.5 px-3 min-w-[110px]">Code</th>
+                <th className="py-2.5 px-3 min-w-[125px]">EMPLOYEE ID</th>
                 <th className="py-2.5 px-3 min-w-[160px]">Employee Name</th>
                 <th className="py-2.5 px-3 min-w-[90px]">Role</th>
                 <th className="py-2.5 px-3 min-w-[100px]">Worker Type & Salary</th>
@@ -589,7 +590,7 @@ export const EmployeeManagement: React.FC = () => {
                 filteredEmployees.map((e, index) => (
                   <tr key={e.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
-                    <td className="py-2 px-3 font-mono font-bold text-slate-900 tracking-wide">{e.employee_code}</td>
+                    <td className="py-2 px-3 font-mono font-bold text-slate-900 tracking-wide">{formatEmployeeId(e.employee_code, e.role)}</td>
                     <td className="py-2 px-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-2xs">
@@ -1302,7 +1303,7 @@ export const EmployeeManagement: React.FC = () => {
         <Modal
           isOpen={isViewOpen}
           onClose={() => setIsViewOpen(false)}
-          title={`Biodata Profile: ${viewingProfile.employee.full_name} (${viewingProfile.employee.employee_code})`}
+          title={`Biodata Profile: ${viewingProfile.employee.full_name} (${formatEmployeeId(viewingProfile.employee.employee_code, viewingProfile.employee.role)})`}
           subtitle={`${viewingProfile.employee.role} • Status: ${viewingProfile.employee.employment_status}`}
           maxWidth="max-w-3xl"
         >
@@ -1324,7 +1325,7 @@ export const EmployeeManagement: React.FC = () => {
                 <div>
                   <h4 className="font-extrabold text-base text-slate-900">{viewingProfile.employee.full_name}</h4>
                   <p className="text-xs text-slate-500 font-semibold">
-                    {viewingProfile.employee.employee_code} • {viewingProfile.employee.role}
+                    {formatEmployeeId(viewingProfile.employee.employee_code, viewingProfile.employee.role)} • {viewingProfile.employee.role}
                   </p>
                 </div>
               </div>
@@ -1388,7 +1389,7 @@ export const EmployeeManagement: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right text-[10px] text-slate-600">
-                    <p><strong className="text-slate-900">Emp Code:</strong> <span className="font-mono font-bold text-blue-700">{viewingProfile.employee.employee_code}</span></p>
+                    <p><strong className="text-slate-900">Employee ID:</strong> <span className="font-mono font-bold text-blue-700">{formatEmployeeId(viewingProfile.employee.employee_code, viewingProfile.employee.role)}</span></p>
                     <p><strong className="text-slate-900">Role:</strong> <span className="font-bold">{viewingProfile.employee.role}</span></p>
                   </div>
                 </div>
@@ -1855,7 +1856,7 @@ export const EmployeeManagement: React.FC = () => {
                           {viewingProfile.employee.salary ? `₹${Number(viewingProfile.employee.salary).toLocaleString('en-IN')}` : '₹0'}
                         </span>
                       </div>
-                      <div><strong>Employee Code:</strong> {viewingProfile.employee.employee_code}</div>
+                      <div><strong>Employee ID:</strong> {formatEmployeeId(viewingProfile.employee.employee_code, viewingProfile.employee.role)}</div>
                       <div><strong>Assigned Bus:</strong> {viewingProfile.employee.bus_number || 'None'}</div>
                       <div><strong>Joining Date:</strong> {viewingProfile.employee.joining_date}</div>
                       <div><strong>Employment Status:</strong> <Badge status={viewingProfile.employee.employment_status} /></div>

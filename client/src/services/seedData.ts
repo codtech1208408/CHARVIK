@@ -67,7 +67,7 @@ export const BASE_FLEET_BUSES: any[] = [
 export const BASE_FLEET_EMPLOYEES: any[] = [
   {
     "id": 1,
-    "employee_code": "EMP-DRV-6808",
+    "employee_code": "DRV-1001",
     "role": "Driver",
     "full_name": "akhil",
     "gender": "Male",
@@ -133,7 +133,7 @@ export const BASE_FLEET_EMPLOYEES: any[] = [
   },
   {
     "id": 2,
-    "employee_code": "EMP-STF-1829",
+    "employee_code": "HLP-1001",
     "role": "Helper",
     "full_name": "santhu",
     "gender": "Male",
@@ -199,7 +199,7 @@ export const BASE_FLEET_EMPLOYEES: any[] = [
   },
   {
     "id": 3,
-    "employee_code": "EMP-CPT-0038",
+    "employee_code": "CPT-1001",
     "role": "Captain",
     "full_name": "hari",
     "gender": "Male",
@@ -265,7 +265,7 @@ export const BASE_FLEET_EMPLOYEES: any[] = [
   },
   {
     "id": 4,
-    "employee_code": "EMP-DRV-5790",
+    "employee_code": "DRV-1002",
     "role": "Driver",
     "full_name": "kittu",
     "gender": "Male",

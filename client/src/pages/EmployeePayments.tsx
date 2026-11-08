@@ -10,6 +10,7 @@ import { api } from "../services/api";
 import { useToast } from "../components/common/Toast";
 import { PrintButton } from "../components/common/PrintButton";
 import { printSheet } from "../utils/printSheet";
+import { formatEmployeeId } from "../utils/employeeCode";
 
 interface TripEntry {
   id: number | string;
@@ -574,7 +575,7 @@ export const EmployeePayments: React.FC = () => {
     const headers = [
       "S.No",
       "Employee Name",
-      "Employee Code",
+      "Employee ID",
       "Role",
       "Phone",
       "Tasks Handled",
@@ -675,7 +676,7 @@ export const EmployeePayments: React.FC = () => {
     if (!r) return;
     printSheet({
       title: `${r.full_name} - Employee Biodata`,
-      subtitle: `Official Employee Record | Code: ${r.employee_code} | Role: ${r.role}`,
+      subtitle: `Official Employee Record | ID: ${formatEmployeeId(r.employee_code, r.role)} | Role: ${r.role}`,
       orientation: "portrait",
       htmlContent: `
         <div style="font-family: Arial, sans-serif; padding: 24px; color: #1e293b;">
@@ -688,7 +689,7 @@ export const EmployeePayments: React.FC = () => {
               <span style="background: #eff6ff; color: #1d4ed8; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: bold; border: 1px solid #bfdbfe;">
                 ${r.role}
               </span>
-              <p style="margin: 4px 0 0; font-size: 11px; font-family: monospace; color: #94a3b8;">${r.employee_code}</p>
+              <p style="margin: 4px 0 0; font-size: 11px; font-family: monospace; color: #94a3b8;">${formatEmployeeId(r.employee_code, r.role)}</p>
             </div>
           </div>
           
@@ -1351,7 +1352,7 @@ export const EmployeePayments: React.FC = () => {
                     <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
-                      placeholder="Search staff, code, phone..."
+                      placeholder="Search staff, employee id, phone..."
                       value={searchQuery}
                       onChange={(e) => {
                         setSearchQuery(e.target.value);
@@ -1422,7 +1423,7 @@ export const EmployeePayments: React.FC = () => {
                                 <div>
                                   <p className="font-bold text-slate-900 text-sm">{emp.full_name}</p>
                                   <span className="font-mono text-[11px] text-slate-400 font-semibold">
-                                    {emp.employee_code}
+                                    {formatEmployeeId(emp.employee_code, emp.role)}
                                   </span>
                                 </div>
                               </div>

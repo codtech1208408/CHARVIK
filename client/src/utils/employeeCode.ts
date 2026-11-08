@@ -46,3 +46,34 @@ export const getNextEmployeeCode = (
 
   return `${prefix}${maxSeq + 1}`;
 };
+
+/**
+ * Formats and standardizes Employee ID according to role:
+ * - Driver:  DRV-XXXX
+ * - Helper:  HLP-XXXX
+ * - Captain: CPT-XXXX
+ * Strips legacy 'EMP-' and corrects 'STF-' to 'HLP-'.
+ */
+export const formatEmployeeId = (code?: string, role?: string): string => {
+  if (!code) return '';
+  let str = code.trim();
+  // Strip legacy EMP- prefix
+  str = str.replace(/^EMP-/i, '');
+
+  const roleLower = (role || '').toLowerCase().trim();
+  if (roleLower === 'helper' || /^STF-/i.test(str)) {
+    str = str.replace(/^STF-/i, 'HLP-');
+    if (!/^HLP-/i.test(str)) {
+      str = `HLP-${str.replace(/^[A-Z]+-/i, '')}`;
+    }
+  } else if (roleLower === 'captain' || /^CPT-/i.test(str)) {
+    if (!/^CPT-/i.test(str)) {
+      str = `CPT-${str.replace(/^[A-Z]+-/i, '')}`;
+    }
+  } else if (roleLower === 'driver' || /^DRV-/i.test(str)) {
+    if (!/^DRV-/i.test(str)) {
+      str = `DRV-${str.replace(/^[A-Z]+-/i, '')}`;
+    }
+  }
+  return str;
+};
