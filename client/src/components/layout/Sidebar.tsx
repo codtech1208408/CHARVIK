@@ -33,7 +33,8 @@ import {
   ClipboardCheck,
   RotateCw,
   History,
-  FileText
+  FileText,
+  CalendarCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
@@ -197,6 +198,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition']
     },
     {
+      label: 'Daily Maintenance',
+      route: '/admin/daily-maintenance',
+      icon: CalendarCheck,
+      activeRoutes: ['/admin/daily-maintenance']
+    },
+    {
       label: 'New Tyres',
       route: '/admin/new-tyres',
       icon: Package,
@@ -242,7 +249,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         '/admin/daily-vehicle-checkup',
         '/admin/vehicle-checkup',
         '/admin/bus-condition',
-        '/admin/new-tyres'
+        '/admin/daily-maintenance',
+        '/admin/new-tyres',
+        '/admin/tyres/new'
       ]
     },
     {
@@ -423,7 +432,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     !isDashboard &&
     !isCaptain &&
     !isOperator &&
-    (location.pathname.startsWith('/admin/new-tyres') ||
+    (location.pathname.startsWith('/admin/daily-maintenance') ||
+      location.pathname.startsWith('/admin/new-tyres') ||
       location.pathname.startsWith('/admin/tyres/new') ||
       location.pathname.startsWith('/admin/vehicle-maintenance') ||
       location.pathname.startsWith('/admin/daily-vehicle-checkup') ||

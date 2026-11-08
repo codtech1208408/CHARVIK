@@ -2378,6 +2378,209 @@ app.post('/api/fleet-maintenance/vehicle', (req: Request, res: Response) => {
   }
 });
 
+// ================= DAILY MAINTENANCE =================
+app.get('/api/daily-maintenance', (req: Request, res: Response) => {
+  try {
+    const { vehicle_number, bus_id, search, start_date, end_date } = req.query;
+    let query = `
+      SELECT dm.*,
+        b.model as bus_model,
+        b.parking_location,
+        COALESCE(
+          (
+            SELECT CASE WHEN c.closing_km > 0 THEN c.closing_km ELSE c.starting_km END
+            FROM bus_condition_inspections c
+            WHERE (c.bus_id = dm.bus_id OR c.vehicle_model = dm.vehicle_number) AND (c.closing_km > 0 OR c.starting_km > 0)
+            ORDER BY c.inspection_date DESC, c.id DESC
+            LIMIT 1
+          ),
+          b.current_odometer_km,
+          dm.km
+        ) AS latest_vehicle_km
+      FROM daily_maintenance_records dm
+      LEFT JOIN buses b ON dm.bus_id = b.id OR dm.vehicle_number = b.registration_number OR dm.vehicle_number = b.bus_number
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (vehicle_number && vehicle_number !== 'All' && vehicle_number !== 'all') {
+      query += ' AND (dm.vehicle_number = ? OR b.registration_number = ? OR b.bus_number = ?)';
+      params.push(vehicle_number, vehicle_number, vehicle_number);
+    }
+
+    if (bus_id && bus_id !== 'undefined' && bus_id !== 'null' && bus_id !== 'All') {
+      query += ' AND dm.bus_id = ?';
+      params.push(bus_id);
+    }
+
+    if (start_date) {
+      query += ' AND dm.date >= ?';
+      params.push(start_date);
+    }
+
+    if (end_date) {
+      query += ' AND dm.date <= ?';
+      params.push(end_date);
+    }
+
+    if (search) {
+      const s = `%${search}%`;
+      query += ' AND (dm.vehicle_number LIKE ? OR dm.showroom_name LIKE ? OR dm.complaints LIKE ? OR dm.other LIKE ?)';
+      params.push(s, s, s, s);
+    }
+
+    query += ' ORDER BY dm.date DESC, dm.id DESC';
+    const records = db.prepare(query).all(...params);
+
+    const parsed = records.map((r: any) => {
+      let photos: string[] = [];
+      try {
+        if (r.photos_json) photos = JSON.parse(r.photos_json);
+      } catch {}
+      return {
+        ...r,
+        photos
+      };
+    });
+
+    return res.json(parsed);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/daily-maintenance', (req: Request, res: Response) => {
+  try {
+    const {
+      date,
+      vehicle_number,
+      bus_id,
+      km,
+      complaints,
+      showroom_name,
+      other,
+      amount,
+      photos
+    } = req.body;
+
+    if (!vehicle_number || !date) {
+      return res.status(400).json({ error: 'Vehicle number and Date are required' });
+    }
+
+    const regNo = String(vehicle_number).trim();
+    let busId = bus_id;
+    if (!busId) {
+      const matched = db.prepare('SELECT id FROM buses WHERE registration_number = ? OR bus_number = ?').get(regNo, regNo) as any;
+      if (matched) busId = matched.id;
+    }
+
+    const photosJson = Array.isArray(photos) ? JSON.stringify(photos.slice(0, 3)) : (typeof photos === 'string' ? photos : '[]');
+    const kmNum = Number(km) || 0;
+    const amountNum = Number(amount) || 0;
+
+    const stmt = db.prepare(`
+      INSERT INTO daily_maintenance_records (
+        bus_id, vehicle_number, date, km, complaints, showroom_name, other, amount, photos_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const info = stmt.run(
+      busId || null,
+      regNo,
+      date,
+      kmNum,
+      complaints || '',
+      showroom_name || '',
+      other || '',
+      amountNum,
+      photosJson
+    );
+
+    // If km is higher, sync to bus current_odometer_km
+    if (busId && kmNum > 0) {
+      const bus = db.prepare('SELECT current_odometer_km FROM buses WHERE id = ?').get(busId) as any;
+      if (bus && kmNum > Number(bus.current_odometer_km || 0)) {
+        db.prepare('UPDATE buses SET current_odometer_km = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(kmNum, busId);
+      }
+    }
+
+    logAudit('DAILY_MAINTENANCE_ADD', 'Vehicle Maintenance', info.lastInsertRowid, `Logged daily maintenance for ${regNo} (₹${amountNum})`);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Daily maintenance record created successfully',
+      id: info.lastInsertRowid
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/daily-maintenance/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      date,
+      vehicle_number,
+      bus_id,
+      km,
+      complaints,
+      showroom_name,
+      other,
+      amount,
+      photos
+    } = req.body;
+
+    const photosJson = Array.isArray(photos) ? JSON.stringify(photos.slice(0, 3)) : (typeof photos === 'string' ? photos : undefined);
+
+    const existing = db.prepare('SELECT * FROM daily_maintenance_records WHERE id = ?').get(id) as any;
+    if (!existing) return res.status(404).json({ error: 'Daily maintenance record not found' });
+
+    db.prepare(`
+      UPDATE daily_maintenance_records SET
+        date = COALESCE(?, date),
+        vehicle_number = COALESCE(?, vehicle_number),
+        bus_id = COALESCE(?, bus_id),
+        km = COALESCE(?, km),
+        complaints = COALESCE(?, complaints),
+        showroom_name = COALESCE(?, showroom_name),
+        other = COALESCE(?, other),
+        amount = COALESCE(?, amount),
+        photos_json = COALESCE(?, photos_json),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      date || null,
+      vehicle_number ? String(vehicle_number).trim() : null,
+      bus_id || null,
+      km !== undefined ? Number(km) : null,
+      complaints !== undefined ? complaints : null,
+      showroom_name !== undefined ? showroom_name : null,
+      other !== undefined ? other : null,
+      amount !== undefined ? Number(amount) : null,
+      photosJson !== undefined ? photosJson : null,
+      id
+    );
+
+    logAudit('DAILY_MAINTENANCE_UPDATE', 'Vehicle Maintenance', Number(id), `Updated daily maintenance #${id}`);
+
+    return res.json({ success: true, message: 'Record updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/daily-maintenance/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    db.prepare('DELETE FROM daily_maintenance_records WHERE id = ?').run(id);
+    logAudit('DAILY_MAINTENANCE_DELETE', 'Vehicle Maintenance', Number(id), `Deleted daily maintenance #${id}`);
+    return res.json({ success: true, message: 'Record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= TYRE MAINTENANCE =================
 app.get('/api/tyre-maintenance', (req: Request, res: Response) => {
   const { bus_id } = req.query;

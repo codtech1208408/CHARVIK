@@ -2293,3 +2293,70 @@ export const BASE_FLEET_MAINTENANCE_HISTORY: any[] = [
     photos_json: '[]'
   }
 ];
+
+export interface DailyMaintenanceRecord {
+  id: number;
+  bus_id?: number;
+  vehicle_number: string;
+  date: string;
+  km: number;
+  complaints: string;
+  showroom_name: string;
+  other: string;
+  amount: number;
+  photos_json?: string;
+  photos?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export const BASE_DAILY_MAINTENANCE_RECORDS: DailyMaintenanceRecord[] = [
+  {
+    id: 1,
+    bus_id: 3,
+    vehicle_number: 'DL01A1024',
+    date: '2026-11-06',
+    km: 312000,
+    complaints: 'Front brake pad noise & minor air leakage near compressor',
+    showroom_name: 'Scania Commercial Center, Okhla',
+    other: 'Replaced front brake shoe liners, tightened brass air coupling and greased kingpins',
+    amount: 8500,
+    photos_json: '[]'
+  },
+  {
+    id: 2,
+    bus_id: 4,
+    vehicle_number: 'HR55X1200',
+    date: '2026-11-05',
+    km: 65300,
+    complaints: 'Driver cabin AC cooling drop & wiper blade chatter',
+    showroom_name: 'Tata Motors Authorized Hub, Gurugram',
+    other: 'R134a refrigerant gas recharge (450g) and pair of heavy-duty wiper blades replaced',
+    amount: 3200,
+    photos_json: '[]'
+  },
+  {
+    id: 3,
+    bus_id: 5,
+    vehicle_number: 'MH12Q8811',
+    date: '2026-11-04',
+    km: 87500,
+    complaints: 'High beam headlight bulb fused & diesel tank cap lock loose',
+    showroom_name: 'Pune Fleet Auto Spares & Garage',
+    other: '24V H7 halogen bulb replacement and new locking fuel cap with key',
+    amount: 1450,
+    photos_json: '[]'
+  },
+  {
+    id: 4,
+    bus_id: 6,
+    vehicle_number: 'UP16T9988',
+    date: '2026-11-02',
+    km: 276400,
+    complaints: 'Clutch pedal hard & gearbox mount rubber cracked',
+    showroom_name: 'Lucknow Volvo & Heavy Commercial Works',
+    other: 'Clutch booster overhaul kit installed and rear transmission mount bush replaced',
+    amount: 11200,
+    photos_json: '[]'
+  }
+];

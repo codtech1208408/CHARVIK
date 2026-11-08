@@ -872,6 +872,81 @@ export function initDatabase() {
       )
     `).run();
 
+    // Daily Maintenance Records (user requested: date, vehicle number, km, complaints, showroom name, other, amount, invoice 2-3 images)
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS daily_maintenance_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        bus_id INTEGER,
+        vehicle_number TEXT NOT NULL,
+        date DATE NOT NULL,
+        km INTEGER NOT NULL DEFAULT 0,
+        complaints TEXT DEFAULT '',
+        showroom_name TEXT DEFAULT '',
+        other TEXT DEFAULT '',
+        amount REAL NOT NULL DEFAULT 0,
+        photos_json TEXT DEFAULT '[]',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    // Seed Daily Maintenance Records if empty
+    try {
+      const dmCount = db.prepare('SELECT COUNT(*) as cnt FROM daily_maintenance_records').get() as any;
+      if (!dmCount || dmCount.cnt === 0) {
+        const insertDm = db.prepare(`
+          INSERT INTO daily_maintenance_records (
+            bus_id, vehicle_number, date, km, complaints, showroom_name, other, amount, photos_json
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        const sampleRecords = [
+          {
+            bus_id: 3,
+            vehicle_number: 'DL01A1024',
+            date: '2026-11-06',
+            km: 312000,
+            complaints: 'Front brake pad noise & minor air leakage near compressor',
+            showroom_name: 'Scania Commercial Center, Okhla',
+            other: 'Replaced front brake shoe liners, tightened brass air coupling and greased kingpins',
+            amount: 8500
+          },
+          {
+            bus_id: 4,
+            vehicle_number: 'HR55X1200',
+            date: '2026-11-05',
+            km: 65300,
+            complaints: 'Driver cabin AC cooling drop & wiper blade chatter',
+            showroom_name: 'Tata Motors Authorized Hub, Gurugram',
+            other: 'R134a refrigerant gas recharge (450g) and pair of heavy-duty wiper blades replaced',
+            amount: 3200
+          },
+          {
+            bus_id: 5,
+            vehicle_number: 'MH12Q8811',
+            date: '2026-11-04',
+            km: 87500,
+            complaints: 'High beam headlight bulb fused & diesel tank cap lock loose',
+            showroom_name: 'Pune Fleet Auto Spares & Garage',
+            other: '24V H7 halogen bulb replacement and new locking fuel cap with key',
+            amount: 1450
+          },
+          {
+            bus_id: 6,
+            vehicle_number: 'UP16T9988',
+            date: '2026-11-02',
+            km: 276400,
+            complaints: 'Clutch pedal hard & gearbox mount rubber cracked',
+            showroom_name: 'Lucknow Volvo & Heavy Commercial Works',
+            other: 'Clutch booster overhaul kit installed and rear transmission mount bush replaced',
+            amount: 11200
+          }
+        ];
+        for (const s of sampleRecords) {
+          insertDm.run(s.bus_id, s.vehicle_number, s.date, s.km, s.complaints, s.showroom_name, s.other, s.amount, '[]');
+        }
+      }
+    } catch {}
+
     // Seed Fleet Buses from Video if not present
     const seedFleet = [
       {

@@ -19,7 +19,9 @@ import {
   BASE_STAFF_CREDENTIALS,
   BASE_APP_SETTINGS,
   BASE_FLEET_MAINTENANCE_BUSES,
-  BASE_FLEET_MAINTENANCE_HISTORY
+  BASE_FLEET_MAINTENANCE_HISTORY,
+  BASE_DAILY_MAINTENANCE_RECORDS,
+  type DailyMaintenanceRecord
 } from './seedData';
 
 /**
@@ -2212,6 +2214,107 @@ export const api = {
     } catch {
       localStorage.removeItem('charvik_fleet_maintenance_cache');
       return { success: true, id: Date.now() };
+    }
+  },
+
+  // Daily Maintenance (repairs, complaints, showroom name, other, invoice 2-3 photos)
+  getDailyMaintenance: async (params?: { vehicle_number?: string; bus_id?: number | string; search?: string; start_date?: string; end_date?: string }) => {
+    const cleanParams: any = {};
+    if (params?.vehicle_number && params.vehicle_number !== 'all' && params.vehicle_number !== 'All') cleanParams.vehicle_number = params.vehicle_number;
+    if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'all') cleanParams.bus_id = params.bus_id;
+    if (params?.search) cleanParams.search = params.search;
+    if (params?.start_date) cleanParams.start_date = params.start_date;
+    if (params?.end_date) cleanParams.end_date = params.end_date;
+    const q = new URLSearchParams(cleanParams).toString();
+
+    try {
+      const data = await request<DailyMaintenanceRecord[]>(`/daily-maintenance${q ? `?${q}` : ''}`);
+      if (Array.isArray(data) && data.length > 0) {
+        localStorage.setItem('charvik_daily_maintenance_cache', JSON.stringify(data));
+        return data;
+      }
+    } catch {}
+
+    const cached = localStorage.getItem('charvik_daily_maintenance_cache');
+    let list: DailyMaintenanceRecord[] = cached ? JSON.parse(cached) : BASE_DAILY_MAINTENANCE_RECORDS;
+    if (cleanParams.vehicle_number) {
+      list = list.filter((r) => r.vehicle_number === cleanParams.vehicle_number);
+    }
+    if (cleanParams.search) {
+      const s = cleanParams.search.toLowerCase();
+      list = list.filter((r) =>
+        (r.vehicle_number || '').toLowerCase().includes(s) ||
+        (r.showroom_name || '').toLowerCase().includes(s) ||
+        (r.complaints || '').toLowerCase().includes(s) ||
+        (r.other || '').toLowerCase().includes(s)
+      );
+    }
+    return list;
+  },
+
+  createDailyMaintenance: async (data: any) => {
+    try {
+      const res = await request<any>('/daily-maintenance', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      localStorage.removeItem('charvik_daily_maintenance_cache');
+      return res;
+    } catch {
+      const cached = localStorage.getItem('charvik_daily_maintenance_cache');
+      const list: DailyMaintenanceRecord[] = cached ? JSON.parse(cached) : [...BASE_DAILY_MAINTENANCE_RECORDS];
+      const newEntry: DailyMaintenanceRecord = {
+        id: Date.now(),
+        date: data.date || new Date().toISOString().split('T')[0],
+        vehicle_number: data.vehicle_number || 'DL01A1024',
+        bus_id: data.bus_id || null,
+        km: Number(data.km) || 0,
+        complaints: data.complaints || '',
+        showroom_name: data.showroom_name || '',
+        other: data.other || '',
+        amount: Number(data.amount) || 0,
+        photos_json: JSON.stringify(data.photos || []),
+        photos: data.photos || []
+      };
+      list.unshift(newEntry);
+      localStorage.setItem('charvik_daily_maintenance_cache', JSON.stringify(list));
+      return { success: true, id: newEntry.id };
+    }
+  },
+
+  updateDailyMaintenance: async (id: number | string, data: any) => {
+    try {
+      const res = await request<any>(`/daily-maintenance/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      localStorage.removeItem('charvik_daily_maintenance_cache');
+      return res;
+    } catch {
+      const cached = localStorage.getItem('charvik_daily_maintenance_cache');
+      const list: DailyMaintenanceRecord[] = cached ? JSON.parse(cached) : [...BASE_DAILY_MAINTENANCE_RECORDS];
+      const idx = list.findIndex((r) => String(r.id) === String(id));
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], ...data, photos: data.photos || list[idx].photos };
+        localStorage.setItem('charvik_daily_maintenance_cache', JSON.stringify(list));
+      }
+      return { success: true };
+    }
+  },
+
+  deleteDailyMaintenance: async (id: number | string) => {
+    try {
+      const res = await request<any>(`/daily-maintenance/${id}`, {
+        method: 'DELETE'
+      });
+      localStorage.removeItem('charvik_daily_maintenance_cache');
+      return res;
+    } catch {
+      const cached = localStorage.getItem('charvik_daily_maintenance_cache');
+      let list: DailyMaintenanceRecord[] = cached ? JSON.parse(cached) : [...BASE_DAILY_MAINTENANCE_RECORDS];
+      list = list.filter((r) => String(r.id) !== String(id));
+      localStorage.setItem('charvik_daily_maintenance_cache', JSON.stringify(list));
+      return { success: true };
     }
   },
 
