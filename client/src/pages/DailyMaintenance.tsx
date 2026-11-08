@@ -120,7 +120,7 @@ export const DailyMaintenance: React.FC = () => {
     } else if (typeof rec.photos_json === 'string') {
       try {
         parsedPhotos = JSON.parse(rec.photos_json);
-      } catch {}
+      } catch { }
     }
 
     setFormData({
@@ -273,7 +273,7 @@ export const DailyMaintenance: React.FC = () => {
         else if (typeof r.photos_json === 'string') {
           try {
             pCount = JSON.parse(r.photos_json).length;
-          } catch {}
+          } catch { }
         }
 
         const row = [
@@ -392,51 +392,51 @@ export const DailyMaintenance: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Records</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{stats.totalRecords}</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">{stats.uniqueVehicles} distinct vehicles logged</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Records</p>
+          <p className="text-3xl font-black text-slate-900 mt-1">{stats.totalRecords}</p>
+          <p className="text-xs text-slate-500 mt-1">{stats.uniqueVehicles} distinct vehicles logged</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Maintenance Cost</p>
-          <p className="text-2xl font-black text-[#142B4A] mt-1">₹{stats.totalSpend.toLocaleString('en-IN')}</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">Showroom & workshop spend</p>
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Maintenance Cost</p>
+          <p className="text-3xl font-black text-[#142B4A] mt-1">₹{stats.totalSpend.toLocaleString('en-IN')}</p>
+          <p className="text-xs text-slate-500 mt-1">Showroom & workshop spend</p>
         </div>
 
-        <div className="bg-emerald-50/60 rounded-2xl border border-emerald-200/80 p-4 shadow-2xs">
-          <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Today's Maintenance</p>
-          <p className="text-2xl font-black text-emerald-900 mt-1">{stats.todayCount} records</p>
-          <p className="text-[11px] text-emerald-700 mt-0.5">₹{stats.todaySpend.toLocaleString('en-IN')} logged today</p>
+        <div className="bg-emerald-50/60 rounded-2xl border border-emerald-200/80 p-5 shadow-2xs">
+          <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Today's Maintenance</p>
+          <p className="text-3xl font-black text-emerald-900 mt-1">{stats.todayCount} records</p>
+          <p className="text-xs text-emerald-700 mt-1">₹{stats.todaySpend.toLocaleString('en-IN')} logged today</p>
         </div>
 
-        <div className="bg-blue-50/60 rounded-2xl border border-blue-200/80 p-4 shadow-2xs">
-          <p className="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Vehicles Maintained</p>
-          <p className="text-2xl font-black text-blue-900 mt-1">{stats.uniqueVehicles}</p>
-          <p className="text-[11px] text-blue-700 mt-0.5">Fleet coverage</p>
+        <div className="bg-blue-50/60 rounded-2xl border border-blue-200/80 p-5 shadow-2xs">
+          <p className="text-xs font-bold text-blue-800 uppercase tracking-wider">Vehicles Maintained</p>
+          <p className="text-3xl font-black text-blue-900 mt-1">{stats.uniqueVehicles}</p>
+          <p className="text-xs text-blue-700 mt-1">Fleet coverage</p>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
             placeholder="Search vehicle, showroom, complaints..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#142B4A]"
+            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-[#142B4A]"
           />
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
+        <div className="flex items-center gap-3 flex-wrap w-full md:w-auto">
           {/* Vehicle Filter */}
           <select
             value={vehicleFilter}
             onChange={(e) => setVehicleFilter(e.target.value)}
-            className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:border-[#142B4A]"
+            className="text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:border-[#142B4A]"
           >
             <option value="All">All Vehicles</option>
             {vehicleOptions.map((v) => (
@@ -451,7 +451,7 @@ export const DailyMaintenance: React.FC = () => {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:border-[#142B4A]"
+            className="text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:border-[#142B4A]"
             title="Start date"
           />
 
@@ -460,7 +460,7 @@ export const DailyMaintenance: React.FC = () => {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:border-[#142B4A]"
+            className="text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none focus:border-[#142B4A]"
             title="End date"
           />
 
@@ -473,7 +473,7 @@ export const DailyMaintenance: React.FC = () => {
                 setStartDate('');
                 setEndDate('');
               }}
-              className="text-xs font-bold text-rose-600 hover:underline px-2 cursor-pointer"
+              className="text-sm font-bold text-rose-600 hover:underline px-2 cursor-pointer"
             >
               Reset
             </button>
@@ -484,35 +484,35 @@ export const DailyMaintenance: React.FC = () => {
       {/* Records Table */}
       <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px] uppercase tracking-wider">
-                <th className="py-3 px-3 text-center">S.No</th>
-                <th className="py-3 px-3">Date</th>
-                <th className="py-3 px-3">Vehicle Number</th>
-                <th className="py-3 px-3">Odometer KM</th>
-                <th className="py-3 px-3">Showroom Name</th>
-                <th className="py-3 px-3">Complaints</th>
-                <th className="py-3 px-3">Other Details</th>
-                <th className="py-3 px-3">Amount</th>
-                <th className="py-3 px-3 text-center">Invoice Photos</th>
-                <th className="py-3 px-3 text-center">Action</th>
+              <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
+                <th className="py-4 px-4 text-center">S.No</th>
+                <th className="py-4 px-4">Date</th>
+                <th className="py-4 px-4">Vehicle Number</th>
+                <th className="py-4 px-4">Odometer KM</th>
+                <th className="py-4 px-4">Showroom Name</th>
+                <th className="py-4 px-4">Complaints</th>
+                <th className="py-4 px-4">Other Details</th>
+                <th className="py-4 px-4">Amount</th>
+                <th className="py-4 px-4 text-center">Invoice Photos</th>
+                <th className="py-4 px-4 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-14 text-center text-slate-400">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-[#142B4A]" />
                     <span>Loading daily maintenance records...</span>
                   </td>
                 </tr>
               ) : filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-14 text-center text-slate-400">
+                  <td colSpan={10} className="py-16 text-center text-slate-400">
                     <Wrench className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-500" />
-                    <p className="font-bold text-slate-700 text-sm">No maintenance records found</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Click &quot;+ Add Daily Maintenance&quot; to log your first showroom repair.</p>
+                    <p className="font-bold text-slate-700 text-base">No maintenance records found</p>
+                    <p className="text-sm text-slate-400 mt-1">Click &quot;+ Add Daily Maintenance&quot; to log your first showroom repair.</p>
                   </td>
                 </tr>
               ) : (
@@ -522,44 +522,44 @@ export const DailyMaintenance: React.FC = () => {
                   else if (typeof r.photos_json === 'string') {
                     try {
                       photos = JSON.parse(r.photos_json);
-                    } catch {}
+                    } catch { }
                   }
 
                   return (
                     <tr key={r.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3 px-3 text-center font-bold text-slate-400">{idx + 1}</td>
-                      <td className="py-3 px-3 whitespace-nowrap font-medium text-slate-600">
+                      <td className="py-4 px-4 text-center font-bold text-slate-400">{idx + 1}</td>
+                      <td className="py-4 px-4 whitespace-nowrap font-medium text-slate-700">
                         {r.date || '—'}
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
-                        <span className="font-mono font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg text-xs">
+                      <td className="py-4 px-4 whitespace-nowrap">
+                        <span className="font-mono font-black text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg text-sm">
                           {r.vehicle_number}
                         </span>
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap font-mono font-bold text-blue-700">
+                      <td className="py-4 px-4 whitespace-nowrap font-mono font-bold text-blue-700">
                         {Number(r.km || 0).toLocaleString('en-IN')} KM
                       </td>
-                      <td className="py-3 px-3 font-semibold text-slate-800 max-w-[180px] truncate" title={r.showroom_name}>
+                      <td className="py-4 px-4 font-semibold text-slate-800 max-w-[200px] truncate" title={r.showroom_name}>
                         {r.showroom_name || '—'}
                       </td>
-                      <td className="py-3 px-3 text-slate-700 max-w-[220px]" title={r.complaints}>
+                      <td className="py-4 px-4 text-slate-700 max-w-[240px]" title={r.complaints}>
                         <p className="line-clamp-2">{r.complaints || '—'}</p>
                       </td>
-                      <td className="py-3 px-3 text-slate-600 max-w-[200px]" title={r.other}>
+                      <td className="py-4 px-4 text-slate-600 max-w-[220px]" title={r.other}>
                         <p className="line-clamp-2">{r.other || '—'}</p>
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap font-black text-slate-900">
+                      <td className="py-4 px-4 whitespace-nowrap font-black text-slate-900">
                         ₹{Number(r.amount || 0).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <td className="py-4 px-4 text-center whitespace-nowrap">
                         {photos.length > 0 ? (
-                          <div className="flex items-center justify-center gap-1.5">
+                          <div className="flex items-center justify-center gap-2">
                             {photos.map((pUrl, pIdx) => (
                               <button
                                 key={pIdx}
                                 type="button"
                                 onClick={() => setPreviewPhoto(pUrl)}
-                                className="w-7 h-7 rounded-lg overflow-hidden border border-slate-200 hover:border-[#142B4A] shadow-2xs cursor-pointer group"
+                                className="w-9 h-9 rounded-xl overflow-hidden border border-slate-200 hover:border-[#142B4A] shadow-2xs cursor-pointer group"
                                 title={`View invoice photo ${pIdx + 1}`}
                               >
                                 <img
@@ -569,31 +569,31 @@ export const DailyMaintenance: React.FC = () => {
                                 />
                               </button>
                             ))}
-                            <span className="text-[10px] font-bold text-slate-400 ml-1">
+                            <span className="text-xs font-bold text-slate-500 ml-1">
                               ({photos.length})
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-400 italic">No invoice</span>
+                          <span className="text-xs text-slate-400 italic">No invoice</span>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1">
+                      <td className="py-4 px-4 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(r)}
-                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-blue-700 cursor-pointer shadow-2xs"
+                            className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-blue-700 cursor-pointer shadow-2xs"
                             title="Edit Record"
                           >
-                            <Edit className="w-3.5 h-3.5" />
+                            <Edit className="w-4 h-4" />
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDelete(r.id)}
-                            className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 cursor-pointer shadow-2xs"
+                            className="p-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 cursor-pointer shadow-2xs"
                             title="Delete Record"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>

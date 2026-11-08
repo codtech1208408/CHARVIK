@@ -513,40 +513,40 @@ export const VehicleMaintenance: React.FC = () => {
             <p className="text-sm font-semibold text-slate-500 -mt-2">{v.model}</p>
 
             {/* Spec Attributes Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-3">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chassis Number</p>
-                <p className="text-xs font-mono font-bold text-slate-800 mt-0.5 truncate">{v.chassis_number || 'YS2S4X2000551024'}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Chassis Number</p>
+                <p className="text-sm font-mono font-bold text-slate-800 mt-1 truncate">{v.chassis_number || 'YS2S4X2000551024'}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Engine Number</p>
-                <p className="text-xs font-mono font-bold text-slate-800 mt-0.5 truncate">{v.engine_number || 'DC091209451'}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Engine Number</p>
+                <p className="text-sm font-mono font-bold text-slate-800 mt-1 truncate">{v.engine_number || 'DC091209451'}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Parking Location</p>
-                <p className="text-xs font-bold text-slate-800 mt-0.5 flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Parking Location</p>
+                <p className="text-sm font-bold text-slate-800 mt-1 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                   <span className="truncate">{v.parking_location || 'Delhi Depot – Bay 1'}</span>
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Assigned Driver</p>
-                <p className="text-xs font-bold text-slate-800 mt-0.5 flex items-center gap-1">
-                  <User className="w-3 h-3 text-slate-400 shrink-0" />
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Assigned Driver</p>
+                <p className="text-sm font-bold text-slate-800 mt-1 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                   <span className="truncate">{v.driver_name || 'Sunil Yadav'}</span>
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Operations Manager</p>
-                <p className="text-xs font-bold text-slate-800 mt-0.5 truncate">{v.operations_manager || 'Priya Sharma'}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Operations Manager</p>
+                <p className="text-sm font-bold text-slate-800 mt-1 truncate">{v.operations_manager || 'Priya Sharma'}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Service Date</p>
-                <p className="text-xs font-bold text-slate-800 mt-0.5">{v.last_service_date || '13 Oct 2026'}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Service Date</p>
+                <p className="text-sm font-bold text-slate-800 mt-1">{v.last_service_date || '13 Oct 2026'}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Service Odometer</p>
-                <p className="text-xs font-mono font-bold text-slate-800 mt-0.5">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Service Odometer</p>
+                <p className="text-sm font-mono font-bold text-slate-800 mt-1">
                   {v.last_service_km ? `${v.last_service_km.toLocaleString('en-IN')} KM` : '3,05,000 KM'}
                 </p>
               </div>
@@ -608,7 +608,7 @@ export const VehicleMaintenance: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {v.services.map((s) => {
               const isOverdue = s.isOverdue;
               const isDueSoon = s.isDueSoon;
@@ -622,11 +622,11 @@ export const VehicleMaintenance: React.FC = () => {
                     {/* Header: Name and Status Badge */}
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h3 className="font-extrabold text-sm text-slate-900 leading-snug">{s.name}</h3>
-                        <p className="text-[11px] text-slate-400 font-medium">{s.intervalLabel}</p>
+                        <h3 className="font-extrabold text-base text-slate-900 leading-snug">{s.name}</h3>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">{s.intervalLabel}</p>
                       </div>
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
                           isOverdue
                             ? 'bg-rose-50 text-rose-700 border border-rose-200'
                             : isDueSoon
@@ -634,15 +634,15 @@ export const VehicleMaintenance: React.FC = () => {
                             : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}
                       >
-                        {isOverdue && <Flame className="w-3 h-3 text-rose-500" />}
-                        {isDueSoon && <AlertTriangle className="w-3 h-3 text-amber-500" />}
-                        {!isOverdue && !isDueSoon && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                        {isOverdue && <Flame className="w-3.5 h-3.5 text-rose-500" />}
+                        {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                        {!isOverdue && !isDueSoon && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
                         <span>{s.status}</span>
                       </span>
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="mt-4 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="mt-4 w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${
                           isOverdue ? 'bg-rose-500' : isDueSoon ? 'bg-amber-500' : 'bg-emerald-500'
@@ -652,7 +652,7 @@ export const VehicleMaintenance: React.FC = () => {
                     </div>
 
                     {/* Last Done / Next Due Stats */}
-                    <div className="mt-4 space-y-1.5 text-xs text-slate-600">
+                    <div className="mt-4 space-y-2 text-sm text-slate-600">
                       <div className="flex justify-between">
                         <span className="text-slate-400">Last done</span>
                         <span className="font-semibold text-slate-800">
@@ -673,7 +673,7 @@ export const VehicleMaintenance: React.FC = () => {
 
                     {/* Status Text Line */}
                     <p
-                      className={`text-xs font-bold mt-3 ${
+                      className={`text-sm font-bold mt-3.5 ${
                         isOverdue
                           ? 'text-rose-600'
                           : isDueSoon
@@ -689,9 +689,9 @@ export const VehicleMaintenance: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleOpenCompleteModal(v, s)}
-                    className="mt-4 w-full py-2 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50/70 hover:bg-slate-100/80 text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="mt-4 w-full py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50/70 hover:bg-slate-100/80 text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
+                    <CheckCircle2 className="w-4 h-4 text-slate-500" />
                     <span>Mark Completed</span>
                   </button>
                 </div>
@@ -708,24 +708,24 @@ export const VehicleMaintenance: React.FC = () => {
 
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 text-[11px] uppercase tracking-wider">
-                    <th className="py-3.5 px-4">Date</th>
-                    <th className="py-3.5 px-4">Service</th>
-                    <th className="py-3.5 px-4">Previous KM</th>
-                    <th className="py-3.5 px-4">Odometer KM</th>
-                    <th className="py-3.5 px-4">Next Due</th>
-                    <th className="py-3.5 px-4">Cost</th>
-                    <th className="py-3.5 px-4">Workshop / Mechanic</th>
-                    <th className="py-3.5 px-4 text-center">Invoice / Photos</th>
-                    <th className="py-3.5 px-4">Remarks</th>
+                  <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
+                    <th className="py-4 px-4">Date</th>
+                    <th className="py-4 px-4">Service</th>
+                    <th className="py-4 px-4">Previous KM</th>
+                    <th className="py-4 px-4">Odometer KM</th>
+                    <th className="py-4 px-4">Next Due</th>
+                    <th className="py-4 px-4">Cost</th>
+                    <th className="py-4 px-4">Workshop / Mechanic</th>
+                    <th className="py-4 px-4 text-center">Invoice / Photos</th>
+                    <th className="py-4 px-4">Remarks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
                   {(!v.history || v.history.length === 0) ? (
                     <tr>
-                      <td colSpan={9} className="py-8 text-center text-slate-400">
+                      <td colSpan={9} className="py-12 text-center text-slate-400">
                         No maintenance completion history logged for this vehicle yet.
                       </td>
                     </tr>
@@ -741,31 +741,31 @@ export const VehicleMaintenance: React.FC = () => {
 
                       return (
                         <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-3.5 px-4 font-semibold whitespace-nowrap text-slate-900">
+                          <td className="py-4 px-4 font-semibold whitespace-nowrap text-slate-900">
                             {h.completion_date}
                           </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
+                          <td className="py-4 px-4 font-bold text-slate-900 whitespace-nowrap">
                             {h.service_type}
                           </td>
-                          <td className="py-3.5 px-4 font-mono text-slate-500">
+                          <td className="py-4 px-4 font-mono text-slate-500">
                             {h.previous_km ? `${Number(h.previous_km).toLocaleString('en-IN')}` : '—'}
                           </td>
-                          <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
+                          <td className="py-4 px-4 font-mono font-bold text-slate-900">
                             {Number(h.odometer_km || 0).toLocaleString('en-IN')}
                           </td>
-                          <td className="py-3.5 px-4 font-mono text-slate-700 whitespace-nowrap">
+                          <td className="py-4 px-4 font-mono text-slate-700 whitespace-nowrap">
                             {h.next_due_km ? `${Number(h.next_due_km).toLocaleString('en-IN')} KM` : (h.next_due_date || '—')}
                           </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-900 font-mono">
+                          <td className="py-4 px-4 font-bold text-slate-900 font-mono">
                             ₹{Number(h.cost || 0).toLocaleString('en-IN')}
                           </td>
-                          <td className="py-3.5 px-4">
+                          <td className="py-4 px-4">
                             <span className="font-semibold text-slate-800 block">{h.workshop || 'Charvik Central Workshop'}</span>
                             {h.mechanic_name && (
-                              <span className="text-[10px] text-slate-400 block">{h.mechanic_name}</span>
+                              <span className="text-xs text-slate-400 block mt-0.5">{h.mechanic_name}</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-center">
+                          <td className="py-4 px-4 text-center">
                             {parsedPhotos.length > 0 ? (
                               <div className="flex items-center justify-center gap-1.5">
                                 {parsedPhotos.map((photoUrl, pIdx) => (
@@ -773,7 +773,7 @@ export const VehicleMaintenance: React.FC = () => {
                                     key={pIdx}
                                     type="button"
                                     onClick={() => setPreviewPhotoModal(photoUrl)}
-                                    className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 hover:border-emerald-500 cursor-pointer shadow-2xs group shrink-0"
+                                    className="w-9 h-9 rounded-xl overflow-hidden border border-slate-200 hover:border-emerald-500 cursor-pointer shadow-2xs group shrink-0"
                                     title={`View Photo ${pIdx + 1}`}
                                   >
                                     <img src={photoUrl} alt="Service proof" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
@@ -784,7 +784,7 @@ export const VehicleMaintenance: React.FC = () => {
                               <span className="text-slate-400">—</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-500 text-xs max-w-xs truncate">
+                          <td className="py-4 px-4 text-slate-600 text-sm max-w-xs truncate">
                             {h.remarks || '—'}
                           </td>
                         </tr>
@@ -1031,85 +1031,85 @@ export const VehicleMaintenance: React.FC = () => {
       </div>
 
       {/* Top 5 Stat Cards (Matching Frame 0) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
         {/* 1. Total Buses */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Buses</p>
-            <p className="text-2xl font-black text-slate-900 mt-1">{summary.totalBuses || vehicles.length}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Buses</p>
+            <p className="text-3xl font-black text-slate-900 mt-1">{summary.totalBuses || vehicles.length}</p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
             <Bus className="w-5 h-5" />
           </div>
         </div>
 
         {/* 2. Services Due Soon */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Services Due Soon</p>
-            <p className="text-2xl font-black text-slate-900 mt-1">{summary.servicesDueSoon || 0}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Services Due Soon</p>
+            <p className="text-3xl font-black text-slate-900 mt-1">{summary.servicesDueSoon || 0}</p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5" />
           </div>
         </div>
 
         {/* 3. Overdue Services */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Overdue Services</p>
-            <p className="text-2xl font-black text-slate-900 mt-1">{summary.overdueServices || 0}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overdue Services</p>
+            <p className="text-3xl font-black text-slate-900 mt-1">{summary.overdueServices || 0}</p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
             <Flame className="w-5 h-5" />
           </div>
         </div>
 
         {/* 4. Services Completed */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Services Completed</p>
-            <p className="text-2xl font-black text-slate-900 mt-1">{summary.servicesCompleted || 0}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Services Completed</p>
+            <p className="text-3xl font-black text-slate-900 mt-1">{summary.servicesCompleted || 0}</p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
         </div>
 
         {/* 5. Vehicles Needing Attention */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs flex items-center justify-between col-span-2 sm:col-span-1">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between col-span-2 sm:col-span-1">
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Vehicles Needing Attention</p>
-            <p className="text-2xl font-black text-slate-900 mt-1">{summary.vehiclesNeedingAttention || 0}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Vehicles Needing Attention</p>
+            <p className="text-3xl font-black text-slate-900 mt-1">{summary.vehiclesNeedingAttention || 0}</p>
           </div>
-          <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
             <AlertTriangle className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar (Matching Frame 0) */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
             placeholder="Search registration number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
+            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
           />
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+        <div className="flex items-center gap-2.5 flex-wrap w-full sm:w-auto">
           {(['All', 'Needs Attention', 'Due Soon', 'Healthy'] as const).map((filter) => (
             <button
               key={filter}
               type="button"
               onClick={() => setStatusFilter(filter)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                 statusFilter === filter
-                  ? 'bg-slate-900 text-white'
+                  ? 'bg-slate-900 text-white shadow-2xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -1120,7 +1120,7 @@ export const VehicleMaintenance: React.FC = () => {
           <select
             value={depotFilter}
             onChange={(e) => setDepotFilter(e.target.value)}
-            className="text-xs px-3 py-1.5 rounded-xl border border-slate-200 focus:outline-none text-slate-700 font-semibold"
+            className="text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none text-slate-700 font-semibold bg-white"
           >
             <option value="All">All depots</option>
             {depots.map((d) => (
@@ -1145,7 +1145,7 @@ export const VehicleMaintenance: React.FC = () => {
           <p className="text-xs text-slate-400 mt-1">Try resetting the search or status filter</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredVehicles.map((bus) => {
             const isAttention = bus.overdueCount > 0;
             const isDueSoon = bus.dueSoonCount > 0 && bus.overdueCount === 0;
@@ -1153,20 +1153,20 @@ export const VehicleMaintenance: React.FC = () => {
             return (
               <div
                 key={bus.id}
-                className="bg-white rounded-3xl border border-slate-200/90 p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
                   {/* Top Header: Reg, Badge, Model */}
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h2 className="text-xl font-black text-slate-900 tracking-tight font-mono">
+                      <h2 className="text-2xl font-black text-slate-900 tracking-tight font-mono">
                         {bus.registration_number}
                       </h2>
-                      <p className="text-xs text-slate-500 font-medium mt-0.5">{bus.model}</p>
+                      <p className="text-sm text-slate-500 font-semibold mt-0.5">{bus.model}</p>
                     </div>
 
                     <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
                         isAttention
                           ? 'bg-rose-50 text-rose-700 border border-rose-200'
                           : isDueSoon
@@ -1174,55 +1174,55 @@ export const VehicleMaintenance: React.FC = () => {
                           : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       }`}
                     >
-                      {isAttention && <Flame className="w-3 h-3 text-rose-500" />}
-                      {isDueSoon && <AlertTriangle className="w-3 h-3 text-amber-500" />}
-                      {!isAttention && !isDueSoon && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                      {isAttention && <Flame className="w-3.5 h-3.5 text-rose-500" />}
+                      {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                      {!isAttention && !isDueSoon && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
                       <span>{isAttention ? 'Needs Attention' : isDueSoon ? 'Due Soon' : 'Healthy'}</span>
                     </span>
                   </div>
 
                   {/* Big Odometer Box (Synced with Daily Vehicle Checkup!) */}
-                  <div className="mt-4 bg-[#F8FAFC] rounded-2xl p-3.5 flex items-center gap-2.5 border border-slate-100">
-                    <Gauge className="w-5 h-5 text-slate-400 shrink-0" />
-                    <div className="flex items-baseline gap-1 font-mono">
-                      <span className="text-xl font-black text-slate-900">
+                  <div className="mt-4 bg-[#F8FAFC] rounded-2xl p-4 flex items-center gap-3 border border-slate-100">
+                    <Gauge className="w-6 h-6 text-slate-400 shrink-0" />
+                    <div className="flex items-baseline gap-1.5 font-mono">
+                      <span className="text-2xl font-black text-slate-900">
                         {bus.current_odometer_km.toLocaleString('en-IN')}
                       </span>
-                      <span className="text-xs font-bold text-slate-400">KM</span>
+                      <span className="text-sm font-bold text-slate-400">KM</span>
                     </div>
                   </div>
 
                   {/* Meta: Location and Driver */}
-                  <div className="mt-3 flex items-center gap-3 text-[11px] text-slate-500 truncate">
-                    <span className="flex items-center gap-1 truncate">
-                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                  <div className="mt-3.5 flex items-center gap-4 text-xs text-slate-500 truncate">
+                    <span className="flex items-center gap-1.5 truncate">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="truncate">{bus.parking_location || 'Delhi Depot – Bay 1'}</span>
                     </span>
-                    <span className="flex items-center gap-1 truncate">
-                      <User className="w-3 h-3 text-slate-400 shrink-0" />
+                    <span className="flex items-center gap-1.5 truncate">
+                      <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="truncate">{bus.driver_name || 'Sunil Yadav'}</span>
                     </span>
                   </div>
 
                   {/* The 9 Service Checklist Rows (Matching Video Frame 0 & 2 and Image 2) */}
-                  <div className="mt-4 space-y-2 border-t border-slate-100 pt-3 text-xs">
+                  <div className="mt-5 space-y-3 border-t border-slate-100 pt-3.5 text-sm">
                     {bus.services.map((s) => {
                       const isOver = s.isOverdue;
                       const isSoon = s.isDueSoon;
 
                       return (
-                        <div key={s.key} className="flex items-center justify-between gap-2 py-0.5">
-                          <div className="flex items-center gap-2 truncate">
+                        <div key={s.key} className="flex items-center justify-between gap-2.5 py-1">
+                          <div className="flex items-center gap-2.5 truncate">
                             <span
-                              className={`w-2 h-2 rounded-full shrink-0 ${
+                              className={`w-2.5 h-2.5 rounded-full shrink-0 ${
                                 isOver ? 'bg-rose-500' : isSoon ? 'bg-amber-500' : 'bg-emerald-500'
                               }`}
                             />
-                            <span className="font-semibold text-slate-800 truncate">{s.name}</span>
+                            <span className="font-bold text-slate-800 text-sm truncate">{s.name}</span>
                           </div>
 
                           <div className="flex items-center gap-3 shrink-0">
-                            <span className="font-mono text-slate-500 text-[11px]">
+                            <span className="font-mono text-slate-500 text-xs">
                               {s.intervalType === 'km'
                                 ? `${s.nextDueKm.toLocaleString('en-IN')} KM`
                                 : s.name.includes('week') || s.name.includes('Weekly') || s.interval === 7
@@ -1231,7 +1231,7 @@ export const VehicleMaintenance: React.FC = () => {
                             </span>
 
                             <span
-                              className={`text-[11px] font-bold min-w-[50px] text-right ${
+                              className={`text-xs font-bold min-w-[58px] text-right ${
                                 isOver
                                   ? 'text-rose-600'
                                   : isSoon
@@ -1249,8 +1249,8 @@ export const VehicleMaintenance: React.FC = () => {
                 </div>
 
                 {/* Card Footer: Summary count & Open Profile link */}
-                <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-medium">
+                <div className="mt-6 pt-3.5 border-t border-slate-100 flex items-center justify-between text-sm">
+                  <span className="text-slate-400 font-medium text-xs">
                     {bus.overdueCount > 0
                       ? `${bus.overdueCount} service${bus.overdueCount > 1 ? 's' : ''} overdue`
                       : bus.dueSoonCount > 0
@@ -1261,10 +1261,10 @@ export const VehicleMaintenance: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleSelectVehicle(bus)}
-                    className="font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+                    className="font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer transition-colors text-sm"
                   >
                     <span>Open profile</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>

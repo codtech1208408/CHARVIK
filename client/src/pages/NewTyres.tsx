@@ -307,49 +307,49 @@ export const NewTyres: React.FC = () => {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Tyres</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{stats.total}</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">Purchased inventory</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Tyres</p>
+          <p className="text-3xl font-black text-slate-900 mt-1">{stats.total}</p>
+          <p className="text-xs text-slate-500 mt-1">Purchased inventory</p>
         </div>
-        <div className="bg-emerald-50/60 rounded-2xl border border-emerald-200/80 p-4 shadow-2xs">
-          <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">In Stock Ready</p>
-          <p className="text-2xl font-black text-emerald-800 mt-1">{stats.inStock}</p>
-          <p className="text-[11px] text-emerald-600 mt-0.5">Available for mounting</p>
+        <div className="bg-emerald-50/60 rounded-2xl border border-emerald-200/80 p-5 shadow-2xs">
+          <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">In Stock Ready</p>
+          <p className="text-3xl font-black text-emerald-800 mt-1">{stats.inStock}</p>
+          <p className="text-xs text-emerald-600 mt-1">Available for mounting</p>
         </div>
-        <div className="bg-blue-50/60 rounded-2xl border border-blue-200/80 p-4 shadow-2xs">
-          <p className="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Allocated to Fleet</p>
-          <p className="text-2xl font-black text-blue-800 mt-1">{stats.allocated}</p>
-          <p className="text-[11px] text-blue-600 mt-0.5">Currently on vehicles</p>
+        <div className="bg-blue-50/60 rounded-2xl border border-blue-200/80 p-5 shadow-2xs">
+          <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">Allocated to Fleet</p>
+          <p className="text-3xl font-black text-blue-800 mt-1">{stats.allocated}</p>
+          <p className="text-xs text-blue-600 mt-1">Currently on vehicles</p>
         </div>
-        <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-4 shadow-2xs">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Value</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">₹{stats.totalCost.toLocaleString('en-IN')}</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">Stock investment</p>
+        <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 shadow-2xs">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Value</p>
+          <p className="text-3xl font-black text-slate-900 mt-1">₹{stats.totalCost.toLocaleString('en-IN')}</p>
+          <p className="text-xs text-slate-500 mt-1">Stock investment</p>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
             placeholder="Search serial, brand, size, supplier..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
+            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
           {['All', 'In Stock', 'Allocated'].map((st) => (
             <button
               key={st}
               type="button"
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                 statusFilter === st
                   ? 'bg-[#142B4A] text-white shadow-2xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -364,32 +364,32 @@ export const NewTyres: React.FC = () => {
       {/* Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
-                <th className="py-3 px-3 text-center">S.No</th>
-                <th className="py-3 px-3">Purchase Date</th>
-                <th className="py-3 px-3">Tyre Serial & Photo</th>
-                <th className="py-3 px-3">Brand & Size</th>
-                <th className="py-3 px-3">Initial KM</th>
-                <th className="py-3 px-3">Present KM</th>
-                <th className="py-3 px-3">Cost</th>
-                <th className="py-3 px-3">Status</th>
-                <th className="py-3 px-3">Allocated Bus</th>
-                <th className="py-3 px-3 text-center">Actions</th>
+              <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
+                <th className="py-4 px-4 text-center">S.No</th>
+                <th className="py-4 px-4">Purchase Date</th>
+                <th className="py-4 px-4">Tyre Serial & Photo</th>
+                <th className="py-4 px-4">Brand & Size</th>
+                <th className="py-4 px-4">Initial KM</th>
+                <th className="py-4 px-4">Present KM</th>
+                <th className="py-4 px-4">Cost</th>
+                <th className="py-4 px-4">Status</th>
+                <th className="py-4 px-4">Allocated Bus</th>
+                <th className="py-4 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-14 text-center text-slate-400">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
                     <span>Loading tyre inventory...</span>
                   </td>
                 </tr>
               ) : filteredTyres.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-14 text-center text-slate-400">
                     <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <span>No tyre inventory records found.</span>
                   </td>
@@ -401,15 +401,15 @@ export const NewTyres: React.FC = () => {
 
                   return (
                     <tr key={t.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-3 text-center font-semibold text-slate-400">{idx + 1}</td>
-                      <td className="py-3 px-3 font-medium whitespace-nowrap">{t.purchase_date || '—'}</td>
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-2">
+                      <td className="py-4 px-4 text-center font-bold text-slate-400">{idx + 1}</td>
+                      <td className="py-4 px-4 font-medium whitespace-nowrap text-slate-700">{t.purchase_date || '—'}</td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2.5">
                           {t.tyre_photo_url && (
                             <button
                               type="button"
                               onClick={() => setPreviewPhoto(t.tyre_photo_url!)}
-                              className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 shrink-0 cursor-pointer hover:border-emerald-500 shadow-2xs"
+                              className="w-9 h-9 rounded-xl overflow-hidden border border-slate-200 shrink-0 cursor-pointer hover:border-emerald-500 shadow-2xs"
                               title="View tyre photo"
                             >
                               <img src={t.tyre_photo_url} alt={t.tyre_serial_number} className="w-full h-full object-cover" />
@@ -419,38 +419,38 @@ export const NewTyres: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setPreviewPhoto(t.invoice_photo_url!)}
-                              className="w-8 h-8 rounded-lg overflow-hidden border border-amber-300 bg-amber-50 text-amber-700 shrink-0 flex items-center justify-center cursor-pointer hover:border-amber-500 shadow-2xs"
+                              className="w-9 h-9 rounded-xl overflow-hidden border border-amber-300 bg-amber-50 text-amber-700 shrink-0 flex items-center justify-center cursor-pointer hover:border-amber-500 shadow-2xs"
                               title="View invoice photo"
                             >
                               <Receipt className="w-4 h-4" />
                             </button>
                           )}
                           <div>
-                            <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">
+                            <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg text-xs">
                               {t.tyre_serial_number}
                             </span>
                             {t.supplier && (
-                              <span className="text-[10px] text-slate-400 block truncate max-w-[120px]">
+                              <span className="text-xs text-slate-400 block truncate max-w-[130px] mt-0.5">
                                 {t.supplier}
                               </span>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-3">
-                        <span className="font-bold text-slate-800">{t.brand}</span>
-                        <span className="text-[10px] text-slate-400 block">{t.size}</span>
+                      <td className="py-4 px-4">
+                        <span className="font-bold text-slate-800 text-sm">{t.brand}</span>
+                        <span className="text-xs text-slate-400 block mt-0.5">{t.size}</span>
                       </td>
-                      <td className="py-3 px-3 font-mono font-medium">{initialKm.toLocaleString('en-IN')} KM</td>
-                      <td className="py-3 px-3 font-mono font-bold text-indigo-700">
+                      <td className="py-4 px-4 font-mono font-medium text-slate-700">{initialKm.toLocaleString('en-IN')} KM</td>
+                      <td className="py-4 px-4 font-mono font-bold text-indigo-700 text-sm">
                         {presentKm > 0 ? `${presentKm.toLocaleString('en-IN')} KM` : '0 KM'}
                       </td>
-                      <td className="py-3 px-3 font-bold text-slate-800">
+                      <td className="py-4 px-4 font-bold text-slate-900 text-sm">
                         {t.purchase_cost ? `₹${Number(t.purchase_cost).toLocaleString('en-IN')}` : '—'}
                       </td>
-                      <td className="py-3 px-3">
+                      <td className="py-4 px-4">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
                             t.status === 'In Stock'
                               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                               : t.status === 'Allocated'
@@ -461,23 +461,23 @@ export const NewTyres: React.FC = () => {
                           {t.status}
                         </span>
                       </td>
-                      <td className="py-3 px-3">
+                      <td className="py-4 px-4">
                         {t.status === 'Allocated' ? (
                           <div>
-                            <span className="font-bold text-blue-900">{t.allocated_bus_number || `Bus #${t.allocated_bus_id}`}</span>
-                            <span className="text-[10px] text-slate-500 block">{t.allocated_wheel_position || 'Mounted'}</span>
+                            <span className="font-bold text-blue-900 text-sm">{t.allocated_bus_number || `Bus #${t.allocated_bus_id}`}</span>
+                            <span className="text-xs text-slate-500 block mt-0.5">{t.allocated_wheel_position || 'Mounted'}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-400 italic">In Warehouse</span>
+                          <span className="text-slate-400 italic text-xs">In Warehouse</span>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <td className="py-4 px-4 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1.5">
                           {t.status === 'In Stock' && (
                             <button
                               type="button"
                               onClick={() => handleOpenAllot(t)}
-                              className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] cursor-pointer shadow-2xs"
+                              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs cursor-pointer shadow-2xs"
                               title="Allot to Bus"
                             >
                               Allot
@@ -486,18 +486,18 @@ export const NewTyres: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(t)}
-                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
+                            className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer shadow-2xs"
                             title="Edit"
                           >
-                            <Edit className="w-3.5 h-3.5" />
+                            <Edit className="w-4 h-4" />
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDelete(t.id)}
-                            className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 cursor-pointer"
+                            className="p-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 cursor-pointer shadow-2xs"
                             title="Delete"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>

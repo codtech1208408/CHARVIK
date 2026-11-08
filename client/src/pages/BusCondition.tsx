@@ -764,21 +764,21 @@ export const BusCondition: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-          <p className="text-2xl font-black text-slate-900 tracking-tight">{inspections.length}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <p className="text-3xl font-black text-slate-900 tracking-tight">{inspections.length}</p>
           <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">Total Reports Recorded</p>
         </div>
 
-        <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-200 shadow-xs">
-          <p className="text-2xl font-black text-emerald-600 tracking-tight">
+        <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-200 shadow-xs">
+          <p className="text-3xl font-black text-emerald-600 tracking-tight">
             {inspections.filter((i) => i.roadworthiness_status === 'Fit for Service').length}
           </p>
           <p className="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wider">Fit for Service</p>
         </div>
 
-        <div className="bg-rose-50/50 p-4 rounded-2xl border border-rose-200 shadow-xs">
-          <p className="text-2xl font-black text-rose-600 tracking-tight">
+        <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 shadow-xs">
+          <p className="text-3xl font-black text-rose-600 tracking-tight">
             {inspections.filter((i) => i.roadworthiness_status !== 'Fit for Service').length}
           </p>
           <p className="text-xs font-bold text-rose-700 mt-1 uppercase tracking-wider">Defects & Attention Required</p>
@@ -786,8 +786,8 @@ export const BusCondition: React.FC = () => {
       </div>
 
       {/* Filters Strip */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
-        <div className="w-full md:w-72">
+      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="w-full md:w-80">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -795,16 +795,16 @@ export const BusCondition: React.FC = () => {
               placeholder="Search vehicle number, driver, route..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
             />
           </div>
         </div>
 
-        <div className="w-full md:w-64">
+        <div className="w-full md:w-72">
           <select
             value={selectedBus}
             onChange={(e) => setSelectedBus(e.target.value)}
-            className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-slate-50 outline-none"
+            className="w-full text-sm py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 outline-none"
           >
             <option value="">All Fleet Buses</option>
             {buses.map((b) => (
@@ -819,16 +819,16 @@ export const BusCondition: React.FC = () => {
       {/* Main Table of Logged Checkup Reports */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs" style={{ minWidth: '1050px' }}>
-            <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+          <table className="w-full text-left text-sm" style={{ minWidth: '1050px' }}>
+            <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4 w-12 text-center">S.NO</th>
-                <th className="py-3 px-4 min-w-[130px]">DATE</th>
-                <th className="py-3 px-4 min-w-[150px]">VEHICLE NO</th>
-                <th className="py-3 px-4 min-w-[140px]">STARTING KM</th>
-                <th className="py-3 px-4 min-w-[140px]">ROUTE / TRIP</th>
-                <th className="py-3 px-4 min-w-[140px]">CHECKUP STATUS</th>
-                <th className="py-3 px-4 text-center min-w-[130px]">ACTIONS</th>
+                <th className="py-4 px-4 w-12 text-center">S.NO</th>
+                <th className="py-4 px-4 min-w-[130px]">DATE</th>
+                <th className="py-4 px-4 min-w-[150px]">VEHICLE NO</th>
+                <th className="py-4 px-4 min-w-[140px]">STARTING KM</th>
+                <th className="py-4 px-4 min-w-[140px]">ROUTE / TRIP</th>
+                <th className="py-4 px-4 min-w-[140px]">CHECKUP STATUS</th>
+                <th className="py-4 px-4 text-center min-w-[140px]">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -857,48 +857,48 @@ export const BusCondition: React.FC = () => {
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
+                      <td className="py-4 px-4 font-bold text-slate-500 text-center">{index + 1}</td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap font-medium text-slate-900">
+                      <td className="py-4 px-4 whitespace-nowrap font-medium text-slate-900">
                         <span>{item.inspection_date}</span>
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono font-black text-slate-900 tracking-wider uppercase block">
+                      <td className="py-4 px-4">
+                        <span className="font-mono font-black text-slate-900 tracking-wider uppercase block text-sm">
                           {item.registration_number || bus?.registration_number || item.bus_number || '—'}
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono">
-                        <span className="font-bold text-blue-700">
+                      <td className="py-4 px-4 font-mono">
+                        <span className="font-bold text-blue-700 text-sm">
                           {Number(item.starting_km || item.odometer_km || 0).toLocaleString('en-IN')} KM
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 font-medium text-slate-700">
+                      <td className="py-4 px-4 font-medium text-slate-700">
                         {item.route_trip || 'General Operations'}
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-4">
                         {notOkCount === 0 ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <Check className="w-3.5 h-3.5 text-emerald-600" />
                             <span>Fit for Service</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
                             <span>{notOkCount} Defects Reported</span>
                           </span>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
+                      <td className="py-4 px-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"
                             onClick={() => setViewingInspection(item)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs cursor-pointer transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs cursor-pointer transition-colors"
                             title="View & Print Inspection Sheet"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -908,16 +908,16 @@ export const BusCondition: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(item)}
-                            className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                            className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer border border-slate-200 shadow-2xs"
                             title="Edit Report"
                           >
-                            <Edit className="w-3.5 h-3.5" />
+                            <Edit className="w-4 h-4" />
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleDelete(item.id)}
-                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer border border-rose-200"
+                            className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border border-rose-200 shadow-2xs"
                             title="Delete Report"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
