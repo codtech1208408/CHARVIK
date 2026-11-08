@@ -524,10 +524,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!isCollapsed && (
             <div className="w-full mt-2 flex items-center justify-center">
               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shadow-xs tracking-wide ${isCaptain
-                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                  : isOperator
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : 'bg-blue-50 text-blue-700 border-blue-200'
+                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                : isOperator
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-blue-50 text-blue-700 border-blue-200'
                 }`}>
                 {isCaptain ? (
                   <>⚓ <span>Captain Portal</span></>
@@ -581,18 +581,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink
                   to="/admin/vehicle-maintenance"
                   onClick={() => setIsMobileOpen(false)}
-                  className={`px-3.5 py-2 flex items-center justify-between rounded-2xl border transition-all cursor-pointer ${
-                    location.pathname === '/admin/vehicle-maintenance'
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                      : 'bg-blue-50/80 border-blue-200/90 text-[#142B4A] hover:bg-blue-100/80'
+                  className={`px-3.5 py-2.5 flex items-center justify-between rounded-2xl border transition-all cursor-pointer ${
+                    location.pathname.startsWith('/admin/vehicle-maintenance')
+                      ? 'bg-[#142B4A] text-white border-[#142B4A] shadow-md shadow-[#142B4A]/25'
+                      : 'bg-slate-100/80 border-slate-200/90 text-[#142B4A] hover:bg-slate-200/80'
                   }`}
                   title="Vehicle Maintenance Overview"
                 >
                   <div className="flex items-center gap-2">
-                    <Wrench className={`w-4 h-4 shrink-0 ${location.pathname === '/admin/vehicle-maintenance' ? 'text-white' : 'text-blue-600'}`} />
+                    <Wrench
+                      className={`w-4 h-4 shrink-0 ${
+                        location.pathname.startsWith('/admin/vehicle-maintenance') ? 'text-white' : 'text-[#142B4A]'
+                      }`}
+                    />
                     <span className="text-xs font-black uppercase tracking-wider">Vehicle Maintenance</span>
                   </div>
-                  {location.pathname === '/admin/vehicle-maintenance' && (
+                  {location.pathname.startsWith('/admin/vehicle-maintenance') && (
                     <span className="w-1.5 h-1.5 rounded-full bg-white ml-1.5 shrink-0" />
                   )}
                 </NavLink>
@@ -628,8 +632,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }
                   }}
                   className={`flex items-center px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group relative ${isItemActive
-                      ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
-                      : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
+                    ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
+                    : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
                     } ${isCollapsed ? 'justify-center px-2' : ''}`}
                   title={isCollapsed ? item.label : undefined}
                 >
@@ -645,8 +649,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {!isCollapsed && item.hasLiveBadge && (
                     <span
                       className={`ml-auto px-2 py-0.5 text-[10px] font-black uppercase rounded-full tracking-wider ${isItemActive
-                          ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
-                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}
                     >
                       LIVE
@@ -663,8 +667,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         toggleSubMenu(item.route, isSubMenuExpanded);
                       }}
                       className={`p-1 -mr-1 rounded-lg transition-all cursor-pointer ${isItemActive
-                          ? 'hover:bg-white/20 text-white'
-                          : 'hover:bg-slate-200/80 text-slate-500'
+                        ? 'hover:bg-white/20 text-white'
+                        : 'hover:bg-slate-200/80 text-slate-500'
                         }`}
                       title={isSubMenuExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
                       aria-label={isSubMenuExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
@@ -693,8 +697,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           to={sub.route}
                           onClick={() => setIsMobileOpen(false)}
                           className={`flex items-center px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isSubActive
-                              ? 'bg-blue-600 text-white shadow-xs font-extrabold'
-                              : 'text-slate-700 hover:text-blue-700 hover:bg-white/80'
+                            ? 'bg-blue-600 text-white shadow-xs font-extrabold'
+                            : 'text-slate-700 hover:text-blue-700 hover:bg-white/80'
                             }`}
                         >
                           <SubIcon className={`w-3.5 h-3.5 mr-2 shrink-0 ${isSubActive ? 'text-white' : 'text-blue-600'}`} />
