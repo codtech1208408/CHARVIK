@@ -621,7 +621,7 @@ export const RecordManagement: React.FC = () => {
             placeholder="Search record #, client, services..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-6 py-1.5 text-xs rounded-xl border border-amber-400 focus:ring-1 focus:ring-amber-500 bg-white font-medium outline-none text-slate-800"
+            className="w-full pl-8 pr-6 py-1.5 text-xs rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white font-medium outline-none text-slate-800"
           />
           {search && (
             <button
@@ -870,7 +870,7 @@ export const RecordManagement: React.FC = () => {
                     value={formData.record_number || ''}
                     onChange={(e) => setFormData({ ...formData, record_number: e.target.value })}
                     placeholder="e.g. REC-2026-001"
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-mono font-bold text-blue-700 outline-none"
+                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-bold text-blue-700 outline-none"
                   />
                 </div>
 
@@ -967,39 +967,39 @@ export const RecordManagement: React.FC = () => {
             </div>
 
             {/* Section 3: Data Columns Matching 4th Image (Description of Services, category, No of Staff, Salary paid) */}
-            <div className="p-4 rounded-2xl border border-amber-300 bg-amber-50/30 space-y-3">
+            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 font-bold text-slate-900 uppercase text-[11px]">
-                  <Users className="w-4 h-4 text-amber-600" />
+                  <Users className="w-4 h-4 text-blue-600" />
                   <span>3. Services & Staff Breakdown (Image 4 Columns)</span>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleAddItemRow}
-                  className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-2xs"
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-xs"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Service Row</span>
                 </button>
               </div>
 
-              <div className="overflow-x-auto border border-amber-200 rounded-xl bg-white shadow-2xs">
+              <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-xs">
                 <table className="w-full text-left text-xs whitespace-nowrap">
-                  <thead className="bg-amber-100/70 text-amber-950 font-bold uppercase text-[10px] border-b border-amber-200">
+                  <thead className="bg-slate-100 text-slate-900 font-bold uppercase text-[10px] border-b border-slate-200">
                     <tr>
-                      <th className="py-2.5 px-3 text-center w-12">Sr.No</th>
-                      <th className="py-2.5 px-3 min-w-[200px]">Description of Services *</th>
-                      <th className="py-2.5 px-3 min-w-[140px]">Category *</th>
-                      <th className="py-2.5 px-3 min-w-[140px] text-center">No of Drivers/Cleaners/Captain</th>
-                      <th className="py-2.5 px-3 min-w-[140px] text-right">Salary Paid (₹) *</th>
+                      <th className="py-2.5 px-3 text-center w-12 text-slate-900">Sr.No</th>
+                      <th className="py-2.5 px-3 min-w-[200px] text-slate-900">Description of Services *</th>
+                      <th className="py-2.5 px-3 min-w-[140px] text-slate-900">Category *</th>
+                      <th className="py-2.5 px-3 min-w-[140px] text-center text-slate-900">No of Drivers/Cleaners/Captain</th>
+                      <th className="py-2.5 px-3 min-w-[140px] text-right text-slate-900">Salary Paid (₹) *</th>
                       <th className="py-2.5 px-2 text-center w-10"></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-amber-100">
+                  <tbody className="divide-y divide-slate-100">
                     {(formData.items || []).map((item, idx) => (
-                      <tr key={item.id} className="hover:bg-amber-50/40">
-                        <td className="py-2 px-3 text-center font-bold text-slate-500">{idx + 1}</td>
+                      <tr key={item.id} className="hover:bg-slate-50/60">
+                        <td className="py-2 px-3 text-center font-bold text-slate-700">{idx + 1}</td>
                         <td className="py-2 px-3">
                           <input
                             type="text"
@@ -1007,7 +1007,7 @@ export const RecordManagement: React.FC = () => {
                             placeholder="e.g. Driver's Salary for Aug'26"
                             value={item.description}
                             onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
-                            className="w-full p-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-800 outline-none focus:border-amber-500"
+                            className="w-full p-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-800 outline-none focus:border-blue-500"
                           />
                         </td>
                         <td className="py-2 px-3 min-w-[130px]">
@@ -1015,7 +1015,7 @@ export const RecordManagement: React.FC = () => {
                             required
                             value={item.category || 'Driver'}
                             onChange={(e) => handleUpdateItem(item.id, 'category', e.target.value)}
-                            className="w-full p-1.5 rounded-lg border border-amber-300 bg-white font-bold text-slate-900 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 cursor-pointer text-xs shadow-2xs"
+                            className="w-full p-1.5 rounded-lg border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer text-xs"
                           >
                             <option value="Driver">Driver</option>
                             <option value="Helper">Helper</option>
@@ -1029,7 +1029,7 @@ export const RecordManagement: React.FC = () => {
                             placeholder="0"
                             value={item.staff_count || ''}
                             onChange={(e) => handleUpdateItem(item.id, 'staff_count', Number(e.target.value))}
-                            className="w-full p-1.5 text-center rounded-lg border border-slate-200 bg-white font-bold text-slate-800 outline-none focus:border-amber-500"
+                            className="w-full p-1.5 text-center rounded-lg border border-slate-200 bg-white font-bold text-slate-800 outline-none focus:border-blue-500"
                           />
                         </td>
                         <td className="py-2 px-3">
@@ -1040,7 +1040,7 @@ export const RecordManagement: React.FC = () => {
                             placeholder="₹ 0"
                             value={item.salary_paid || ''}
                             onChange={(e) => handleUpdateItem(item.id, 'salary_paid', Number(e.target.value))}
-                            className="w-full p-1.5 text-right rounded-lg border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:border-amber-500"
+                            className="w-full p-1.5 text-right rounded-lg border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:border-blue-500"
                           />
                         </td>
                         <td className="py-2 px-2 text-center">
@@ -1057,21 +1057,21 @@ export const RecordManagement: React.FC = () => {
                     ))}
                   </tbody>
                   {/* Totals Row */}
-                  <tfoot className="bg-amber-50 font-bold border-t border-amber-200 text-slate-900">
+                  <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-slate-900">
                     <tr>
-                      <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px]">
+                      <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px] text-slate-900">
                         Total:
                       </td>
-                      <td className="py-2.5 px-3 text-center text-sm font-black text-[#142B4A]">
+                      <td className="py-2.5 px-3 text-center text-sm font-black text-slate-900">
                         {formCalculations.staffCount}
                       </td>
-                      <td className="py-2.5 px-3 text-right text-sm font-black text-[#142B4A]">
+                      <td className="py-2.5 px-3 text-right text-sm font-black text-slate-900">
                         ₹{formCalculations.totalAmt.toLocaleString('en-IN')}
                       </td>
                       <td></td>
                     </tr>
                     <tr>
-                      <td colSpan={6} className="py-2 px-3 text-xs italic font-semibold text-slate-700 bg-amber-50/80">
+                      <td colSpan={6} className="py-2 px-3 text-xs italic font-semibold text-slate-700 bg-slate-50">
                         In words: {formCalculations.words}
                       </td>
                     </tr>
