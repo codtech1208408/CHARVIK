@@ -19,6 +19,21 @@ import { db, initDatabase } from './db.js';
 import { runSeed } from './seed.js';
 import { supabase, testSupabaseConnection } from './supabase.js';
 import { cloudinary, uploadToCloudinary } from './cloudinary.js';
+import {
+  syncTaskToSupabase,
+  deleteTaskFromSupabase,
+  syncBusToSupabase,
+  deleteBusFromSupabase,
+  syncEmployeeToSupabase,
+  deleteEmployeeFromSupabase,
+  syncRouteToSupabase,
+  deleteRouteFromSupabase,
+  syncOrganizerToSupabase,
+  deleteOrganizerFromSupabase,
+  syncOrganizerPaymentToSupabase,
+  deleteOrganizerPaymentFromSupabase,
+  syncAllWithSupabase
+} from './sync.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +42,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'charvik-secure-jwt-secret-key-2026
 // Initialize and seed database
 initDatabase();
 runSeed();
+// Run initial two-way live Supabase sync
+syncAllWithSupabase().catch(() => {});
 
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
@@ -1026,6 +1043,7 @@ app.post('/api/buses', (req: Request, res: Response) => {
     b.notes || ''
   );
 
+  syncBusToSupabase({ id: info.lastInsertRowid, ...b }).catch(() => {});
   logAudit('ADD_BUS', 'Bus Master', info.lastInsertRowid, `Added bus ${b.bus_number} (${b.registration_number})`);
   return res.status(201).json({ id: info.lastInsertRowid, message: 'Bus created successfully' });
 });
@@ -1076,6 +1094,7 @@ app.put('/api/buses/:id', (req: Request, res: Response) => {
     id
   );
 
+  syncBusToSupabase({ id, ...b }).catch(() => {});
   logAudit('UPDATE_BUS', 'Bus Master', id, `Updated bus ${b.bus_number}`);
   return res.json({ message: 'Bus updated successfully' });
 });
@@ -1083,6 +1102,7 @@ app.put('/api/buses/:id', (req: Request, res: Response) => {
 app.delete('/api/buses/:id', requireAdmin, (req: Request, res: Response) => {
   const { id } = req.params;
   db.prepare('UPDATE buses SET is_archived = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+  deleteBusFromSupabase(id).catch(() => {});
   logAudit('ARCHIVE_BUS', 'Bus Master', id, `Archived bus ID ${id}`);
   return res.json({ message: 'Bus archived successfully' });
 });
@@ -1134,6 +1154,7 @@ app.post('/api/routes', (req: Request, res: Response) => {
       operator_commission: r.operator_commission ? Number(r.operator_commission) : undefined
     };
 
+    syncRouteToSupabase(created).catch(() => {});
     logAudit('CREATE_ROUTE', 'Route Management', info.lastInsertRowid, `Created transit route ${r.service_number}`);
     return res.status(201).json(created);
   } catch (err: any) {
@@ -1164,6 +1185,7 @@ app.put('/api/routes/:id', (req: Request, res: Response) => {
       id
     );
 
+    syncRouteToSupabase({ id: Number(id) || id, ...r }).catch(() => {});
     logAudit('UPDATE_ROUTE', 'Route Management', id, `Updated route ID ${id}`);
     return res.json({ message: 'Route updated successfully' });
   } catch (err: any) {
@@ -1175,6 +1197,7 @@ app.delete('/api/routes/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     db.prepare('DELETE FROM transit_routes WHERE id = ?').run(id);
+    deleteRouteFromSupabase(id).catch(() => {});
     logAudit('DELETE_ROUTE', 'Route Management', id, `Deleted route ID ${id}`);
     return res.json({ message: 'Route deleted successfully' });
   } catch (err: any) {
@@ -1212,6 +1235,7 @@ app.post('/api/organizers', (req: Request, res: Response) => {
       o.office_address?.trim() || ''
     );
     const created = { id, ...o };
+    syncOrganizerToSupabase(created).catch(() => {});
     logAudit('CREATE_ORGANIZER', 'Organizer Management', id, `Created organizer ${o.organization_name}`);
     return res.status(201).json(created);
   } catch (err: any) {
@@ -1237,6 +1261,7 @@ app.put('/api/organizers/:id', (req: Request, res: Response) => {
       o.office_address?.trim() || '',
       id
     );
+    syncOrganizerToSupabase({ id: Number(id) || id, ...o }).catch(() => {});
     logAudit('UPDATE_ORGANIZER', 'Organizer Management', id, `Updated organizer ${o.organization_name}`);
     return res.json({ message: 'Organizer updated successfully' });
   } catch (err: any) {
@@ -1248,6 +1273,7 @@ app.delete('/api/organizers/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     db.prepare('DELETE FROM organizers WHERE id = ?').run(id);
+    deleteOrganizerFromSupabase(id).catch(() => {});
     logAudit('DELETE_ORGANIZER', 'Organizer Management', id, `Deleted organizer ID ${id}`);
     return res.json({ message: 'Organizer deleted successfully' });
   } catch (err: any) {
@@ -1276,6 +1302,7 @@ app.post('/api/organizer-payments', (req: Request, res: Response) => {
       VALUES (?, ?, ?, ?)
     `).run(p.organizer_name, Number(p.amount), p.received_date, p.notes || '');
     const created = { id: result.lastInsertRowid, ...p };
+    syncOrganizerPaymentToSupabase(created).catch(() => {});
     logAudit('RECORD_PAYMENT', 'Financial & Earnings', created.id, `Recorded ₹${p.amount} from ${p.organizer_name}`);
     return res.status(201).json(created);
   } catch (err: any) {
@@ -1330,6 +1357,7 @@ app.post('/api/tasks', (req: Request, res: Response) => {
       t.payment_status || 'Pending'
     );
     const created = { id, ...t };
+    syncTaskToSupabase(id, t).catch(() => {});
     logAudit('CREATE_TASK', 'Task Management', id, `Created task for bus ${t.vehicle_number}`);
     return res.status(201).json(created);
   } catch (err: any) {
@@ -1364,6 +1392,7 @@ app.put('/api/tasks/:id', (req: Request, res: Response) => {
       t.payment_status || 'Pending',
       id
     );
+    syncTaskToSupabase(id, t).catch(() => {});
     logAudit('UPDATE_TASK', 'Task Management', id, `Updated task ${id}`);
     return res.json({ message: 'Task updated successfully' });
   } catch (err: any) {
@@ -1375,6 +1404,7 @@ app.delete('/api/tasks/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     db.prepare('DELETE FROM trip_duties WHERE id = ?').run(id);
+    deleteTaskFromSupabase(id).catch(() => {});
     logAudit('DELETE_TASK', 'Task Management', id, `Deleted task ID ${id}`);
     return res.json({ message: 'Task deleted successfully' });
   } catch (err: any) {
@@ -2566,6 +2596,7 @@ app.post('/api/fleet-maintenance/vehicle', (req: Request, res: Response) => {
         Number(v.last_service_km) || 0,
         existing.id
       );
+      syncBusToSupabase({ id: existing.id, bus_number: busNo, registration_number: regNo, ...v }).catch(() => {});
       return res.json({ success: true, message: 'Vehicle details updated', id: existing.id });
     } else {
       const stmt = db.prepare(`
@@ -2588,6 +2619,7 @@ app.post('/api/fleet-maintenance/vehicle', (req: Request, res: Response) => {
         v.last_service_date || null,
         Number(v.last_service_km) || 0
       );
+      syncBusToSupabase({ id: info.lastInsertRowid, bus_number: busNo, registration_number: regNo, ...v }).catch(() => {});
       logAudit('VEHICLE_ADD', 'Vehicle Maintenance', info.lastInsertRowid, `Added vehicle ${regNo}`);
       return res.status(201).json({ success: true, message: 'Vehicle added successfully', id: info.lastInsertRowid });
     }
@@ -2601,6 +2633,7 @@ app.delete('/api/fleet-maintenance/vehicle/:id', (req: Request, res: Response) =
     const { id } = req.params;
     const stmt = db.prepare('UPDATE buses SET is_archived = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? OR registration_number = ? OR bus_number = ?');
     stmt.run(id, id, id);
+    deleteBusFromSupabase(id).catch(() => {});
     logAudit('VEHICLE_DELETE', 'Vehicle Maintenance', id, `Archived/Deleted fleet vehicle identifier: ${id}`);
     return res.json({ success: true, message: 'Vehicle deleted from fleet maintenance' });
   } catch (err: any) {
@@ -4381,6 +4414,7 @@ app.post('/api/employees', (req: Request, res: Response) => {
     }
   }
 
+  syncEmployeeToSupabase({ id: empId, ...e }).catch(() => {});
   logAudit('EMPLOYEE_REGISTER', 'Employees', empId, `Registered new ${e.role}: ${e.full_name} (${e.employee_code})`);
   return res.status(201).json({ id: empId, message: `${e.role} registered successfully!` });
 });
@@ -4479,6 +4513,7 @@ app.put('/api/employees/:id', (req: Request, res: Response) => {
     );
   }
 
+  syncEmployeeToSupabase({ id: Number(id) || id, ...e }).catch(() => {});
   logAudit('EMPLOYEE_UPDATE', 'Employees', id, `Updated biodata for ${e.full_name}`);
   return res.json({ message: 'Employee profile updated successfully' });
 });
@@ -4486,6 +4521,7 @@ app.put('/api/employees/:id', (req: Request, res: Response) => {
 app.delete('/api/employees/:id', requireAdmin, (req: Request, res: Response) => {
   const { id } = req.params;
   db.prepare('UPDATE employees SET is_archived = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+  deleteEmployeeFromSupabase(id).catch(() => {});
   logAudit('EMPLOYEE_ARCHIVE', 'Employees', id, `Archived employee ID ${id}`);
   return res.json({ message: 'Employee archived successfully' });
 });

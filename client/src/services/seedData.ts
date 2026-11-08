@@ -608,24 +608,24 @@ export const BASE_FLEET_TASKS: any[] = [
     "id": 1793974643420,
     "trip_start_date": "2026-11-06",
     "vehicle_number": "AP16TV1234",
-    "vehicle_status": "RUN",
+    "vehicle_status": "HOLD (Low Occupancy)",
     "route_corridor": "Hyderabad → Bangalore",
     "operator_organizer": "charvik",
     "driver1": {
       "employee_id": 1,
       "employee_name": "akhil",
       "role": "Driver",
-      "salary_amount": 1200,
+      "salary_amount": 500,
       "advance_amount": 0,
-      "balance_due": 1200
+      "balance_due": 500
     },
     "driver2": {
       "employee_id": 4,
       "employee_name": "kittu",
       "role": "Driver",
-      "salary_amount": 900,
+      "salary_amount": 500,
       "advance_amount": 0,
-      "balance_due": 900
+      "balance_due": 500
     },
     "helper": {
       "employee_id": 2,

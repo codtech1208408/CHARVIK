@@ -298,7 +298,7 @@ async function handleFallbackTableCrud(
         const { data, error } = await Promise.race([supabasePromise, timeoutPromise]);
         if (!error && Array.isArray(data) && data.length > 0) {
           const remoteValid = data.filter((x: any) => x && x?.is_archived !== 1);
-          localList = mergeSeedCollection(localList, remoteValid);
+          localList = mergeSeedCollection(remoteValid, localList);
           setLocalCollection(tableKey, localList);
         } else {
           // Cloud sync backup fallback for tables stored as application_settings JSON
@@ -307,7 +307,7 @@ async function handleFallbackTableCrud(
             const parsed = JSON.parse(appData.value);
             if (Array.isArray(parsed) && parsed.length > 0) {
               const remoteValid = parsed.filter((x: any) => x && x?.is_archived !== 1);
-              localList = mergeSeedCollection(localList, remoteValid);
+              localList = mergeSeedCollection(remoteValid, localList);
               setLocalCollection(tableKey, localList);
             }
           }
@@ -344,7 +344,7 @@ async function handleFallbackTableCrud(
 
       try {
         for (let attempt = 0; attempt < 5; attempt++) {
-          const { data, error } = await supabase.from(supabaseTable).insert([payloadToInsert]).select();
+          const { data, error } = await supabase.from(supabaseTable).upsert([payloadToInsert], { onConflict: 'id' }).select();
           if (!error && Array.isArray(data) && data[0]) {
             savedData = data[0];
             break;
@@ -393,22 +393,24 @@ async function handleFallbackTableCrud(
 
       // 1. Immediately update local collection
       const currentList = (await getReliableCollection<any>(tableKey)) || [];
-      const updatedList = currentList.map((x: any) =>
+      let updatedList = currentList.map((x: any) =>
         String(x.id) === String(itemId) ? { ...x, ...updateData } : x
       );
+      if (!currentList.some((x: any) => String(x.id) === String(itemId))) {
+        updatedList.unshift({ id: itemId, ...updateData });
+      }
       setLocalCollection(tableKey, updatedList);
 
-      // 2. Background update to Supabase
+      // 2. Background upsert to Supabase
       try {
+        const payloadToUpsert: any = { id: itemId, ...updateData };
         for (let attempt = 0; attempt < 5; attempt++) {
-          const { data, error } = await supabase.from(supabaseTable).update(updateData).eq('id', itemId).select();
-          if (!error && Array.isArray(data) && data[0]) {
-            break;
-          }
+          const { error } = await supabase.from(supabaseTable).upsert(payloadToUpsert, { onConflict: 'id' });
+          if (!error) break;
           if (error?.message) {
             const match = error.message.match(/Could not find the '([^']+)' column/i);
             if (match && match[1]) {
-              delete updateData[match[1]];
+              delete payloadToUpsert[match[1]];
               continue;
             }
           }
@@ -1827,9 +1829,19 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       const method = (options.method || 'GET').toUpperCase();
       if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
         try {
+          let mirrorBody = options.body;
+          if (options.body) {
+            try {
+              const parsedBody = typeof options.body === 'string' ? JSON.parse(options.body) : { ...options.body };
+              if (data && typeof data === 'object' && (data as any).id && !parsedBody.id) {
+                parsedBody.id = (data as any).id;
+              }
+              mirrorBody = JSON.stringify(parsedBody);
+            } catch {}
+          }
           handleCloudFallback(endpoint, {
             ...options,
-            body: data && typeof data === 'object' && Object.keys(data).length > 0 ? JSON.stringify(data) : options.body
+            body: mirrorBody
           }).catch((syncErr) => console.warn('Supabase real-time sync note:', syncErr));
         } catch {}
       }
@@ -1871,28 +1883,43 @@ export const api = {
   // Buses
   getBuses: async (params?: { search?: string; status?: string }) => {
     const q = cleanQueryParams(params);
-    let local: any[] = [];
+    let buses: any[] = [];
+    // 1. Live Supabase fetch (real-time shared truth between Localhost and Vercel)
     try {
-      const res = await request<any[]>(`/buses${q ? `?${q}` : ''}`);
-      if (Array.isArray(res)) local = res;
-    } catch {
-      local = [];
-    }
-    // Live Supabase two-way sync: merge remote buses created by clients on Vercel
-    try {
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 1500));
+      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
       const { data: remote } = await Promise.race([
-        supabase.from('buses').select('*').eq('is_archived', 0),
+        supabase.from('buses').select('*').eq('is_archived', 0).order('id', { ascending: true }),
         timeoutPromise
       ]) as any;
       if (Array.isArray(remote) && remote.length > 0) {
-        local = mergeSeedCollection(local || [], remote);
+        buses = remote;
       }
     } catch {}
-    if (!local || local.length === 0) {
-      local = [...BASE_FLEET_BUSES];
+
+    // 2. Localhost server merge (if running on localhost)
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const res = await request<any[]>(`/buses${q ? `?${q}` : ''}`);
+        if (Array.isArray(res) && res.length > 0) {
+          buses = mergeSeedCollection(res, buses);
+        }
+      } catch {}
     }
-    return local;
+
+    // 3. Fallback only if no records anywhere
+    if (!buses || buses.length === 0) {
+      try {
+        const saved = localStorage.getItem('charvik_cache_buses');
+        if (saved) buses = JSON.parse(saved);
+      } catch {}
+    }
+    if (!buses || buses.length === 0) {
+      buses = [...BASE_FLEET_BUSES];
+    }
+
+    setLocalCollection('buses', buses);
+    return buses;
   },
   getBus: (id: number | string) => request<any>(`/buses/${id}`),
   createBus: (data: any) => request<any>('/buses', { method: 'POST', body: JSON.stringify(data) }),
@@ -1903,32 +1930,44 @@ export const api = {
 
   // Transit Routes
   getRoutes: async () => {
-    let local: any[] = [];
+    let routes: any[] = [];
+    // 1. Live Supabase fetch
     try {
-      const remote = await request<any[]>('/routes');
-      if (Array.isArray(remote) && remote.length > 0) {
-        local = remote;
-      }
-    } catch {}
-    // Live Supabase two-way sync
-    try {
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 1500));
+      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
       const { data: remote } = await Promise.race([
-        supabase.from('transit_routes').select('*'),
+        supabase.from('transit_routes').select('*').order('id', { ascending: true }),
         timeoutPromise
       ]) as any;
       if (Array.isArray(remote) && remote.length > 0) {
-        local = mergeSeedCollection(local, remote);
+        routes = remote;
       }
     } catch {}
-    try {
-      const saved = localStorage.getItem('charvik_route_management_data');
-      const savedList = saved ? JSON.parse(saved) : [];
-      local = mergeSeedCollection(local, Array.isArray(savedList) ? savedList : []);
-    } catch {}
-    const merged = mergeSeedCollection(local, BASE_FLEET_ROUTES);
-    localStorage.setItem('charvik_route_management_data', JSON.stringify(merged));
-    return merged;
+
+    // 2. Localhost server merge
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const res = await request<any[]>('/routes');
+        if (Array.isArray(res) && res.length > 0) {
+          routes = mergeSeedCollection(res, routes);
+        }
+      } catch {}
+    }
+
+    // 3. Fallback only if no records
+    if (!routes || routes.length === 0) {
+      try {
+        const saved = localStorage.getItem('charvik_route_management_data');
+        if (saved) routes = JSON.parse(saved);
+      } catch {}
+    }
+    if (!routes || routes.length === 0) {
+      routes = [...BASE_FLEET_ROUTES];
+    }
+
+    localStorage.setItem('charvik_route_management_data', JSON.stringify(routes));
+    setLocalCollection('routes', routes);
+    return routes;
   },
   createRoute: (data: any) => request<any>('/routes', { method: 'POST', body: JSON.stringify(data) }),
   updateRoute: (id: number | string, data: any) => request<any>(`/routes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -1936,32 +1975,44 @@ export const api = {
 
   // Organizers (Partner Institutions)
   getOrganizers: async () => {
-    let local: any[] = [];
+    let organizers: any[] = [];
+    // 1. Live Supabase fetch
     try {
-      const remote = await request<any[]>('/organizers');
-      if (Array.isArray(remote) && remote.length > 0) {
-        local = remote;
-      }
-    } catch {}
-    // Live Supabase two-way sync
-    try {
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 1500));
+      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
       const { data: remote } = await Promise.race([
-        supabase.from('organizers').select('*'),
+        supabase.from('organizers').select('*').order('id', { ascending: true }),
         timeoutPromise
       ]) as any;
       if (Array.isArray(remote) && remote.length > 0) {
-        local = mergeSeedCollection(local, remote);
+        organizers = remote;
       }
     } catch {}
-    try {
-      const saved = localStorage.getItem('charvik_organizer_management_data');
-      const savedList = saved ? JSON.parse(saved) : [];
-      local = mergeSeedCollection(local, Array.isArray(savedList) ? savedList : []);
-    } catch {}
-    const merged = mergeSeedCollection(local, BASE_FLEET_ORGANIZERS);
-    localStorage.setItem('charvik_organizer_management_data', JSON.stringify(merged));
-    return merged;
+
+    // 2. Localhost server merge
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const res = await request<any[]>('/organizers');
+        if (Array.isArray(res) && res.length > 0) {
+          organizers = mergeSeedCollection(res, organizers);
+        }
+      } catch {}
+    }
+
+    // 3. Fallback only if no records
+    if (!organizers || organizers.length === 0) {
+      try {
+        const saved = localStorage.getItem('charvik_organizer_management_data');
+        if (saved) organizers = JSON.parse(saved);
+      } catch {}
+    }
+    if (!organizers || organizers.length === 0) {
+      organizers = [...BASE_FLEET_ORGANIZERS];
+    }
+
+    localStorage.setItem('charvik_organizer_management_data', JSON.stringify(organizers));
+    setLocalCollection('organizers', organizers);
+    return organizers;
   },
   createOrganizer: (data: any) => request<any>('/organizers', { method: 'POST', body: JSON.stringify(data) }),
   updateOrganizer: (id: number | string, data: any) => request<any>(`/organizers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -1969,69 +2020,90 @@ export const api = {
 
   // Organizer Payments
   getOrganizerPayments: async () => {
-    let local: any[] = [];
+    let payments: any[] = [];
+    // 1. Live Supabase fetch
     try {
-      const remote = await request<any[]>('/organizer-payments');
-      if (Array.isArray(remote)) {
-        local = remote;
-      }
-    } catch {}
-    // Live Supabase two-way sync
-    try {
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 1500));
+      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
       const { data: remote } = await Promise.race([
-        supabase.from('organizer_payments').select('*'),
+        supabase.from('organizer_payments').select('*').order('id', { ascending: false }),
         timeoutPromise
       ]) as any;
       if (Array.isArray(remote) && remote.length > 0) {
-        local = mergeSeedCollection(local, remote);
+        payments = remote;
       }
     } catch {}
-    try {
-      const saved = localStorage.getItem('charvik_organizer_payments_data');
-      if (saved) {
-        const savedList = JSON.parse(saved);
-        if (Array.isArray(savedList) && savedList.length > 0) {
-          local = mergeSeedCollection(local, savedList);
+
+    // 2. Localhost server merge
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const res = await request<any[]>('/organizer-payments');
+        if (Array.isArray(res) && res.length > 0) {
+          payments = mergeSeedCollection(res, payments);
         }
-      }
-    } catch {}
-    localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(local));
-    return local;
+      } catch {}
+    }
+
+    // 3. Fallback only if no records
+    if (!payments || payments.length === 0) {
+      try {
+        const saved = localStorage.getItem('charvik_organizer_payments_data');
+        if (saved) payments = JSON.parse(saved);
+      } catch {}
+    }
+
+    localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(payments));
+    setLocalCollection('organizer_payments', payments);
+    return payments;
   },
   createOrganizerPayment: (data: any) => request<any>('/organizer-payments', { method: 'POST', body: JSON.stringify(data) }),
   deleteOrganizerPayment: (id: number | string) => request<any>(`/organizer-payments/${id}`, { method: 'DELETE' }),
 
   // Tasks (Trip Duties)
   getTasks: async () => {
-    let local: any[] = [];
+    let tasks: any[] = [];
+    // 1. Live Supabase fetch (the single real-time source of truth shared between Localhost and Vercel)
     try {
-      const remote = await request<any[]>('/tasks');
-      if (Array.isArray(remote) && remote.length > 0) {
-        local = remote;
-      }
-    } catch {}
-    // Live Supabase two-way sync
-    try {
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 1500));
+      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
       const { data: remote } = await Promise.race([
         supabase.from('tasks').select('*').order('id', { ascending: false }),
         timeoutPromise
       ]) as any;
       if (Array.isArray(remote) && remote.length > 0) {
-        local = mergeSeedCollection(local, remote);
+        tasks = remote.map((t: any) => ({
+          ...t,
+          driver1: typeof t.driver1 === 'string' ? JSON.parse(t.driver1 || '{}') : (t.driver1 || {}),
+          driver2: typeof t.driver2 === 'string' ? JSON.parse(t.driver2 || '{}') : (t.driver2 || {}),
+          helper: typeof t.helper === 'string' && t.helper ? JSON.parse(t.helper) : t.helper,
+          captain: typeof t.captain === 'string' && t.captain ? JSON.parse(t.captain) : t.captain
+        }));
       }
     } catch {}
-    try {
-      const saved = localStorage.getItem('charvik_trip_duty_management_v2');
-      const savedList = saved ? JSON.parse(saved) : [];
-      if (Array.isArray(savedList) && savedList.length > 0) {
-        local = mergeSeedCollection(local, savedList);
-      }
-    } catch {}
-    const merged = mergeSeedCollection(local, BASE_FLEET_TASKS);
-    localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(merged));
-    return merged;
+
+    // 2. Localhost server merge (if server is running on localhost)
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const serverTasks = await request<any[]>('/tasks');
+        if (Array.isArray(serverTasks) && serverTasks.length > 0) {
+          tasks = mergeSeedCollection(serverTasks, tasks);
+        }
+      } catch {}
+    }
+
+    // 3. Fallback only if no records anywhere
+    if (!tasks || tasks.length === 0) {
+      try {
+        const saved = localStorage.getItem('charvik_trip_duty_management_v2');
+        if (saved) tasks = JSON.parse(saved);
+      } catch {}
+    }
+    if (!tasks || tasks.length === 0) {
+      tasks = [...BASE_FLEET_TASKS];
+    }
+
+    localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(tasks));
+    return tasks;
   },
   createTask: (data: any) => request<any>('/tasks', { method: 'POST', body: JSON.stringify(data) }),
   updateTask: (id: number | string, data: any) => request<any>(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -2238,7 +2310,10 @@ export const api = {
     let fleetOverdue = 0;
     let vehiclesNeedingAttention = 0;
 
-    const buses = BASE_FLEET_MAINTENANCE_BUSES.map((b) => {
+    const busSource = (await getReliableCollection<any>('buses'))?.filter((b: any) => b && b.is_archived !== 1);
+    const activeBuses = Array.isArray(busSource) && busSource.length > 0 ? busSource : BASE_FLEET_MAINTENANCE_BUSES;
+
+    const buses = activeBuses.map((b) => {
       let busKm = Number(b.current_odometer_km) || 0;
       try {
         const insRaw = localStorage.getItem('charvik_inspections_data');
@@ -2491,61 +2566,78 @@ export const api = {
 
   // Daily Maintenance (repairs, complaints, showroom name, other, invoice 2-3 photos)
   getDailyMaintenance: async (params?: { vehicle_number?: string; bus_id?: number | string; search?: string; start_date?: string; end_date?: string }) => {
-    const cleanParams: any = {};
-    if (params?.vehicle_number && params.vehicle_number !== 'all' && params.vehicle_number !== 'All') cleanParams.vehicle_number = params.vehicle_number;
-    if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'all') cleanParams.bus_id = params.bus_id;
-    if (params?.search) cleanParams.search = params.search;
-    if (params?.start_date) cleanParams.start_date = params.start_date;
-    if (params?.end_date) cleanParams.end_date = params.end_date;
-    const q = new URLSearchParams(cleanParams).toString();
-
-    let local: DailyMaintenanceRecord[] = [];
+    let records: DailyMaintenanceRecord[] = [];
+    // 1. Live Supabase fetch
     try {
-      const data = await request<DailyMaintenanceRecord[]>(`/daily-maintenance${q ? `?${q}` : ''}`);
-      if (Array.isArray(data) && data.length > 0) {
-        local = data;
-      }
-    } catch {}
-
-    // Live Supabase two-way sync
-    try {
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 1500));
+      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
       const { data: remoteTable } = await Promise.race([
-        supabase.from('daily_maintenance_records').select('*'),
+        supabase.from('daily_maintenance_records').select('*').order('date', { ascending: false }),
         timeoutPromise
       ]) as any;
       if (Array.isArray(remoteTable) && remoteTable.length > 0) {
-        local = mergeSeedCollection(local, remoteTable);
+        records = remoteTable;
       } else {
         const { data: appData } = await supabase.from('application_settings').select('value').eq('key', 'cloud_sync_daily_maintenance_records').single();
         if (appData && appData.value) {
           const parsed = JSON.parse(appData.value);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            local = mergeSeedCollection(local, parsed);
+            records = parsed;
           }
         }
       }
     } catch {}
 
-    const cached = localStorage.getItem('charvik_daily_maintenance_cache');
-    const cachedList = cached ? JSON.parse(cached) : [];
-    let list: DailyMaintenanceRecord[] = mergeSeedCollection(local, Array.isArray(cachedList) ? cachedList : []);
-    list = mergeSeedCollection(list, BASE_DAILY_MAINTENANCE_RECORDS);
-
-    if (cleanParams.vehicle_number) {
-      list = list.filter((r) => r.vehicle_number === cleanParams.vehicle_number);
+    // 2. Localhost server merge (if running on localhost)
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const cleanParams: any = {};
+        if (params?.vehicle_number && params.vehicle_number !== 'all' && params.vehicle_number !== 'All') cleanParams.vehicle_number = params.vehicle_number;
+        if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'all') cleanParams.bus_id = params.bus_id;
+        if (params?.search) cleanParams.search = params.search;
+        if (params?.start_date) cleanParams.start_date = params.start_date;
+        if (params?.end_date) cleanParams.end_date = params.end_date;
+        const q = new URLSearchParams(cleanParams).toString();
+        const data = await request<DailyMaintenanceRecord[]>(`/daily-maintenance${q ? `?${q}` : ''}`);
+        if (Array.isArray(data) && data.length > 0) {
+          records = mergeSeedCollection(data, records);
+        }
+      } catch {}
     }
-    if (cleanParams.search) {
-      const s = cleanParams.search.toLowerCase();
-      list = list.filter((r) =>
+
+    // 3. Fallback only if no records anywhere
+    if (!records || records.length === 0) {
+      try {
+        const cached = localStorage.getItem('charvik_daily_maintenance_cache');
+        if (cached) records = JSON.parse(cached);
+      } catch {}
+    }
+    if (!records || records.length === 0) {
+      records = [...BASE_DAILY_MAINTENANCE_RECORDS];
+    }
+
+    if (params?.vehicle_number && params.vehicle_number !== 'all' && params.vehicle_number !== 'All') {
+      records = records.filter((r) => r.vehicle_number === params.vehicle_number);
+    }
+    if (params?.search) {
+      const s = params.search.toLowerCase();
+      records = records.filter((r) =>
         (r.vehicle_number || '').toLowerCase().includes(s) ||
         (r.showroom_name || '').toLowerCase().includes(s) ||
         (r.complaints || '').toLowerCase().includes(s) ||
         (r.other || '').toLowerCase().includes(s)
       );
     }
-    localStorage.setItem('charvik_daily_maintenance_cache', JSON.stringify(list));
-    return list;
+    if (params?.start_date) {
+      records = records.filter((r) => r.date >= params.start_date!);
+    }
+    if (params?.end_date) {
+      records = records.filter((r) => r.date <= params.end_date!);
+    }
+
+    localStorage.setItem('charvik_daily_maintenance_cache', JSON.stringify(records));
+    setLocalCollection('daily_maintenance_records', records);
+    return records;
   },
 
   createDailyMaintenance: async (data: any) => {
@@ -2616,58 +2708,68 @@ export const api = {
 
   // Vyshnavi Travels Records
   getVyshnaviRecords: async (params?: { search?: string; status?: string }) => {
-    const cleanParams: any = {};
-    if (params?.search) cleanParams.search = params.search;
-    if (params?.status && params.status !== 'All') cleanParams.status = params.status;
-    const q = new URLSearchParams(cleanParams).toString();
-
-    let local: VyshnaviRecord[] = [];
+    let records: VyshnaviRecord[] = [];
+    // 1. Live Supabase fetch
     try {
-      const data = await request<VyshnaviRecord[]>(`/vyshnavi/records${q ? `?${q}` : ''}`);
-      if (Array.isArray(data) && data.length > 0) {
-        local = data;
-      }
-    } catch {}
-
-    // Live Supabase two-way sync
-    try {
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 1500));
+      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
       const { data: remoteTable } = await Promise.race([
-        supabase.from('vyshnavi_service_records').select('*'),
+        supabase.from('vyshnavi_service_records').select('*').order('id', { ascending: false }),
         timeoutPromise
       ]) as any;
       if (Array.isArray(remoteTable) && remoteTable.length > 0) {
-        local = mergeSeedCollection(local, remoteTable);
+        records = remoteTable;
       } else {
         const { data: appData } = await supabase.from('application_settings').select('value').eq('key', 'cloud_sync_vyshnavi_service_records').single();
         if (appData && appData.value) {
           const parsed = JSON.parse(appData.value);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            local = mergeSeedCollection(local, parsed);
+            records = parsed;
           }
         }
       }
     } catch {}
 
-    const cached = localStorage.getItem('charvik_vyshnavi_records_cache');
-    const cachedList = cached ? JSON.parse(cached) : [];
-    let list: VyshnaviRecord[] = mergeSeedCollection(local, Array.isArray(cachedList) ? cachedList : []);
-    list = mergeSeedCollection(list, BASE_VYSHNAVI_RECORDS);
-
-    if (cleanParams.status) {
-      list = list.filter((r) => r.payment_status === cleanParams.status);
+    // 2. Localhost server merge (if running on localhost)
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const cleanParams: any = {};
+        if (params?.search) cleanParams.search = params.search;
+        if (params?.status && params.status !== 'All') cleanParams.status = params.status;
+        const q = new URLSearchParams(cleanParams).toString();
+        const data = await request<VyshnaviRecord[]>(`/vyshnavi/records${q ? `?${q}` : ''}`);
+        if (Array.isArray(data) && data.length > 0) {
+          records = mergeSeedCollection(data, records);
+        }
+      } catch {}
     }
-    if (cleanParams.search) {
-      const s = cleanParams.search.toLowerCase();
-      list = list.filter(
+
+    // 3. Fallback only if no records anywhere
+    if (!records || records.length === 0) {
+      try {
+        const cached = localStorage.getItem('charvik_vyshnavi_records_cache');
+        if (cached) records = JSON.parse(cached);
+      } catch {}
+    }
+    if (!records || records.length === 0) {
+      records = [...BASE_VYSHNAVI_RECORDS];
+    }
+
+    if (params?.status && params.status !== 'All') {
+      records = records.filter((r) => r.payment_status === params.status);
+    }
+    if (params?.search) {
+      const s = params.search.toLowerCase();
+      records = records.filter(
         (r) =>
           (r.record_number || '').toLowerCase().includes(s) ||
           (r.bill_to_name || '').toLowerCase().includes(s) ||
           (r.period_month || '').toLowerCase().includes(s)
       );
     }
-    localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(list));
-    return list;
+    localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(records));
+    setLocalCollection('vyshnavi_service_records', records);
+    return records;
   },
 
   createVyshnaviRecord: async (data: any) => {
@@ -2730,54 +2832,63 @@ export const api = {
 
   // Vyshnavi Travels Income & Expense Transactions
   getVyshnaviTransactions: async (params?: { type?: string; category?: string; search?: string }) => {
-    const cleanParams: any = {};
-    if (params?.type && params.type !== 'All') cleanParams.type = params.type;
-    if (params?.category && params.category !== 'All') cleanParams.category = params.category;
-    if (params?.search) cleanParams.search = params.search;
-    const q = new URLSearchParams(cleanParams).toString();
-
-    let local: VyshnaviTransaction[] = [];
+    let transactions: VyshnaviTransaction[] = [];
+    // 1. Live Supabase fetch
     try {
-      const data = await request<VyshnaviTransaction[]>(`/vyshnavi/transactions${q ? `?${q}` : ''}`);
-      if (Array.isArray(data) && data.length > 0) {
-        local = data;
-      }
-    } catch {}
-
-    // Live Supabase two-way sync
-    try {
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 1500));
+      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
       const { data: remoteTable } = await Promise.race([
-        supabase.from('vyshnavi_transactions').select('*'),
+        supabase.from('vyshnavi_transactions').select('*').order('id', { ascending: false }),
         timeoutPromise
       ]) as any;
       if (Array.isArray(remoteTable) && remoteTable.length > 0) {
-        local = mergeSeedCollection(local, remoteTable);
+        transactions = remoteTable;
       } else {
         const { data: appData } = await supabase.from('application_settings').select('value').eq('key', 'cloud_sync_vyshnavi_transactions').single();
         if (appData && appData.value) {
           const parsed = JSON.parse(appData.value);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            local = mergeSeedCollection(local, parsed);
+            transactions = parsed;
           }
         }
       }
     } catch {}
 
-    const cached = localStorage.getItem('charvik_vyshnavi_transactions_cache');
-    const cachedList = cached ? JSON.parse(cached) : [];
-    let list: VyshnaviTransaction[] = mergeSeedCollection(local, Array.isArray(cachedList) ? cachedList : []);
-    list = mergeSeedCollection(list, BASE_VYSHNAVI_TRANSACTIONS);
+    // 2. Localhost server merge (if running on localhost)
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const cleanParams: any = {};
+        if (params?.type && params.type !== 'All') cleanParams.type = params.type;
+        if (params?.category && params.category !== 'All') cleanParams.category = params.category;
+        if (params?.search) cleanParams.search = params.search;
+        const q = new URLSearchParams(cleanParams).toString();
+        const data = await request<VyshnaviTransaction[]>(`/vyshnavi/transactions${q ? `?${q}` : ''}`);
+        if (Array.isArray(data) && data.length > 0) {
+          transactions = mergeSeedCollection(data, transactions);
+        }
+      } catch {}
+    }
 
-    if (cleanParams.type && cleanParams.type !== 'All') {
-      list = list.filter((t) => (t.transaction_type || '').toLowerCase() === cleanParams.type.toLowerCase());
+    // 3. Fallback only if no records anywhere
+    if (!transactions || transactions.length === 0) {
+      try {
+        const cached = localStorage.getItem('charvik_vyshnavi_transactions_cache');
+        if (cached) transactions = JSON.parse(cached);
+      } catch {}
     }
-    if (cleanParams.category && cleanParams.category !== 'All') {
-      list = list.filter((t) => (t.category || '').toLowerCase() === cleanParams.category.toLowerCase());
+    if (!transactions || transactions.length === 0) {
+      transactions = [...BASE_VYSHNAVI_TRANSACTIONS];
     }
-    if (cleanParams.search) {
-      const s = cleanParams.search.toLowerCase();
-      list = list.filter(
+
+    if (params?.type && params.type !== 'All') {
+      transactions = transactions.filter((t) => (t.transaction_type || '').toLowerCase() === params.type!.toLowerCase());
+    }
+    if (params?.category && params.category !== 'All') {
+      transactions = transactions.filter((t) => (t.category || '').toLowerCase() === params.category!.toLowerCase());
+    }
+    if (params?.search) {
+      const s = params.search.toLowerCase();
+      transactions = transactions.filter(
         (t) =>
           (t.description || '').toLowerCase().includes(s) ||
           (t.party_name || '').toLowerCase().includes(s) ||
@@ -2785,8 +2896,9 @@ export const api = {
           (t.reference_no || '').toLowerCase().includes(s)
       );
     }
-    localStorage.setItem('charvik_vyshnavi_transactions_cache', JSON.stringify(list));
-    return list;
+    localStorage.setItem('charvik_vyshnavi_transactions_cache', JSON.stringify(transactions));
+    setLocalCollection('vyshnavi_transactions', transactions);
+    return transactions;
   },
 
   createVyshnaviTransaction: async (data: any) => {
@@ -2965,33 +3077,63 @@ export const api = {
 
   // Employees
   getEmployees: async (params?: { role?: string; status?: string; search?: string }) => {
-    const clean: Record<string, string> = {};
-    if (params?.role && params.role !== 'All' && params.role !== 'undefined') clean.role = params.role;
-    if (params?.status && params.status !== 'All' && params.status !== 'undefined') clean.status = params.status;
-    if (params?.search && params.search !== 'undefined') clean.search = params.search;
-    const q = new URLSearchParams(clean).toString();
-    let local: any[] = [];
+    let employees: any[] = [];
+    // 1. Live Supabase fetch (real-time source of truth for both Localhost & Vercel)
     try {
-      const res = await request<any[]>(`/employees${q ? `?${q}` : ''}`);
-      if (Array.isArray(res)) local = res;
-    } catch {
-      local = [];
-    }
-    // Live Supabase two-way sync: merge remote employees created by clients on Vercel
-    try {
-      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 1500));
+      const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
       const { data: remote } = await Promise.race([
-        supabase.from('employees').select('*').eq('is_archived', 0),
+        supabase.from('employees').select('*').eq('is_archived', 0).order('id', { ascending: true }),
         timeoutPromise
       ]) as any;
       if (Array.isArray(remote) && remote.length > 0) {
-        local = mergeSeedCollection(local || [], remote);
+        employees = remote;
       }
     } catch {}
-    if (!local || local.length === 0) {
-      local = [...BASE_FLEET_EMPLOYEES];
+
+    // 2. Localhost server merge (if running on localhost)
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const clean: Record<string, string> = {};
+        if (params?.role && params.role !== 'All' && params.role !== 'undefined') clean.role = params.role;
+        if (params?.status && params.status !== 'All' && params.status !== 'undefined') clean.status = params.status;
+        if (params?.search && params.search !== 'undefined') clean.search = params.search;
+        const q = new URLSearchParams(clean).toString();
+        const res = await request<any[]>(`/employees${q ? `?${q}` : ''}`);
+        if (Array.isArray(res) && res.length > 0) {
+          employees = mergeSeedCollection(res, employees);
+        }
+      } catch {}
     }
-    return local;
+
+    // 3. Fallback only if no records anywhere
+    if (!employees || employees.length === 0) {
+      try {
+        const saved = localStorage.getItem('charvik_cache_employees');
+        if (saved) employees = JSON.parse(saved);
+      } catch {}
+    }
+    if (!employees || employees.length === 0) {
+      employees = [...BASE_FLEET_EMPLOYEES];
+    }
+
+    if (params?.role && params.role !== 'All') {
+      employees = employees.filter((e) => e.role === params.role);
+    }
+    if (params?.status && params.status !== 'All') {
+      employees = employees.filter((e) => e.status === params.status);
+    }
+    if (params?.search) {
+      const s = params.search.toLowerCase();
+      employees = employees.filter((e) =>
+        (e.name || '').toLowerCase().includes(s) ||
+        (e.employee_code || '').toLowerCase().includes(s) ||
+        (e.phone_number || '').toLowerCase().includes(s)
+      );
+    }
+
+    setLocalCollection('employees', employees);
+    return employees;
   },
   getEmployee: (id: number | string) => request<any>(`/employees/${id}`),
   createEmployee: (data: any) => request<any>('/employees', { method: 'POST', body: JSON.stringify(data) }),
