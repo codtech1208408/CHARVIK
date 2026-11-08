@@ -197,28 +197,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition']
     },
     {
-      label: 'Mileage & Fueling',
-      route: '/admin/mileage-fueling',
-      icon: Fuel,
-      activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers']
-    },
-    {
-      label: 'AC Maintenance',
-      route: '/admin/ac-maintenance',
-      icon: Snowflake,
-      activeRoutes: ['/admin/ac-maintenance']
-    },
-    {
-      label: 'Tyre Maintenance',
-      route: '/admin/tyre-maintenance',
-      icon: CircleDot,
-      activeRoutes: ['/admin/tyre-maintenance']
-    },
-    {
-      label: 'Product Management',
-      route: '/admin/products',
+      label: 'New Tyres',
+      route: '/admin/new-tyres',
       icon: Package,
-      activeRoutes: ['/admin/products']
+      activeRoutes: ['/admin/new-tyres', '/admin/tyres/new']
     }
   ];
 
@@ -253,18 +235,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       label: 'Vehicle Maintenance',
-      route: '/admin/daily-vehicle-checkup',
+      route: '/admin/vehicle-maintenance',
       icon: Wrench,
       activeRoutes: [
+        '/admin/vehicle-maintenance',
         '/admin/daily-vehicle-checkup',
         '/admin/vehicle-checkup',
         '/admin/bus-condition',
-        '/admin/mileage-fueling',
-        '/admin/daily-kilometers',
-        '/admin/vehicle-maintenance',
-        '/admin/tyre-maintenance',
-        '/admin/products',
-        '/admin/cleaning'
+        '/admin/new-tyres'
       ]
     },
     {

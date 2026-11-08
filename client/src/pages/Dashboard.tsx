@@ -26,7 +26,11 @@ import {
   LayoutDashboard,
   Disc,
   Eye,
-  ExternalLink
+  ExternalLink,
+  Flame,
+  Wrench,
+  MapPin,
+  User
 } from 'lucide-react';
 import { StatCard } from '../components/common/StatCard';
 import { api } from '../services/api';
@@ -45,6 +49,7 @@ export const Dashboard: React.FC = () => {
   const [acRecords, setAcRecords] = useState<any[]>([]);
   const [wheelAllotments, setWheelAllotments] = useState<any[]>([]);
   const [tyreAirCheckups, setTyreAirCheckups] = useState<any[]>([]);
+  const [fleetMaintenance, setFleetMaintenance] = useState<any>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
 
 
@@ -121,14 +126,15 @@ export const Dashboard: React.FC = () => {
   const loadDashboard = async () => {
     try {
       setLoading(true);
-      const [dashData, busesList, tasksList, orgPayList, acList, allotmentsList, airList] = await Promise.all([
+      const [dashData, busesList, tasksList, orgPayList, acList, allotmentsList, airList, fleetData] = await Promise.all([
         api.getDashboard().catch(() => null),
         api.getBuses().catch(() => []),
         api.getTasks().catch(() => []),
         api.getOrganizerPayments().catch(() => []),
         api.getAcRecords().catch(() => []),
         api.getWheelAllotments().catch(() => []),
-        api.getTyreAirCheckups().catch(() => [])
+        api.getTyreAirCheckups().catch(() => []),
+        api.getFleetMaintenance().catch(() => null)
       ]);
       setData(dashData);
       setBuses(busesList || []);
@@ -137,6 +143,7 @@ export const Dashboard: React.FC = () => {
       setAcRecords(Array.isArray(acList) ? acList : []);
       setWheelAllotments(Array.isArray(allotmentsList) ? allotmentsList : []);
       setTyreAirCheckups(Array.isArray(airList) ? airList : []);
+      setFleetMaintenance(fleetData);
     } catch (err: any) {
       error(err.message || 'Failed to load dashboard data');
     } finally {
@@ -248,6 +255,14 @@ export const Dashboard: React.FC = () => {
       return dStr;
     }
   };
+
+  // Fleet Maintenance Alert Vehicles (Filtered to within 2 days of due date or overdue - matching Image 2 & User Rule)
+  const alertVehicles = useMemo(() => {
+    const list = fleetMaintenance?.buses || [];
+    return list.filter((b: any) =>
+      (b.services || []).some((s: any) => s.isOverdue || s.isDueSoon)
+    );
+  }, [fleetMaintenance]);
 
   // Tyre Maintenance Mini Table Rows (Matching Image 1)
   const tyreTableRows = useMemo(() => {
@@ -542,250 +557,169 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* =========================================================================
-          3. MAINTENANCE & RENEWAL HUB: TYRE & AC MAINTENANCE TABLES (Matching Image 1)
+          3. FLEET MAINTENANCE ALERTS & CARDS (Matching Image 2 and User Constraints)
+          Only displays vehicles that have services expiring within 2 days or overdue!
          ========================================================================= */}
       <div>
-        <div className="flex items-center justify-between mb-2.5 px-0.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Maintenance & Renewal Hub
-          </h3>
-          <span className="text-[11px] font-semibold text-blue-600">
-            Click table box or row to open full module directly
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {/* Box 1: Tyre Maintenance (Matching Image 1 Left Card with rich Blue Theme) */}
-          <div className="bg-white rounded-2xl border border-blue-200/90 shadow-xs hover:shadow-md hover:border-blue-300 transition-all duration-200 overflow-hidden flex flex-col">
-            {/* Header */}
-            <div
-              onClick={() => {
-                auditLogger.log({
-                  user: 'Admin',
-                  module: 'Dashboard',
-                  action_type: 'Navigation',
-                  description: 'Opened Tyre Maintenance module from Dashboard table box'
-                });
-                navigate('/admin/tyre-maintenance');
-              }}
-              className="p-4 sm:px-5 sm:py-3.5 flex items-center justify-between bg-[#F0F5FF] border-b border-blue-200/80 cursor-pointer group hover:bg-blue-100/70 transition-colors"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                  <Disc className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-blue-950 text-sm sm:text-base group-hover:text-blue-700 transition-colors">
-                    Tyre Maintenance
-                  </h3>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate('/admin/tyre-maintenance');
-                }}
-                className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <span>View All</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto flex-1">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#EBF3FC] text-blue-950 font-bold border-b border-blue-200/80 text-[11px]">
-                    <th className="py-2.5 px-3">Bus No.</th>
-                    <th className="py-2.5 px-3">Tyre Condition</th>
-                    <th className="py-2.5 px-3">Last Changed</th>
-                    <th className="py-2.5 px-3">Next Due (Km)</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-3 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {tyreTableRows.map((row, idx) => {
-                    const isGood = row.condition === 'Good';
-                    const isReplace = row.condition === 'Replace';
-                    const isOk = row.status === 'OK';
-
-                    return (
-                      <tr
-                        key={idx}
-                        onClick={() => navigate('/admin/tyre-maintenance')}
-                        className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
-                      >
-                        <td className="py-3 px-3 font-extrabold text-[#142B4A] whitespace-nowrap">
-                          {row.busNo}
-                        </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span
-                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              isGood
-                                ? 'bg-[#EAFBF1] text-emerald-800 border border-emerald-300'
-                                : isReplace
-                                ? 'bg-[#FEE2E2] text-rose-900 border border-rose-400 font-extrabold'
-                                : 'bg-[#FEEFEE] text-rose-700 border border-rose-300'
-                            }`}
-                          >
-                            {row.condition}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-slate-600 whitespace-nowrap font-medium">
-                          {row.lastChanged}
-                        </td>
-                        <td className="py-3 px-3 text-slate-700 whitespace-nowrap font-semibold">
-                          {row.nextDueKm}
-                        </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span
-                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              isOk
-                                ? 'bg-[#EAFBF1] text-emerald-800 border border-emerald-300'
-                                : 'bg-[#FFF6EA] text-amber-800 border border-amber-300'
-                            }`}
-                          >
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-center whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate('/admin/tyre-maintenance');
-                            }}
-                            className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all cursor-pointer inline-flex items-center justify-center shadow-2xs"
-                            title="Open Tyre Maintenance"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+        <div className="flex items-center justify-between mb-3 px-0.5">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Fleet Maintenance Alerts
+            </h3>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+              Due within 2 days / Overdue
+            </span>
           </div>
 
-          {/* Box 2: AC Maintenance (Matching Image 1 Right Card with rich Cyan Theme) */}
-          <div className="bg-white rounded-2xl border border-cyan-200/90 shadow-xs hover:shadow-md hover:border-cyan-300 transition-all duration-200 overflow-hidden flex flex-col">
-            {/* Header */}
-            <div
-              onClick={() => {
-                auditLogger.log({
-                  user: 'Admin',
-                  module: 'Dashboard',
-                  action_type: 'Navigation',
-                  description: 'Opened AC Maintenance module from Dashboard table box'
-                });
-                navigate('/admin/ac-maintenance');
-              }}
-              className="p-4 sm:px-5 sm:py-3.5 flex items-center justify-between bg-[#E6F8FA] border-b border-cyan-200/80 cursor-pointer group hover:bg-cyan-100/70 transition-colors"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-cyan-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                  <Snowflake className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-cyan-950 text-sm sm:text-base group-hover:text-cyan-800 transition-colors">
-                    AC Maintenance
-                  </h3>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate('/admin/ac-maintenance');
-                }}
-                className="text-xs font-bold text-cyan-700 hover:text-cyan-900 hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <span>View All</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto flex-1">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#E0F5F7] text-cyan-950 font-bold border-b border-cyan-200/80 text-[11px]">
-                    <th className="py-2.5 px-3">Bus No.</th>
-                    <th className="py-2.5 px-3">AC Status</th>
-                    <th className="py-2.5 px-3">Last Service</th>
-                    <th className="py-2.5 px-3">Next Due (Km)</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-3 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {acTableRows.map((row, idx) => {
-                    const isWorking = row.acStatus === 'Working';
-                    const isOk = row.status === 'OK';
-
-                    return (
-                      <tr
-                        key={idx}
-                        onClick={() => navigate('/admin/ac-maintenance')}
-                        className="hover:bg-cyan-50/40 transition-colors cursor-pointer group"
-                      >
-                        <td className="py-3 px-3 font-extrabold text-[#142B4A] whitespace-nowrap">
-                          {row.busNo}
-                        </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span
-                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              isWorking
-                                ? 'bg-[#EAFBF1] text-emerald-800 border border-emerald-300'
-                                : 'bg-[#FEEFEE] text-rose-700 border border-rose-300'
-                            }`}
-                          >
-                            {row.acStatus}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-slate-600 whitespace-nowrap font-medium">
-                          {row.lastService}
-                        </td>
-                        <td className="py-3 px-3 text-slate-700 whitespace-nowrap font-semibold">
-                          {row.nextDueKm}
-                        </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span
-                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              isOk
-                                ? 'bg-[#EAFBF1] text-emerald-800 border border-emerald-300'
-                                : 'bg-[#FFF6EA] text-amber-800 border border-amber-300'
-                            }`}
-                          >
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-center whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate('/admin/ac-maintenance');
-                            }}
-                            className="w-7 h-7 rounded-full bg-cyan-50 text-cyan-600 hover:bg-cyan-600 hover:text-white transition-all cursor-pointer inline-flex items-center justify-center shadow-2xs"
-                            title="Open AC Maintenance"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/admin/vehicle-maintenance')}
+            className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <span>View All Fleet Maintenance</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
+
+        {alertVehicles.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-emerald-200/80 p-8 text-center shadow-xs">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+              <CheckCircle2 className="w-7 h-7" />
+            </div>
+            <h4 className="text-base font-bold text-slate-900 mb-1">All Fleet Vehicles Healthy</h4>
+            <p className="text-sm text-slate-500 max-w-md mx-auto mb-4">
+              No vehicles have services due within the next 2 days or overdue. Every vehicle's scheduled maintenance is currently up to date.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/vehicle-maintenance')}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+            >
+              <span>Open Vehicle Maintenance Overview</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {alertVehicles.map((bus: any, idx: number) => {
+              const overdueCount =
+                Number(bus.overdueCount) || (bus.services || []).filter((s: any) => s.isOverdue).length;
+              const dueSoonCount =
+                Number(bus.dueSoonCount) || (bus.services || []).filter((s: any) => s.isDueSoon).length;
+
+              return (
+                <div
+                  key={bus.id || idx}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Header: Reg Number, Model, Needs Attention badge */}
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div>
+                        <h4 className="font-black text-slate-900 text-lg tracking-wide">
+                          {bus.registration_number || bus.bus_number}
+                        </h4>
+                        <p className="text-xs text-slate-500 font-medium">
+                          {bus.model || 'Scania Metrolink HD'}
+                        </p>
+                      </div>
+
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200 shrink-0">
+                        <Flame className="w-3.5 h-3.5" />
+                        <span>Needs Attention</span>
+                      </span>
+                    </div>
+
+                    {/* Odometer KM Box (Synced dynamically from Daily Vehicle Checkup) */}
+                    <div className="my-3 py-3 px-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-center gap-2.5 text-center">
+                      <Gauge className="w-5 h-5 text-slate-400" />
+                      <span className="text-2xl font-black text-slate-800 tracking-tight">
+                        {Number(bus.current_odometer_km || 0).toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        KM
+                      </span>
+                    </div>
+
+                    {/* Location & Operations Manager */}
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pb-2 mb-3 border-b border-slate-100">
+                      <span className="flex items-center gap-1 truncate" title={bus.parking_location || 'Delhi Depot – Bay 1'}>
+                        <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{bus.parking_location || 'Delhi Depot – Bay 1'}</span>
+                      </span>
+                      <span className="flex items-center gap-1 shrink-0 ml-2" title={bus.operations_manager || 'Sunil Yadav'}>
+                        <User className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{bus.operations_manager || 'Sunil Yadav'}</span>
+                      </span>
+                    </div>
+
+                    {/* Service Rows (Matching Image 2) */}
+                    <div className="space-y-2 text-xs">
+                      {(bus.services || []).map((service: any, sIdx: number) => {
+                        let dotClass = 'bg-emerald-500';
+                        let textClass = 'text-emerald-600';
+                        if (service.isOverdue) {
+                          dotClass = 'bg-rose-500';
+                          textClass = 'text-rose-600';
+                        } else if (service.isDueSoon) {
+                          dotClass = 'bg-amber-500';
+                          textClass = 'text-amber-600';
+                        }
+
+                        const nextDueLabel =
+                          service.intervalType === 'km'
+                            ? `${Number(service.nextDueKm || 0).toLocaleString('en-IN')} KM`
+                            : (service.intervalLabel || 'Weekly');
+
+                        return (
+                          <div key={sIdx} className="flex items-center justify-between gap-2 py-0.5">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`} />
+                              <span className="text-slate-700 font-medium truncate" title={service.name}>
+                                {service.name}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0 text-right">
+                              <span className="text-slate-500 text-[11px] font-medium font-mono">
+                                {nextDueLabel}
+                              </span>
+                              <span className={`text-[11px] font-bold w-16 text-right ${textClass}`}>
+                                {service.status}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Card Footer */}
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-xs text-slate-500 font-medium">
+                      {overdueCount > 0
+                        ? `${overdueCount} service${overdueCount > 1 ? 's' : ''} overdue`
+                        : `${dueSoonCount} service${dueSoonCount > 1 ? 's' : ''} due soon`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate(
+                          `/admin/vehicle-maintenance?vehicle=${encodeURIComponent(
+                            bus.registration_number || bus.bus_number
+                          )}`
+                        )
+                      }
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Open profile</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
     </div>

@@ -17,7 +17,9 @@ import {
   BASE_SERVICE_RECORDS,
   BASE_CAPTAIN_AUDITS,
   BASE_STAFF_CREDENTIALS,
-  BASE_APP_SETTINGS
+  BASE_APP_SETTINGS,
+  BASE_FLEET_MAINTENANCE_BUSES,
+  BASE_FLEET_MAINTENANCE_HISTORY
 } from './seedData';
 
 /**
@@ -1928,6 +1930,290 @@ export const api = {
   createMaintenanceSchedule: (data: any) => request<any>('/maintenance-schedules', { method: 'POST', body: JSON.stringify(data) }),
   updateMaintenanceSchedule: (id: number | string, data: any) => request<any>(`/maintenance-schedules/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteMaintenanceSchedule: (id: number | string) => request<any>(`/maintenance-schedules/${id}`, { method: 'DELETE' }),
+
+  // Fleet Vehicle Maintenance (Overview, 9 Services & Detail Profiles)
+  getFleetMaintenance: async () => {
+    try {
+      const res = await request<{ summary: any; buses: any[] }>('/fleet-maintenance');
+      if (res && Array.isArray(res.buses) && res.buses.length > 0) {
+        localStorage.setItem('charvik_fleet_maintenance_cache', JSON.stringify(res));
+        return res;
+      }
+    } catch {}
+
+    try {
+      const cached = localStorage.getItem('charvik_fleet_maintenance_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.buses) && parsed.buses.length > 0) return parsed;
+      }
+    } catch {}
+
+    // Synthesize dataset with KM synchronized from Daily Vehicle Checkup
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    const SPECS = [
+      { key: 'general_bus_service', name: 'General Bus Service', intervalType: 'km', interval: 120000, label: 'Every 1,20,000 KM' },
+      { key: 'diesel_filter_replacement', name: 'Diesel Filter Replacement', intervalType: 'km', interval: 30000, label: 'Every 30,000 KM' },
+      { key: 'adblue_filter_replacement', name: 'AdBlue Filter Replacement', intervalType: 'km', interval: 30000, label: 'Every 30,000 KM' },
+      { key: 'dpf_filter_cleaning', name: 'DPF Filter Cleaning', intervalType: 'km', interval: 100000, label: 'Every 1,00,000 KM' },
+      { key: 'wheel_alignment', name: 'Wheel Alignment', intervalType: 'km', interval: 10000, label: 'Every 10,000 KM' },
+      { key: 'tyre_rotation', name: 'Tyre Rotation', intervalType: 'km', interval: 10000, label: 'Every 10,000 KM' },
+      { key: 'ac_filter_cleaning', name: 'AC Filter Cleaning', intervalType: 'date', interval: 7, label: 'Every week' },
+      { key: 'radiator_cleaning', name: 'Radiator Cleaning', intervalType: 'km', interval: 100000, label: 'Every 1,00,000 KM' },
+      { key: 'ac_general_service', name: 'AC General Service', intervalType: 'date', interval: 30, label: 'Monthly' }
+    ];
+
+    let cachedHistory: any[] = [];
+    try {
+      const hRaw = localStorage.getItem('charvik_fleet_maintenance_history_cache');
+      cachedHistory = hRaw ? JSON.parse(hRaw) : BASE_FLEET_MAINTENANCE_HISTORY;
+    } catch {
+      cachedHistory = BASE_FLEET_MAINTENANCE_HISTORY;
+    }
+
+    let fleetDueSoon = 0;
+    let fleetOverdue = 0;
+    let vehiclesNeedingAttention = 0;
+
+    const buses = BASE_FLEET_MAINTENANCE_BUSES.map((b) => {
+      let busKm = Number(b.current_odometer_km) || 0;
+      try {
+        const insRaw = localStorage.getItem('charvik_inspections_data');
+        if (insRaw) {
+          const insList = JSON.parse(insRaw);
+          const match = insList.find(
+            (i: any) => i.vehicle_number === b.bus_number || i.vehicle_number === b.registration_number || String(i.bus_id) === String(b.id)
+          );
+          if (match && (Number(match.starting_km) > 0 || Number(match.odometer_km) > 0)) {
+            busKm = Math.max(busKm, Number(match.starting_km || match.odometer_km));
+          }
+        }
+      } catch {}
+
+      const busHist = cachedHistory.filter((h: any) => h.bus_id === b.id || h.bus_number === b.bus_number || h.registration_number === b.registration_number);
+
+      let busOverdue = 0;
+      let busDueSoon = 0;
+
+      const services = SPECS.map((spec) => {
+        const latest = busHist.find(
+          (h: any) => (h.service_type || '').toLowerCase() === spec.name.toLowerCase() || (h.service_type || '').toLowerCase() === spec.key.toLowerCase()
+        );
+
+        let lastDoneKm = latest ? Number(latest.odometer_km) || 0 : Math.max(0, busKm - (spec.intervalType === 'km' ? Math.round(spec.interval * 0.7) : 0));
+        let lastDoneDate = latest?.completion_date || b.last_service_date || '2026-10-01';
+
+        if (!latest && b.bus_number === 'DL01A1024') {
+          if (spec.key === 'general_bus_service') { lastDoneKm = 190000; lastDoneDate = '2025-09-13'; }
+          else if (spec.key === 'diesel_filter_replacement') { lastDoneKm = 270000; lastDoneDate = '2026-06-20'; }
+          else if (spec.key === 'adblue_filter_replacement') { lastDoneKm = 285000; lastDoneDate = '2026-08-04'; }
+          else if (spec.key === 'dpf_filter_cleaning') { lastDoneKm = 232000; lastDoneDate = '2026-02-20'; }
+          else if (spec.key === 'wheel_alignment') { lastDoneKm = 305000; lastDoneDate = '2026-10-08'; }
+          else if (spec.key === 'tyre_rotation') { lastDoneKm = 304000; lastDoneDate = '2026-10-06'; }
+          else if (spec.key === 'ac_filter_cleaning') { lastDoneKm = 312000; lastDoneDate = '2026-11-01'; }
+          else if (spec.key === 'radiator_cleaning') { lastDoneKm = 220000; lastDoneDate = '2026-01-15'; }
+          else if (spec.key === 'ac_general_service') { lastDoneKm = 310000; lastDoneDate = '2026-10-10'; }
+        } else if (!latest && b.bus_number === 'HR55X1200') {
+          if (spec.key === 'general_bus_service') { lastDoneKm = 5000; lastDoneDate = '2026-05-10'; }
+          else if (spec.key === 'diesel_filter_replacement') { lastDoneKm = 36000; lastDoneDate = '2026-08-15'; }
+          else if (spec.key === 'adblue_filter_replacement') { lastDoneKm = 36000; lastDoneDate = '2026-08-15'; }
+          else if (spec.key === 'dpf_filter_cleaning') { lastDoneKm = 15000; lastDoneDate = '2026-04-01'; }
+          else if (spec.key === 'wheel_alignment') { lastDoneKm = 61000; lastDoneDate = '2026-10-20'; }
+          else if (spec.key === 'tyre_rotation') { lastDoneKm = 55000; lastDoneDate = '2026-09-12'; }
+          else if (spec.key === 'ac_filter_cleaning') { lastDoneKm = 65000; lastDoneDate = '2026-11-05'; }
+          else if (spec.key === 'radiator_cleaning') { lastDoneKm = 0; lastDoneDate = '2026-01-01'; }
+          else if (spec.key === 'ac_general_service') { lastDoneKm = 60000; lastDoneDate = '2026-10-20'; }
+        } else if (!latest && b.bus_number === 'MH12Q8811') {
+          if (spec.key === 'general_bus_service') { lastDoneKm = 12000; lastDoneDate = '2026-06-15'; }
+          else if (spec.key === 'diesel_filter_replacement') { lastDoneKm = 60000; lastDoneDate = '2026-09-01'; }
+          else if (spec.key === 'adblue_filter_replacement') { lastDoneKm = 78000; lastDoneDate = '2026-10-15'; }
+          else if (spec.key === 'dpf_filter_cleaning') { lastDoneKm = 40000; lastDoneDate = '2026-07-20'; }
+          else if (spec.key === 'wheel_alignment') { lastDoneKm = 82500; lastDoneDate = '2026-10-25'; }
+          else if (spec.key === 'tyre_rotation') { lastDoneKm = 77000; lastDoneDate = '2026-09-20'; }
+          else if (spec.key === 'ac_filter_cleaning') { lastDoneKm = 87000; lastDoneDate = '2026-10-30'; }
+          else if (spec.key === 'radiator_cleaning') { lastDoneKm = 0; lastDoneDate = '2026-01-01'; }
+          else if (spec.key === 'ac_general_service') { lastDoneKm = 85000; lastDoneDate = '2026-10-09'; }
+        }
+
+        let nextDueKm = 0;
+        let nextDueDate = '';
+        let status = 'OK';
+        let statusText = 'OK';
+        let progressPercent = 0;
+        let isOverdue = false;
+        let isDueSoon = false;
+
+        if (spec.intervalType === 'km') {
+          nextDueKm = lastDoneKm + spec.interval;
+          const diffKm = nextDueKm - busKm;
+          const runKm = Math.max(0, busKm - lastDoneKm);
+          progressPercent = Math.min(100, Math.round((runKm / spec.interval) * 100));
+
+          if (busKm >= nextDueKm) {
+            status = 'Overdue';
+            isOverdue = true;
+            statusText = `Overdue by ${(busKm - nextDueKm).toLocaleString('en-IN')} KM`;
+          } else if (diffKm <= 2000) {
+            status = 'Due Soon';
+            isDueSoon = true;
+            statusText = `Due in ${diffKm.toLocaleString('en-IN')} KM`;
+          } else {
+            status = 'OK';
+            statusText = `Next due at ${nextDueKm.toLocaleString('en-IN')} KM`;
+          }
+        } else {
+          const lastDateObj = new Date(lastDoneDate);
+          const nextDateObj = new Date(lastDateObj);
+          nextDateObj.setDate(nextDateObj.getDate() + spec.interval);
+          nextDueDate = nextDateObj.toISOString().split('T')[0];
+
+          const diffMs = nextDateObj.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffMs / (1000 * 3600 * 24));
+          const totalDays = spec.interval;
+          const daysPassed = Math.max(0, totalDays - diffDays);
+          progressPercent = Math.min(100, Math.round((daysPassed / totalDays) * 100));
+
+          if (diffDays < 0) {
+            status = 'Overdue';
+            isOverdue = true;
+            statusText = `Overdue by ${Math.abs(diffDays)} days`;
+          } else if (diffDays === 0) {
+            status = 'Due Soon';
+            isDueSoon = true;
+            statusText = 'Due today';
+          } else if (diffDays <= 2) {
+            status = 'Due Soon';
+            isDueSoon = true;
+            statusText = `Due in ${diffDays} day${diffDays > 1 ? 's' : ''}`;
+          } else {
+            status = 'OK';
+            statusText = 'OK';
+          }
+        }
+
+        if (isOverdue) busOverdue++;
+        if (isDueSoon) busDueSoon++;
+
+        return {
+          key: spec.key,
+          name: spec.name,
+          intervalType: spec.intervalType,
+          interval: spec.interval,
+          intervalLabel: spec.label,
+          lastDoneKm,
+          lastDoneDate,
+          nextDueKm,
+          nextDueDate,
+          status,
+          statusText,
+          progressPercent,
+          isOverdue,
+          isDueSoon
+        };
+      });
+
+      if (busOverdue > 0) fleetOverdue += busOverdue;
+      if (busDueSoon > 0) fleetDueSoon += busDueSoon;
+      if (busOverdue > 0 || busDueSoon > 0) vehiclesNeedingAttention++;
+
+      let busStatus = 'Healthy';
+      if (busOverdue > 0) busStatus = 'Needs Attention';
+      else if (busDueSoon > 0) busStatus = 'Due Soon';
+
+      return {
+        ...b,
+        current_odometer_km: busKm,
+        status: busStatus,
+        overdueCount: busOverdue,
+        dueSoonCount: busDueSoon,
+        services,
+        history: busHist
+      };
+    });
+
+    const synthesized = {
+      summary: {
+        totalBuses: buses.length,
+        servicesDueSoon: fleetDueSoon,
+        overdueServices: fleetOverdue,
+        servicesCompleted: cachedHistory.length,
+        vehiclesNeedingAttention
+      },
+      buses
+    };
+
+    localStorage.setItem('charvik_fleet_maintenance_cache', JSON.stringify(synthesized));
+    return synthesized;
+  },
+
+  getFleetMaintenanceHistory: async (busId?: number | string) => {
+    try {
+      const q = busId ? `?bus_id=${busId}` : '';
+      const res = await request<any[]>(`/fleet-maintenance/history${q}`);
+      if (Array.isArray(res) && res.length > 0) {
+        localStorage.setItem('charvik_fleet_maintenance_history_cache', JSON.stringify(res));
+        return res;
+      }
+    } catch {}
+
+    try {
+      const cached = localStorage.getItem('charvik_fleet_maintenance_history_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (busId) return parsed.filter((p: any) => String(p.bus_id) === String(busId));
+          return parsed;
+        }
+      }
+    } catch {}
+
+    if (busId) return BASE_FLEET_MAINTENANCE_HISTORY.filter((p: any) => String(p.bus_id) === String(busId));
+    return BASE_FLEET_MAINTENANCE_HISTORY;
+  },
+
+  completeFleetMaintenance: async (data: any) => {
+    try {
+      const res = await request<any>('/fleet-maintenance/complete', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      // Invalidate cache
+      localStorage.removeItem('charvik_fleet_maintenance_cache');
+      return res;
+    } catch {
+      let list = [...BASE_FLEET_MAINTENANCE_HISTORY];
+      try {
+        const cached = localStorage.getItem('charvik_fleet_maintenance_history_cache');
+        if (cached) list = JSON.parse(cached);
+      } catch {}
+      const newEntry = {
+        id: Date.now(),
+        ...data,
+        photos_json: Array.isArray(data.photos) ? JSON.stringify(data.photos) : '[]',
+        created_at: new Date().toISOString()
+      };
+      list.unshift(newEntry);
+      localStorage.setItem('charvik_fleet_maintenance_history_cache', JSON.stringify(list));
+      localStorage.removeItem('charvik_fleet_maintenance_cache');
+      return { success: true, id: newEntry.id };
+    }
+  },
+
+  createFleetVehicle: async (data: any) => {
+    try {
+      const res = await request<any>('/fleet-maintenance/vehicle', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      localStorage.removeItem('charvik_fleet_maintenance_cache');
+      return res;
+    } catch {
+      localStorage.removeItem('charvik_fleet_maintenance_cache');
+      return { success: true, id: Date.now() };
+    }
+  },
 
   // Tyre Maintenance
   getTyreRecords: (params?: { bus_id?: number | string }) => {

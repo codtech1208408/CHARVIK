@@ -9,7 +9,8 @@ import {
   CircleDot,
   Package,
   ShieldCheck,
-  FileText
+  FileText,
+  Wrench
 } from 'lucide-react';
 
 export interface ModuleCategoryItem {
@@ -55,6 +56,14 @@ export const ALL_MODULE_CATEGORIES: ModuleCategoryItem[] = [
     description: 'Partner operators and organizers'
   },
   {
+    id: 'vehicle_maintenance',
+    name: 'Vehicle Maintenance',
+    route: '/admin/vehicle-maintenance',
+    icon: Wrench,
+    activeRoutes: ['/admin/vehicle-maintenance'],
+    description: 'Fleet maintenance overview, service status & intervals'
+  },
+  {
     id: 'daily_vehicle_checkup',
     name: 'Daily Vehicle Checkup',
     route: '/admin/daily-vehicle-checkup',
@@ -63,36 +72,12 @@ export const ALL_MODULE_CATEGORIES: ModuleCategoryItem[] = [
     description: 'Daily inspection and bus condition checklists'
   },
   {
-    id: 'mileage_fueling',
-    name: 'Mileage & Fueling',
-    route: '/admin/mileage-fueling',
-    icon: Fuel,
-    activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers'],
-    description: 'Kilometer tracking and fuel entries'
-  },
-  {
-    id: 'ac_maintenance',
-    name: 'AC Maintenance',
-    route: '/admin/ac-maintenance',
-    icon: Snowflake,
-    activeRoutes: ['/admin/ac-maintenance'],
-    description: 'Air conditioning servicing and filter updates'
-  },
-  {
-    id: 'tyre_maintenance',
-    name: 'Tyre Maintenance',
-    route: '/admin/tyre-maintenance',
-    icon: CircleDot,
-    activeRoutes: ['/admin/tyre-maintenance'],
-    description: 'Tyre rotation, air checkup, and renewals'
-  },
-  {
-    id: 'product_management',
-    name: 'Product Management',
-    route: '/admin/products',
+    id: 'new_tyres',
+    name: 'New Tyres',
+    route: '/admin/new-tyres',
     icon: Package,
-    activeRoutes: ['/admin/products'],
-    description: 'Spare parts, inventory, and materials'
+    activeRoutes: ['/admin/new-tyres', '/admin/tyres/new'],
+    description: 'New tyre inventory, specifications, purchases & allotments'
   },
   {
     id: 'captain_audit_record',

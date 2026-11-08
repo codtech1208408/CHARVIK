@@ -836,5 +836,267 @@ export function initDatabase() {
     try {
       db.prepare("ALTER TABLE inventory_product_usage ADD COLUMN reused_product_name TEXT DEFAULT ''").run();
     } catch {}
+
+    // Add extra columns to buses for fleet maintenance profile
+    try {
+      db.prepare("ALTER TABLE buses ADD COLUMN parking_location TEXT DEFAULT 'Delhi Depot - Bay 1'").run();
+    } catch {}
+    try {
+      db.prepare("ALTER TABLE buses ADD COLUMN operations_manager TEXT DEFAULT 'Operations Manager'").run();
+    } catch {}
+    try {
+      db.prepare("ALTER TABLE buses ADD COLUMN last_service_date DATE").run();
+    } catch {}
+    try {
+      db.prepare("ALTER TABLE buses ADD COLUMN last_service_km INTEGER DEFAULT 0").run();
+    } catch {}
+
+    // Fleet Maintenance Completion History (supports up to 3 photos in photos_json)
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS fleet_maintenance_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        bus_id INTEGER NOT NULL,
+        bus_number TEXT,
+        registration_number TEXT,
+        service_type TEXT NOT NULL,
+        completion_date DATE NOT NULL,
+        odometer_km INTEGER NOT NULL,
+        cost REAL DEFAULT 0,
+        workshop TEXT DEFAULT '',
+        mechanic_name TEXT DEFAULT '',
+        remarks TEXT DEFAULT '',
+        photos_json TEXT DEFAULT '[]',
+        next_due_km INTEGER,
+        next_due_date DATE,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    // Seed Fleet Buses from Video if not present
+    const seedFleet = [
+      {
+        bus_number: 'DL01A1024',
+        registration_number: 'DL01A1024',
+        make: 'Scania',
+        model: 'Scania Metrolink HD',
+        chassis_number: 'YS2S4X2000551024',
+        engine_number: 'DC091209451',
+        current_odometer_km: 312000,
+        parking_location: 'Delhi Depot – Bay 1',
+        operations_manager: 'Priya Sharma',
+        last_service_date: '2026-10-13',
+        last_service_km: 305000,
+        driver_name: 'Sunil Yadav'
+      },
+      {
+        bus_number: 'HR55X1200',
+        registration_number: 'HR55X1200',
+        make: 'Tata',
+        model: 'Tata LPO 1618 Luxury',
+        chassis_number: 'MAT447803P22X1200',
+        engine_number: 'CUM57013ISBE',
+        current_odometer_km: 65300,
+        parking_location: 'Gurugram Hub – Bay 1',
+        operations_manager: 'Priya Sharma',
+        last_service_date: '2026-10-30',
+        last_service_km: 61000,
+        driver_name: 'Rahul Chauhan'
+      },
+      {
+        bus_number: 'MH12Q8811',
+        registration_number: 'MH12Q8811',
+        make: 'Tata',
+        model: 'Tata LPO 1618 Luxury',
+        chassis_number: 'MAT447802P12G8811',
+        engine_number: 'CUM56882ISBE',
+        current_odometer_km: 87500,
+        parking_location: 'Pune Station – Bay 3',
+        operations_manager: 'Priya Sharma',
+        last_service_date: '2026-10-28',
+        last_service_km: 85000,
+        driver_name: 'Vikram Patil'
+      },
+      {
+        bus_number: 'UP16T9988',
+        registration_number: 'UP16T9988',
+        make: 'BharatBenz',
+        model: 'BharatBenz 1624 Sleeper',
+        chassis_number: 'WDB162491MK669988',
+        engine_number: 'OM926LA91002',
+        current_odometer_km: 276400,
+        parking_location: 'Lucknow Yard – Bay 1',
+        operations_manager: 'Priya Sharma',
+        last_service_date: '2026-10-08',
+        last_service_km: 270000,
+        driver_name: 'Amit Singh'
+      },
+      {
+        bus_number: 'KA01F4492',
+        registration_number: 'KA01F4492',
+        make: 'BharatBenz',
+        model: 'BharatBenz 1624 Sleeper',
+        chassis_number: 'WDB162490LK445921',
+        engine_number: 'OM926LA88214',
+        current_odometer_km: 128600,
+        parking_location: 'Bengaluru Hub – Gate 2',
+        operations_manager: 'Priya Sharma',
+        last_service_date: '2026-10-26',
+        last_service_km: 125000,
+        driver_name: 'Manoj Reddy'
+      },
+      {
+        bus_number: 'NL01B3309',
+        registration_number: 'NL01B3309',
+        make: 'Volvo',
+        model: 'Volvo 9600 Multi-Axle',
+        chassis_number: 'YV4VS5GL2HA123456',
+        engine_number: 'D11C4401937',
+        current_odometer_km: 245000,
+        parking_location: 'Delhi Depot – Bay 4',
+        operations_manager: 'Priya Sharma',
+        last_service_date: '2026-10-18',
+        last_service_km: 240000,
+        driver_name: 'Rajesh Kumar'
+      }
+    ];
+
+    for (const b of seedFleet) {
+      const existing = db.prepare('SELECT id FROM buses WHERE bus_number = ? OR registration_number = ?').get(b.bus_number, b.registration_number);
+      if (!existing) {
+        db.prepare(`
+          INSERT INTO buses (
+            bus_number, registration_number, make, model, chassis_number, engine_number,
+            current_odometer_km, parking_location, operations_manager, last_service_date, last_service_km, operational_status
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active')
+        `).run(
+          b.bus_number, b.registration_number, b.make, b.model, b.chassis_number, b.engine_number,
+          b.current_odometer_km, b.parking_location, b.operations_manager, b.last_service_date, b.last_service_km
+        );
+      }
+    }
+
+    // Seed initial maintenance history for DL01A1024 if empty
+    const dl01 = db.prepare("SELECT id FROM buses WHERE bus_number = 'DL01A1024'").get() as any;
+    if (dl01) {
+      const histCount = db.prepare('SELECT COUNT(*) as cnt FROM fleet_maintenance_history WHERE bus_id = ?').get(dl01.id) as any;
+      if (!histCount || histCount.cnt === 0) {
+        const histItems = [
+          {
+            service_type: 'AC Filter Cleaning',
+            completion_date: '2026-11-01',
+            odometer_km: 312000,
+            cost: 750,
+            workshop: 'Charvik Central Workshop',
+            mechanic_name: 'B. Singh',
+            remarks: 'Weekly wash.',
+            next_due_date: '2026-11-08'
+          },
+          {
+            service_type: 'Wheel Alignment',
+            completion_date: '2026-10-08',
+            odometer_km: 305000,
+            cost: 2600,
+            workshop: 'Patel Auto Works',
+            mechanic_name: 'V. Patel',
+            remarks: 'Alignment done.',
+            next_due_km: 315000
+          },
+          {
+            service_type: 'Tyre Rotation',
+            completion_date: '2026-10-06',
+            odometer_km: 304000,
+            cost: 1700,
+            workshop: 'Patel Auto Works',
+            mechanic_name: 'V. Patel',
+            remarks: 'Rotation done.',
+            next_due_km: 314000
+          },
+          {
+            service_type: 'AdBlue Filter Replacement',
+            completion_date: '2026-08-04',
+            odometer_km: 285000,
+            cost: 5400,
+            workshop: 'Sharma Diesel Services',
+            mechanic_name: 'M. Sharma',
+            remarks: 'Filter replaced.',
+            next_due_km: 315000
+          },
+          {
+            service_type: 'Diesel Filter Replacement',
+            completion_date: '2026-06-20',
+            odometer_km: 270000,
+            cost: 4100,
+            workshop: 'Sharma Diesel Services',
+            mechanic_name: 'M. Sharma',
+            remarks: 'Replaced during line check.',
+            next_due_km: 300000
+          },
+          {
+            service_type: 'DPF Filter Cleaning',
+            completion_date: '2026-02-20',
+            odometer_km: 232000,
+            cost: 9200,
+            workshop: 'Metro Bus Service Centre',
+            mechanic_name: 'T. Verma',
+            remarks: 'Regeneration completed.',
+            next_due_km: 332000
+          },
+          {
+            service_type: 'General Bus Service',
+            completion_date: '2025-09-13',
+            odometer_km: 190000,
+            cost: 21000,
+            workshop: 'Charvik Central Workshop',
+            mechanic_name: 'S. Ramesh',
+            remarks: 'Major service — next cycle now overdue.',
+            next_due_km: 310000
+          },
+          {
+            service_type: 'Radiator Cleaning',
+            completion_date: '2026-01-15',
+            odometer_km: 220000,
+            cost: 3500,
+            workshop: 'Charvik Central Workshop',
+            mechanic_name: 'S. Ramesh',
+            remarks: 'Radiator flush and fin cleaning done.',
+            next_due_km: 320000
+          },
+          {
+            service_type: 'AC General Service',
+            completion_date: '2026-10-10',
+            odometer_km: 310000,
+            cost: 4500,
+            workshop: 'CoolAir Systems',
+            mechanic_name: 'R. Verma',
+            remarks: 'Full gas charge and blower checkup.',
+            next_due_date: '2026-11-09'
+          }
+        ];
+
+        const insertHist = db.prepare(`
+          INSERT INTO fleet_maintenance_history (
+            bus_id, bus_number, registration_number, service_type, completion_date,
+            odometer_km, cost, workshop, mechanic_name, remarks, photos_json, next_due_km, next_due_date
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?)
+        `);
+
+        for (const h of histItems) {
+          insertHist.run(
+            dl01.id,
+            'DL01A1024',
+            'DL01A1024',
+            h.service_type,
+            h.completion_date,
+            h.odometer_km,
+            h.cost,
+            h.workshop,
+            h.mechanic_name,
+            h.remarks,
+            h.next_due_km || null,
+            h.next_due_date || null
+          );
+        }
+      }
+    }
   } catch (e) {}
 }

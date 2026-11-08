@@ -20,6 +20,8 @@ import { BusMaster } from './pages/BusMaster';
 import { DailyKilometers } from './pages/DailyKilometers';
 import { MaintenanceSchedule } from './pages/MaintenanceSchedule';
 import { TyreMaintenance } from './pages/TyreMaintenance';
+import { NewTyres } from './pages/NewTyres';
+import { VehicleMaintenance } from './pages/VehicleMaintenance';
 import { AcMaintenance } from './pages/AcMaintenance';
 import { OilFilterMaintenance } from './pages/OilFilterMaintenance';
 import { BatteryMaintenance } from './pages/BatteryMaintenance';
@@ -74,7 +76,9 @@ export function App() {
               <Route path="buses" element={<BusMaster />} />
               <Route path="vehicle-registration" element={<Navigate to="/admin/vehicles" replace />} />
               <Route path="vehicle-management" element={<Navigate to="/admin/vehicles" replace />} />
-              <Route path="vehicle-maintenance" element={<Navigate to="/admin/mileage-fueling" replace />} />
+              <Route path="vehicle-maintenance" element={<VehicleMaintenance />} />
+              <Route path="new-tyres" element={<NewTyres />} />
+              <Route path="tyres/new" element={<Navigate to="/admin/new-tyres" replace />} />
               <Route path="mileage-fueling" element={<DailyKilometers />} />
               <Route path="daily-kilometers" element={<DailyKilometers />} />
               <Route path="tyre-maintenance" element={<TyreMaintenance />} />
