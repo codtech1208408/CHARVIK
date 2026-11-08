@@ -423,11 +423,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     !isDashboard &&
     !isCaptain &&
     !isOperator &&
-    (location.pathname.startsWith('/admin/mileage-fueling') ||
-      location.pathname.startsWith('/admin/daily-kilometers') ||
+    (location.pathname.startsWith('/admin/new-tyres') ||
+      location.pathname.startsWith('/admin/tyres/new') ||
+      location.pathname.startsWith('/admin/vehicle-maintenance') ||
       location.pathname.startsWith('/admin/daily-vehicle-checkup') ||
       location.pathname.startsWith('/admin/vehicle-checkup') ||
-      location.pathname.startsWith('/admin/vehicle-maintenance') ||
+      location.pathname.startsWith('/admin/bus-condition') ||
+      location.pathname.startsWith('/admin/mileage-fueling') ||
+      location.pathname.startsWith('/admin/daily-kilometers') ||
       location.pathname.startsWith('/admin/tyre-maintenance') ||
       location.pathname.startsWith('/admin/products') ||
       location.pathname.startsWith('/admin/cleaning') ||
@@ -436,8 +439,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       location.pathname.startsWith('/admin/oil-filter-maintenance') ||
       location.pathname.startsWith('/admin/battery-maintenance') ||
       location.pathname.startsWith('/admin/complaints') ||
-      location.pathname.startsWith('/admin/repairs') ||
-      location.pathname.startsWith('/admin/bus-condition'));
+      location.pathname.startsWith('/admin/repairs'));
 
   const isOperatorPortal = isOperator;
   const showOperatorNav = isOperatorPortal || (isOperatorUser && !isAdmin);
@@ -576,10 +578,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </NavLink>
 
               {!isCollapsed && (
-                <div className="px-3.5 py-2 flex items-center gap-2 rounded-2xl bg-blue-50/80 border border-blue-200/90 text-[#142B4A]">
-                  <Wrench className="w-4 h-4 text-blue-600 shrink-0" />
-                  <span className="text-xs font-black uppercase tracking-wider">Vehicle Maintenance</span>
-                </div>
+                <NavLink
+                  to="/admin/vehicle-maintenance"
+                  onClick={() => setIsMobileOpen(false)}
+                  className={`px-3.5 py-2 flex items-center justify-between rounded-2xl border transition-all cursor-pointer ${
+                    location.pathname === '/admin/vehicle-maintenance'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                      : 'bg-blue-50/80 border-blue-200/90 text-[#142B4A] hover:bg-blue-100/80'
+                  }`}
+                  title="Vehicle Maintenance Overview"
+                >
+                  <div className="flex items-center gap-2">
+                    <Wrench className={`w-4 h-4 shrink-0 ${location.pathname === '/admin/vehicle-maintenance' ? 'text-white' : 'text-blue-600'}`} />
+                    <span className="text-xs font-black uppercase tracking-wider">Vehicle Maintenance</span>
+                  </div>
+                  {location.pathname === '/admin/vehicle-maintenance' && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white ml-1.5 shrink-0" />
+                  )}
+                </NavLink>
               )}
             </div>
           )}

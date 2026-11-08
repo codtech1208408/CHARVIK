@@ -115,6 +115,9 @@ export const AdminLayout: React.FC = () => {
       return 'Dashboard';
     }
     if (p.includes('/vehicles') || p.includes('/buses')) return isCaptainPortal ? 'Vehicle Management' : isOperatorPortal ? 'Fleet Overview' : 'Vehicle Management';
+    if (p.includes('/vehicle-maintenance')) return 'Vehicle Maintenance';
+    if (p.includes('/daily-vehicle-checkup') || p.includes('/vehicle-checkup')) return 'Daily Vehicle Checkup';
+    if (p.includes('/new-tyres') || p.includes('/tyres/new')) return 'New Tyres';
     if (p.includes('/mileage-fueling') || p.includes('/daily-kilometers')) return 'Mileage & Fueling';
     if (p.includes('/tyre-maintenance')) return 'Tyre Maintenance';
     if (p.includes('/products')) return 'Product Management';
@@ -193,6 +196,8 @@ export const AdminLayout: React.FC = () => {
     if (path.startsWith('/admin/tasks')) return 'Task Management';
     if (path.startsWith('/admin/organizers')) return 'Organizer Management';
     if (path.startsWith('/admin/daily-vehicle-checkup') || path.startsWith('/admin/vehicle-checkup') || path.startsWith('/admin/bus-condition')) return 'Daily Vehicle Checkup';
+    if (path.startsWith('/admin/new-tyres') || path.startsWith('/admin/tyres/new')) return 'New Tyres';
+    if (path.startsWith('/admin/vehicle-maintenance')) return 'Vehicle Maintenance';
     if (path.startsWith('/admin/mileage-fueling') || path.startsWith('/admin/daily-kilometers')) return 'Mileage & Fueling';
     if (path.startsWith('/admin/ac-maintenance')) return 'AC Maintenance';
     if (path.startsWith('/admin/tyre-maintenance')) return 'Tyre Maintenance';
