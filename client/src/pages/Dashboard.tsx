@@ -126,6 +126,7 @@ export const Dashboard: React.FC = () => {
   const loadDashboard = async () => {
     try {
       setLoading(true);
+      localStorage.removeItem('charvik_fleet_maintenance_cache');
       const [dashData, busesList, tasksList, orgPayList, acList, allotmentsList, airList, fleetData] = await Promise.all([
         api.getDashboard().catch(() => null),
         api.getBuses().catch(() => []),
@@ -256,12 +257,22 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  // Fleet Maintenance Alert Vehicles (Filtered to within 2 days of due date or overdue - matching Image 2 & User Rule)
+  // Fleet Maintenance Alert Vehicles: ONLY vehicles that have services expiring within 2 days or overdue!
   const alertVehicles = useMemo(() => {
     const list = fleetMaintenance?.buses || [];
-    return list.filter((b: any) =>
-      (b.services || []).some((s: any) => s.isOverdue || s.isDueSoon)
-    );
+    return list
+      .map((bus: any) => {
+        // Filter bus.services so that only services expiring within 2 days or overdue are included
+        const expiringServices = (bus.services || []).filter(
+          (service: any) => service.isOverdue || service.isDueSoon
+        );
+        return {
+          ...bus,
+          services: expiringServices,
+          expiringCount: expiringServices.length
+        };
+      })
+      .filter((bus: any) => bus.expiringCount > 0);
   }, [fleetMaintenance]);
 
   // Tyre Maintenance Mini Table Rows (Matching Image 1)
@@ -619,10 +630,8 @@ export const Dashboard: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {alertVehicles.map((bus: any, idx: number) => {
-              const overdueCount =
-                Number(bus.overdueCount) || (bus.services || []).filter((s: any) => s.isOverdue).length;
-              const dueSoonCount =
-                Number(bus.dueSoonCount) || (bus.services || []).filter((s: any) => s.isDueSoon).length;
+              const overdueCount = (bus.services || []).filter((s: any) => s.isOverdue).length;
+              const dueSoonCount = (bus.services || []).filter((s: any) => s.isDueSoon).length;
 
               return (
                 <div
@@ -630,7 +639,7 @@ export const Dashboard: React.FC = () => {
                   className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between"
                 >
                   <div>
-                    {/* Header: Reg Number, Model, Needs Attention badge */}
+                    {/* Header: Reg Number, Model, Needs Attention / Due Soon badge */}
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <div>
                         <h4 className="font-black text-slate-900 text-lg tracking-wide">
@@ -641,10 +650,17 @@ export const Dashboard: React.FC = () => {
                         </p>
                       </div>
 
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200 shrink-0">
-                        <Flame className="w-3.5 h-3.5" />
-                        <span>Needs Attention</span>
-                      </span>
+                      {overdueCount > 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200 shrink-0">
+                          <Flame className="w-3.5 h-3.5" />
+                          <span>Needs Attention</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 shrink-0">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>Due Soon</span>
+                        </span>
+                      )}
                     </div>
 
                     {/* Odometer KM Box (Synced dynamically from Daily Vehicle Checkup) */}
@@ -670,37 +686,36 @@ export const Dashboard: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Service Rows (Matching Image 2) */}
-                    <div className="space-y-1.5 text-xs">
+                    {/* Service Rows (ONLY Expiring within 2 days or Overdue) */}
+                    <div className="space-y-2 text-xs my-2">
                       {(bus.services || []).map((service: any, sIdx: number) => {
-                        let dotClass = 'bg-emerald-500';
-                        let textClass = 'text-emerald-600';
-                        if (service.isOverdue) {
-                          dotClass = 'bg-rose-500';
-                          textClass = 'text-rose-600';
-                        } else if (service.isDueSoon) {
-                          dotClass = 'bg-amber-500';
-                          textClass = 'text-amber-600';
-                        }
+                        const isOverdue = service.isOverdue;
+                        const dotClass = isOverdue ? 'bg-rose-500' : 'bg-amber-500';
+                        const badgeBg = isOverdue
+                          ? 'bg-rose-50 text-rose-700 border-rose-200'
+                          : 'bg-amber-50 text-amber-800 border-amber-200';
 
                         const nextDueLabel =
                           service.intervalType === 'km'
                             ? `${Number(service.nextDueKm || 0).toLocaleString('en-IN')} KM`
-                            : (service.intervalLabel || 'Weekly');
+                            : (service.statusText || service.intervalLabel || 'Due Soon');
 
                         return (
-                          <div key={sIdx} className="flex items-center justify-between gap-2 py-0.5">
+                          <div
+                            key={sIdx}
+                            className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100"
+                          >
                             <div className="flex items-center gap-2 min-w-0">
-                              <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotClass}`} />
-                              <span className="text-slate-800 font-bold truncate text-sm" title={service.name}>
+                              <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`} />
+                              <span className="text-slate-900 font-bold truncate text-xs" title={service.name}>
                                 {service.name}
                               </span>
                             </div>
-                            <div className="flex items-center gap-3 shrink-0 text-right">
-                              <span className="text-slate-500 text-xs font-medium font-mono">
+                            <div className="flex items-center gap-2 shrink-0 text-right">
+                              <span className="text-slate-500 text-[11px] font-medium font-mono">
                                 {nextDueLabel}
                               </span>
-                              <span className={`text-xs font-bold w-16 text-right ${textClass}`}>
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${badgeBg}`}>
                                 {service.status}
                               </span>
                             </div>
@@ -713,7 +728,9 @@ export const Dashboard: React.FC = () => {
                   {/* Card Footer */}
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-xs text-slate-500 font-medium">
-                      {overdueCount > 0
+                      {overdueCount > 0 && dueSoonCount > 0
+                        ? `${overdueCount} overdue • ${dueSoonCount} due soon`
+                        : overdueCount > 0
                         ? `${overdueCount} service${overdueCount > 1 ? 's' : ''} overdue`
                         : `${dueSoonCount} service${dueSoonCount > 1 ? 's' : ''} due soon`}
                     </span>

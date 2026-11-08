@@ -2008,7 +2008,7 @@ export const api = {
         );
 
         let lastDoneKm = latest ? Number(latest.odometer_km) || 0 : Math.max(0, busKm - (spec.intervalType === 'km' ? Math.round(spec.interval * 0.7) : 0));
-        let lastDoneDate = latest?.completion_date || b.last_service_date || '2026-10-01';
+        let lastDoneDate = latest?.completion_date || b.last_service_date || todayStr;
 
         if (!latest && b.bus_number === 'DL01A1024') {
           if (spec.key === 'general_bus_service') { lastDoneKm = 190000; lastDoneDate = '2025-09-13'; }
