@@ -635,31 +635,26 @@ export const DailyMaintenance: React.FC = () => {
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Vehicle Number <span className="text-rose-500">*</span>
               </label>
-              <div className="flex gap-2">
-                <select
-                  value={formData.vehicle_number}
-                  onChange={(e) => handleVehicleChange(e.target.value)}
-                  className="flex-1 text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono font-bold focus:outline-none focus:border-[#142B4A]"
-                >
-                  <option value="">-- Select Fleet Bus --</option>
-                  {buses.map((b) => {
-                    const reg = b.registration_number || b.bus_number;
-                    return (
-                      <option key={b.id} value={reg}>
-                        {reg} {b.model ? `(${b.model})` : ''}
-                      </option>
-                    );
-                  })}
-                </select>
-                <input
-                  type="text"
-                  placeholder="Or custom Reg No."
-                  value={formData.vehicle_number}
-                  onChange={(e) => setFormData({ ...formData, vehicle_number: e.target.value.toUpperCase() })}
-                  className="w-36 text-xs font-mono font-bold px-3 py-2 rounded-xl border border-slate-200 uppercase focus:outline-none focus:border-[#142B4A]"
-                  title="Or type vehicle registration manually"
-                />
-              </div>
+              <select
+                required
+                value={formData.vehicle_number}
+                onChange={(e) => handleVehicleChange(e.target.value)}
+                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:border-[#142B4A]"
+              >
+                <option value="">-- Select Vehicle --</option>
+                {buses.map((b) => {
+                  const reg = b.registration_number || b.bus_number;
+                  return (
+                    <option key={b.id} value={reg}>
+                      {reg} {b.model ? `(${b.model})` : ''}
+                    </option>
+                  );
+                })}
+                {formData.vehicle_number &&
+                  !buses.some((b) => (b.registration_number || b.bus_number) === formData.vehicle_number) && (
+                    <option value={formData.vehicle_number}>{formData.vehicle_number}</option>
+                  )}
+              </select>
             </div>
           </div>
 
@@ -846,3 +841,4 @@ export const DailyMaintenance: React.FC = () => {
 };
 
 export default DailyMaintenance;
+
