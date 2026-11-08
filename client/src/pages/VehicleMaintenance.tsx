@@ -553,15 +553,15 @@ export const VehicleMaintenance: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Dark Current Odometer Box (Matching Frame 7) */}
-          <div className="bg-[#0B1527] rounded-3xl p-6 text-white min-w-[280px] shadow-lg flex flex-col justify-between">
+          {/* Right Current Odometer Box (Aligned with Charvik Brand Colors #142B4A) */}
+          <div className="bg-[#142B4A] rounded-3xl p-6 text-white min-w-[280px] shadow-xl shadow-[#142B4A]/25 border border-white/10 flex flex-col justify-between">
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Odometer</p>
-              <div className="text-3xl sm:text-4xl font-black text-[#FACC15] font-mono tracking-tight mt-1 flex items-baseline gap-1.5">
+              <p className="text-[10px] font-black text-blue-200 uppercase tracking-widest">Current Odometer</p>
+              <div className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tight mt-1 flex items-baseline gap-1.5">
                 <span>{v.current_odometer_km.toLocaleString('en-IN')}</span>
-                <span className="text-sm font-bold text-slate-400">KM</span>
+                <span className="text-sm font-bold text-blue-300">KM</span>
               </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">
+              <p className="text-[10px] text-blue-200/80 mt-0.5">
                 Synced from Daily Vehicle Checkup
               </p>
             </div>
@@ -572,26 +572,26 @@ export const VehicleMaintenance: React.FC = () => {
                 setNewOdometerVal(v.current_odometer_km);
                 setIsUpdateOdometerOpen(true);
               }}
-              className="mt-4 w-full py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-black text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+              className="mt-4 w-full py-2.5 rounded-xl bg-white hover:bg-slate-100 text-[#142B4A] font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:shadow-lg"
             >
-              <Gauge className="w-4 h-4 text-slate-950" />
+              <Gauge className="w-4 h-4 text-[#142B4A]" />
               <span>Update Odometer</span>
             </button>
 
-            <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-800 text-center">
+            <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/15 text-center">
               <div>
                 <p className="text-xs font-black text-white font-mono">
                   {v.services[0]?.nextDueKm ? `${(v.services[0].nextDueKm / 1000).toFixed(0)}k` : '300k'}
                 </p>
-                <p className="text-[9px] font-bold text-slate-400 uppercase">Next due</p>
+                <p className="text-[9px] font-bold text-blue-200 uppercase">Next due</p>
               </div>
               <div>
                 <p className="text-xs font-black text-amber-400 font-mono">{v.dueSoonCount}</p>
-                <p className="text-[9px] font-bold text-slate-400 uppercase">Due soon</p>
+                <p className="text-[9px] font-bold text-blue-200 uppercase">Due soon</p>
               </div>
               <div>
                 <p className="text-xs font-black text-rose-400 font-mono">{v.overdueCount}</p>
-                <p className="text-[9px] font-bold text-slate-400 uppercase">Overdue</p>
+                <p className="text-[9px] font-bold text-blue-200 uppercase">Overdue</p>
               </div>
             </div>
           </div>
@@ -955,7 +955,7 @@ export const VehicleMaintenance: React.FC = () => {
                 type="number"
                 value={newOdometerVal}
                 onChange={(e) => setNewOdometerVal(e.target.value)}
-                className="w-full text-sm font-mono font-bold px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-amber-500"
+                className="w-full text-sm font-mono font-bold px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-[#142B4A]"
               />
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
@@ -969,7 +969,7 @@ export const VehicleMaintenance: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSaveOdometer}
-                className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs cursor-pointer shadow-xs"
+                className="px-5 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white font-bold text-xs cursor-pointer shadow-sm transition-all"
               >
                 Save Odometer
               </button>
