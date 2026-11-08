@@ -876,14 +876,14 @@ export const VehicleMaintenance: React.FC = () => {
             <div className="pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-slate-700">
-                  Upload Photos / Invoices <span className="text-emerald-600">(2–3 photos option)</span>
+                  Upload Photos / Invoices
                 </label>
                 <span className="text-[10px] text-slate-400">
                   {completionForm.photos.length} / 3 selected
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 mb-2">
-                Upload 2 to 3 photos (work proof, replaced parts, or invoice receipt — max 5 MB each).
+                Upload photos (work proof, replaced parts, or invoice receipt — max 5 MB each).
               </p>
 
               {completionForm.photos.length < 3 && (
