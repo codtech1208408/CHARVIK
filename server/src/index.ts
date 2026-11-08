@@ -1517,6 +1517,224 @@ app.delete('/api/records/:id', (req: Request, res: Response) => {
   }
 });
 
+// ================= VYSHNAVI TRAVELS CRUD =================
+// 1. Records
+app.get('/api/vyshnavi/records', (req: Request, res: Response) => {
+  try {
+    const rows = db.prepare('SELECT * FROM vyshnavi_service_records ORDER BY id DESC').all() as any[];
+    const parsed = rows.map((r) => {
+      let items = [];
+      try { items = JSON.parse(r.items_json || '[]'); } catch (_) {}
+      return { ...r, items };
+    });
+    return res.json(parsed);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/vyshnavi/records/:id', (req: Request, res: Response) => {
+  try {
+    const row = db.prepare('SELECT * FROM vyshnavi_service_records WHERE id = ?').get(req.params.id) as any;
+    if (!row) return res.status(404).json({ error: 'Vyshnavi record not found' });
+    let items = [];
+    try { items = JSON.parse(row.items_json || '[]'); } catch (_) {}
+    return res.json({ ...row, items });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/vyshnavi/records', (req: Request, res: Response) => {
+  const r = req.body;
+  if (!r.bill_to_name) {
+    return res.status(400).json({ error: 'Bill to name is required' });
+  }
+  try {
+    const id = r.id || Date.now();
+    const record_number = r.record_number || `VT-REC-${new Date().getFullYear()}-${String(id).slice(-4)}`;
+    const items_json = JSON.stringify(Array.isArray(r.items) ? r.items : []);
+    
+    db.prepare(`
+      INSERT INTO vyshnavi_service_records (
+        id, record_number, record_date, period_month, bill_to_name, bill_to_address,
+        bill_to_phone, bill_to_pan, items_json, total_staff_count, total_amount,
+        amount_in_words, received_amount, balance_amount, payment_status,
+        bank_name, bank_account_name, bank_account_no, bank_ifsc, bank_branch,
+        upi_id, qr_code_url, remarks
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      record_number,
+      r.record_date || new Date().toISOString().split('T')[0],
+      r.period_month || '',
+      r.bill_to_name,
+      r.bill_to_address || '',
+      r.bill_to_phone || '',
+      r.bill_to_pan || '',
+      items_json,
+      Number(r.total_staff_count || 0),
+      Number(r.total_amount || 0),
+      r.amount_in_words || '',
+      Number(r.received_amount || 0),
+      Number(r.balance_amount || 0),
+      r.payment_status || 'Pending',
+      r.bank_name || 'Kotak Mahindra Bank',
+      r.bank_account_name || 'Vyshnavi Travels',
+      r.bank_account_no || '2848153146',
+      r.bank_ifsc || 'KKBK0007460',
+      r.bank_branch || 'VANAS',
+      r.upi_id || '9000202241@ybl',
+      r.qr_code_url || '',
+      r.remarks || ''
+    );
+    logAudit('CREATE_VYSHNAVI_RECORD', 'Vyshnavi Travels', id, `Created billing record ${record_number}`);
+    return res.status(201).json({ id, record_number, ...r, items: Array.isArray(r.items) ? r.items : [] });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/vyshnavi/records/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const r = req.body;
+  try {
+    const items_json = JSON.stringify(Array.isArray(r.items) ? r.items : []);
+    db.prepare(`
+      UPDATE vyshnavi_service_records SET
+        record_number = ?, record_date = ?, period_month = ?, bill_to_name = ?,
+        bill_to_address = ?, bill_to_phone = ?, bill_to_pan = ?, items_json = ?,
+        total_staff_count = ?, total_amount = ?, amount_in_words = ?, received_amount = ?,
+        balance_amount = ?, payment_status = ?, bank_name = ?, bank_account_name = ?,
+        bank_account_no = ?, bank_ifsc = ?, bank_branch = ?, upi_id = ?,
+        qr_code_url = ?, remarks = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      r.record_number,
+      r.record_date,
+      r.period_month || '',
+      r.bill_to_name,
+      r.bill_to_address || '',
+      r.bill_to_phone || '',
+      r.bill_to_pan || '',
+      items_json,
+      Number(r.total_staff_count || 0),
+      Number(r.total_amount || 0),
+      r.amount_in_words || '',
+      Number(r.received_amount || 0),
+      Number(r.balance_amount || 0),
+      r.payment_status || 'Pending',
+      r.bank_name || 'Kotak Mahindra Bank',
+      r.bank_account_name || 'Vyshnavi Travels',
+      r.bank_account_no || '2848153146',
+      r.bank_ifsc || 'KKBK0007460',
+      r.bank_branch || 'VANAS',
+      r.upi_id || '9000202241@ybl',
+      r.qr_code_url || '',
+      r.remarks || '',
+      id
+    );
+    logAudit('UPDATE_VYSHNAVI_RECORD', 'Vyshnavi Travels', id, `Updated billing record ${r.record_number || id}`);
+    return res.json({ id, ...r });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/vyshnavi/records/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM vyshnavi_service_records WHERE id = ?').run(id);
+    logAudit('DELETE_VYSHNAVI_RECORD', 'Vyshnavi Travels', id, `Deleted billing record ${id}`);
+    return res.json({ message: 'Vyshnavi record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. Income & Expense Transactions
+app.get('/api/vyshnavi/transactions', (req: Request, res: Response) => {
+  try {
+    const rows = db.prepare('SELECT * FROM vyshnavi_transactions ORDER BY transaction_date DESC, id DESC').all();
+    return res.json(rows);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/vyshnavi/transactions', (req: Request, res: Response) => {
+  const t = req.body;
+  if (!t.transaction_type || t.amount === undefined || t.amount === null) {
+    return res.status(400).json({ error: 'Transaction type and amount are required' });
+  }
+  try {
+    const id = t.id || Date.now();
+    db.prepare(`
+      INSERT INTO vyshnavi_transactions (
+        id, transaction_type, transaction_date, category, vehicle_number, amount,
+        payment_mode, party_name, description, receipt_url, reference_no
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      t.transaction_type,
+      t.transaction_date || new Date().toISOString().split('T')[0],
+      t.category || 'Other',
+      t.vehicle_number || '',
+      Number(t.amount || 0),
+      t.payment_mode || 'Cash',
+      t.party_name || '',
+      t.description || '',
+      t.receipt_url || '',
+      t.reference_no || ''
+    );
+    logAudit('CREATE_VYSHNAVI_TX', 'Vyshnavi Travels', id, `Logged ${t.transaction_type} of ₹${t.amount} (${t.category})`);
+    return res.status(201).json({ id, ...t });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/vyshnavi/transactions/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const t = req.body;
+  try {
+    db.prepare(`
+      UPDATE vyshnavi_transactions SET
+        transaction_type = ?, transaction_date = ?, category = ?, vehicle_number = ?,
+        amount = ?, payment_mode = ?, party_name = ?, description = ?,
+        receipt_url = ?, reference_no = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      t.transaction_type,
+      t.transaction_date,
+      t.category,
+      t.vehicle_number || '',
+      Number(t.amount || 0),
+      t.payment_mode || 'Cash',
+      t.party_name || '',
+      t.description || '',
+      t.receipt_url || '',
+      t.reference_no || '',
+      id
+    );
+    logAudit('UPDATE_VYSHNAVI_TX', 'Vyshnavi Travels', id, `Updated ${t.transaction_type} transaction ${id}`);
+    return res.json({ id, ...t });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/vyshnavi/transactions/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM vyshnavi_transactions WHERE id = ?').run(id);
+    logAudit('DELETE_VYSHNAVI_TX', 'Vyshnavi Travels', id, `Deleted transaction ${id}`);
+    return res.json({ message: 'Transaction deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= CAPTAIN AUDIT RECORDS CRUD =================
 app.get('/api/captain-audits', (req: Request, res: Response) => {
   try {

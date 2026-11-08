@@ -255,6 +255,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ]
     },
     {
+      label: 'Vyshnavi Travels',
+      route: '/admin/vyshnavi-travels',
+      icon: Bus,
+      activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi']
+    },
+    {
       label: 'Website Inquiries',
       route: '/admin/inquiries',
       icon: Bell,

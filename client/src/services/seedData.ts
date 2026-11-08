@@ -2360,3 +2360,118 @@ export const BASE_DAILY_MAINTENANCE_RECORDS: DailyMaintenanceRecord[] = [
     photos_json: '[]'
   }
 ];
+
+export const BASE_VYSHNAVI_RECORDS: any[] = [
+  {
+    id: 1,
+    record_number: 'VT-REC-2026-001',
+    record_date: '2026-11-08',
+    period_month: 'Oct 2026',
+    payment_status: 'Pending',
+    bill_to_name: 'Sri Krishna Travels',
+    bill_to_phone: '8519821491',
+    bill_to_address: 'Miyapur Main Road, Hyderabad, Telangana - 500049',
+    bill_to_pan: '3GRRHHT8791K',
+    items: [
+      {
+        sr_no: 1,
+        description: "Driver's monthly salary for AP16TV1234 route",
+        category: 'Driver',
+        staff_count: 2,
+        salary_paid: 32000
+      },
+      {
+        sr_no: 2,
+        description: 'Bus cleaner / helper duty allowance',
+        category: 'Helper',
+        staff_count: 1,
+        salary_paid: 14000
+      }
+    ],
+    items_json: JSON.stringify([
+      {
+        sr_no: 1,
+        description: "Driver's monthly salary for AP16TV1234 route",
+        category: 'Driver',
+        staff_count: 2,
+        salary_paid: 32000
+      },
+      {
+        sr_no: 2,
+        description: 'Bus cleaner / helper duty allowance',
+        category: 'Helper',
+        staff_count: 1,
+        salary_paid: 14000
+      }
+    ]),
+    total_staff_count: 3,
+    total_amount: 46000,
+    amount_in_words: 'Forty Six Thousand Rupees Only',
+    received_amount: 20000,
+    balance_amount: 26000,
+    bank_name: 'Kotak Mahindra Bank',
+    bank_account_name: 'Vyshnavi Travels',
+    bank_account_no: '2848153146',
+    bank_ifsc: 'KKBK0007460',
+    bank_branch: 'VANAS',
+    upi_id: '9000202241@ybl',
+    qr_code_url: 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=9000202241@ybl%26pn=Vyshnavi%20Travels%26am=26000%26cu=INR',
+    remarks: 'October 2026 driver & helper crew settlement'
+  }
+];
+
+export const BASE_VYSHNAVI_TRANSACTIONS: any[] = [
+  {
+    id: 1,
+    transaction_type: 'Income',
+    transaction_date: '2026-11-07',
+    category: 'Trip Advance / Booking',
+    vehicle_number: 'AP16TV1234',
+    amount: 35000,
+    payment_mode: 'Bank Transfer',
+    party_name: 'Sri Krishna Travels',
+    description: 'Advance payment for Hyderabad - Tirupati charter trip',
+    reference_no: 'TXN-998124',
+    receipt_url: ''
+  },
+  {
+    id: 2,
+    transaction_type: 'Expense',
+    transaction_date: '2026-11-06',
+    category: 'Diesel / Fuel',
+    vehicle_number: 'AP16TC4567',
+    amount: 14800,
+    payment_mode: 'UPI',
+    party_name: 'Indian Oil Highway Station',
+    description: 'Diesel top-up 160 Litres for Vijayawada route',
+    reference_no: 'UPI-431289',
+    receipt_url: ''
+  },
+  {
+    id: 3,
+    transaction_type: 'Income',
+    transaction_date: '2026-11-05',
+    category: 'Client Settlement',
+    vehicle_number: 'AP16TV1234',
+    amount: 20000,
+    payment_mode: 'UPI',
+    party_name: 'YoloBus Logistics',
+    description: 'Weekly settlement against service record VT-REC-2026-001',
+    reference_no: 'YBL-77123',
+    receipt_url: ''
+  },
+  {
+    id: 4,
+    transaction_type: 'Expense',
+    transaction_date: '2026-11-03',
+    category: 'Toll & Taxes',
+    vehicle_number: 'AP16TC4567',
+    amount: 3200,
+    payment_mode: 'Fastag',
+    party_name: 'NHAI FASTag Recharge',
+    description: 'Monthly highway FASTag pass balance recharge',
+    reference_no: 'FTG-89410',
+    receipt_url: ''
+  }
+];
+

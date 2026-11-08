@@ -393,3 +393,56 @@ export interface User {
   status: string;
   categories?: string[];
 }
+
+export interface VyshnaviServiceItem {
+  sr_no: number;
+  description: string;
+  category: 'Driver' | 'Helper' | 'Captain' | 'Cleaner' | 'Other' | string;
+  staff_count: number;
+  salary_paid: number;
+}
+
+export interface VyshnaviRecord {
+  id?: number;
+  record_number: string;
+  record_date: string;
+  period_month: string;
+  payment_status: 'Pending' | 'Paid' | 'Partially Paid' | 'Cancelled';
+  bill_to_name: string;
+  bill_to_phone?: string;
+  bill_to_address?: string;
+  bill_to_pan?: string;
+  items: VyshnaviServiceItem[];
+  total_staff_count: number;
+  total_amount: number;
+  amount_in_words?: string;
+  received_amount: number;
+  balance_amount: number;
+  bank_name?: string;
+  bank_account_name?: string;
+  bank_account_no?: string;
+  bank_ifsc?: string;
+  bank_branch?: string;
+  upi_id?: string;
+  qr_code_url?: string;
+  remarks?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface VyshnaviTransaction {
+  id?: number;
+  transaction_type: 'Income' | 'Expense';
+  transaction_date: string;
+  category: string;
+  vehicle_number?: string;
+  amount: number;
+  payment_mode: 'Cash' | 'Bank Transfer' | 'UPI' | 'Cheque' | 'Other' | string;
+  party_name?: string;
+  description: string;
+  receipt_url?: string;
+  reference_no?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+

@@ -43,6 +43,7 @@ import { EmployeePayments } from './pages/EmployeePayments';
 import { WebsiteInquiries } from './pages/WebsiteInquiries';
 import { RecordManagement } from './pages/RecordManagement';
 import { CaptainAuditRecord } from './pages/CaptainAuditRecord';
+import { VyshnaviTravels } from './pages/VyshnaviTravels';
 import { SupporterTasks } from './pages/SupporterTasks';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
@@ -98,6 +99,8 @@ export function App() {
               <Route path="record-management" element={<Navigate to="/admin/records" replace />} />
               <Route path="captain-audit" element={<CaptainAuditRecord />} />
               <Route path="captain-audit-record" element={<Navigate to="/admin/captain-audit" replace />} />
+              <Route path="vyshnavi-travels" element={<VyshnaviTravels />} />
+              <Route path="vyshnavi" element={<Navigate to="/admin/vyshnavi-travels" replace />} />
               <Route path="inquiries" element={<WebsiteInquiries />} />
 
               {/* Specific Submodules & Secondary Views */}

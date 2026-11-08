@@ -1173,5 +1173,153 @@ export function initDatabase() {
         }
       }
     }
+
+    // Vyshnavi Travels Service & Billing Records Table
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS vyshnavi_service_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        record_number TEXT UNIQUE NOT NULL,
+        record_date TEXT NOT NULL,
+        period_month TEXT DEFAULT '',
+        bill_to_name TEXT NOT NULL,
+        bill_to_address TEXT DEFAULT '',
+        bill_to_phone TEXT DEFAULT '',
+        bill_to_pan TEXT DEFAULT '',
+        items_json TEXT NOT NULL DEFAULT '[]',
+        total_staff_count INTEGER DEFAULT 0,
+        total_amount REAL DEFAULT 0,
+        amount_in_words TEXT DEFAULT '',
+        received_amount REAL DEFAULT 0,
+        balance_amount REAL DEFAULT 0,
+        payment_status TEXT DEFAULT 'Pending',
+        bank_name TEXT DEFAULT 'Kotak Mahindra Bank',
+        bank_account_name TEXT DEFAULT 'Vyshnavi Travels',
+        bank_account_no TEXT DEFAULT '2848153146',
+        bank_ifsc TEXT DEFAULT 'KKBK0007460',
+        bank_branch TEXT DEFAULT 'VANAS',
+        upi_id TEXT DEFAULT '9000202241@ybl',
+        qr_code_url TEXT DEFAULT '',
+        remarks TEXT DEFAULT '',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    // Vyshnavi Travels Income & Expense Table
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS vyshnavi_transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        transaction_type TEXT NOT NULL, -- 'Income' or 'Expense'
+        transaction_date TEXT NOT NULL,
+        category TEXT NOT NULL,
+        vehicle_number TEXT DEFAULT '',
+        amount REAL NOT NULL,
+        payment_mode TEXT DEFAULT 'Cash',
+        party_name TEXT DEFAULT '',
+        description TEXT DEFAULT '',
+        receipt_url TEXT DEFAULT '',
+        reference_no TEXT DEFAULT '',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    // Seed Vyshnavi Travels sample records if empty
+    try {
+      const vRecCount = db.prepare('SELECT COUNT(*) as cnt FROM vyshnavi_service_records').get() as any;
+      if (!vRecCount || vRecCount.cnt === 0) {
+        const sampleItems = JSON.stringify([
+          { sr_no: 1, description: "Fleet Bus Operational Duty - Hyderabad to Bangalore", category: "Driver", staff_count: 4, salary_paid: 60000 },
+          { sr_no: 2, description: "Route Captain Supervision & Passenger Care", category: "Captain", staff_count: 1, salary_paid: 20000 },
+          { sr_no: 3, description: "Cabin Attendant & Helper Crew Support", category: "Helper", staff_count: 2, salary_paid: 30000 }
+        ]);
+
+        db.prepare(`
+          INSERT INTO vyshnavi_service_records (
+            record_number, record_date, period_month, bill_to_name, bill_to_address,
+            bill_to_phone, bill_to_pan, items_json, total_staff_count, total_amount,
+            amount_in_words, received_amount, balance_amount, payment_status,
+            bank_name, bank_account_name, bank_account_no, bank_ifsc, bank_branch,
+            upi_id, remarks
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          'VT-REC-2026-001', '2026-11-08', "Oct'26", 'Sri Krishna Travels', 'Hyderabad, Telangana',
+          '9396151527', '36AABCY5013H1Z2', sampleItems, 7, 110000,
+          'One Lakh Ten Thousand Rupees Only', 70000, 40000, 'Partial',
+          'Kotak Mahindra Bank', 'Vyshnavi Travels', '2848153146', 'KKBK0007460', 'VANAS',
+          '9000202241@ybl', 'Fleet staffing and trip operational billing for October.'
+        );
+      }
+    } catch {}
+
+    // Seed Vyshnavi Travels sample income & expense if empty
+    try {
+      const vTxCount = db.prepare('SELECT COUNT(*) as cnt FROM vyshnavi_transactions').get() as any;
+      if (!vTxCount || vTxCount.cnt === 0) {
+        const sampleTxs = [
+          {
+            type: 'Income',
+            date: '2026-11-05',
+            category: 'Client Billing / Invoice',
+            vehicle: 'AP16TV1234',
+            amount: 70000,
+            mode: 'Bank Transfer / NEFT',
+            party: 'Sri Krishna Travels',
+            desc: 'Part payment for October fleet duty (VT-REC-2026-001)'
+          },
+          {
+            type: 'Expense',
+            date: '2026-11-06',
+            category: 'Diesel / Fuel',
+            vehicle: 'AP16TV1234',
+            amount: 18500,
+            mode: 'UPI / Online',
+            party: 'HPCL Fuel Station, Shamshabad',
+            desc: 'Full tank diesel 200 Litres'
+          },
+          {
+            type: 'Expense',
+            date: '2026-11-07',
+            category: 'Toll & Parking Charges',
+            vehicle: 'AP16TV1234',
+            amount: 2450,
+            mode: 'UPI / Online',
+            party: 'FASTag National Highways',
+            desc: 'Highway toll plaza transit Bangalore corridor'
+          },
+          {
+            type: 'Income',
+            date: '2026-11-07',
+            category: 'Trip Booking / Fare',
+            vehicle: 'AP16TC4567',
+            amount: 45000,
+            mode: 'Cash',
+            party: 'Private Group Charter',
+            desc: 'Special weekend charter trip Hyderabad to Srisailam'
+          },
+          {
+            type: 'Expense',
+            date: '2026-11-08',
+            category: 'Driver & Crew Wages',
+            vehicle: 'AP16TC4567',
+            amount: 5000,
+            mode: 'Cash',
+            party: 'Driver Akhil & Crew',
+            desc: 'Trip allowance and bata payout'
+          }
+        ];
+
+        const insertTx = db.prepare(`
+          INSERT INTO vyshnavi_transactions (
+            transaction_type, transaction_date, category, vehicle_number, amount,
+            payment_mode, party_name, description
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        for (const tx of sampleTxs) {
+          insertTx.run(tx.type, tx.date, tx.category, tx.vehicle, tx.amount, tx.mode, tx.party, tx.desc);
+        }
+      }
+    } catch {}
   } catch (e) {}
 }

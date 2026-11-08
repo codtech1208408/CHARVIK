@@ -21,8 +21,11 @@ import {
   BASE_FLEET_MAINTENANCE_BUSES,
   BASE_FLEET_MAINTENANCE_HISTORY,
   BASE_DAILY_MAINTENANCE_RECORDS,
+  BASE_VYSHNAVI_RECORDS,
+  BASE_VYSHNAVI_TRANSACTIONS,
   type DailyMaintenanceRecord
 } from './seedData';
+import type { VyshnaviRecord, VyshnaviTransaction } from '../types';
 
 /**
  * Merges local existing items with baseline seed items so that newly registered
@@ -2314,6 +2317,190 @@ export const api = {
       let list: DailyMaintenanceRecord[] = cached ? JSON.parse(cached) : [...BASE_DAILY_MAINTENANCE_RECORDS];
       list = list.filter((r) => String(r.id) !== String(id));
       localStorage.setItem('charvik_daily_maintenance_cache', JSON.stringify(list));
+      return { success: true };
+    }
+  },
+
+  // Vyshnavi Travels Records
+  getVyshnaviRecords: async (params?: { search?: string; status?: string }) => {
+    const cleanParams: any = {};
+    if (params?.search) cleanParams.search = params.search;
+    if (params?.status && params.status !== 'All') cleanParams.status = params.status;
+    const q = new URLSearchParams(cleanParams).toString();
+
+    try {
+      const data = await request<VyshnaviRecord[]>(`/vyshnavi/records${q ? `?${q}` : ''}`);
+      if (Array.isArray(data) && data.length > 0) {
+        localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(data));
+        return data;
+      }
+    } catch {}
+
+    const cached = localStorage.getItem('charvik_vyshnavi_records_cache');
+    let list: VyshnaviRecord[] = cached ? JSON.parse(cached) : BASE_VYSHNAVI_RECORDS;
+    if (cleanParams.status) {
+      list = list.filter((r) => r.payment_status === cleanParams.status);
+    }
+    if (cleanParams.search) {
+      const s = cleanParams.search.toLowerCase();
+      list = list.filter(
+        (r) =>
+          (r.record_number || '').toLowerCase().includes(s) ||
+          (r.bill_to_name || '').toLowerCase().includes(s) ||
+          (r.period_month || '').toLowerCase().includes(s)
+      );
+    }
+    return list;
+  },
+
+  createVyshnaviRecord: async (data: any) => {
+    try {
+      const res = await request<any>('/vyshnavi/records', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      localStorage.removeItem('charvik_vyshnavi_records_cache');
+      return res;
+    } catch {
+      const cached = localStorage.getItem('charvik_vyshnavi_records_cache');
+      const list: VyshnaviRecord[] = cached ? JSON.parse(cached) : [...BASE_VYSHNAVI_RECORDS];
+      const newEntry: VyshnaviRecord = {
+        id: Date.now(),
+        ...data,
+        items: data.items || []
+      };
+      list.unshift(newEntry);
+      localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(list));
+      return { success: true, record: newEntry };
+    }
+  },
+
+  updateVyshnaviRecord: async (id: number | string, data: any) => {
+    try {
+      const res = await request<any>(`/vyshnavi/records/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      localStorage.removeItem('charvik_vyshnavi_records_cache');
+      return res;
+    } catch {
+      const cached = localStorage.getItem('charvik_vyshnavi_records_cache');
+      const list: VyshnaviRecord[] = cached ? JSON.parse(cached) : [...BASE_VYSHNAVI_RECORDS];
+      const idx = list.findIndex((r) => String(r.id) === String(id));
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], ...data };
+        localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(list));
+      }
+      return { success: true };
+    }
+  },
+
+  deleteVyshnaviRecord: async (id: number | string) => {
+    try {
+      const res = await request<any>(`/vyshnavi/records/${id}`, {
+        method: 'DELETE'
+      });
+      localStorage.removeItem('charvik_vyshnavi_records_cache');
+      return res;
+    } catch {
+      const cached = localStorage.getItem('charvik_vyshnavi_records_cache');
+      let list: VyshnaviRecord[] = cached ? JSON.parse(cached) : [...BASE_VYSHNAVI_RECORDS];
+      list = list.filter((r) => String(r.id) !== String(id));
+      localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(list));
+      return { success: true };
+    }
+  },
+
+  // Vyshnavi Travels Income & Expense Transactions
+  getVyshnaviTransactions: async (params?: { type?: string; category?: string; search?: string }) => {
+    const cleanParams: any = {};
+    if (params?.type && params.type !== 'All') cleanParams.type = params.type;
+    if (params?.category && params.category !== 'All') cleanParams.category = params.category;
+    if (params?.search) cleanParams.search = params.search;
+    const q = new URLSearchParams(cleanParams).toString();
+
+    try {
+      const data = await request<VyshnaviTransaction[]>(`/vyshnavi/transactions${q ? `?${q}` : ''}`);
+      if (Array.isArray(data) && data.length > 0) {
+        localStorage.setItem('charvik_vyshnavi_transactions_cache', JSON.stringify(data));
+        return data;
+      }
+    } catch {}
+
+    const cached = localStorage.getItem('charvik_vyshnavi_transactions_cache');
+    let list: VyshnaviTransaction[] = cached ? JSON.parse(cached) : BASE_VYSHNAVI_TRANSACTIONS;
+    if (cleanParams.type) {
+      list = list.filter((t) => t.transaction_type === cleanParams.type);
+    }
+    if (cleanParams.category) {
+      list = list.filter((t) => t.category === cleanParams.category);
+    }
+    if (cleanParams.search) {
+      const s = cleanParams.search.toLowerCase();
+      list = list.filter(
+        (t) =>
+          (t.description || '').toLowerCase().includes(s) ||
+          (t.party_name || '').toLowerCase().includes(s) ||
+          (t.vehicle_number || '').toLowerCase().includes(s) ||
+          (t.reference_no || '').toLowerCase().includes(s)
+      );
+    }
+    return list;
+  },
+
+  createVyshnaviTransaction: async (data: any) => {
+    try {
+      const res = await request<any>('/vyshnavi/transactions', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      localStorage.removeItem('charvik_vyshnavi_transactions_cache');
+      return res;
+    } catch {
+      const cached = localStorage.getItem('charvik_vyshnavi_transactions_cache');
+      const list: VyshnaviTransaction[] = cached ? JSON.parse(cached) : [...BASE_VYSHNAVI_TRANSACTIONS];
+      const newEntry: VyshnaviTransaction = {
+        id: Date.now(),
+        ...data
+      };
+      list.unshift(newEntry);
+      localStorage.setItem('charvik_vyshnavi_transactions_cache', JSON.stringify(list));
+      return { success: true, transaction: newEntry };
+    }
+  },
+
+  updateVyshnaviTransaction: async (id: number | string, data: any) => {
+    try {
+      const res = await request<any>(`/vyshnavi/transactions/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      localStorage.removeItem('charvik_vyshnavi_transactions_cache');
+      return res;
+    } catch {
+      const cached = localStorage.getItem('charvik_vyshnavi_transactions_cache');
+      const list: VyshnaviTransaction[] = cached ? JSON.parse(cached) : [...BASE_VYSHNAVI_TRANSACTIONS];
+      const idx = list.findIndex((t) => String(t.id) === String(id));
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], ...data };
+        localStorage.setItem('charvik_vyshnavi_transactions_cache', JSON.stringify(list));
+      }
+      return { success: true };
+    }
+  },
+
+  deleteVyshnaviTransaction: async (id: number | string) => {
+    try {
+      const res = await request<any>(`/vyshnavi/transactions/${id}`, {
+        method: 'DELETE'
+      });
+      localStorage.removeItem('charvik_vyshnavi_transactions_cache');
+      return res;
+    } catch {
+      const cached = localStorage.getItem('charvik_vyshnavi_transactions_cache');
+      let list: VyshnaviTransaction[] = cached ? JSON.parse(cached) : [...BASE_VYSHNAVI_TRANSACTIONS];
+      list = list.filter((t) => String(t.id) !== String(id));
+      localStorage.setItem('charvik_vyshnavi_transactions_cache', JSON.stringify(list));
       return { success: true };
     }
   },
