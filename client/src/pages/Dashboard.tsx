@@ -530,7 +530,7 @@ export const Dashboard: React.FC = () => {
           </h3>
           <span className="text-[11px] font-semibold text-blue-600">Core Fleet Status</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
           {/* Total Buses Card (Blue Theme matching Image 1) */}
           <div
             onClick={() => navigate('/admin/buses')}
@@ -562,23 +562,6 @@ export const Dashboard: React.FC = () => {
             </div>
             <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 ml-4 shadow-xs group-hover:scale-105 transition-transform">
               <CheckCircle2 className="w-6 h-6" />
-            </div>
-          </div>
-
-          {/* Vyshnavi Travels Card */}
-          <div
-            onClick={() => navigate('/admin/vyshnavi-travels')}
-            className="bg-[#FFF9F2] rounded-2xl border border-amber-200/90 p-5 shadow-xs flex items-center justify-between hover:shadow-md hover:border-amber-400 transition-all cursor-pointer group"
-          >
-            <div className="flex-1">
-              <p className="text-xs font-black text-amber-800 uppercase tracking-wider">Vyshnavi Travels</p>
-              <h3 className="text-2xl sm:text-3xl font-black text-amber-950 mt-1 tracking-tight group-hover:text-amber-700 transition-colors">
-                Portal
-              </h3>
-              <p className="text-xs text-amber-600 font-medium mt-1">Letterhead records & ledger</p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-[#142B4A] text-amber-400 flex items-center justify-center shrink-0 ml-4 shadow-xs group-hover:scale-105 transition-transform">
-              <Bus className="w-6 h-6" />
             </div>
           </div>
         </div>
