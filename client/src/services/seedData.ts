@@ -2135,7 +2135,7 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     current_odometer_km: 45000,
     parking_location: 'Hyderabad Depot – Bay 2',
     operations_manager: 'Priya Sharma',
-    last_service_date: '2026-10-23',
+    last_service_date: null,
     last_service_km: 42000,
     driver_name: 'akhil'
   },
@@ -2150,7 +2150,7 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     current_odometer_km: 32000,
     parking_location: 'Vijayawada Hub – Bay 1',
     operations_manager: 'Priya Sharma',
-    last_service_date: '2026-11-01',
+    last_service_date: null,
     last_service_km: 30000,
     driver_name: 'Suresh'
   }

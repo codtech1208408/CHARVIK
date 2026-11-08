@@ -244,6 +244,68 @@ CREATE TABLE IF NOT EXISTS employee_payments (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 2.12 Daily Maintenance Records (Workshop Visits, Complaints, Invoices)
+CREATE TABLE IF NOT EXISTS daily_maintenance_records (
+  id BIGSERIAL PRIMARY KEY,
+  bus_id BIGINT REFERENCES buses(id) ON DELETE SET NULL,
+  vehicle_number TEXT NOT NULL,
+  date DATE NOT NULL,
+  km INT NOT NULL DEFAULT 0,
+  complaints TEXT DEFAULT '',
+  showroom_name TEXT DEFAULT '',
+  other TEXT DEFAULT '',
+  amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+  photos_json TEXT DEFAULT '[]',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Alias view for backward compatibility
+CREATE OR REPLACE VIEW daily_maintenance AS SELECT * FROM daily_maintenance_records;
+
+-- 2.13 Vyshnavi Travels Service Records (Billing & Staff Breakdown)
+CREATE TABLE IF NOT EXISTS vyshnavi_service_records (
+  id BIGSERIAL PRIMARY KEY,
+  record_number TEXT UNIQUE NOT NULL,
+  record_date DATE NOT NULL,
+  period_month TEXT DEFAULT '',
+  payment_status TEXT DEFAULT 'Pending',
+  bill_to_name TEXT NOT NULL,
+  bill_to_phone TEXT DEFAULT '',
+  bill_to_address TEXT DEFAULT '',
+  bill_to_pan TEXT DEFAULT '',
+  items JSONB DEFAULT '[]',
+  total_staff_count INT DEFAULT 0,
+  total_salary_amount NUMERIC(12,2) DEFAULT 0,
+  received_amount NUMERIC(12,2) DEFAULT 0,
+  balance_due NUMERIC(12,2) DEFAULT 0,
+  company_bank_name TEXT DEFAULT '',
+  company_account_number TEXT DEFAULT '',
+  company_ifsc_code TEXT DEFAULT '',
+  company_upi_id TEXT DEFAULT '',
+  custom_qr_image_url TEXT DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Alias view for backward compatibility
+CREATE OR REPLACE VIEW vyshnavi_records AS SELECT * FROM vyshnavi_service_records;
+
+-- 2.14 Vyshnavi Travels Transactions (Income & Expense Ledger)
+CREATE TABLE IF NOT EXISTS vyshnavi_transactions (
+  id BIGSERIAL PRIMARY KEY,
+  transaction_type TEXT NOT NULL,
+  transaction_date DATE NOT NULL,
+  category TEXT NOT NULL,
+  vehicle_number TEXT DEFAULT '',
+  amount NUMERIC(12,2) NOT NULL,
+  payment_mode TEXT DEFAULT 'Cash',
+  party_name TEXT DEFAULT '',
+  description TEXT DEFAULT '',
+  reference_no TEXT DEFAULT '',
+  receipt_url TEXT DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 
 -- ==============================================================================
 -- 3. CONFIGURE SECURE ROW LEVEL SECURITY (RLS) POLICIES
@@ -425,6 +487,27 @@ DROP POLICY IF EXISTS "anon_all_emp_payments" ON employee_payments;
 CREATE POLICY "anon_all_emp_payments" ON employee_payments FOR ALL TO anon USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS "auth_all_emp_payments" ON employee_payments;
 CREATE POLICY "auth_all_emp_payments" ON employee_payments FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- 3.26 Daily Maintenance Records
+ALTER TABLE daily_maintenance_records ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon_all_daily_maintenance" ON daily_maintenance_records;
+CREATE POLICY "anon_all_daily_maintenance" ON daily_maintenance_records FOR ALL TO anon USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "auth_all_daily_maintenance" ON daily_maintenance_records;
+CREATE POLICY "auth_all_daily_maintenance" ON daily_maintenance_records FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- 3.27 Vyshnavi Service Records
+ALTER TABLE vyshnavi_service_records ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon_all_vyshnavi_records" ON vyshnavi_service_records;
+CREATE POLICY "anon_all_vyshnavi_records" ON vyshnavi_service_records FOR ALL TO anon USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "auth_all_vyshnavi_records" ON vyshnavi_service_records;
+CREATE POLICY "auth_all_vyshnavi_records" ON vyshnavi_service_records FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- 3.28 Vyshnavi Transactions
+ALTER TABLE vyshnavi_transactions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "anon_all_vyshnavi_transactions" ON vyshnavi_transactions;
+CREATE POLICY "anon_all_vyshnavi_transactions" ON vyshnavi_transactions FOR ALL TO anon USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "auth_all_vyshnavi_transactions" ON vyshnavi_transactions;
+CREATE POLICY "auth_all_vyshnavi_transactions" ON vyshnavi_transactions FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 
 -- ==============================================================================
