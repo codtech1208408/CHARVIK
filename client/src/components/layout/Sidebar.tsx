@@ -540,7 +540,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <img
                   src="/logo-compact.png"
                   alt="Charvik Staffing Consultancy"
-                  className="w-full h-auto max-h-[76px] object-contain transition-all duration-200"
+                  className="w-full h-auto max-h-[92px] object-contain transition-all duration-200"
                 />
               </div>
             </div>
