@@ -26,11 +26,11 @@ export const PublicNavbar: React.FC = () => {
           <div className="flex items-center justify-between h-24">
             {/* Brand Logo */}
             <Link to="/" className="flex items-center group py-2" aria-label="Charvik Home">
-              <div className="h-16 sm:h-20 w-auto px-3 py-1.5 rounded-xl bg-white border border-slate-200/90 shadow-sm group-hover:shadow transition-shadow flex items-center justify-center">
+              <div className="h-20 sm:h-24 w-auto px-3 py-1.5 rounded-xl bg-white border border-slate-200/90 shadow-sm group-hover:shadow transition-shadow flex items-center justify-center">
                 <img
                   src="/logo-compact.png"
                   alt="Charvik Staffing Consultancy"
-                  className="h-full w-auto max-h-14 sm:max-h-16 object-contain transition-transform group-hover:scale-105"
+                  className="h-full w-auto max-h-18 sm:max-h-22 object-contain transition-transform group-hover:scale-105"
                 />
               </div>
             </Link>

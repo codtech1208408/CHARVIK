@@ -126,7 +126,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
   }, []);
 
   return (
-    <header className="min-h-[82px] py-1 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
+    <header className="min-h-[88px] py-1.5 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
       {/* Left: Menu Drawer Toggle (Mobile) & Brand Logo when collapsed & Page Title */}
       <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         <button
@@ -147,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
             <img
               src="/logo-compact.png"
               alt="Charvik Staffing Consultancy"
-              className="h-[60px] sm:h-[66px] max-h-[70px] w-auto max-w-[240px] object-contain transition-transform hover:scale-105"
+              className="h-[74px] sm:h-[80px] max-h-[84px] w-auto max-w-[280px] object-contain transition-transform hover:scale-105"
             />
           </Link>
         )}

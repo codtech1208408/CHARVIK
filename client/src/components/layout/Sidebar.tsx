@@ -533,16 +533,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          {/* Logo - Matches Image 1; Hidden when collapsed so only ONE logo shows on screen */}
+          {/* Logo - Clean presentation without blue box, significantly increased size for maximum visibility */}
           {!isCollapsed && (
-            <div className="w-full flex items-center justify-center">
-              <div className="w-full rounded-2xl bg-white flex items-center justify-center shadow-xs border-2 border-blue-400 px-3 py-2 max-w-full overflow-hidden hover:border-blue-500 transition-all">
-                <img
-                  src="/logo-compact.png"
-                  alt="Charvik Staffing Consultancy"
-                  className="w-full h-auto max-h-[92px] object-contain transition-all duration-200"
-                />
-              </div>
+            <div className="w-full flex items-center justify-center py-1 px-1">
+              <img
+                src="/logo-compact.png"
+                alt="Charvik Staffing Consultancy"
+                className="w-full h-auto max-h-[145px] object-contain transition-all duration-200"
+              />
             </div>
           )}
 
