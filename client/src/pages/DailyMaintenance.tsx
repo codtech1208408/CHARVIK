@@ -81,7 +81,11 @@ export const DailyMaintenance: React.FC = () => {
         api.getDailyMaintenance().catch(() => []),
         api.getBuses().catch(() => [])
       ]);
-      setRecords(recData || []);
+      const cleaned = (recData || []).map((r: any) => ({
+        ...r,
+        vehicle_number: (r.vehicle_number || '').split('(')[0].trim()
+      }));
+      setRecords(cleaned);
       setBuses(busData || []);
     } catch (err: any) {
       error(err.message || 'Failed to load daily maintenance records');
@@ -94,7 +98,7 @@ export const DailyMaintenance: React.FC = () => {
   const handleOpenAdd = () => {
     setEditingRecord(null);
     const firstBus = buses[0];
-    const initialReg = firstBus?.registration_number || firstBus?.bus_number || '';
+    const initialReg = (firstBus?.registration_number || firstBus?.bus_number || '').split('(')[0].trim();
     const initialKm = Number((firstBus as any)?.latest_checkup_km || firstBus?.current_odometer_km || 0);
 
     setFormData({
@@ -125,7 +129,7 @@ export const DailyMaintenance: React.FC = () => {
 
     setFormData({
       date: rec.date || new Date().toISOString().split('T')[0],
-      vehicle_number: rec.vehicle_number || '',
+      vehicle_number: (rec.vehicle_number || '').split('(')[0].trim(),
       bus_id: rec.bus_id ? String(rec.bus_id) : '',
       km: rec.km ?? '',
       complaints: rec.complaints || '',
@@ -139,14 +143,18 @@ export const DailyMaintenance: React.FC = () => {
 
   // When vehicle changes in form, auto-sync latest KM
   const handleVehicleChange = (regNo: string) => {
+    const cleanReg = (regNo || '').split('(')[0].trim();
     const matchedBus = buses.find(
-      (b) => b.registration_number === regNo || b.bus_number === regNo || String(b.id) === regNo
+      (b) => {
+        const bReg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+        return bReg === cleanReg || String(b.id) === cleanReg;
+      }
     );
     const busKm = Number((matchedBus as any)?.latest_checkup_km || matchedBus?.current_odometer_km || 0);
 
     setFormData((prev) => ({
       ...prev,
-      vehicle_number: matchedBus ? (matchedBus.registration_number || matchedBus.bus_number) : regNo,
+      vehicle_number: matchedBus ? (matchedBus.registration_number || matchedBus.bus_number || '').split('(')[0].trim() : cleanReg,
       bus_id: matchedBus ? String(matchedBus.id) : prev.bus_id,
       km: busKm > 0 ? busKm : prev.km
     }));
@@ -206,9 +214,10 @@ export const DailyMaintenance: React.FC = () => {
     }
 
     try {
+      const cleanVehicle = (formData.vehicle_number || '').split('(')[0].trim().toUpperCase();
       const payload = {
         date: formData.date,
-        vehicle_number: formData.vehicle_number,
+        vehicle_number: cleanVehicle,
         bus_id: formData.bus_id ? Number(formData.bus_id) : undefined,
         km: Number(formData.km) || 0,
         complaints: formData.complaints || '',
@@ -309,14 +318,15 @@ export const DailyMaintenance: React.FC = () => {
   const filteredRecords = useMemo(() => {
     return records.filter((r) => {
       const q = searchQuery.toLowerCase().trim();
+      const vNo = (r.vehicle_number || '').split('(')[0].trim();
       const matchSearch =
         !q ||
-        (r.vehicle_number || '').toLowerCase().includes(q) ||
+        vNo.toLowerCase().includes(q) ||
         (r.showroom_name || '').toLowerCase().includes(q) ||
         (r.complaints || '').toLowerCase().includes(q) ||
         (r.other || '').toLowerCase().includes(q);
 
-      const matchVehicle = vehicleFilter === 'All' || r.vehicle_number === vehicleFilter;
+      const matchVehicle = vehicleFilter === 'All' || vNo === vehicleFilter || r.vehicle_number === vehicleFilter;
       const matchStart = !startDate || r.date >= startDate;
       const matchEnd = !endDate || r.date <= endDate;
 
@@ -332,7 +342,7 @@ export const DailyMaintenance: React.FC = () => {
     const todayRecords = records.filter((r) => r.date === todayStr);
     const todaySpend = todayRecords.reduce((acc, r) => acc + (Number(r.amount) || 0), 0);
 
-    const uniqueVehicles = new Set(records.map((r) => r.vehicle_number)).size;
+    const uniqueVehicles = new Set(records.map((r) => (r.vehicle_number || '').split('(')[0].trim())).size;
 
     return {
       totalRecords,
@@ -347,13 +357,14 @@ export const DailyMaintenance: React.FC = () => {
   const vehicleOptions = useMemo(() => {
     const set = new Set<string>();
     buses.forEach((b) => {
-      if (b.registration_number) set.add(b.registration_number);
-      if (b.bus_number) set.add(b.bus_number);
+      const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+      if (reg) set.add(reg);
     });
     records.forEach((r) => {
-      if (r.vehicle_number) set.add(r.vehicle_number);
+      const reg = (r.vehicle_number || '').split('(')[0].trim();
+      if (reg) set.add(reg);
     });
-    return Array.from(set);
+    return Array.from(set).sort();
   }, [buses, records]);
 
   return (
@@ -533,7 +544,7 @@ export const DailyMaintenance: React.FC = () => {
                       </td>
                       <td className="py-2 px-3 whitespace-nowrap">
                         <span className="font-mono font-black text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg text-sm">
-                          {r.vehicle_number}
+                          {(r.vehicle_number || '').split('(')[0].trim()}
                         </span>
                       </td>
                       <td className="py-2 px-3 whitespace-nowrap font-mono font-bold text-blue-700">
@@ -643,16 +654,18 @@ export const DailyMaintenance: React.FC = () => {
               >
                 <option value="">-- Select Vehicle --</option>
                 {buses.map((b) => {
-                  const reg = b.registration_number || b.bus_number;
+                  const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
                   return (
                     <option key={b.id} value={reg}>
-                      {reg} {b.model ? `(${b.model})` : ''}
+                      {reg}
                     </option>
                   );
                 })}
                 {formData.vehicle_number &&
-                  !buses.some((b) => (b.registration_number || b.bus_number) === formData.vehicle_number) && (
-                    <option value={formData.vehicle_number}>{formData.vehicle_number}</option>
+                  !buses.some((b) => (b.registration_number || b.bus_number || '').split('(')[0].trim() === (formData.vehicle_number || '').split('(')[0].trim()) && (
+                    <option value={(formData.vehicle_number || '').split('(')[0].trim()}>
+                      {(formData.vehicle_number || '').split('(')[0].trim()}
+                    </option>
                   )}
               </select>
             </div>

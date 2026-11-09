@@ -2750,7 +2750,7 @@ app.post('/api/daily-maintenance', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Vehicle number and Date are required' });
     }
 
-    const regNo = String(vehicle_number).trim();
+    const regNo = String(vehicle_number).split('(')[0].trim().toUpperCase();
     let busId = bus_id;
     if (!busId) {
       const matched = db.prepare('SELECT id FROM buses WHERE registration_number = ? OR bus_number = ?').get(regNo, regNo) as any;
@@ -2834,7 +2834,7 @@ app.put('/api/daily-maintenance/:id', (req: Request, res: Response) => {
       WHERE id = ?
     `).run(
       date || null,
-      vehicle_number ? String(vehicle_number).trim() : null,
+      vehicle_number ? String(vehicle_number).split('(')[0].trim().toUpperCase() : null,
       bus_id || null,
       km !== undefined ? Number(km) : null,
       complaints !== undefined ? complaints : null,
