@@ -41,11 +41,10 @@ export const PublicNavbar: React.FC = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    isActive(link.path)
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive(link.path)
                       ? 'text-blue-600 bg-blue-50 font-bold'
                       : 'text-slate-700 hover:text-[#142B4A] hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   {link.name}
                 </Link>
@@ -114,11 +113,10 @@ export const PublicNavbar: React.FC = () => {
                   key={link.path}
                   to={link.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                    isActive(link.path)
+                  className={`block px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${isActive(link.path)
                       ? 'text-blue-600 bg-blue-50 font-bold'
                       : 'text-slate-700 hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   {link.name}
                 </Link>

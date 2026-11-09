@@ -29,7 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
         if (parsed && (parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support'))) {
           return parsed;
         }
-      } catch {}
+      } catch { }
       return {
         id: 7,
         name: 'NEELAM HARISH',
@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
         if (parsed && parsed.role.toLowerCase().includes('captain')) {
           return parsed;
         }
-      } catch {}
+      } catch { }
       return {
         id: 2,
         name: 'Captain Lead',
@@ -64,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
       if (parsed && parsed.role.toLowerCase().includes('admin')) {
         return parsed;
       }
-    } catch {}
+    } catch { }
     return {
       id: 1,
       name: 'Admin Manager',
@@ -330,9 +330,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center space-x-2.5 p-1.5 rounded-xl hover:bg-white/10 transition-colors"
           >
-            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm border ${
-              isCaptain ? 'bg-[#142B4A] border-blue-400' : isOperator ? 'bg-emerald-600 border-emerald-400' : 'bg-[#142B4A] border-blue-500'
-            }`}>
+            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm border ${isCaptain ? 'bg-[#142B4A] border-blue-400' : isOperator ? 'bg-emerald-600 border-emerald-400' : 'bg-[#142B4A] border-blue-500'
+              }`}>
               {activeUser ? activeUser.name.slice(0, 2) : isCaptain ? 'CP' : isOperator ? 'OP' : 'AD'}
             </div>
             <div className="hidden md:flex flex-col text-left">
@@ -351,9 +350,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
               <div className="px-4 py-2 border-b border-slate-100">
                 <p className="font-bold text-slate-900">{activeUser?.name || 'User'}</p>
                 <p className="text-slate-500 truncate">{activeUser?.email || ''}</p>
-                <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${
-                  isCaptain ? 'bg-blue-50 text-blue-800' : isOperator ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
-                }`}>
+                <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${isCaptain ? 'bg-blue-50 text-blue-800' : isOperator ? 'bg-emerald-50 text-emerald-800' : 'bg-blue-50 text-blue-800'
+                  }`}>
                   {activeUser?.role || (isOperator ? 'Operator' : 'Admin')}
                 </span>
               </div>

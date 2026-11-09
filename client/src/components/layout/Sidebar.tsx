@@ -135,12 +135,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const vehicleManagementTabs: NavItemLeaf[] = [
     {
-      label: 'Vehicle Registration',
-      route: '/admin/vehicles',
-      icon: Bus,
-      activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management']
-    },
-    {
       label: 'Route Management',
       route: '/admin/routes',
       icon: Navigation,
@@ -192,6 +186,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const vehicleMaintenanceTabs: NavItemLeaf[] = [
     {
+      label: 'Vehicle Registration',
+      route: '/admin/vehicles',
+      icon: Bus,
+      activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management']
+    },
+    {
       label: 'Daily Vehicle Checkup',
       route: '/admin/daily-vehicle-checkup',
       icon: ClipboardCheck,
@@ -228,18 +228,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       label: 'Vehicle Management',
-      route: '/admin/vehicles',
+      route: '/admin/routes',
       icon: Truck,
       activeRoutes: [
-        '/admin/vehicles',
-        '/admin/buses',
-        '/admin/vehicle-registration',
-        '/admin/vehicle-management',
         '/admin/routes',
         '/admin/tasks',
         '/admin/organizers',
         '/admin/employee-registration',
         '/admin/employees',
+        '/admin/drivers',
+        '/admin/support-staff',
         '/admin/employee-payments',
         '/admin/earnings',
         '/admin/records',
@@ -251,6 +249,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       route: '/admin/vehicle-maintenance',
       icon: Wrench,
       activeRoutes: [
+        '/admin/vehicles',
+        '/admin/buses',
+        '/admin/vehicle-registration',
+        '/admin/vehicle-management',
         '/admin/vehicle-maintenance',
         '/admin/daily-vehicle-checkup',
         '/admin/vehicle-checkup',
@@ -426,11 +428,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     !isDashboard &&
     !isCaptain &&
     !isOperator &&
-    (location.pathname.startsWith('/admin/vehicles') ||
-      location.pathname.startsWith('/admin/buses') ||
-      location.pathname.startsWith('/admin/vehicle-registration') ||
-      location.pathname.startsWith('/admin/vehicle-management') ||
-      location.pathname.startsWith('/admin/routes') ||
+    (location.pathname.startsWith('/admin/routes') ||
       location.pathname.startsWith('/admin/tasks') ||
       location.pathname.startsWith('/admin/organizers') ||
       location.pathname.startsWith('/admin/employee-registration') ||
@@ -446,7 +444,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     !isDashboard &&
     !isCaptain &&
     !isOperator &&
-    (location.pathname.startsWith('/admin/daily-maintenance') ||
+    (location.pathname.startsWith('/admin/vehicles') ||
+      location.pathname.startsWith('/admin/buses') ||
+      location.pathname.startsWith('/admin/vehicle-registration') ||
+      location.pathname.startsWith('/admin/vehicle-management') ||
+      location.pathname.startsWith('/admin/daily-maintenance') ||
       location.pathname.startsWith('/admin/new-tyres') ||
       location.pathname.startsWith('/admin/tyres/new') ||
       location.pathname.startsWith('/admin/vehicle-maintenance') ||
@@ -605,8 +607,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   to="/admin/vehicle-maintenance"
                   onClick={() => setIsMobileOpen(false)}
                   className={`px-3.5 py-2.5 flex items-center justify-between rounded-2xl border transition-all cursor-pointer ${location.pathname.startsWith('/admin/vehicle-maintenance')
-                      ? 'bg-[#142B4A] text-white border-[#142B4A] shadow-md shadow-[#142B4A]/25'
-                      : 'bg-slate-100/80 border-slate-200/90 text-[#142B4A] hover:bg-slate-200/80'
+                    ? 'bg-[#142B4A] text-white border-[#142B4A] shadow-md shadow-[#142B4A]/25'
+                    : 'bg-slate-100/80 border-slate-200/90 text-[#142B4A] hover:bg-slate-200/80'
                     }`}
                   title="Vehicle Maintenance Overview"
                 >
