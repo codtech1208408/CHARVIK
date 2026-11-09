@@ -86,6 +86,7 @@ export function App() {
               <Route path="daily-kilometers" element={<DailyKilometers />} />
               <Route path="tyre-maintenance" element={<TyreMaintenance />} />
               <Route path="products" element={<ProductManagement />} />
+              <Route path="product-management" element={<Navigate to="/admin/products" replace />} />
               <Route path="cleaning" element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="routes" element={<RouteManagement />} />
               <Route path="organizers" element={<OrganizerManagement />} />

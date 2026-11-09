@@ -84,9 +84,17 @@ export const ALL_MODULE_CATEGORIES: ModuleCategoryItem[] = [
     id: 'new_tyres',
     name: 'New Tyres',
     route: '/admin/new-tyres',
-    icon: Package,
+    icon: CircleDot,
     activeRoutes: ['/admin/new-tyres', '/admin/tyres/new'],
     description: 'New tyre inventory, specifications, purchases & allotments'
+  },
+  {
+    id: 'product_management',
+    name: 'Product Management',
+    route: '/admin/products',
+    icon: Package,
+    activeRoutes: ['/admin/products', '/admin/product-management'],
+    description: 'Spare parts inventory, stock tracking & vehicle usage'
   },
   {
     id: 'captain_audit_record',

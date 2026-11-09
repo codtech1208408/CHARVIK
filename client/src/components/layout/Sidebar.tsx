@@ -206,8 +206,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       label: 'New Tyres',
       route: '/admin/new-tyres',
-      icon: Package,
+      icon: Disc,
       activeRoutes: ['/admin/new-tyres', '/admin/tyres/new']
+    },
+    {
+      label: 'Product Management',
+      route: '/admin/products',
+      icon: Package,
+      activeRoutes: ['/admin/products', '/admin/product-management']
     }
   ];
 
@@ -251,7 +257,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         '/admin/bus-condition',
         '/admin/daily-maintenance',
         '/admin/new-tyres',
-        '/admin/tyres/new'
+        '/admin/tyres/new',
+        '/admin/products',
+        '/admin/product-management'
       ]
     },
     {
@@ -449,6 +457,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       location.pathname.startsWith('/admin/daily-kilometers') ||
       location.pathname.startsWith('/admin/tyre-maintenance') ||
       location.pathname.startsWith('/admin/products') ||
+      location.pathname.startsWith('/admin/product-management') ||
       location.pathname.startsWith('/admin/cleaning') ||
       location.pathname.startsWith('/admin/maintenance-schedule') ||
       location.pathname.startsWith('/admin/ac-maintenance') ||
