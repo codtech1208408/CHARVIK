@@ -1360,14 +1360,6 @@ export const VehicleMaintenance: React.FC = () => {
             <Download className="w-4 h-4 text-slate-600" />
             <span>Export Excel</span>
           </button>
-          <button
-            type="button"
-            onClick={handleOpenAddVehicle}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-white" />
-            <span>+ Add Vehicle</span>
-          </button>
         </div>
       </div>
 
