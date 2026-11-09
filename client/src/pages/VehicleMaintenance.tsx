@@ -1566,9 +1566,7 @@ export const VehicleMaintenance: React.FC = () => {
                             <span className="font-mono text-slate-500 text-xs">
                               {s.intervalType === 'km'
                                 ? `${s.nextDueKm.toLocaleString('en-IN')} KM`
-                                : s.name.includes('week') || s.name.includes('Weekly') || s.interval === 7
-                                ? 'Weekly'
-                                : 'Monthly'}
+                                : s.intervalLabel || 'Scheduled'}
                             </span>
 
                             <span

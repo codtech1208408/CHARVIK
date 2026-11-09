@@ -606,18 +606,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink
                   to="/admin/vehicle-maintenance"
                   onClick={() => setIsMobileOpen(false)}
-                  className={`px-3.5 py-2.5 flex items-center justify-between rounded-2xl border transition-all cursor-pointer ${
-                    location.pathname.startsWith('/admin/vehicle-maintenance')
+                  className={`px-3.5 py-2.5 flex items-center justify-between rounded-2xl border transition-all cursor-pointer ${location.pathname.startsWith('/admin/vehicle-maintenance')
                       ? 'bg-[#142B4A] text-white border-[#142B4A] shadow-md shadow-[#142B4A]/25'
                       : 'bg-slate-100/80 border-slate-200/90 text-[#142B4A] hover:bg-slate-200/80'
-                  }`}
+                    }`}
                   title="Vehicle Maintenance Overview"
                 >
                   <div className="flex items-center gap-2">
                     <Wrench
-                      className={`w-4 h-4 shrink-0 ${
-                        location.pathname.startsWith('/admin/vehicle-maintenance') ? 'text-white' : 'text-[#142B4A]'
-                      }`}
+                      className={`w-4 h-4 shrink-0 ${location.pathname.startsWith('/admin/vehicle-maintenance') ? 'text-white' : 'text-[#142B4A]'
+                        }`}
                     />
                     <span className="text-xs font-black uppercase tracking-wider">Vehicle Maintenance</span>
                   </div>

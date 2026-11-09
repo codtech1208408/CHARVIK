@@ -2263,15 +2263,20 @@ app.delete('/api/maintenance-schedules/:id', (req: Request, res: Response) => {
 
 // ================= FLEET VEHICLE MAINTENANCE =================
 const FLEET_SERVICE_SPECS = [
-  { key: 'general_bus_service', name: 'General Bus Service', intervalType: 'km', interval: 120000, label: 'Every 1,20,000 KM' },
-  { key: 'diesel_filter_replacement', name: 'Diesel Filter Replacement', intervalType: 'km', interval: 30000, label: 'Every 30,000 KM' },
-  { key: 'adblue_filter_replacement', name: 'AdBlue Filter Replacement', intervalType: 'km', interval: 30000, label: 'Every 30,000 KM' },
+  { key: 'general_bus_service', name: 'General Bus Service', intervalType: 'km', interval: 60000, label: 'Every 60,000 KM' },
+  { key: 'diesel_filter_replacement', name: 'Diesel Filter Replacement', intervalType: 'km', interval: 60000, label: 'Every 60,000 KM' },
+  { key: 'adblue_filter_replacement', name: 'AdBlue Filter Replacement', intervalType: 'km', interval: 60000, label: 'Every 60,000 KM' },
   { key: 'dpf_filter_cleaning', name: 'DPF Filter Cleaning', intervalType: 'km', interval: 100000, label: 'Every 1,00,000 KM' },
   { key: 'wheel_alignment', name: 'Wheel Alignment', intervalType: 'km', interval: 10000, label: 'Every 10,000 KM' },
   { key: 'tyre_rotation', name: 'Tyre Rotation', intervalType: 'km', interval: 10000, label: 'Every 10,000 KM' },
   { key: 'ac_filter_cleaning', name: 'AC Filter Cleaning', intervalType: 'date', interval: 7, label: 'Every week' },
-  { key: 'radiator_cleaning', name: 'Radiator Cleaning', intervalType: 'km', interval: 100000, label: 'Every 1,00,000 KM' },
-  { key: 'ac_general_service', name: 'AC General Service', intervalType: 'date', interval: 30, label: 'Monthly' }
+  { key: 'radiator_cleaning', name: 'Radiator Cleaning', intervalType: 'km', interval: 200000, label: 'Every 2,00,000 KM' },
+  { key: 'ac_general_service', name: 'AC General Service', intervalType: 'date', interval: 90, label: '3-monthly' },
+  { key: 'vehicle_schedule_service', name: 'Vehicle Schedule Service', intervalType: 'km', interval: 60000, label: 'Every 60,000 KM' },
+  { key: 'battery_service', name: 'Battery Service', intervalType: 'km', interval: 120000, label: 'Every 1,20,000 KM' },
+  { key: 'vehicle_deep_cleaning', name: 'Vehicle Deep Cleaning', intervalType: 'date', interval: 30, label: 'Every month one time' },
+  { key: 'break_liner', name: 'Break Liner', intervalType: 'km', interval: 30000, label: 'Every 30,000 KM' },
+  { key: 'vehicle_greecing', name: 'Vehicle Greecing', intervalType: 'date', interval: 10, label: 'Every 10 days' }
 ];
 
 app.get('/api/fleet-maintenance', (req: Request, res: Response) => {
@@ -2330,6 +2335,11 @@ app.get('/api/fleet-maintenance', (req: Request, res: Response) => {
           else if (spec.key === 'ac_filter_cleaning') { lastDoneKm = 312000; lastDoneDate = '2026-11-01'; }
           else if (spec.key === 'radiator_cleaning') { lastDoneKm = 220000; lastDoneDate = '2026-01-15'; }
           else if (spec.key === 'ac_general_service') { lastDoneKm = 310000; lastDoneDate = '2026-10-10'; }
+          else if (spec.key === 'vehicle_schedule_service') { lastDoneKm = 270000; lastDoneDate = '2026-06-20'; }
+          else if (spec.key === 'battery_service') { lastDoneKm = 240000; lastDoneDate = '2026-03-10'; }
+          else if (spec.key === 'vehicle_deep_cleaning') { lastDoneDate = '2026-10-25'; }
+          else if (spec.key === 'break_liner') { lastDoneKm = 295000; lastDoneDate = '2026-09-15'; }
+          else if (spec.key === 'vehicle_greecing') { lastDoneDate = '2026-11-04'; }
         } else if (!latest && bus.bus_number === 'HR55X1200') {
           if (spec.key === 'general_bus_service') { lastDoneKm = 5000; lastDoneDate = '2026-05-10'; }
           else if (spec.key === 'diesel_filter_replacement') { lastDoneKm = 36000; lastDoneDate = '2026-08-15'; }
@@ -2340,6 +2350,11 @@ app.get('/api/fleet-maintenance', (req: Request, res: Response) => {
           else if (spec.key === 'ac_filter_cleaning') { lastDoneKm = 65000; lastDoneDate = '2026-11-05'; }
           else if (spec.key === 'radiator_cleaning') { lastDoneKm = 0; lastDoneDate = '2026-01-01'; }
           else if (spec.key === 'ac_general_service') { lastDoneKm = 60000; lastDoneDate = '2026-10-20'; }
+          else if (spec.key === 'vehicle_schedule_service') { lastDoneKm = 36000; lastDoneDate = '2026-08-15'; }
+          else if (spec.key === 'battery_service') { lastDoneKm = 0; lastDoneDate = '2026-01-01'; }
+          else if (spec.key === 'vehicle_deep_cleaning') { lastDoneDate = '2026-10-28'; }
+          else if (spec.key === 'break_liner') { lastDoneKm = 45000; lastDoneDate = '2026-07-10'; }
+          else if (spec.key === 'vehicle_greecing') { lastDoneDate = '2026-11-05'; }
         } else if (!latest && bus.bus_number === 'MH12Q8811') {
           if (spec.key === 'general_bus_service') { lastDoneKm = 12000; lastDoneDate = '2026-06-15'; }
           else if (spec.key === 'diesel_filter_replacement') { lastDoneKm = 60000; lastDoneDate = '2026-09-01'; }
@@ -2350,6 +2365,11 @@ app.get('/api/fleet-maintenance', (req: Request, res: Response) => {
           else if (spec.key === 'ac_filter_cleaning') { lastDoneKm = 87000; lastDoneDate = '2026-10-30'; }
           else if (spec.key === 'radiator_cleaning') { lastDoneKm = 0; lastDoneDate = '2026-01-01'; }
           else if (spec.key === 'ac_general_service') { lastDoneKm = 85000; lastDoneDate = '2026-10-09'; }
+          else if (spec.key === 'vehicle_schedule_service') { lastDoneKm = 60000; lastDoneDate = '2026-09-01'; }
+          else if (spec.key === 'battery_service') { lastDoneKm = 0; lastDoneDate = '2026-01-01'; }
+          else if (spec.key === 'vehicle_deep_cleaning') { lastDoneDate = '2026-10-20'; }
+          else if (spec.key === 'break_liner') { lastDoneKm = 70000; lastDoneDate = '2026-08-20'; }
+          else if (spec.key === 'vehicle_greecing') { lastDoneDate = '2026-11-03'; }
         }
 
         let nextDueKm = 0;
