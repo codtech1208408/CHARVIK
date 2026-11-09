@@ -11,6 +11,7 @@ import {
   Upload,
   Trash2,
   Edit2,
+  Check,
   Eye,
   Printer,
   X,
@@ -117,6 +118,8 @@ export const CaptainAuditRecord: React.FC = () => {
   const [staffPictures, setStaffPictures] = useState<string[]>([]);
   const [cleaningPictures, setCleaningPictures] = useState<string[]>([]);
   const [amenities, setAmenities] = useState<AmenityCheckItem[]>([]);
+  const [editingAmenityIndex, setEditingAmenityIndex] = useState<number | null>(null);
+  const [editingAmenityName, setEditingAmenityName] = useState<string>('');
   const [generalRemarks, setGeneralRemarks] = useState('');
 
   const [uploadingStaffPhoto, setUploadingStaffPhoto] = useState(false);
@@ -328,19 +331,48 @@ export const CaptainAuditRecord: React.FC = () => {
     });
   };
 
+  const handleStartEditAmenity = (index: number) => {
+    setEditingAmenityIndex(index);
+    setEditingAmenityName(amenities[index]?.name || '');
+  };
+
+  const handleSaveEditAmenity = (index: number) => {
+    if (editingAmenityName.trim()) {
+      setAmenities((prev) => {
+        const copy = [...prev];
+        copy[index] = { ...copy[index], name: editingAmenityName.trim() };
+        return copy;
+      });
+    }
+    setEditingAmenityIndex(null);
+    setEditingAmenityName('');
+  };
+
+  const handleCancelEditAmenity = () => {
+    setEditingAmenityIndex(null);
+    setEditingAmenityName('');
+  };
+
   const handleAddMoreAmenity = () => {
+    const defaultName = `New Amenity ${amenities.length + 1}`;
     const newItem: AmenityCheckItem = {
       id: `custom-amenity-${Date.now()}`,
-      name: '',
+      name: defaultName,
       status: 'OK',
       remarks: '',
       isCustom: true
     };
     setAmenities((prev) => [...prev, newItem]);
+    setEditingAmenityIndex(amenities.length);
+    setEditingAmenityName(defaultName);
   };
 
   const handleRemoveAmenity = (index: number) => {
     setAmenities((prev) => prev.filter((_, i) => i !== index));
+    if (editingAmenityIndex === index) {
+      setEditingAmenityIndex(null);
+      setEditingAmenityName('');
+    }
   };
 
   // Submit Handler
@@ -823,62 +855,7 @@ export const CaptainAuditRecord: React.FC = () => {
         maxWidth="max-w-4xl"
       >
         <form onSubmit={handleSubmitAudit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-          {/* Card 1: Staff Picture (Image 1) */}
-          <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-black text-slate-800 flex items-center gap-1">
-                  Staff Picture <span className="text-rose-500 font-bold">*</span>
-                </label>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Upload up to 5 supported files. Max 10 MB per file.
-                </p>
-              </div>
-              <span className="text-xs font-bold text-slate-400">
-                {staffPictures.length} / 5 uploaded
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {staffPictures.map((picUrl, idx) => (
-                <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-slate-300 bg-white">
-                  <img src={picUrl} alt={`Staff ${idx + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(idx, 'staff')}
-                    className="absolute top-1 right-1 p-1 bg-rose-600/90 hover:bg-rose-700 text-white rounded-full transition-colors cursor-pointer shadow-sm"
-                    title="Remove"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-
-              {staffPictures.length < 5 && (
-                <div>
-                  <input
-                    type="file"
-                    ref={staffFileInputRef}
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => handleFileUpload(e, 'staff')}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => staffFileInputRef.current?.click()}
-                    disabled={uploadingStaffPhoto}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-blue-600 border border-blue-300 rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    <Upload className="w-4 h-4" />
-                    <span>{uploadingStaffPhoto ? 'Uploading...' : 'Add file'}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card 2: Bus Number (Image 1) */}
+          {/* Card 1: Bus Number */}
           <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-2">
             <label className="text-sm font-black text-slate-800 flex items-center gap-1">
               Bus Number <span className="text-rose-500 font-bold">*</span>
@@ -894,16 +871,20 @@ export const CaptainAuditRecord: React.FC = () => {
                 className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl font-bold uppercase tracking-wide focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
               <datalist id="buses-datalist">
-                {buses.map((b: any) => (
-                  <option key={b.id} value={b.bus_number}>
-                    {b.bus_number} - {b.bus_type || 'Fleet'}
-                  </option>
+                {Array.from(
+                  new Set(
+                    buses
+                      .map((b: any) => (b.bus_number || b.registration_number || '').trim())
+                      .filter(Boolean)
+                  )
+                ).map((busNo) => (
+                  <option key={busNo} value={busNo} />
                 ))}
               </datalist>
             </div>
           </div>
 
-          {/* Card 3: Route & Crew Details (Image 2) */}
+          {/* Card 2: Route & Captain Information (Driver fields removed) */}
           <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-4">
             <h3 className="text-sm font-black text-slate-800 border-b border-slate-200/80 pb-2">
               Route & Crew Information
@@ -960,37 +941,9 @@ export const CaptainAuditRecord: React.FC = () => {
                 />
               </div>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  Driver Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Your answer"
-                  value={driverName}
-                  onChange={(e) => setDriverName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  Driver Number
-                </label>
-                <input
-                  type="tel"
-                  placeholder="Your answer"
-                  value={driverPhone}
-                  onChange={(e) => setDriverPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                />
-              </div>
-            </div>
           </div>
 
-          {/* Card 4: Amenities Checklist (Image 3 & Image 4 layout) */}
+          {/* Card 3: Amenities Checklist with Edit & Delete */}
           <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -998,7 +951,7 @@ export const CaptainAuditRecord: React.FC = () => {
                   Amenties
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Check each item as OK or Not OK. Add notes in Remarks if anything is deficient.
+                  Check each item as OK or Not OK. Use Edit or Delete to manage items.
                 </p>
               </div>
 
@@ -1021,7 +974,7 @@ export const CaptainAuditRecord: React.FC = () => {
                     <th className="py-2.5 px-3 text-center w-20">OK</th>
                     <th className="py-2.5 px-3 text-center w-20">Not OK</th>
                     <th className="py-2.5 px-3.5">Remarks</th>
-                    <th className="py-2.5 px-2 w-10 text-center"></th>
+                    <th className="py-2.5 px-2.5 w-24 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -1032,21 +985,46 @@ export const CaptainAuditRecord: React.FC = () => {
                     return (
                       <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="py-2.5 px-3.5 font-medium text-slate-800">
-                          {item.isCustom ? (
-                            <input
-                              type="text"
-                              required
-                              placeholder="Enter amenity name..."
-                              value={item.name}
-                              onChange={(e) => handleCustomAmenityNameChange(idx, e.target.value)}
-                              className="w-full px-2 py-1 text-xs border border-blue-300 rounded-lg focus:outline-hidden font-semibold text-blue-900 bg-blue-50/30"
-                            />
+                          {editingAmenityIndex === idx ? (
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="text"
+                                value={editingAmenityName}
+                                onChange={(e) => setEditingAmenityName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleSaveEditAmenity(idx);
+                                  } else if (e.key === 'Escape') {
+                                    handleCancelEditAmenity();
+                                  }
+                                }}
+                                className="w-full px-2 py-1 text-xs border border-blue-400 rounded-lg focus:outline-hidden font-semibold text-slate-900 bg-white"
+                                autoFocus
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEditAmenity(idx)}
+                                className="p-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shrink-0"
+                                title="Save Name"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleCancelEditAmenity}
+                                className="p-1 rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300 cursor-pointer shrink-0"
+                                title="Cancel"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           ) : (
-                            <span>{item.name}</span>
+                            <span className="font-semibold text-slate-800">{item.name}</span>
                           )}
                         </td>
 
-                        {/* OK Button (Solid Square when checked like Image 4) */}
+                        {/* OK Button */}
                         <td className="py-2.5 px-3 text-center">
                           <button
                             type="button"
@@ -1087,18 +1065,37 @@ export const CaptainAuditRecord: React.FC = () => {
                           />
                         </td>
 
-                        {/* Action column (delete for custom amenities) */}
-                        <td className="py-2 px-2 text-center">
-                          {item.isCustom && (
+                        {/* Actions column: Edit & Delete for all amenities */}
+                        <td className="py-2 px-2.5 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            {editingAmenityIndex === idx ? (
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEditAmenity(idx)}
+                                className="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                                title="Save amenity name"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleStartEditAmenity(idx)}
+                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                title="Edit amenity name"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => handleRemoveAmenity(idx)}
-                              className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                              className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                               title="Delete amenity"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
-                          )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1116,7 +1113,7 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 5: Bus Cleaning Picture (Image 3) */}
+          {/* Card 4: Bus Cleaning Picture */}
           <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-3">
             <div className="flex items-center justify-between">
               <div>
@@ -1165,6 +1162,61 @@ export const CaptainAuditRecord: React.FC = () => {
                   >
                     <Upload className="w-4 h-4" />
                     <span>{uploadingCleaningPhoto ? 'Uploading...' : 'Add file'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card 5: Staff Picture (Placed BELOW Bus Cleaning Picture as requested) */}
+          <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-black text-slate-800 flex items-center gap-1">
+                  Staff Picture <span className="text-rose-500 font-bold">*</span>
+                </label>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Upload up to 5 supported files. Max 10 MB per file.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-slate-400">
+                {staffPictures.length} / 5 uploaded
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {staffPictures.map((picUrl, idx) => (
+                <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-slate-300 bg-white">
+                  <img src={picUrl} alt={`Staff ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(idx, 'staff')}
+                    className="absolute top-1 right-1 p-1 bg-rose-600/90 hover:bg-rose-700 text-white rounded-full transition-colors cursor-pointer shadow-sm"
+                    title="Remove"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+
+              {staffPictures.length < 5 && (
+                <div>
+                  <input
+                    type="file"
+                    ref={staffFileInputRef}
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleFileUpload(e, 'staff')}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => staffFileInputRef.current?.click()}
+                    disabled={uploadingStaffPhoto}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-blue-600 border border-blue-300 rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>{uploadingStaffPhoto ? 'Uploading...' : 'Add file'}</span>
                   </button>
                 </div>
               )}
@@ -1361,26 +1413,6 @@ export const CaptainAuditRecord: React.FC = () => {
 
               {/* Photos Gallery */}
               <div className="space-y-4 print:break-inside-avoid">
-                {/* Staff Pictures */}
-                {viewRecord.staff_pictures && viewRecord.staff_pictures.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
-                      Staff Pictures ({viewRecord.staff_pictures.length})
-                    </h4>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                      {viewRecord.staff_pictures.map((pic, i) => (
-                        <div
-                          key={i}
-                          onClick={() => setActivePhotoModal(pic)}
-                          className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer hover:opacity-90 shadow-2xs"
-                        >
-                          <img src={pic} alt={`Staff ${i + 1}`} className="w-full h-full object-cover" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* Bus Cleaning Pictures */}
                 {viewRecord.cleaning_pictures && viewRecord.cleaning_pictures.length > 0 && (
                   <div>
@@ -1395,6 +1427,26 @@ export const CaptainAuditRecord: React.FC = () => {
                           className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer hover:opacity-90 shadow-2xs"
                         >
                           <img src={pic} alt={`Cleaning ${i + 1}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Staff Pictures (Below Bus Cleaning Pictures) */}
+                {viewRecord.staff_pictures && viewRecord.staff_pictures.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
+                      Staff Pictures ({viewRecord.staff_pictures.length})
+                    </h4>
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                      {viewRecord.staff_pictures.map((pic, i) => (
+                        <div
+                          key={i}
+                          onClick={() => setActivePhotoModal(pic)}
+                          className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer hover:opacity-90 shadow-2xs"
+                        >
+                          <img src={pic} alt={`Staff ${i + 1}`} className="w-full h-full object-cover" />
                         </div>
                       ))}
                     </div>
