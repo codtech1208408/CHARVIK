@@ -1138,11 +1138,14 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       enrich: (items) => {
         const buses = getLocalCollection<any>('buses');
         return items.map(n => {
-          const bus = buses.find(b => String(b.id) === String(n.allocated_bus_id));
+          const bus = buses.find(b => String(b.id) === String(n.allocated_bus_id) || b.registration_number === n.vehicle_number || b.bus_number === n.vehicle_number);
+          const vNum = n.vehicle_number || bus?.registration_number || bus?.bus_number || (n.allocated_bus_id ? `Bus #${n.allocated_bus_id}` : '—');
           return {
             ...n,
-            bus_number: bus?.bus_number || (n.allocated_bus_id ? `Bus #${n.allocated_bus_id}` : '-'),
-            registration_number: bus?.registration_number || '-'
+            vehicle_number: vNum,
+            total_km: n.total_km ?? n.km ?? n.present_km ?? 0,
+            bus_number: bus?.bus_number || vNum,
+            registration_number: bus?.registration_number || vNum
           };
         });
       },

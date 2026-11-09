@@ -3002,7 +3002,9 @@ app.get('/api/new-tyres', (req: Request, res: Response) => {
   try {
     const { status, bus_id } = req.query;
     let query = `
-      SELECT n.*, b.bus_number, b.registration_number
+      SELECT n.*, b.bus_number, b.registration_number,
+        COALESCE(b.registration_number, b.bus_number, n.allocated_bus_number) as vehicle_number,
+        COALESCE(n.present_km, n.km, 0) as total_km
       FROM new_tyres n
       LEFT JOIN buses b ON n.allocated_bus_id = b.id
       WHERE 1=1
@@ -3027,10 +3029,18 @@ app.get('/api/new-tyres', (req: Request, res: Response) => {
 app.post('/api/new-tyres', (req: Request, res: Response) => {
   try {
     const n = req.body;
-    const initialKm = Number(n.km) || 0;
-    const presentKm = Number(n.present_km) || 0;
+    const totalKm = Number(n.total_km) || Number(n.km) || 0;
+    const initialKm = totalKm;
+    const presentKm = Number(n.present_km) || totalKm;
     const runningKm = presentKm >= initialKm ? presentKm - initialKm : (Number(n.running_km) || 0);
     const supplierVal = n.supplier_name || n.supplier || '';
+
+    let busId = n.allocated_bus_id;
+    if (!busId && n.vehicle_number) {
+      const cleanV = String(n.vehicle_number).split('(')[0].trim();
+      const bRow = db.prepare('SELECT id FROM buses WHERE registration_number = ? OR bus_number = ?').get(cleanV, cleanV) as any;
+      if (bRow) busId = bRow.id;
+    }
 
     const stmt = db.prepare(`
       INSERT INTO new_tyres (
@@ -3053,8 +3063,8 @@ app.post('/api/new-tyres', (req: Request, res: Response) => {
       supplierVal,
       n.invoice_number || '',
       Number(n.purchase_cost) || 0,
-      n.status || 'In Stock',
-      n.allocated_bus_id || null,
+      n.status || (busId ? 'Allocated' : 'In Stock'),
+      busId || null,
       n.allocated_wheel_position || '',
       n.notes || '',
       n.tyre_photo_url || '',
@@ -3072,10 +3082,18 @@ app.put('/api/new-tyres/:id', (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const n = req.body;
-    const initialKm = Number(n.km) || 0;
-    const presentKm = Number(n.present_km) || 0;
+    const totalKm = Number(n.total_km) || Number(n.km) || 0;
+    const initialKm = totalKm;
+    const presentKm = Number(n.present_km) || totalKm;
     const runningKm = presentKm >= initialKm ? presentKm - initialKm : (Number(n.running_km) || 0);
     const supplierVal = n.supplier_name || n.supplier || '';
+
+    let busId = n.allocated_bus_id;
+    if (!busId && n.vehicle_number) {
+      const cleanV = String(n.vehicle_number).split('(')[0].trim();
+      const bRow = db.prepare('SELECT id FROM buses WHERE registration_number = ? OR bus_number = ?').get(cleanV, cleanV) as any;
+      if (bRow) busId = bRow.id;
+    }
 
     db.prepare(`
       UPDATE new_tyres SET
@@ -3097,8 +3115,8 @@ app.put('/api/new-tyres/:id', (req: Request, res: Response) => {
       supplierVal,
       n.invoice_number || '',
       Number(n.purchase_cost) || 0,
-      n.status || 'In Stock',
-      n.allocated_bus_id || null,
+      n.status || (busId ? 'Allocated' : 'In Stock'),
+      busId || null,
       n.allocated_wheel_position || '',
       n.notes || '',
       n.tyre_photo_url || '',
