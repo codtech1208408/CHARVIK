@@ -224,9 +224,7 @@ export const BusCondition: React.FC = () => {
   const busSearchOptions: SearchOption[] = React.useMemo(() => {
     return buses.map((b) => ({
       value: String(b.id),
-      label: b.registration_number || b.bus_number,
-      badge: b.bus_number,
-      sublabel: [b.make, b.model].filter(Boolean).join(' ') || undefined
+      label: (b.registration_number || b.bus_number || '').split('(')[0].trim().toUpperCase()
     }));
   }, [buses]);
 
@@ -814,7 +812,7 @@ export const BusCondition: React.FC = () => {
             <option value="">All Fleet Buses</option>
             {buses.map((b) => (
               <option key={b.id} value={b.id}>
-                {b.registration_number || b.bus_number} ({b.bus_number})
+                {(b.registration_number || b.bus_number || '').split('(')[0].trim().toUpperCase()}
               </option>
             ))}
           </select>
