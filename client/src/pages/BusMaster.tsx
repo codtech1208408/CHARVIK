@@ -147,6 +147,8 @@ export const BusMaster: React.FC = () => {
     registration_number: '',
     bus_type: '',
     operational_status: '',
+    chassis_number: '',
+    engine_number: '',
     registration_date: '',
     tax_valid_upto: '',
     insurance_expiry: '',
@@ -187,6 +189,8 @@ export const BusMaster: React.FC = () => {
       registration_number: '',
       bus_type: '',
       operational_status: '',
+      chassis_number: '',
+      engine_number: '',
       registration_date: '',
       tax_valid_upto: '',
       insurance_expiry: '',
@@ -205,6 +209,8 @@ export const BusMaster: React.FC = () => {
       registration_number: bus.registration_number,
       bus_type: bus.bus_type || '',
       operational_status: bus.operational_status || '',
+      chassis_number: bus.chassis_number || '',
+      engine_number: bus.engine_number || '',
       registration_date: bus.registration_date || '',
       tax_valid_upto: bus.tax_valid_upto || '',
       insurance_expiry: bus.insurance_expiry || '',
@@ -317,7 +323,9 @@ export const BusMaster: React.FC = () => {
     const reg = String(b.registration_number || '').toLowerCase();
     const num = String(b.bus_number || '').toLowerCase();
     const type = String(b.bus_type || '').toLowerCase();
-    const matchesSearch = !s || reg.includes(s) || num.includes(s) || type.includes(s);
+    const chassis = String(b.chassis_number || '').toLowerCase();
+    const engine = String(b.engine_number || '').toLowerCase();
+    const matchesSearch = !s || reg.includes(s) || num.includes(s) || type.includes(s) || chassis.includes(s) || engine.includes(s);
 
     if (!matchesSearch) return false;
 
@@ -679,6 +687,12 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                             {b.bus_type}
                           </span>
                         )}
+                        {(b.chassis_number || b.engine_number) && (
+                          <div className="text-[9px] font-mono text-slate-400 truncate mt-0.5 flex flex-wrap gap-x-2">
+                            {b.chassis_number && <span>Ch: <span className="font-bold text-slate-600">{b.chassis_number}</span></span>}
+                            {b.engine_number && <span>Eng: <span className="font-bold text-slate-600">{b.engine_number}</span></span>}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -863,7 +877,16 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                   filteredBuses.map((b, index) => (
                     <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
-                      <td className="py-2 px-3 font-mono font-bold text-[#142B4A] text-sm">{b.registration_number}</td>
+                      <td className="py-2 px-3 font-mono font-bold text-[#142B4A] text-sm">
+                        <div>{b.registration_number}</div>
+                        {(b.chassis_number || b.engine_number) && (
+                          <div className="text-[10px] font-mono font-normal text-slate-500 flex items-center gap-1.5 mt-0.5">
+                            {b.chassis_number && <span>Ch: <span className="font-semibold text-slate-700">{b.chassis_number}</span></span>}
+                            {b.chassis_number && b.engine_number && <span>•</span>}
+                            {b.engine_number && <span>Eng: <span className="font-semibold text-slate-700">{b.engine_number}</span></span>}
+                          </div>
+                        )}
+                      </td>
                       <td className="py-2 px-3 font-medium text-slate-800">{b.bus_type || '—'}</td>
                       <td className="py-2 px-3">
                         {(() => {
@@ -1012,6 +1035,31 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
             </div>
           </div>
 
+          {/* Vehicle Identification Numbers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Chassis Number</label>
+              <input
+                type="text"
+                value={formData.chassis_number || ''}
+                onChange={(e) => setFormData({ ...formData, chassis_number: e.target.value.toUpperCase() })}
+                placeholder="e.g. YS2S4X2000551024"
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none uppercase font-semibold font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Engine Number</label>
+              <input
+                type="text"
+                value={formData.engine_number || ''}
+                onChange={(e) => setFormData({ ...formData, engine_number: e.target.value.toUpperCase() })}
+                placeholder="e.g. DC091209451"
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none uppercase font-semibold font-mono"
+              />
+            </div>
+          </div>
+
           {/* Compliance & Document Expiry Dates */}
           <div className="pt-3 border-t border-slate-100 space-y-3">
             <div className="flex items-center gap-2">
@@ -1146,7 +1194,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
         >
           <div className="space-y-4">
             {/* Top specs summary */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Status</span>
                 <Badge status={viewingBusDetails.bus.operational_status} />
@@ -1154,6 +1202,14 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Bus Type</span>
                 <span className="font-bold text-slate-800">{viewingBusDetails.bus.bus_type || 'Standard'}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Chassis Number</span>
+                <span className="font-mono font-bold text-slate-800">{viewingBusDetails.bus.chassis_number || '—'}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Engine Number</span>
+                <span className="font-mono font-bold text-slate-800">{viewingBusDetails.bus.engine_number || '—'}</span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Insurance Valid Till</span>
