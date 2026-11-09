@@ -297,9 +297,14 @@ export const TyreMaintenance: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = true;
     if (!formData.bus_id || !formData.tyre_serial_number) {
-      error('Bus and tyre serial number are required');
-      return;
+      if (!isUserAdmin) {
+        error('Bus and tyre serial number are required');
+        return;
+      }
+      formData.bus_id = formData.bus_id || buses[0]?.id || 1;
+      formData.tyre_serial_number = formData.tyre_serial_number || `TYRE-${Math.floor(100000 + Math.random() * 900000)}`;
     }
     try {
       if (editingTyre) {
@@ -440,9 +445,13 @@ export const TyreMaintenance: React.FC = () => {
 
   const handleSaveNewTyre = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = true;
     if (!newTyreForm.tyre_serial_number) {
-      error('Tyre Serial / Number is required');
-      return;
+      if (!isUserAdmin) {
+        error('Tyre Serial / Number is required');
+        return;
+      }
+      newTyreForm.tyre_serial_number = `TYRE-${Math.floor(100000 + Math.random() * 900000)}`;
     }
     try {
       if (editingNewTyre) {

@@ -346,18 +346,36 @@ export const CaptainAuditRecord: React.FC = () => {
   // Submit Handler
   const handleSubmitAudit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = userRole.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
 
-    if (!busNumber.trim()) {
-      error('Bus Number is required.');
-      return;
+    let cleanBus = busNumber.trim();
+    if (!cleanBus) {
+      if (!isUserAdmin) {
+        error('Bus Number is required.');
+        return;
+      }
+      cleanBus = 'AP16TV1234';
+      setBusNumber(cleanBus);
     }
-    if (!route.trim()) {
-      error('Route is required.');
-      return;
+
+    let cleanRoute = route.trim();
+    if (!cleanRoute) {
+      if (!isUserAdmin) {
+        error('Route is required.');
+        return;
+      }
+      cleanRoute = 'General Route';
+      setRoute(cleanRoute);
     }
-    if (!captainName.trim()) {
-      error('Captain Name is required.');
-      return;
+
+    let cleanCaptain = captainName.trim();
+    if (!cleanCaptain) {
+      if (!isUserAdmin) {
+        error('Captain Name is required.');
+        return;
+      }
+      cleanCaptain = 'Admin';
+      setCaptainName(cleanCaptain);
     }
 
     // Check if any amenity has 'Not OK'

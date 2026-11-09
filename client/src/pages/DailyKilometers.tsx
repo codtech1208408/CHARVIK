@@ -227,26 +227,40 @@ export const DailyKilometers: React.FC = () => {
   // Save Record
   const handleSaveRecord = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.vehicle_number.trim()) {
-      error('Please select a vehicle.');
-      return;
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
+    if (!formData.vehicle_number?.trim()) {
+      if (!isUserAdmin) {
+        error('Please select a vehicle.');
+        return;
+      }
+      formData.vehicle_number = 'AP16TV1234';
     }
 
-    const last = Number(formData.last_fuel_km);
-    const end = Number(formData.end_trip_km);
-    const liters = Number(formData.fuel_liters);
+    let last = Number(formData.last_fuel_km);
+    let end = Number(formData.end_trip_km);
+    let liters = Number(formData.fuel_liters);
 
     if (isNaN(last) || last < 0) {
-      error('Please enter valid Last Fuel KM.');
-      return;
+      if (!isUserAdmin) {
+        error('Please enter valid Last Fuel KM.');
+        return;
+      }
+      last = 0;
     }
     if (isNaN(end) || end < last) {
-      error('End Trip KM must be greater than or equal to Last Fuel KM.');
-      return;
+      if (!isUserAdmin) {
+        error('End Trip KM must be greater than or equal to Last Fuel KM.');
+        return;
+      }
+      end = last;
     }
     if (isNaN(liters) || liters <= 0) {
-      error('Please enter valid Fuel Quantity in liters (greater than 0).');
-      return;
+      if (!isUserAdmin) {
+        error('Please enter valid Fuel Quantity in liters (greater than 0).');
+        return;
+      }
+      liters = 1;
     }
 
     const totalKm = end - last;

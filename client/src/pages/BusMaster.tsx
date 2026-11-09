@@ -225,17 +225,28 @@ export const BusMaster: React.FC = () => {
 
   const handleSaveBus = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.registration_number.trim()) {
-      error('Please enter Registration Number');
-      return;
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
+    if (!formData.registration_number?.trim()) {
+      if (!isUserAdmin) {
+        error('Please enter Registration Number');
+        return;
+      }
+      formData.registration_number = `BUS-${Math.floor(1000 + Math.random() * 9000)}`;
     }
     if (!formData.bus_type) {
-      error('Please select Bus Type');
-      return;
+      if (!isUserAdmin) {
+        error('Please select Bus Type');
+        return;
+      }
+      formData.bus_type = 'Full Sleeper';
     }
     if (!formData.operational_status) {
-      error('Please select Status');
-      return;
+      if (!isUserAdmin) {
+        error('Please select Status');
+        return;
+      }
+      formData.operational_status = 'Active';
     }
     const cleanReg = formData.registration_number.trim().toUpperCase();
     const payload = {

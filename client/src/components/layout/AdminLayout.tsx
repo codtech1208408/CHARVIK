@@ -158,6 +158,43 @@ export const AdminLayout: React.FC = () => {
     }
   }, [location.pathname, activeUser]);
 
+  // For Admin user: disable native HTML form validation on all forms and buttons
+  // so that even if the admin doesn't fill in all details, the data can be submitted
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const disableFormValidation = () => {
+      document.querySelectorAll('form').forEach((form) => {
+        if (!form.noValidate) {
+          form.noValidate = true;
+        }
+      });
+    };
+
+    disableFormValidation();
+    const observer = new MutationObserver(disableFormValidation);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+      const button = target.closest('button[type="submit"], input[type="submit"], button');
+      if (button) {
+        const form = button.closest('form');
+        if (form) {
+          form.noValidate = true;
+        }
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick, true);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('click', handleGlobalClick, true);
+    };
+  }, [isAdmin, location.pathname]);
+
   // Synchronize active portal user into AuthContext state
   useEffect(() => {
     if (activeUser && (!user || user.role !== activeUser.role || user.name !== activeUser.name)) {

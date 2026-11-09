@@ -373,14 +373,22 @@ export const Earnings: React.FC = () => {
   // Save Organizer Payment
   const handleSaveOrganizerPayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
     if (!paymentForm.organizer_name) {
-      error('Please select an organizer.');
-      return;
+      if (!isUserAdmin) {
+        error('Please select an organizer.');
+        return;
+      }
+      paymentForm.organizer_name = organizers[0]?.organization_name || 'General Organizer';
     }
-    const amt = Number(paymentForm.amount);
+    let amt = Number(paymentForm.amount);
     if (!amt || amt <= 0) {
-      error('Please enter a valid received amount.');
-      return;
+      if (!isUserAdmin) {
+        error('Please enter a valid received amount.');
+        return;
+      }
+      amt = 0;
     }
 
     try {

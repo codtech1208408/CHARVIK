@@ -638,13 +638,21 @@ export const TaskManagement: React.FC = () => {
 
   const handleSaveTrip = (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
     if (!formData.vehicle_number) {
-      error('Please select a vehicle number.');
-      return;
+      if (!isUserAdmin) {
+        error('Please select a vehicle number.');
+        return;
+      }
+      formData.vehicle_number = buses[0]?.registration_number || 'AP16TV1234';
     }
     if (!formData.driver1?.employee_name) {
-      error('Please select Driver 1 (Lead Driver).');
-      return;
+      if (!isUserAdmin) {
+        error('Please select Driver 1 (Lead Driver).');
+        return;
+      }
+      formData.driver1 = { employee_name: 'Lead Driver', phone_number: '9999999999' };
     }
 
     if (editingTrip) {

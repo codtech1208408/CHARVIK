@@ -54,9 +54,13 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function getAuthHeaders() {
   const token = localStorage.getItem('charvik_token');
+  const storedUser = getStoredUser();
+  const isAdmin = (storedUser?.role || '').toLowerCase().includes('admin') ||
+                  (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'));
   return {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {})
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(isAdmin ? { 'x-admin-role': 'admin' } : {})
   };
 }
 

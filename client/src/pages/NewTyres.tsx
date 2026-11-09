@@ -173,13 +173,21 @@ export const NewTyres: React.FC = () => {
 
   const handleSaveTyre = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
     if (!formData.tyre_serial_number) {
-      error('Tyre serial number is required');
-      return;
+      if (!isUserAdmin) {
+        error('Tyre serial number is required');
+        return;
+      }
+      formData.tyre_serial_number = `TYRE-${Math.floor(100000 + Math.random() * 900000)}`;
     }
     if (!formData.vehicle_number) {
-      error('Please select or enter vehicle number');
-      return;
+      if (!isUserAdmin) {
+        error('Please select or enter vehicle number');
+        return;
+      }
+      formData.vehicle_number = buses[0]?.registration_number || 'AP16TV1234';
     }
 
     const cleanVehicle = (formData.vehicle_number || '').split('(')[0].trim();

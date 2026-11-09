@@ -363,19 +363,30 @@ export const EmployeePayments: React.FC = () => {
 
   // Process payment deduction from oldest pending tasks
   const handleProcessPayment = (shouldPrint: boolean) => {
-    if (!targetStaff) {
-      error("Please select an employee.");
-      return;
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+    let effectiveStaff = targetStaff;
+    if (!effectiveStaff) {
+      if (!isUserAdmin) {
+        error("Please select an employee.");
+        return;
+      }
+      effectiveStaff = allStaffList[0];
+      setTargetStaff(effectiveStaff);
     }
-    const payAmount = Number(paymentFormData.amount);
+    if (!effectiveStaff) return;
+
+    let payAmount = Number(paymentFormData.amount);
     if (!payAmount || payAmount <= 0) {
-      error("Please enter a valid payment amount greater than ₹0.");
-      return;
+      if (!isUserAdmin) {
+        error("Please enter a valid payment amount greater than ₹0.");
+        return;
+      }
+      payAmount = 0;
     }
 
     // 1. Sort employee's tasks by oldest first (trip_start_date ASC)
-    const staffName = targetStaff.full_name.trim().toLowerCase();
-    const staffCode = targetStaff.employee_code.trim().toLowerCase();
+    const staffName = effectiveStaff.full_name.trim().toLowerCase();
+    const staffCode = effectiveStaff.employee_code.trim().toLowerCase();
 
     let remainingToSettle = payAmount;
     const slots: ("driver1" | "driver2" | "helper" | "captain")[] = [

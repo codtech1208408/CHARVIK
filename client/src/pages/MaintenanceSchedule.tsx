@@ -128,6 +128,12 @@ export const MaintenanceSchedule: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.bus_id) {
+      formData.bus_id = buses[0]?.id || 1;
+    }
+    if (!formData.maintenance_type) {
+      formData.maintenance_type = 'General Bus Service';
+    }
     try {
       if (editingSchedule) {
         await api.updateMaintenanceSchedule(editingSchedule.id, formData);

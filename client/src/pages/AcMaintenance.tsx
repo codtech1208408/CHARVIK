@@ -331,9 +331,13 @@ export const AcMaintenance: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = true;
     if (!formData.bus_id) {
-      error('Please select a vehicle');
-      return;
+      if (!isUserAdmin) {
+        error('Please select a vehicle');
+        return;
+      }
+      formData.bus_id = buses[0]?.id || 1;
     }
     try {
       if (editingRecord) {

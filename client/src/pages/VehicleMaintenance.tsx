@@ -347,9 +347,14 @@ export const VehicleMaintenance: React.FC = () => {
   // Add / Edit Vehicle
   const handleSaveVehicle = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!vehicleForm.registration_number) {
-      error('Registration number is required');
-      return;
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
+    if (!vehicleForm.registration_number?.trim()) {
+      if (!isUserAdmin) {
+        error('Registration number is required');
+        return;
+      }
+      vehicleForm.registration_number = `BUS-${Math.floor(1000 + Math.random() * 9000)}`;
     }
 
     try {

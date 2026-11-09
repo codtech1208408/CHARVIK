@@ -293,15 +293,32 @@ export const RecordManagement: React.FC = () => {
   // Handle Save
   const handleSaveRecord = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
     if (!formData.bill_to_name?.trim()) {
-      error('Please enter Bill To (Client / Company Name).');
-      return;
+      if (!isUserAdmin) {
+        error('Please enter Bill To (Client / Company Name).');
+        return;
+      }
+      formData.bill_to_name = 'General Client';
     }
 
-    const items = (formData.items || []).filter((i) => i.description.trim() || i.salary_paid > 0);
+    let items = (formData.items || []).filter((i) => i.description.trim() || i.salary_paid > 0);
     if (items.length === 0) {
-      error('Please add at least one valid service item row.');
-      return;
+      if (!isUserAdmin) {
+        error('Please add at least one valid service item row.');
+        return;
+      }
+      items = [{
+        id: 1,
+        sl_no: 1,
+        description: 'Staffing & Support Services',
+        staff_count: 1,
+        rate_per_staff: 0,
+        salary_paid: 0,
+        gst_percent: 0,
+        total_amount: 0
+      }];
     }
 
     const totalAmt = formCalculations.totalAmt;

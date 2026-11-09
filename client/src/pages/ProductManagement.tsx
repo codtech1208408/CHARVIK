@@ -395,14 +395,22 @@ export const ProductManagement: React.FC = () => {
   // Save Receive Product
   const handleSaveReceiveProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!receiveForm.product_name.trim()) {
-      error('Please enter the Product Name.');
-      return;
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
+    if (!receiveForm.product_name?.trim()) {
+      if (!isUserAdmin) {
+        error('Please enter the Product Name.');
+        return;
+      }
+      receiveForm.product_name = `Product-${Math.floor(100 + Math.random() * 900)}`;
     }
     const qty = Number(receiveForm.quantity_received);
     if (!qty || qty <= 0) {
-      error('Please enter a valid quantity received (at least 1).');
-      return;
+      if (!isUserAdmin) {
+        error('Please enter a valid quantity received (at least 1).');
+        return;
+      }
+      receiveForm.quantity_received = 1;
     }
 
     const enteredReusedQty = Number(receiveForm.reused_quantity) || 0;
@@ -519,14 +527,23 @@ export const ProductManagement: React.FC = () => {
   // Save Vehicle Usage
   const handleSaveUsage = (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
     if (!usageForm.product_id) {
-      error('Please select a product.');
-      return;
+      if (!isUserAdmin) {
+        error('Please select a product.');
+        return;
+      }
+      if (products.length > 0) {
+        usageForm.product_id = products[0].id;
+      }
     }
-    const targetProduct = products.find((p) => p.id === usageForm.product_id);
+    const targetProduct = products.find((p) => p.id === usageForm.product_id) || products[0];
     if (!targetProduct) {
-      error('Selected product not found.');
-      return;
+      if (!isUserAdmin) {
+        error('Selected product not found.');
+        return;
+      }
     }
 
     const qty = Number(usageForm.quantity_used);

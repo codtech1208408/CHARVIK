@@ -162,6 +162,9 @@ export const SupportStaffRegistration: React.FC = () => {
   };
 
   const validateStep = (stepNumber: number): string | null => {
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+    if (isUserAdmin) return null;
+
     if (stepNumber === 1) {
       if (!formData.employee_code?.trim()) return 'Please enter Employee ID';
       if (!formData.full_name?.trim()) return 'Please enter Full Name as per Aadhaar';
@@ -241,8 +244,16 @@ export const SupportStaffRegistration: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await api.createEmployee(formData);
-      success(`${formData.role} ${formData.full_name} (${formData.employee_code}) registered successfully!`);
+      const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+      const submissionData = {
+        ...formData,
+        employee_code: formData.employee_code?.trim() || `EMP-${Date.now().toString().slice(-4)}`,
+        full_name: formData.full_name?.trim() || 'Support Staff',
+        phone_number: formData.phone_number?.trim() || '9999999999',
+        role: formData.role || 'Captain'
+      };
+      await api.createEmployee(submissionData);
+      success(`${submissionData.role} ${submissionData.full_name} (${submissionData.employee_code}) registered successfully!`);
       navigate('/admin/employees');
     } catch (err: any) {
       error(err.message || 'Registration failed');

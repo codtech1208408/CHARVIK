@@ -204,13 +204,21 @@ export const DailyMaintenance: React.FC = () => {
   // Save Record (Add or Edit)
   const handleSaveRecord = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
     if (!formData.vehicle_number) {
-      error('Please select or enter vehicle number');
-      return;
+      if (!isUserAdmin) {
+        error('Please select or enter vehicle number');
+        return;
+      }
+      formData.vehicle_number = buses[0]?.registration_number || 'AP16TV1234';
     }
     if (!formData.date) {
-      error('Date is required');
-      return;
+      if (!isUserAdmin) {
+        error('Date is required');
+        return;
+      }
+      formData.date = new Date().toISOString().split('T')[0];
     }
 
     try {

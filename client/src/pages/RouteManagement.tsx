@@ -163,20 +163,30 @@ export const RouteManagement: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
 
     if (!formData.service_number?.trim()) {
-      error('Please enter a service number.');
-      return;
+      if (!isUserAdmin) {
+        error('Please enter a service number.');
+        return;
+      }
+      formData.service_number = `SRV-${Math.floor(100 + Math.random() * 900)}`;
     }
 
     if (!formData.starting_city?.trim()) {
-      error('Please enter starting city (from).');
-      return;
+      if (!isUserAdmin) {
+        error('Please enter starting city (from).');
+        return;
+      }
+      formData.starting_city = 'Origin City';
     }
 
     if (!formData.ending_city?.trim()) {
-      error('Please enter ending city (to).');
-      return;
+      if (!isUserAdmin) {
+        error('Please enter ending city (to).');
+        return;
+      }
+      formData.ending_city = 'Destination City';
     }
 
     if (
@@ -186,13 +196,19 @@ export const RouteManagement: React.FC = () => {
       isNaN(Number(formData.destination_km)) ||
       Number(formData.destination_km) < 0
     ) {
-      error('Please enter a valid destination KM (0 or greater).');
-      return;
+      if (!isUserAdmin) {
+        error('Please enter a valid destination KM (0 or greater).');
+        return;
+      }
+      formData.destination_km = 0;
     }
 
     if (!formData.status) {
-      error('Please select route status (Active or Inactive).');
-      return;
+      if (!isUserAdmin) {
+        error('Please select route status (Active or Inactive).');
+        return;
+      }
+      formData.status = 'Active';
     }
 
     const payload = {

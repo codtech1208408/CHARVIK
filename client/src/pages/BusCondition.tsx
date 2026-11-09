@@ -458,9 +458,14 @@ export const BusCondition: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+
     if (!formData.bus_id) {
-      error('Please select a vehicle number');
-      return;
+      if (!isUserAdmin) {
+        error('Please select a vehicle number');
+        return;
+      }
+      formData.bus_id = buses[0]?.id || 1;
     }
 
     const notOkCount = formData.items.filter((it) => it.status === 'Not OK').length;
