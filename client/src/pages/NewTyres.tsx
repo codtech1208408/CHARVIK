@@ -591,7 +591,7 @@ export const NewTyres: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Starting KM (Initial KM)
+                Starting KM
               </label>
               <input
                 type="number"
@@ -614,7 +614,6 @@ export const NewTyres: React.FC = () => {
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Present Running KM
-                <span className="text-[10px] text-blue-600 font-medium ml-1">(From Daily Vehicle Checkup)</span>
               </label>
               <input
                 type="number"
@@ -639,7 +638,7 @@ export const NewTyres: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Gauge className="w-4 h-4 text-emerald-600" />
                 <span className="text-xs font-bold text-emerald-950">
-                  Total KM Running (Starting KM + Present Running KM):
+                  Total KM Running:
                 </span>
               </div>
               <span className="text-sm font-black font-mono text-emerald-700">

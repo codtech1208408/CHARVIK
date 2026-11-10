@@ -2256,7 +2256,7 @@ export const TyreMaintenance: React.FC = () => {
           <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Gauge className="w-4 h-4 text-emerald-600" />
-              <span className="text-xs font-bold text-emerald-900">Total KM Running (Before + Present):</span>
+              <span className="text-xs font-bold text-emerald-900">Total KM Running:</span>
             </div>
             <span className="text-sm font-black font-mono text-emerald-700">
               {((Number(newTyreForm.km) || 0) + (Number(newTyreForm.present_km) || 0)).toLocaleString('en-IN')} KM
