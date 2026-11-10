@@ -979,7 +979,7 @@ export const VehicleMaintenance: React.FC = () => {
             <p className="text-sm font-semibold text-slate-500 -mt-2">{v.model}</p>
 
             {/* Spec Attributes Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-3">
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Chassis Number</p>
                 <p className="text-sm font-mono font-bold text-slate-800 mt-1 truncate">{v.chassis_number || 'YS2S4X2000551024'}</p>
@@ -989,32 +989,8 @@ export const VehicleMaintenance: React.FC = () => {
                 <p className="text-sm font-mono font-bold text-slate-800 mt-1 truncate">{v.engine_number || 'DC091209451'}</p>
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Parking Location</p>
-                <p className="text-sm font-bold text-slate-800 mt-1 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{v.parking_location || 'Delhi Depot – Bay 1'}</span>
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Assigned Driver</p>
-                <p className="text-sm font-bold text-slate-800 mt-1 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{v.driver_name || 'Sunil Yadav'}</span>
-                </p>
-              </div>
-              <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Operations Manager</p>
-                <p className="text-sm font-bold text-slate-800 mt-1 truncate">{v.operations_manager || 'Priya Sharma'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Service Date</p>
-                <p className="text-sm font-bold text-slate-800 mt-1">{v.last_service_date || '13 Oct 2026'}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Service Odometer</p>
-                <p className="text-sm font-mono font-bold text-slate-800 mt-1">
-                  {v.last_service_km ? `${v.last_service_km.toLocaleString('en-IN')} KM` : '3,05,000 KM'}
-                </p>
+                <p className="text-sm font-bold text-slate-800 mt-1 truncate">{v.operations_manager || 'Operations Manager'}</p>
               </div>
             </div>
           </div>

@@ -1285,19 +1285,6 @@ export const BusCondition: React.FC = () => {
                 </div>
 
                 <div className="flex items-center">
-                  <span className="w-28 font-bold text-slate-900">Vehicle Model:</span>
-                  <span className="flex-1 border-b border-black pb-0.5 font-semibold text-slate-900">
-                    {viewingInspection.vehicle_model || 'Fleet Bus'}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-32 font-bold text-slate-900">Driver Name:</span>
-                  <span className="flex-1 border-b border-black pb-0.5 font-semibold text-slate-900">
-                    {viewingInspection.driver_name || viewingInspection.inspector_name || '—'}
-                  </span>
-                </div>
-
-                <div className="flex items-center">
                   <span className="w-28 font-bold text-slate-900">Starting KM:</span>
                   <span className="flex-1 border-b border-black pb-0.5 font-mono font-bold text-slate-900">
                     {viewingInspection.starting_km != null
@@ -1429,15 +1416,6 @@ export const BusCondition: React.FC = () => {
                 </div>
                 <div className="flex items-center meta-row">
                   <span className="w-32 font-bold text-slate-900 meta-label">Vehicle No.:</span>
-                  <span className="flex-1 border-b border-black pb-0.5 font-medium meta-line">&nbsp;</span>
-                </div>
-
-                <div className="flex items-center meta-row">
-                  <span className="w-28 font-bold text-slate-900 meta-label">Vehicle Model:</span>
-                  <span className="flex-1 border-b border-black pb-0.5 font-medium meta-line">&nbsp;</span>
-                </div>
-                <div className="flex items-center meta-row">
-                  <span className="w-32 font-bold text-slate-900 meta-label">Driver Name:</span>
                   <span className="flex-1 border-b border-black pb-0.5 font-medium meta-line">&nbsp;</span>
                 </div>
 

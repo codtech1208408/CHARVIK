@@ -549,14 +549,6 @@ export const OrganizerManagement: React.FC = () => {
                     <td className="py-2 px-3 text-center">
                       <div className="flex items-center justify-center space-x-1.5">
                         <button
-                          type="button"
-                          onClick={() => handleOpenRecordPayment(o)}
-                          className="p-1.5 rounded-lg bg-[#EAFBF3] text-[#00875A] border border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer shadow-2xs"
-                          title={`Record Payment from ${o.organization_name}`}
-                        >
-                          <IndianRupee className="w-4 h-4" />
-                        </button>
-                        <button
                           onClick={() => handleOpenEdit(o)}
                           className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                           title="Edit Organization"

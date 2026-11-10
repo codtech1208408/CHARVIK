@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUp, ChevronRight, Key, ShieldCheck, Compass } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUp, ChevronRight, Key, Compass } from 'lucide-react';
 
 export const PublicFooter: React.FC = () => {
   const scrollToTop = () => {
@@ -160,15 +160,6 @@ export const PublicFooter: React.FC = () => {
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>© {new Date().getFullYear()} Charvik Staffing Consultancy. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <Link
-              to="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 hover:text-blue-200 border border-blue-500/30 transition-all font-bold text-xs"
-              title="Admin Portal (/admin)"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-              <span>Admin Portal</span>
-            </Link>
-
             <Link
               to="/operator"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 transition-all font-bold text-xs"
