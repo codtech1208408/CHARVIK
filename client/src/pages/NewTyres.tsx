@@ -368,7 +368,7 @@ export const NewTyres: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
-            placeholder="Search tyre number, vehicle, brand, size..."
+            placeholder="Search tyre number, vehicle, brand..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
@@ -404,7 +404,7 @@ export const NewTyres: React.FC = () => {
                 <th className="py-2.5 px-3">Present Running KM</th>
                 <th className="py-2.5 px-3">Total KM</th>
                 <th className="py-2.5 px-3">Tyre Number & Photo</th>
-                <th className="py-2.5 px-3">Brand & Size</th>
+                <th className="py-2.5 px-3">Brand</th>
                 <th className="py-2.5 px-3">Supplier / Notes</th>
                 <th className="py-2.5 px-3 text-center">Actions</th>
               </tr>
@@ -513,8 +513,7 @@ export const NewTyres: React.FC = () => {
                         </div>
                       </td>
                       <td className="py-2 px-3">
-                        <span className="font-bold text-slate-800 text-sm">{t.brand}</span>
-                        <span className="text-xs text-slate-400 block mt-0.5">{t.size}</span>
+                        <span className="font-bold text-slate-800 text-sm">{t.brand || '—'}</span>
                       </td>
                       <td className="py-2 px-3 text-xs text-slate-500 max-w-[180px] truncate">
                         {t.supplier || t.notes || '—'}
@@ -673,17 +672,6 @@ export const NewTyres: React.FC = () => {
                 <option value="Ceat">Ceat</option>
                 <option value="Goodyear">Goodyear</option>
               </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Size Specification</label>
-              <input
-                type="text"
-                placeholder="e.g. 295/80 R22.5"
-                value={formData.size}
-                onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
-              />
             </div>
 
             <div className="sm:col-span-2">
