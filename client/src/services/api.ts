@@ -3124,6 +3124,7 @@ export const api = {
     return request<any[]>(`/bus-condition${q ? `?${q}` : ''}`);
   },
   createBusCondition: (data: any) => request<any>('/bus-condition', { method: 'POST', body: JSON.stringify(data) }),
+  createBusConditionInspection: (data: any) => request<any>('/bus-condition', { method: 'POST', body: JSON.stringify(data) }),
   updateBusCondition: (id: number | string, data: any) => request<any>(`/bus-condition/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteBusCondition: (id: number | string) => request<any>(`/bus-condition/${id}`, { method: 'DELETE' }),
 

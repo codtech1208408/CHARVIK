@@ -258,7 +258,7 @@ export const VehicleMaintenance: React.FC = () => {
     }
   };
 
-  // Quick Odometer Update (syncs to Daily Vehicle Checkup as well)
+  // Quick Odometer Update (syncs to Daily Vehicle Checkup, New Tyres & Tyre Records as well)
   const handleSaveOdometer = async () => {
     if (!selectedVehicle) return;
     const kmNum = Number(newOdometerVal);
@@ -268,32 +268,85 @@ export const VehicleMaintenance: React.FC = () => {
     }
 
     try {
+      // 1. Update vehicle odometer across fleet
       await api.updateBus(selectedVehicle.id, {
-        current_odometer_km: kmNum
+        current_odometer_km: kmNum,
+        starting_km: kmNum,
+        odometer_km: kmNum
       });
 
-      // Also create/update a daily checkup entry to keep KM unified
-      await api.createBusConditionInspection({
+      // 2. Also log a daily checkup entry to keep KM unified
+      await api.createBusCondition({
         bus_id: selectedVehicle.id,
         inspection_date: new Date().toISOString().split('T')[0],
         starting_km: kmNum,
         odometer_km: kmNum,
+        closing_km: 0,
         inspector_name: 'Odometer Sync',
-        vehicle_model: selectedVehicle.model,
+        vehicle_model: selectedVehicle.model || '',
         roadworthiness_status: 'Fit for Service',
-        driver_name: selectedVehicle.driver_name || 'Fleet Driver'
-      }).catch(() => {});
+        driver_name: selectedVehicle.driver_name || 'Fleet Driver',
+        checklist_data: '[]'
+      }).catch(() => { });
+
+      // 3. Direct automatic sync to all tyres allotted to this vehicle in New Tyres inventory
+      try {
+        const allNewTyres = await api.getNewTyres().catch(() => []);
+        if (Array.isArray(allNewTyres)) {
+          const vehicleTyresList = allNewTyres.filter((nt: any) =>
+            String(nt.allocated_bus_id) === String(selectedVehicle.id) ||
+            (selectedVehicle.registration_number && (nt.allocated_bus_number === selectedVehicle.registration_number || nt.vehicle_number === selectedVehicle.registration_number))
+          );
+          for (const vt of vehicleTyresList) {
+            if (vt.id) {
+              const bKm = Number(vt.starting_km ?? vt.km) || 0;
+              await api.updateNewTyre(vt.id, {
+                ...vt,
+                present_km: kmNum,
+                total_km: bKm + kmNum,
+                running_km: kmNum >= bKm ? kmNum - bKm : kmNum
+              }).catch(() => { });
+            }
+          }
+        }
+      } catch (_) { }
+
+      // 4. Direct automatic sync to tyre records (mounted tyres)
+      try {
+        const tyreRecs = await api.getTyreRecords({ bus_id: selectedVehicle.id }).catch(() => []);
+        if (Array.isArray(tyreRecs)) {
+          for (const tr of tyreRecs) {
+            if (tr.id) {
+              await api.updateTyreRecord(tr.id, {
+                ...tr,
+                last_km: kmNum,
+                current_km: kmNum
+              }).catch(() => { });
+            }
+          }
+        }
+      } catch (_) { }
+
+      // 5. Dispatch global event so all open tabs update live
+      try {
+        window.dispatchEvent(new CustomEvent('charvik_bus_km_updated', {
+          detail: { bus_id: selectedVehicle.id, vehicle_number: selectedVehicle.registration_number, km: kmNum }
+        }));
+      } catch (_) { }
 
       success(`Odometer updated to ${kmNum.toLocaleString('en-IN')} KM!`);
       setIsUpdateOdometerOpen(false);
+      setSelectedVehicle((prev: any) => prev ? { ...prev, current_odometer_km: kmNum } : prev);
       await loadFleetData();
       if (selectedVehicle) {
-        const refreshed = await api.getFleetMaintenance();
-        const updated = (refreshed.buses || []).find((b: Vehicle) => b.id === selectedVehicle.id);
-        if (updated) setSelectedVehicle(updated);
+        const refreshed = await api.getFleetMaintenance().catch(() => null);
+        if (refreshed?.buses) {
+          const updated = refreshed.buses.find((b: Vehicle) => b.id === selectedVehicle.id);
+          if (updated) setSelectedVehicle(updated);
+        }
       }
     } catch (err: any) {
-      error(err.message || 'Failed to update odometer');
+      error(err?.message || 'Failed to update odometer');
     }
   };
 
