@@ -483,8 +483,8 @@ export const VyshnaviTravels: React.FC = () => {
     setTxnForm({
       transaction_type: type,
       transaction_date: new Date().toISOString().split('T')[0],
-      category: type === 'Income' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0],
-      vehicle_number: buses.length > 0 ? buses[0].bus_number : 'General / Fleet Wide',
+      category: '',
+      vehicle_number: buses.length > 0 ? (buses[0].registration_number || buses[0].bus_number).split('(')[0].trim() : 'General / Fleet Wide',
       amount: '',
       payment_mode: 'UPI',
       party_name: '',
@@ -502,7 +502,7 @@ export const VyshnaviTravels: React.FC = () => {
       transaction_type: txn.transaction_type,
       transaction_date: txn.transaction_date || new Date().toISOString().split('T')[0],
       category: txn.category || '',
-      vehicle_number: txn.vehicle_number || 'General / Fleet Wide',
+      vehicle_number: (txn.vehicle_number || 'General / Fleet Wide').split('(')[0].trim(),
       amount: txn.amount || '',
       payment_mode: txn.payment_mode || 'UPI',
       party_name: txn.party_name || '',
@@ -520,6 +520,10 @@ export const VyshnaviTravels: React.FC = () => {
       error('Please enter a valid amount');
       return;
     }
+    if (!txnForm.category || !txnForm.category.trim()) {
+      error('Please enter a category');
+      return;
+    }
     if (!txnForm.description.trim()) {
       error('Description is required');
       return;
@@ -528,8 +532,8 @@ export const VyshnaviTravels: React.FC = () => {
     const payload: VyshnaviTransaction = {
       transaction_type: txnForm.transaction_type,
       transaction_date: txnForm.transaction_date,
-      category: txnForm.category,
-      vehicle_number: txnForm.vehicle_number,
+      category: txnForm.category.trim(),
+      vehicle_number: (txnForm.vehicle_number || 'General / Fleet Wide').split('(')[0].trim(),
       amount: Number(txnForm.amount) || 0,
       payment_mode: txnForm.payment_mode,
       party_name: txnForm.party_name,
@@ -1162,6 +1166,13 @@ export const VyshnaviTravels: React.FC = () => {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </optgroup>
+                {Array.from(new Set(transactions.map((t) => t.category).filter((c) => c && !INCOME_CATEGORIES.includes(c) && !EXPENSE_CATEGORIES.includes(c)))).length > 0 && (
+                  <optgroup label="Other Categories">
+                    {Array.from(new Set(transactions.map((t) => t.category).filter((c) => c && !INCOME_CATEGORIES.includes(c) && !EXPENSE_CATEGORIES.includes(c)))).map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
 
               {/* Vehicle Filter */}
@@ -1171,9 +1182,12 @@ export const VyshnaviTravels: React.FC = () => {
                 className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none"
               >
                 <option value="All">All Vehicles</option>
-                {buses.map((b) => (
-                  <option key={b.bus_number} value={b.bus_number}>{b.bus_number}</option>
-                ))}
+                {buses.map((b) => {
+                  const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+                  return (
+                    <option key={b.id || reg} value={reg}>{reg}</option>
+                  );
+                })}
                 <option value="General / Fleet Wide">General / Fleet Wide</option>
               </select>
 
@@ -1698,7 +1712,7 @@ export const VyshnaviTravels: React.FC = () => {
           <div className="flex items-center gap-3 p-1.5 bg-slate-100 rounded-2xl">
             <button
               type="button"
-              onClick={() => setTxnForm({ ...txnForm, transaction_type: 'Income', category: INCOME_CATEGORIES[0] })}
+              onClick={() => setTxnForm((prev) => ({ ...prev, transaction_type: 'Income' }))}
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                 txnForm.transaction_type === 'Income'
                   ? 'bg-emerald-600 text-white shadow-xs'
@@ -1709,7 +1723,7 @@ export const VyshnaviTravels: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setTxnForm({ ...txnForm, transaction_type: 'Expense', category: EXPENSE_CATEGORIES[0] })}
+              onClick={() => setTxnForm((prev) => ({ ...prev, transaction_type: 'Expense' }))}
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                 txnForm.transaction_type === 'Expense'
                   ? 'bg-rose-600 text-white shadow-xs'
@@ -1753,16 +1767,23 @@ export const VyshnaviTravels: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Category *</label>
-              <select
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Category <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                list="vyshnavi-category-suggestions"
+                placeholder={txnForm.transaction_type === 'Income' ? 'Type income category (e.g. Trip Advance, Booking...)' : 'Type expense category (e.g. Diesel, Maintenance, Toll...)'}
                 value={txnForm.category}
                 onChange={(e) => setTxnForm({ ...txnForm, category: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none"
-              >
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-500"
+              />
+              <datalist id="vyshnavi-category-suggestions">
                 {(txnForm.transaction_type === 'Income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c} />
                 ))}
-              </select>
+              </datalist>
             </div>
 
             <div>
@@ -1773,9 +1794,14 @@ export const VyshnaviTravels: React.FC = () => {
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none"
               >
                 <option value="General / Fleet Wide">General / Fleet Wide</option>
-                {buses.map((b) => (
-                  <option key={b.bus_number} value={b.bus_number}>{b.bus_number} ({b.model || b.make})</option>
-                ))}
+                {buses.map((b) => {
+                  const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+                  return (
+                    <option key={b.id || reg} value={reg}>
+                      {reg}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
