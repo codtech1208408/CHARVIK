@@ -180,19 +180,49 @@ export const VehicleMaintenance: React.FC = () => {
   // Open "Mark Completed" Modal
   const handleOpenCompleteModal = (vehicle: Vehicle, service: ServiceItem) => {
     setCompletingService({ vehicle, service });
+    const isKm = service.intervalType === 'km';
+
+    // 1. Last Done Values
     const prevDate = service.lastDoneDate && service.lastDoneDate !== '—' && service.lastDoneDate !== '-'
       ? service.lastDoneDate
-      : (vehicle.last_service_date || '');
+      : (vehicle.last_service_date || new Date().toISOString().split('T')[0]);
     const prevKm = service.lastDoneKm > 0
       ? service.lastDoneKm
       : (vehicle.last_service_km || 0);
 
+    // 2. Automatically calculate completion values
+    // For KM services: Last Done KM + service interval (e.g., 300,000 + 60,000 = 360,000 KM)
+    let autoCompletionKm = 0;
+    if (isKm) {
+      if (service.nextDueKm && service.nextDueKm > 0) {
+        autoCompletionKm = service.nextDueKm;
+      } else {
+        autoCompletionKm = prevKm + (service.interval || 60000);
+      }
+    } else {
+      autoCompletionKm = vehicle.current_odometer_km || prevKm || 0;
+    }
+
+    // For Date services: Last Done Date + interval days (e.g. AC Filter: 7 days, Greecing: 10 days, Deep Cleaning: 30 days, AC General: 90 days)
+    let autoCompletionDate = new Date().toISOString().split('T')[0];
+    if (!isKm) {
+      if (service.nextDueDate && service.nextDueDate !== '—' && service.nextDueDate !== '-') {
+        autoCompletionDate = service.nextDueDate;
+      } else {
+        const d = new Date(prevDate);
+        if (!isNaN(d.getTime())) {
+          d.setDate(d.getDate() + (service.interval || 7));
+          autoCompletionDate = d.toISOString().split('T')[0];
+        }
+      }
+    }
+
     setCompletionForm({
       last_service_date: prevDate,
       last_service_km: prevKm > 0 ? prevKm : '',
-      completion_date: new Date().toISOString().split('T')[0],
-      odometer_km: vehicle.current_odometer_km || 0,
-      cost: service.intervalType === 'km' ? 4500 : 750,
+      completion_date: autoCompletionDate,
+      odometer_km: autoCompletionKm,
+      cost: isKm ? 4500 : 750,
       workshop: 'Charvik Central Workshop',
       mechanic_name: '',
       remarks: '',
@@ -257,6 +287,23 @@ export const VehicleMaintenance: React.FC = () => {
       });
 
       success(`Marked "${completingService.service.name}" as completed!`);
+
+      // If completed at an odometer reading, sync bus odometer across fleet
+      const compOdo = Number(completionForm.odometer_km) || 0;
+      if (compOdo > 0 && compOdo > (completingService.vehicle.current_odometer_km || 0)) {
+        await api.updateBus(completingService.vehicle.id, {
+          current_odometer_km: compOdo,
+          starting_km: compOdo,
+          odometer_km: compOdo
+        }).catch(() => {});
+
+        try {
+          window.dispatchEvent(new CustomEvent('charvik_bus_km_updated', {
+            detail: { bus_id: completingService.vehicle.id, vehicle_number: completingService.vehicle.registration_number, km: compOdo }
+          }));
+        } catch (_) {}
+      }
+
       setCompletingService(null);
       await loadFleetData();
 
@@ -1228,13 +1275,60 @@ export const VehicleMaintenance: React.FC = () => {
           maxWidth="max-w-xl"
         >
           <form onSubmit={handleSubmitCompletion} className="space-y-4">
+            {/* Live Auto Due Schedule Banner */}
+            {completingService && (
+              <div className="p-3 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  {completingService.service.intervalType === 'km' ? (
+                    <Gauge className="w-4 h-4 text-blue-600 shrink-0" />
+                  ) : (
+                    <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
+                  )}
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">
+                      Auto Due Schedule: {completingService.service.intervalLabel}
+                    </span>
+                    <span className="text-[11px] text-slate-600 font-mono font-medium">
+                      {completingService.service.intervalType === 'km'
+                        ? `${(Number(completionForm.last_service_km) || 0).toLocaleString('en-IN')} KM + ${(completingService.service.interval || 0).toLocaleString('en-IN')} KM = ${(Number(completionForm.odometer_km) || 0).toLocaleString('en-IN')} KM`
+                        : `${completionForm.last_service_date || 'Start'} + ${completingService.service.interval} Days = ${completionForm.completion_date}`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 self-end sm:self-center">
+                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Due Target:</span>
+                  <span className="text-xs font-black font-mono px-2.5 py-1 rounded-lg bg-blue-600 text-white shadow-2xs">
+                    {completingService.service.intervalType === 'km'
+                      ? `${(Number(completionForm.odometer_km) || 0).toLocaleString('en-IN')} KM`
+                      : completionForm.completion_date}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Last service date</label>
                 <input
                   type="date"
                   value={completionForm.last_service_date}
-                  onChange={(e) => setCompletionForm({ ...completionForm, last_service_date: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    let autoDate = completionForm.completion_date;
+                    if (completingService?.service.intervalType === 'date' && val) {
+                      const d = new Date(val);
+                      if (!isNaN(d.getTime())) {
+                        d.setDate(d.getDate() + (completingService.service.interval || 7));
+                        autoDate = d.toISOString().split('T')[0];
+                      }
+                    }
+                    setCompletionForm((prev) => ({
+                      ...prev,
+                      last_service_date: val,
+                      completion_date: autoDate
+                    }));
+                  }}
                   className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
                 />
               </div>
@@ -1243,9 +1337,21 @@ export const VehicleMaintenance: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-700 mb-1">Last servicing KM</label>
                 <input
                   type="number"
-                  placeholder="e.g. 45000"
+                  placeholder="e.g. 300000"
                   value={completionForm.last_service_km}
-                  onChange={(e) => setCompletionForm({ ...completionForm, last_service_km: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const kmNum = Number(val) || 0;
+                    const isKm = completingService?.service.intervalType === 'km';
+                    const autoOdometer = isKm && kmNum > 0
+                      ? kmNum + (completingService?.service.interval || 60000)
+                      : completionForm.odometer_km;
+                    setCompletionForm((prev) => ({
+                      ...prev,
+                      last_service_km: val,
+                      odometer_km: autoOdometer > 0 ? autoOdometer : prev.odometer_km
+                    }));
+                  }}
                   className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold"
                 />
               </div>
@@ -1257,7 +1363,7 @@ export const VehicleMaintenance: React.FC = () => {
                   required
                   value={completionForm.completion_date}
                   onChange={(e) => setCompletionForm({ ...completionForm, completion_date: e.target.value })}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
                 />
               </div>
 
@@ -1268,7 +1374,7 @@ export const VehicleMaintenance: React.FC = () => {
                   required
                   value={completionForm.odometer_km}
                   onChange={(e) => setCompletionForm({ ...completionForm, odometer_km: Number(e.target.value) })}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold text-blue-900 bg-blue-50/30"
                 />
               </div>
 
