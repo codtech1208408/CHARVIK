@@ -100,12 +100,30 @@ export const NewTyres: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [tyresData, busesData] = await Promise.all([
+      const [tyresData, busesData, checkupsData] = await Promise.all([
         api.getNewTyres().catch(() => []),
-        api.getBuses().catch(() => [])
+        api.getBuses().catch(() => []),
+        api.getBusCondition().catch(() => [])
       ]);
+
+      const enrichedBuses = (busesData || []).map((b: any) => {
+        const latestCheckup = (checkupsData || []).find((c: any) =>
+          Number(c.bus_id) === Number(b.id) ||
+          (b.registration_number && (c.registration_number === b.registration_number || c.bus_number === b.registration_number)) ||
+          (b.bus_number && (c.registration_number === b.bus_number || c.bus_number === b.bus_number))
+        );
+        const checkupKm = Number(latestCheckup?.starting_km || latestCheckup?.odometer_km || 0);
+        const odometerKm = Number(b.current_odometer_km || 0);
+        const effectiveKm = checkupKm > 0 ? checkupKm : odometerKm;
+        return {
+          ...b,
+          latest_checkup_km: effectiveKm,
+          current_odometer_km: effectiveKm
+        };
+      });
+
       setNewTyres(tyresData || []);
-      setBuses(busesData || []);
+      setBuses(enrichedBuses);
     } catch (err: any) {
       error(err.message || 'Failed to load new tyre inventory');
     } finally {
@@ -173,7 +191,7 @@ export const NewTyres: React.FC = () => {
     const cleanVehicle = (t.vehicle_number || t.allocated_bus_number || matchedBus?.registration_number || matchedBus?.bus_number || (t.allocated_bus_id ? `Bus #${t.allocated_bus_id}` : '') || '').split('(')[0].trim();
     const busKm = Number((matchedBus as any)?.latest_checkup_km || matchedBus?.current_odometer_km || 0);
     const sKm = Number(t.starting_km ?? t.km) || 0;
-    const pKm = Number(t.present_km) > 0 ? Number(t.present_km) : (busKm > 0 ? busKm : 0);
+    const pKm = busKm > 0 ? busKm : (Number(t.present_km) || 0);
     const totKm = sKm + pKm;
 
     setFormData({
@@ -437,10 +455,10 @@ export const NewTyres: React.FC = () => {
                   // 1. Starting KM (Initial / Before KM)
                   const startingKm = Number(t.starting_km ?? t.km) || 0;
 
-                  // 2. Present Running KM (taken from Daily Vehicle Checkup of this vehicle)
+                  // 2. Present Running KM (taken directly from Daily Vehicle Checkup of this vehicle)
                   const busKm = Number((matchedBus as any)?.latest_checkup_km || matchedBus?.current_odometer_km || 0);
                   const rawPresentKm = t.present_km !== undefined && t.present_km !== null && t.present_km !== '' ? Number(t.present_km) : 0;
-                  const presentRunningKm = isAssigned ? (rawPresentKm > 0 ? rawPresentKm : (busKm > 0 ? busKm : 0)) : rawPresentKm;
+                  const presentRunningKm = isAssigned ? (busKm > 0 ? busKm : rawPresentKm) : rawPresentKm;
 
                   // 3. Total KM (by adding Starting KM + Present Running KM)
                   const totalKmVal = startingKm + presentRunningKm;

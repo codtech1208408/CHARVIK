@@ -4258,14 +4258,16 @@ app.post('/api/bus-condition', (req: Request, res: Response) => {
     }
   } else if (c.bus_id && startingKm > 0) {
     try {
+      const busRow = db.prepare('SELECT id, registration_number, bus_number FROM buses WHERE id = ?').get(c.bus_id) as any;
+      const busReg = busRow?.registration_number || busRow?.bus_number || '';
       db.prepare(`
         UPDATE new_tyres SET
           present_km = ?,
-          total_km = km + ?,
-          running_km = CASE WHEN ? >= km THEN ? - km ELSE ? END,
+          total_km = COALESCE(starting_km, km, 0) + ?,
+          running_km = CASE WHEN ? >= COALESCE(starting_km, km, 0) THEN ? - COALESCE(starting_km, km, 0) ELSE ? END,
           updated_at = CURRENT_TIMESTAMP
-        WHERE allocated_bus_id = ?
-      `).run(startingKm, startingKm, startingKm, startingKm, startingKm, c.bus_id);
+        WHERE allocated_bus_id = ? OR (vehicle_number IS NOT NULL AND vehicle_number = ?) OR (allocated_bus_number IS NOT NULL AND allocated_bus_number = ?)
+      `).run(startingKm, startingKm, startingKm, startingKm, startingKm, c.bus_id, busReg, busReg);
     } catch (_) { }
   }
 
@@ -4357,16 +4359,18 @@ app.put('/api/bus-condition/:id', (req: Request, res: Response) => {
         }
       }
     } else if (c.bus_id && startingKm > 0) {
-    try {
-      db.prepare(`
-        UPDATE new_tyres SET
-          present_km = ?,
-          total_km = km + ?,
-          running_km = CASE WHEN ? >= km THEN ? - km ELSE ? END,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE allocated_bus_id = ?
-      `).run(startingKm, startingKm, startingKm, startingKm, startingKm, c.bus_id);
-    } catch (_) { }
+      try {
+        const busRow = db.prepare('SELECT id, registration_number, bus_number FROM buses WHERE id = ?').get(c.bus_id) as any;
+        const busReg = busRow?.registration_number || busRow?.bus_number || '';
+        db.prepare(`
+          UPDATE new_tyres SET
+            present_km = ?,
+            total_km = COALESCE(starting_km, km, 0) + ?,
+            running_km = CASE WHEN ? >= COALESCE(starting_km, km, 0) THEN ? - COALESCE(starting_km, km, 0) ELSE ? END,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE allocated_bus_id = ? OR (vehicle_number IS NOT NULL AND vehicle_number = ?) OR (allocated_bus_number IS NOT NULL AND allocated_bus_number = ?)
+        `).run(startingKm, startingKm, startingKm, startingKm, startingKm, c.bus_id, busReg, busReg);
+      } catch (_) { }
     }
 
     logAudit('INSPECTION_UPDATE', 'Bus Condition', id, `Updated vehicle checkup ID ${id}`);
