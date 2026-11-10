@@ -231,7 +231,10 @@ export const DailyKilometers: React.FC = () => {
   // Save Record
   const handleSaveRecord = (e: React.FormEvent) => {
     e.preventDefault();
-    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+    const isUserAdmin = Boolean(
+      user?.role?.toLowerCase()?.includes('admin') ||
+      (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
+    );
 
     if (!formData.vehicle_number?.trim()) {
       if (!isUserAdmin) {

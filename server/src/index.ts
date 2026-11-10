@@ -3095,8 +3095,10 @@ app.get('/api/new-tyres', (req: Request, res: Response) => {
     const { status, bus_id } = req.query;
     let query = `
       SELECT n.*, b.bus_number, b.registration_number,
-        COALESCE(b.registration_number, b.bus_number, n.allocated_bus_number) as vehicle_number,
-        COALESCE(n.present_km, n.km, 0) as total_km
+        COALESCE(b.registration_number, b.bus_number, n.allocated_bus_number, n.vehicle_number) as vehicle_number,
+        COALESCE(n.starting_km, 0) as starting_km,
+        COALESCE(n.present_km, 0) as present_km,
+        COALESCE(n.total_km, (COALESCE(n.starting_km, 0) + COALESCE(n.present_km, 0)), 0) as total_km
       FROM new_tyres n
       LEFT JOIN buses b ON n.allocated_bus_id = b.id
       WHERE 1=1
@@ -3124,33 +3126,39 @@ app.post('/api/new-tyres', (req: Request, res: Response) => {
     if (isUserAdmin(req)) {
       n.tyre_serial_number = n.tyre_serial_number || `TYRE-${Math.floor(100000 + Math.random() * 900000)}`;
     }
-    const totalKm = Number(n.total_km) || Number(n.km) || 0;
-    const initialKm = totalKm;
-    const presentKm = Number(n.present_km) || totalKm;
-    const runningKm = presentKm >= initialKm ? presentKm - initialKm : (Number(n.running_km) || 0);
+    const startingKm = Number(n.starting_km) || 0;
+    const presentKm = Number(n.present_km) || 0;
+    const totalKm = Number(n.total_km) || (startingKm + presentKm);
+    const runningKm = presentKm >= startingKm ? presentKm - startingKm : (Number(n.running_km) || presentKm);
     const supplierVal = n.supplier_name || n.supplier || '';
 
     let busId = n.allocated_bus_id;
-    if (!busId && n.vehicle_number) {
-      const cleanV = String(n.vehicle_number).split('(')[0].trim();
-      const bRow = db.prepare('SELECT id FROM buses WHERE registration_number = ? OR bus_number = ?').get(cleanV, cleanV) as any;
-      if (bRow) busId = bRow.id;
+    let busNum = n.allocated_bus_number || n.vehicle_number || '';
+    if (n.vehicle_number) {
+      const cleanV = String(n.vehicle_number).split(/[-–(]/)[0].trim();
+      const bRow = db.prepare('SELECT id, registration_number, bus_number, current_odometer_km FROM buses WHERE registration_number LIKE ? OR bus_number LIKE ?').get(`%${cleanV}%`, `%${cleanV}%`) as any;
+      if (bRow) {
+        busId = bRow.id;
+        busNum = bRow.registration_number || bRow.bus_number || cleanV;
+      }
     }
 
     const stmt = db.prepare(`
       INSERT INTO new_tyres (
-        purchase_date, quantity, tyre_serial_number, km, present_km, running_km,
+        purchase_date, quantity, tyre_serial_number, km, starting_km, present_km, total_km, running_km,
         brand, size, model, supplier, invoice_number, purchase_cost, status,
-        allocated_bus_id, allocated_wheel_position, notes, tyre_photo_url, invoice_photo_url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        allocated_bus_id, allocated_bus_number, vehicle_number, allocated_wheel_position, notes, tyre_photo_url, invoice_photo_url
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const info = stmt.run(
       n.purchase_date || new Date().toISOString().split('T')[0],
       Number(n.quantity) || 1,
       n.tyre_serial_number,
-      initialKm,
+      startingKm,
+      startingKm,
       presentKm,
+      totalKm,
       runningKm,
       n.brand || 'MRF',
       n.size || '295/80 R22.5',
@@ -3160,6 +3168,8 @@ app.post('/api/new-tyres', (req: Request, res: Response) => {
       Number(n.purchase_cost) || 0,
       n.status || (busId ? 'Allocated' : 'In Stock'),
       busId || null,
+      busNum || null,
+      busNum || null,
       n.allocated_wheel_position || '',
       n.notes || '',
       n.tyre_photo_url || '',
@@ -3177,32 +3187,38 @@ app.put('/api/new-tyres/:id', (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const n = req.body;
-    const totalKm = Number(n.total_km) || Number(n.km) || 0;
-    const initialKm = totalKm;
-    const presentKm = Number(n.present_km) || totalKm;
-    const runningKm = presentKm >= initialKm ? presentKm - initialKm : (Number(n.running_km) || 0);
+    const startingKm = Number(n.starting_km) || 0;
+    const presentKm = Number(n.present_km) || 0;
+    const totalKm = Number(n.total_km) || (startingKm + presentKm);
+    const runningKm = presentKm >= startingKm ? presentKm - startingKm : (Number(n.running_km) || presentKm);
     const supplierVal = n.supplier_name || n.supplier || '';
 
     let busId = n.allocated_bus_id;
-    if (!busId && n.vehicle_number) {
-      const cleanV = String(n.vehicle_number).split('(')[0].trim();
-      const bRow = db.prepare('SELECT id FROM buses WHERE registration_number = ? OR bus_number = ?').get(cleanV, cleanV) as any;
-      if (bRow) busId = bRow.id;
+    let busNum = n.allocated_bus_number || n.vehicle_number || '';
+    if (n.vehicle_number) {
+      const cleanV = String(n.vehicle_number).split(/[-–(]/)[0].trim();
+      const bRow = db.prepare('SELECT id, registration_number, bus_number, current_odometer_km FROM buses WHERE registration_number LIKE ? OR bus_number LIKE ?').get(`%${cleanV}%`, `%${cleanV}%`) as any;
+      if (bRow) {
+        busId = bRow.id;
+        busNum = bRow.registration_number || bRow.bus_number || cleanV;
+      }
     }
 
     db.prepare(`
       UPDATE new_tyres SET
-        purchase_date = ?, quantity = ?, tyre_serial_number = ?, km = ?, present_km = ?, running_km = ?,
+        purchase_date = ?, quantity = ?, tyre_serial_number = ?, km = ?, starting_km = ?, present_km = ?, total_km = ?, running_km = ?,
         brand = ?, size = ?, model = ?, supplier = ?, invoice_number = ?, purchase_cost = ?, status = ?,
-        allocated_bus_id = ?, allocated_wheel_position = ?, notes = ?, tyre_photo_url = ?, invoice_photo_url = ?,
+        allocated_bus_id = ?, allocated_bus_number = ?, vehicle_number = ?, allocated_wheel_position = ?, notes = ?, tyre_photo_url = ?, invoice_photo_url = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
       n.purchase_date || new Date().toISOString().split('T')[0],
       Number(n.quantity) || 1,
       n.tyre_serial_number,
-      initialKm,
+      startingKm,
+      startingKm,
       presentKm,
+      totalKm,
       runningKm,
       n.brand || 'MRF',
       n.size || '295/80 R22.5',
@@ -3212,6 +3228,8 @@ app.put('/api/new-tyres/:id', (req: Request, res: Response) => {
       Number(n.purchase_cost) || 0,
       n.status || (busId ? 'Allocated' : 'In Stock'),
       busId || null,
+      busNum || null,
+      busNum || null,
       n.allocated_wheel_position || '',
       n.notes || '',
       n.tyre_photo_url || '',

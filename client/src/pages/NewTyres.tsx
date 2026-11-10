@@ -103,15 +103,16 @@ export const NewTyres: React.FC = () => {
       const [tyresData, busesData, checkupsData] = await Promise.all([
         api.getNewTyres().catch(() => []),
         api.getBuses().catch(() => []),
-        api.getBusCondition().catch(() => [])
+        api.getBusConditions().catch(() => [])
       ]);
 
       const enrichedBuses = (busesData || []).map((b: any) => {
-        const latestCheckup = (checkupsData || []).find((c: any) =>
-          Number(c.bus_id) === Number(b.id) ||
-          (b.registration_number && (c.registration_number === b.registration_number || c.bus_number === b.registration_number)) ||
-          (b.bus_number && (c.registration_number === b.bus_number || c.bus_number === b.bus_number))
-        );
+        const latestCheckup = (checkupsData || []).find((c: any) => {
+          if (Number(c.bus_id) === Number(b.id)) return true;
+          const bReg = (b.registration_number || b.bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
+          const cReg = (c.registration_number || c.bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
+          return Boolean(bReg && cReg && bReg === cReg);
+        });
         const checkupKm = Number(latestCheckup?.starting_km || latestCheckup?.odometer_km || 0);
         const odometerKm = Number(b.current_odometer_km || 0);
         const effectiveKm = checkupKm > 0 ? checkupKm : odometerKm;
@@ -216,7 +217,10 @@ export const NewTyres: React.FC = () => {
 
   const handleSaveTyre = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+    const isUserAdmin = Boolean(
+      user?.role?.toLowerCase()?.includes('admin') ||
+      (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
+    );
 
     if (!formData.tyre_serial_number) {
       if (!isUserAdmin) {
@@ -444,11 +448,12 @@ export const NewTyres: React.FC = () => {
                 </tr>
               ) : (
                 filteredTyres.map((t, idx) => {
-                  const matchedBus = buses.find(b =>
-                    (t.allocated_bus_id && b.id === t.allocated_bus_id) ||
-                    (t.vehicle_number && (b.registration_number === t.vehicle_number || b.bus_number === t.vehicle_number)) ||
-                    (t.allocated_bus_number && (b.registration_number === t.allocated_bus_number || b.bus_number === t.allocated_bus_number))
-                  );
+                  const matchedBus = buses.find(b => {
+                    if (t.allocated_bus_id && Number(b.id) === Number(t.allocated_bus_id)) return true;
+                    const bReg = (b.registration_number || b.bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
+                    const tVeh = (t.vehicle_number || t.allocated_bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
+                    return Boolean(bReg && tVeh && bReg === tVeh);
+                  });
                   const vehicleNum = (t.vehicle_number || t.allocated_bus_number || matchedBus?.registration_number || matchedBus?.bus_number || (t.allocated_bus_id ? `Bus #${t.allocated_bus_id}` : '') || '—').split('(')[0].trim();
                   const isAssigned = vehicleNum && vehicleNum !== '—' && vehicleNum !== '-';
 

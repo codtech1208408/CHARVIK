@@ -407,7 +407,10 @@ export const VehicleMaintenance: React.FC = () => {
   // Add / Edit Vehicle
   const handleSaveVehicle = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+    const isUserAdmin = Boolean(
+      user?.role?.toLowerCase()?.includes('admin') ||
+      (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
+    );
 
     if (!vehicleForm.registration_number?.trim()) {
       if (!isUserAdmin) {

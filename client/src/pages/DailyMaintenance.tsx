@@ -211,7 +211,10 @@ export const DailyMaintenance: React.FC = () => {
   // Save Record (Add or Edit)
   const handleSaveRecord = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+    const isUserAdmin = Boolean(
+      user?.role?.toLowerCase()?.includes('admin') ||
+      (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
+    );
 
     if (!formData.vehicle_number) {
       if (!isUserAdmin) {

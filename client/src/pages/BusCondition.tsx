@@ -144,19 +144,26 @@ export const BusCondition: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    const handleBusKmUpdated = () => {
+      loadData();
+    };
+    window.addEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    return () => {
+      window.removeEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    };
   }, [selectedBus]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       const [insData, busesData, routesData, driversData] = await Promise.all([
-        api.getBusConditions(selectedBus ? { bus_id: selectedBus } : undefined),
-        api.getBuses(),
+        api.getBusConditions(selectedBus ? { bus_id: selectedBus } : undefined).catch(() => []),
+        api.getBuses().catch(() => []),
         api.getRoutes().catch(() => []),
         api.getEmployees({ role: 'Driver' }).catch(() => [])
       ]);
-      setInspections(insData);
-      setBuses(busesData);
+      setInspections(Array.isArray(insData) ? insData : []);
+      setBuses(Array.isArray(busesData) ? busesData : []);
       if (Array.isArray(routesData) && routesData.length > 0) {
         setRoutes(routesData);
       }
@@ -164,7 +171,7 @@ export const BusCondition: React.FC = () => {
         setDrivers(driversData);
       }
     } catch (err: any) {
-      error(err.message || 'Failed to load inspections');
+      error(err?.message || 'Failed to load inspections');
     } finally {
       setLoading(false);
     }
@@ -438,7 +445,7 @@ export const BusCondition: React.FC = () => {
 
     try {
       const isUserAdmin = Boolean(
-        user?.role?.toLowerCase().includes('admin') ||
+        user?.role?.toLowerCase()?.includes('admin') ||
         (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
       );
 
@@ -446,24 +453,14 @@ export const BusCondition: React.FC = () => {
       let selectedVehicleNum = formData.vehicle_number;
 
       if (!selectedBusId) {
-        if (buses.length > 0) {
-          selectedBusId = String(buses[0].id);
-          selectedVehicleNum = buses[0].registration_number || buses[0].bus_number || '';
-          setFormData((prev) => ({
-            ...prev,
-            bus_id: selectedBusId,
-            vehicle_number: selectedVehicleNum
-          }));
-        } else {
-          error('Please select a vehicle number');
-          return;
-        }
+        error('Please select a vehicle number');
+        return;
       }
 
       if (!selectedVehicleNum && selectedBusId) {
         const found = buses.find((b) => String(b.id) === String(selectedBusId));
         if (found) {
-          selectedVehicleNum = found.registration_number || found.bus_number || '';
+          selectedVehicleNum = (found.registration_number || found.bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
         }
       }
 
@@ -501,27 +498,35 @@ export const BusCondition: React.FC = () => {
       }
 
       // Automatically update vehicle starting/odometer KM and sync to all related tabs & tyres
-      if (selectedBusId && startingKmNum > 0) {
+      if (selectedBusId) {
         // 1. Update bus odometer across fleet
-        await api.updateBus(Number(selectedBusId), {
-          current_odometer_km: startingKmNum,
-          starting_km: startingKmNum,
-          odometer_km: startingKmNum
-        }).catch(() => { });
+        if (startingKmNum > 0) {
+          await api.updateBus(Number(selectedBusId), {
+            current_odometer_km: startingKmNum,
+            starting_km: startingKmNum,
+            odometer_km: startingKmNum
+          }).catch(() => { });
+        }
 
         // 2. Direct automatic sync to all tyres allotted to this vehicle in New Tyres inventory
         try {
           const allNewTyres = await api.getNewTyres().catch(() => []);
           if (Array.isArray(allNewTyres)) {
-            const vehicleTyresList = allNewTyres.filter((nt: any) =>
-              String(nt.allocated_bus_id) === String(selectedBusId) ||
-              (selectedVehicleNum && (nt.allocated_bus_number === selectedVehicleNum || nt.vehicle_number === selectedVehicleNum))
-            );
+            const cleanTargetVeh = (selectedVehicleNum || '').split(/[-–(]/)[0].trim().toUpperCase();
+            const vehicleTyresList = allNewTyres.filter((nt: any) => {
+              if (String(nt.allocated_bus_id) === String(selectedBusId)) return true;
+              const tVeh = (nt.vehicle_number || nt.allocated_bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
+              return Boolean(tVeh && cleanTargetVeh && tVeh === cleanTargetVeh);
+            });
             for (const vt of vehicleTyresList) {
               if (vt.id) {
                 const bKm = Number(vt.starting_km ?? vt.km) || 0;
                 await api.updateNewTyre(vt.id, {
                   ...vt,
+                  allocated_bus_id: Number(selectedBusId),
+                  allocated_bus_number: selectedVehicleNum,
+                  vehicle_number: selectedVehicleNum,
+                  starting_km: bKm,
                   present_km: startingKmNum,
                   total_km: bKm + startingKmNum,
                   running_km: startingKmNum >= bKm ? startingKmNum - bKm : startingKmNum
@@ -532,20 +537,22 @@ export const BusCondition: React.FC = () => {
         } catch (_) { }
 
         // 3. Direct automatic sync to tyre records (mounted tyres)
-        try {
-          const tyreRecs = await api.getTyreRecords({ bus_id: Number(selectedBusId) }).catch(() => []);
-          if (Array.isArray(tyreRecs)) {
-            for (const tr of tyreRecs) {
-              if (tr.id) {
-                await api.updateTyreRecord(tr.id, {
-                  ...tr,
-                  last_km: startingKmNum,
-                  current_km: startingKmNum
-                }).catch(() => { });
+        if (startingKmNum > 0) {
+          try {
+            const tyreRecs = await api.getTyreRecords({ bus_id: Number(selectedBusId) }).catch(() => []);
+            if (Array.isArray(tyreRecs)) {
+              for (const tr of tyreRecs) {
+                if (tr.id) {
+                  await api.updateTyreRecord(tr.id, {
+                    ...tr,
+                    last_km: startingKmNum,
+                    current_km: startingKmNum
+                  }).catch(() => { });
+                }
               }
             }
-          }
-        } catch (_) { }
+          } catch (_) { }
+        }
 
         // 4. Dispatch global event so all tabs/pages update live
         try {

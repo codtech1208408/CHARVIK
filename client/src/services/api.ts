@@ -3123,6 +3123,7 @@ export const api = {
     const q = new URLSearchParams(clean).toString();
     return request<any[]>(`/bus-condition${q ? `?${q}` : ''}`);
   },
+  getBusCondition: (params?: { bus_id?: number | string; roadworthiness?: string }) => api.getBusConditions(params),
   createBusCondition: (data: any) => request<any>('/bus-condition', { method: 'POST', body: JSON.stringify(data) }),
   createBusConditionInspection: (data: any) => request<any>('/bus-condition', { method: 'POST', body: JSON.stringify(data) }),
   updateBusCondition: (id: number | string, data: any) => request<any>(`/bus-condition/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

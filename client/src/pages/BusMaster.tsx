@@ -161,6 +161,13 @@ export const BusMaster: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    const handleBusKmUpdated = () => {
+      loadData();
+    };
+    window.addEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    return () => {
+      window.removeEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    };
   }, [statusFilter]);
 
   const loadData = async () => {
@@ -225,7 +232,10 @@ export const BusMaster: React.FC = () => {
 
   const handleSaveBus = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+    const isUserAdmin = Boolean(
+      user?.role?.toLowerCase()?.includes('admin') ||
+      (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
+    );
 
     if (!formData.registration_number?.trim()) {
       if (!isUserAdmin) {
