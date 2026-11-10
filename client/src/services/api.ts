@@ -3072,6 +3072,17 @@ export const api = {
       tyres = [...BASE_NEW_TYRES];
     }
 
+    // Merge remote/server tyres with local cache so newly created tyres never disappear
+    try {
+      const localSaved = getLocalCollection<any>('new_tyres');
+      const rawLocal = localStorage.getItem('charvik_new_tyres_data');
+      const parsedLocal = rawLocal ? JSON.parse(rawLocal) : [];
+      const combinedLocal = [...(Array.isArray(parsedLocal) ? parsedLocal : []), ...(Array.isArray(localSaved) ? localSaved : [])];
+      if (combinedLocal.length > 0) {
+        tyres = mergeSeedCollection(tyres, combinedLocal);
+      }
+    } catch { }
+
     setLocalCollection('new_tyres', tyres);
     try {
       localStorage.setItem('charvik_new_tyres_data', JSON.stringify(tyres));

@@ -73,6 +73,7 @@ export const NewTyres: React.FC = () => {
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [editingTyre, setEditingTyre] = useState<NewTyre | null>(null);
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState<any>({
@@ -350,8 +351,9 @@ export const NewTyres: React.FC = () => {
     setIsAddEditModalOpen(true);
   };
 
-  const handleSaveTyre = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveTyre = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
+
     let currentUser: any = null;
     try {
       const rawUser = localStorage.getItem('charvik_user');
@@ -362,16 +364,19 @@ export const NewTyres: React.FC = () => {
       (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
     );
 
-    if (!formData.tyre_serial_number) {
+    const tyreNum = (formData.tyre_serial_number || '').trim();
+    if (!tyreNum) {
       if (!isUserAdmin) {
-        error('Tyre number is required');
+        error('Please enter a Tyre Number');
         return;
       }
       formData.tyre_serial_number = `TYRE-${Math.floor(100000 + Math.random() * 900000)}`;
     }
-    if (!formData.vehicle_number) {
+
+    const vehNum = (formData.vehicle_number || '').trim();
+    if (!vehNum) {
       if (!isUserAdmin) {
-        error('Please select or enter vehicle number');
+        error('Please select a Vehicle Number');
         return;
       }
       formData.vehicle_number = buses[0]?.registration_number || 'AP16TV1234';
@@ -397,17 +402,33 @@ export const NewTyres: React.FC = () => {
     };
 
     try {
+      setSaving(true);
+      let res: any = null;
       if (editingTyre) {
-        await api.updateNewTyre(editingTyre.id, payload);
-        success('Tyre record updated!');
+        res = await api.updateNewTyre(editingTyre.id, payload);
+        success('Tyre record updated successfully!');
       } else {
-        await api.createNewTyre(payload);
+        res = await api.createNewTyre(payload);
         success('New tyre registered with vehicle!');
       }
+
+      // Immediately reflect newly created/edited tyre in local React state
+      const recordId = editingTyre?.id || res?.id || Date.now();
+      const updatedItem = { ...payload, id: recordId };
+      setNewTyres((prev) => {
+        if (editingTyre) {
+          return prev.map((t) => (t.id === editingTyre.id ? updatedItem : t));
+        } else {
+          return [updatedItem, ...prev.filter((t) => t.id !== recordId)];
+        }
+      });
+
       setIsAddEditModalOpen(false);
-      loadData();
+      await loadData();
     } catch (err: any) {
       error(err.message || 'Failed to save new tyre');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -720,7 +741,7 @@ export const NewTyres: React.FC = () => {
         subtitle="Log tyre purchase date, vehicle number, total KM and tyre details"
         maxWidth="max-w-2xl"
       >
-        <form onSubmit={handleSaveTyre} className="space-y-4">
+        <form noValidate onSubmit={handleSaveTyre} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Purchase Date *</label>
@@ -905,11 +926,13 @@ export const NewTyres: React.FC = () => {
               Cancel
             </button>
             <button
-              type="submit"
-              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+              type="button"
+              onClick={handleSaveTyre}
+              disabled={saving}
+              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <Save className="w-4 h-4" />
-              <span>Save Tyre Record</span>
+              {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              <span>{saving ? 'Saving Tyre Record...' : 'Save Tyre Record'}</span>
             </button>
           </div>
         </form>
