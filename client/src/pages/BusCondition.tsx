@@ -21,6 +21,7 @@ import type { BusConditionInspection, Bus as BusType } from '../types';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { useAuth } from '../context/AuthContext';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 
 export interface DailyChecklistItem {
@@ -72,6 +73,7 @@ export const getSavedInspectionItems = (): { no: number; name: string }[] => {
 };
 
 export const BusCondition: React.FC = () => {
+  const { user } = useAuth();
   const { success, error } = useToast();
 
   const [inspections, setInspections] = useState<BusConditionInspection[]>([]);
@@ -431,55 +433,77 @@ export const BusCondition: React.FC = () => {
     }));
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
-
-    if (!formData.bus_id) {
-      if (!isUserAdmin) {
-        error('Please select a vehicle number');
-        return;
-      }
-      formData.bus_id = buses[0]?.id || 1;
-    }
-
-    const notOkCount = formData.items.filter((it) => it.status === 'Not OK').length;
-    const roadworthinessStatus =
-      notOkCount > 2 ? 'Not Fit for Service' : notOkCount > 0 ? 'Fit with Restrictions' : 'Fit for Service';
-
-    const startingKmNum = Number(formData.starting_km) || 0;
-
-    const payload = {
-      bus_id: Number(formData.bus_id),
-      inspection_date: formData.inspection_date,
-      inspection_time: formData.reporting_time || '',
-      reporting_time: formData.reporting_time || '',
-      odometer_km: startingKmNum,
-      starting_km: startingKmNum,
-      closing_km: 0,
-      driver_name: formData.driver_name,
-      vehicle_model: formData.vehicle_model,
-      route_trip: formData.route_trip,
-      inspector_name: formData.driver_name || 'Driver',
-      mechanic_supervisor: formData.mechanic_supervisor,
-      defects_found: formData.defects_found,
-      roadworthiness_status: roadworthinessStatus,
-      checklist_data: JSON.stringify(formData.items)
-    };
+  const handleSave = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
 
     try {
+      const isUserAdmin = Boolean(
+        user?.role?.toLowerCase().includes('admin') ||
+        (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
+      );
+
+      let selectedBusId = formData.bus_id;
+      let selectedVehicleNum = formData.vehicle_number;
+
+      if (!selectedBusId) {
+        if (buses.length > 0) {
+          selectedBusId = String(buses[0].id);
+          selectedVehicleNum = buses[0].registration_number || buses[0].bus_number || '';
+          setFormData((prev) => ({
+            ...prev,
+            bus_id: selectedBusId,
+            vehicle_number: selectedVehicleNum
+          }));
+        } else {
+          error('Please select a vehicle number');
+          return;
+        }
+      }
+
+      if (!selectedVehicleNum && selectedBusId) {
+        const found = buses.find((b) => String(b.id) === String(selectedBusId));
+        if (found) {
+          selectedVehicleNum = found.registration_number || found.bus_number || '';
+        }
+      }
+
+      const notOkCount = (formData.items || []).filter((it) => it.status === 'Not OK').length;
+      const roadworthinessStatus =
+        notOkCount > 2 ? 'Not Fit for Service' : notOkCount > 0 ? 'Fit with Restrictions' : 'Fit for Service';
+
+      const startingKmNum = Number(formData.starting_km) || 0;
+      const inspectionDate = formData.inspection_date || new Date().toISOString().split('T')[0];
+
+      const payload = {
+        bus_id: Number(selectedBusId),
+        inspection_date: inspectionDate,
+        inspection_time: formData.reporting_time || '',
+        reporting_time: formData.reporting_time || '',
+        odometer_km: startingKmNum,
+        starting_km: startingKmNum,
+        closing_km: 0,
+        driver_name: formData.driver_name || 'Driver',
+        vehicle_model: formData.vehicle_model || '',
+        route_trip: formData.route_trip || '',
+        inspector_name: formData.driver_name || 'Driver',
+        mechanic_supervisor: formData.mechanic_supervisor || '',
+        defects_found: formData.defects_found || '',
+        roadworthiness_status: roadworthinessStatus,
+        checklist_data: JSON.stringify(formData.items || [])
+      };
+
       if (editingInspection) {
         await api.updateBusCondition(editingInspection.id, payload);
         success('Daily Vehicle Check Report updated successfully!');
       } else {
         await api.createBusCondition(payload);
-        success('Daily Vehicle Check Report logged successfully!');
+        success('Daily Vehicle Check Report saved successfully!');
       }
 
       // Automatically update vehicle starting/odometer KM and sync to all related tabs & tyres
-      if (formData.bus_id && startingKmNum > 0) {
+      if (selectedBusId && startingKmNum > 0) {
         // 1. Update bus odometer across fleet
-        await api.updateBus(formData.bus_id, {
+        await api.updateBus(Number(selectedBusId), {
           current_odometer_km: startingKmNum,
           starting_km: startingKmNum,
           odometer_km: startingKmNum
@@ -490,12 +514,12 @@ export const BusCondition: React.FC = () => {
           const allNewTyres = await api.getNewTyres().catch(() => []);
           if (Array.isArray(allNewTyres)) {
             const vehicleTyresList = allNewTyres.filter((nt: any) =>
-              String(nt.allocated_bus_id) === String(formData.bus_id) ||
-              (formData.vehicle_number && (nt.allocated_bus_number === formData.vehicle_number || nt.vehicle_number === formData.vehicle_number))
+              String(nt.allocated_bus_id) === String(selectedBusId) ||
+              (selectedVehicleNum && (nt.allocated_bus_number === selectedVehicleNum || nt.vehicle_number === selectedVehicleNum))
             );
             for (const vt of vehicleTyresList) {
               if (vt.id) {
-                const bKm = Number(vt.km) || 0;
+                const bKm = Number(vt.starting_km ?? vt.km) || 0;
                 await api.updateNewTyre(vt.id, {
                   ...vt,
                   present_km: startingKmNum,
@@ -509,7 +533,7 @@ export const BusCondition: React.FC = () => {
 
         // 3. Direct automatic sync to tyre records (mounted tyres)
         try {
-          const tyreRecs = await api.getTyreRecords({ bus_id: formData.bus_id }).catch(() => []);
+          const tyreRecs = await api.getTyreRecords({ bus_id: Number(selectedBusId) }).catch(() => []);
           if (Array.isArray(tyreRecs)) {
             for (const tr of tyreRecs) {
               if (tr.id) {
@@ -526,14 +550,14 @@ export const BusCondition: React.FC = () => {
         // 4. Dispatch global event so all tabs/pages update live
         try {
           window.dispatchEvent(new CustomEvent('charvik_bus_km_updated', {
-            detail: { bus_id: formData.bus_id, vehicle_number: formData.vehicle_number, km: startingKmNum }
+            detail: { bus_id: Number(selectedBusId), vehicle_number: selectedVehicleNum, km: startingKmNum }
           }));
         } catch (_) { }
       }
 
       // Persist any custom inspection items for all future checklists
       try {
-        const customItems = formData.items
+        const customItems = (formData.items || [])
           .filter((it) => it.name && it.name.trim() && !DEFAULT_18_INSPECTION_ITEMS.some((d) => d.name.toLowerCase() === it.name.trim().toLowerCase()))
           .map((it) => ({ name: it.name.trim() }));
         if (customItems.length > 0) {
@@ -543,9 +567,10 @@ export const BusCondition: React.FC = () => {
 
       setIsAddOpen(false);
       setEditingInspection(null);
-      loadData();
+      await loadData();
     } catch (err: any) {
-      error(err.message || 'Failed to save vehicle check report');
+      console.error('Failed to save vehicle check report:', err);
+      error(err?.message || 'Failed to save vehicle check report');
     }
   };
 
@@ -952,7 +977,7 @@ export const BusCondition: React.FC = () => {
         subtitle="Daily pre-trip inspection checklist — complete before starting the trip."
         maxWidth="max-w-4xl"
       >
-        <form onSubmit={handleSave} className="space-y-4">
+        <form noValidate onSubmit={handleSave} className="space-y-4">
           {/* Top Metadata Grid */}
           <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
@@ -1192,8 +1217,9 @@ export const BusCondition: React.FC = () => {
               Cancel
             </button>
             <button
-              type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-all cursor-pointer shadow-sm"
+              type="button"
+              onClick={handleSave}
+              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] active:scale-95 transition-all cursor-pointer shadow-sm"
             >
               Save Vehicle Check Report
             </button>

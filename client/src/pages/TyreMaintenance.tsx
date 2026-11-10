@@ -367,7 +367,7 @@ export const TyreMaintenance: React.FC = () => {
         tread_depth_mm: selectedTyre.tread_depth_mm,
         pressure_psi: selectedTyre.tyre_pressure_psi,
         notes: rotationData.remarks
-      }).catch(() => {});
+      }).catch(() => { });
 
       success(`Tyre position rotated to ${rotationData.new_position}!`);
       setIsRotateModalOpen(false);
@@ -876,11 +876,10 @@ export const TyreMaintenance: React.FC = () => {
           <button
             type="button"
             onClick={() => handleTabChange('maintenance')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === 'maintenance'
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${activeTab === 'maintenance'
                 ? 'bg-[#142B4A] text-white shadow-sm ring-1 ring-[#142B4A]'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
-            }`}
+              }`}
           >
             <Disc className="w-4 h-4" />
             <span>Tyre Maintenance</span>
@@ -889,11 +888,10 @@ export const TyreMaintenance: React.FC = () => {
           <button
             type="button"
             onClick={() => handleTabChange('new_tyres')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === 'new_tyres'
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${activeTab === 'new_tyres'
                 ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-600'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
-            }`}
+              }`}
           >
             <Package className="w-4 h-4" />
             <span>New Tyres</span>
@@ -907,11 +905,10 @@ export const TyreMaintenance: React.FC = () => {
           <button
             type="button"
             onClick={() => handleTabChange('allotment_rotation')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === 'allotment_rotation'
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${activeTab === 'allotment_rotation'
                 ? 'bg-[#142B4A] text-white shadow-sm ring-1 ring-[#142B4A]'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
-            }`}
+              }`}
           >
             <RotateCw className="w-4 h-4" />
             <span>Wheel Allotment & Tyre Rotation</span>
@@ -920,11 +917,10 @@ export const TyreMaintenance: React.FC = () => {
           <button
             type="button"
             onClick={() => handleTabChange('air_checkup')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === 'air_checkup'
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${activeTab === 'air_checkup'
                 ? 'bg-[#142B4A] text-white shadow-sm ring-1 ring-[#142B4A]'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
-            }`}
+              }`}
           >
             <Gauge className="w-4 h-4" />
             <span>Tyre Air Checkup</span>
@@ -1559,9 +1555,8 @@ export const TyreMaintenance: React.FC = () => {
                               )}
                               <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full rounded-full transition-all ${
-                                    isLimitReached ? 'bg-rose-500' : 'bg-indigo-600'
-                                  }`}
+                                  className={`h-full rounded-full transition-all ${isLimitReached ? 'bg-rose-500' : 'bg-indigo-600'
+                                    }`}
                                   style={{ width: `${percentRun}%` }}
                                 ></div>
                               </div>
@@ -1596,13 +1591,12 @@ export const TyreMaintenance: React.FC = () => {
                             <div className="flex items-center justify-center gap-1.5">
                               <button
                                 onClick={() => handleOpenRenewAllotment(w)}
-                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs ${
-                                  isLimitReached
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs ${isLimitReached
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white'
                                     : isDueSoon
-                                    ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                                }`}
+                                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                  }`}
                                 title="Renew / Rotate Tyre Cycle"
                               >
                                 <RefreshCw className="w-3 h-3" />
@@ -1866,11 +1860,10 @@ export const TyreMaintenance: React.FC = () => {
                             <div className="flex items-center justify-center gap-1.5">
                               <button
                                 onClick={() => handleOpenRenewAir(a)}
-                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs ${
-                                  isExpired
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs ${isExpired
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white'
                                     : 'bg-blue-600 hover:bg-blue-700 text-white'
-                                }`}
+                                  }`}
                                 title="Renew Tyre Air Checkup"
                               >
                                 <RefreshCw className="w-3 h-3" />
