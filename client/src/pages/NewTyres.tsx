@@ -202,7 +202,7 @@ export const NewTyres: React.FC = () => {
 
     if (!formData.tyre_serial_number) {
       if (!isUserAdmin) {
-        error('Tyre serial number is required');
+        error('Tyre number is required');
         return;
       }
       formData.tyre_serial_number = `TYRE-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -368,7 +368,7 @@ export const NewTyres: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
-            placeholder="Search serial, vehicle, brand, size..."
+            placeholder="Search tyre number, vehicle, brand, size..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
@@ -403,7 +403,7 @@ export const NewTyres: React.FC = () => {
                 <th className="py-2.5 px-3">Starting KM</th>
                 <th className="py-2.5 px-3">Present Running KM</th>
                 <th className="py-2.5 px-3">Total KM</th>
-                <th className="py-2.5 px-3">Tyre Serial & Photo</th>
+                <th className="py-2.5 px-3">Tyre Number & Photo</th>
                 <th className="py-2.5 px-3">Brand & Size</th>
                 <th className="py-2.5 px-3">Supplier / Notes</th>
                 <th className="py-2.5 px-3 text-center">Actions</th>
@@ -647,7 +647,7 @@ export const NewTyres: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Tyre Serial Number *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Tyre Number *</label>
               <input
                 type="text"
                 required

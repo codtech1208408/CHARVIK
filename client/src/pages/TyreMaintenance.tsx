@@ -310,7 +310,7 @@ export const TyreMaintenance: React.FC = () => {
     const isUserAdmin = true;
     if (!formData.bus_id || !formData.tyre_serial_number) {
       if (!isUserAdmin) {
-        error('Bus and tyre serial number are required');
+        error('Bus and tyre number are required');
         return;
       }
       formData.bus_id = formData.bus_id || buses[0]?.id || 1;
@@ -458,7 +458,7 @@ export const TyreMaintenance: React.FC = () => {
     const isUserAdmin = true;
     if (!newTyreForm.tyre_serial_number) {
       if (!isUserAdmin) {
-        error('Tyre Serial / Number is required');
+        error('Tyre number is required');
         return;
       }
       newTyreForm.tyre_serial_number = `TYRE-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -1938,7 +1938,7 @@ export const TyreMaintenance: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Tyre Serial Number *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Tyre Number *</label>
               <input
                 type="text"
                 value={formData.tyre_serial_number}
@@ -2209,7 +2209,7 @@ export const TyreMaintenance: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Tyre Number (Serial No) *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Tyre Number *</label>
               <input
                 type="text"
                 value={newTyreForm.tyre_serial_number}
