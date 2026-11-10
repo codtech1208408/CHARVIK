@@ -34,6 +34,7 @@ interface NewTyre {
   id: number;
   purchase_date: string;
   vehicle_number?: string;
+  starting_km?: number | string;
   total_km?: number | string;
   quantity: number;
   tyre_serial_number: string;
@@ -122,13 +123,18 @@ export const NewTyres: React.FC = () => {
     );
     const busKm = Number((matchedBus as any)?.latest_checkup_km || matchedBus?.current_odometer_km || 0);
 
-    setFormData((prev: any) => ({
-      ...prev,
-      vehicle_number: cleanReg,
-      allocated_bus_id: matchedBus ? matchedBus.id : prev.allocated_bus_id,
-      allocated_bus_number: cleanReg,
-      total_km: busKm > 0 ? busKm : prev.total_km
-    }));
+    setFormData((prev: any) => {
+      const sKm = Number(prev.starting_km) || 0;
+      const pKm = busKm > 0 ? busKm : (Number(prev.present_km) || 0);
+      return {
+        ...prev,
+        vehicle_number: cleanReg,
+        allocated_bus_id: matchedBus ? matchedBus.id : prev.allocated_bus_id,
+        allocated_bus_number: cleanReg,
+        present_km: pKm > 0 ? pKm : '',
+        total_km: (sKm + pKm) > 0 ? (sKm + pKm) : ''
+      };
+    });
   };
 
   const handleOpenAdd = () => {
@@ -142,6 +148,8 @@ export const NewTyres: React.FC = () => {
       vehicle_number: initialReg,
       allocated_bus_id: firstBus ? firstBus.id : undefined,
       allocated_bus_number: initialReg,
+      starting_km: 0,
+      present_km: initialKm > 0 ? initialKm : '',
       total_km: initialKm > 0 ? initialKm : '',
       quantity: 1,
       tyre_serial_number: '',
@@ -157,15 +165,25 @@ export const NewTyres: React.FC = () => {
 
   const handleOpenEdit = (t: NewTyre) => {
     setEditingTyre(t);
-    const cleanVehicle = (t.vehicle_number || t.allocated_bus_number || (t.allocated_bus_id ? (buses.find(b => b.id === t.allocated_bus_id)?.registration_number || `Bus #${t.allocated_bus_id}`) : '') || '').split('(')[0].trim();
-    const currentKm = t.total_km ?? t.km ?? t.present_km ?? '';
+    const matchedBus = buses.find(b =>
+      (t.allocated_bus_id && b.id === t.allocated_bus_id) ||
+      (t.vehicle_number && (b.registration_number === t.vehicle_number || b.bus_number === t.vehicle_number)) ||
+      (t.allocated_bus_number && (b.registration_number === t.allocated_bus_number || b.bus_number === t.allocated_bus_number))
+    );
+    const cleanVehicle = (t.vehicle_number || t.allocated_bus_number || matchedBus?.registration_number || matchedBus?.bus_number || (t.allocated_bus_id ? `Bus #${t.allocated_bus_id}` : '') || '').split('(')[0].trim();
+    const busKm = Number((matchedBus as any)?.latest_checkup_km || matchedBus?.current_odometer_km || 0);
+    const sKm = Number(t.starting_km ?? t.km) || 0;
+    const pKm = Number(t.present_km) > 0 ? Number(t.present_km) : (busKm > 0 ? busKm : 0);
+    const totKm = sKm + pKm;
 
     setFormData({
       purchase_date: t.purchase_date || new Date().toISOString().split('T')[0],
       vehicle_number: cleanVehicle,
-      allocated_bus_id: t.allocated_bus_id,
+      allocated_bus_id: t.allocated_bus_id || (matchedBus ? matchedBus.id : undefined),
       allocated_bus_number: cleanVehicle,
-      total_km: currentKm,
+      starting_km: sKm,
+      present_km: pKm > 0 ? pKm : '',
+      total_km: totKm > 0 ? totKm : '',
       quantity: t.quantity || 1,
       tyre_serial_number: t.tyre_serial_number || '',
       brand: t.brand || 'MRF',
@@ -198,16 +216,20 @@ export const NewTyres: React.FC = () => {
     }
 
     const cleanVehicle = (formData.vehicle_number || '').split('(')[0].trim();
-    const kmVal = Number(formData.total_km) || 0;
+    const sKm = Number(formData.starting_km) || 0;
+    const pKm = Number(formData.present_km) || 0;
+    const totalKmVal = sKm + pKm;
 
     const payload = {
       ...formData,
       vehicle_number: cleanVehicle,
       allocated_bus_number: cleanVehicle,
-      total_km: kmVal,
-      km: kmVal,
-      present_km: kmVal,
-      status: 'Allocated'
+      starting_km: sKm,
+      km: sKm,
+      present_km: pKm,
+      running_km: pKm >= sKm ? pKm - sKm : pKm,
+      total_km: totalKmVal,
+      status: cleanVehicle && cleanVehicle !== '—' && cleanVehicle !== '-' ? 'Allocated' : 'In Stock'
     };
 
     try {
@@ -378,6 +400,8 @@ export const NewTyres: React.FC = () => {
                 <th className="py-2.5 px-3 text-center">S.No</th>
                 <th className="py-2.5 px-3">Purchase Date</th>
                 <th className="py-2.5 px-3">Vehicle Number</th>
+                <th className="py-2.5 px-3">Starting KM</th>
+                <th className="py-2.5 px-3">Present Running KM</th>
                 <th className="py-2.5 px-3">Total KM</th>
                 <th className="py-2.5 px-3">Tyre Serial & Photo</th>
                 <th className="py-2.5 px-3">Brand & Size</th>
@@ -388,14 +412,14 @@ export const NewTyres: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-slate-700">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-14 text-center text-slate-400">
+                  <td colSpan={10} className="py-14 text-center text-slate-400">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600" />
                     <span>Loading tyre inventory...</span>
                   </td>
                 </tr>
               ) : filteredTyres.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-14 text-center text-slate-400">
+                  <td colSpan={10} className="py-14 text-center text-slate-400">
                     <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <span>No tyre inventory records found.</span>
                   </td>
@@ -408,9 +432,18 @@ export const NewTyres: React.FC = () => {
                     (t.allocated_bus_number && (b.registration_number === t.allocated_bus_number || b.bus_number === t.allocated_bus_number))
                   );
                   const vehicleNum = (t.vehicle_number || t.allocated_bus_number || matchedBus?.registration_number || matchedBus?.bus_number || (t.allocated_bus_id ? `Bus #${t.allocated_bus_id}` : '') || '—').split('(')[0].trim();
-                  const busKm = Number(matchedBus?.current_odometer_km) || 0;
-                  const storedKm = Number(t.total_km ?? t.km ?? t.present_km) || 0;
-                  const totalKmVal = storedKm > 0 ? storedKm : (busKm > 0 ? busKm : 0);
+                  const isAssigned = vehicleNum && vehicleNum !== '—' && vehicleNum !== '-';
+
+                  // 1. Starting KM (Initial / Before KM)
+                  const startingKm = Number(t.starting_km ?? t.km) || 0;
+
+                  // 2. Present Running KM (taken from Daily Vehicle Checkup of this vehicle)
+                  const busKm = Number((matchedBus as any)?.latest_checkup_km || matchedBus?.current_odometer_km || 0);
+                  const rawPresentKm = t.present_km !== undefined && t.present_km !== null && t.present_km !== '' ? Number(t.present_km) : 0;
+                  const presentRunningKm = isAssigned ? (rawPresentKm > 0 ? rawPresentKm : (busKm > 0 ? busKm : 0)) : rawPresentKm;
+
+                  // 3. Total KM (by adding Starting KM + Present Running KM)
+                  const totalKmVal = startingKm + presentRunningKm;
 
                   return (
                     <tr key={t.id} className="hover:bg-slate-50/60 transition-colors">
@@ -422,8 +455,33 @@ export const NewTyres: React.FC = () => {
                           {vehicleNum || '—'}
                         </span>
                       </td>
-                      <td className="py-2 px-3 font-mono font-bold text-emerald-700 text-sm">
-                        {totalKmVal > 0 ? `${totalKmVal.toLocaleString('en-IN')} KM` : '0 KM'}
+
+                      {/* Starting KM */}
+                      <td className="py-2 px-3 font-mono font-bold text-slate-700 text-xs whitespace-nowrap">
+                        {startingKm > 0 ? `${startingKm.toLocaleString('en-IN')} KM` : '0 KM'}
+                      </td>
+
+                      {/* Present Running KM (from Daily Vehicle Checkup) */}
+                      <td className="py-2 px-3 font-mono font-bold text-indigo-700 text-xs whitespace-nowrap">
+                        {presentRunningKm > 0 ? (
+                          <span>{presentRunningKm.toLocaleString('en-IN')} KM</span>
+                        ) : isAssigned ? (
+                          <span className="text-slate-400">0 KM</span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+
+                      {/* Total KM (Starting KM + Present Running KM) */}
+                      <td className="py-2 px-3 whitespace-nowrap">
+                        <span className="font-mono font-bold text-emerald-700 text-sm block">
+                          {totalKmVal > 0 ? `${totalKmVal.toLocaleString('en-IN')} KM` : '0 KM'}
+                        </span>
+                        {(startingKm > 0 || presentRunningKm > 0) && (
+                          <span className="text-[10px] text-slate-400 font-semibold block">
+                            ({startingKm.toLocaleString('en-IN')} + {presentRunningKm.toLocaleString('en-IN')})
+                          </span>
+                        )}
                       </td>
                       <td className="py-2 px-3">
                         <div className="flex items-center gap-2.5">
@@ -538,17 +596,60 @@ export const NewTyres: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                Total KM *
-                <span className="text-[10px] text-emerald-600 font-medium ml-1">(Synced from vehicle checkup)</span>
+                Starting KM (Initial KM)
               </label>
               <input
                 type="number"
-                required
-                placeholder="e.g. 45000"
-                value={formData.total_km}
-                onChange={(e) => setFormData({ ...formData, total_km: e.target.value })}
+                placeholder="e.g. 0"
+                value={formData.starting_km}
+                onChange={(e) => {
+                  const s = e.target.value;
+                  const sNum = Number(s) || 0;
+                  const pNum = Number(formData.present_km) || 0;
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    starting_km: s,
+                    total_km: (sNum + pNum) > 0 ? (sNum + pNum) : ''
+                  }));
+                }}
                 className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Present Running KM
+                <span className="text-[10px] text-blue-600 font-medium ml-1">(From Daily Vehicle Checkup)</span>
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 45000"
+                value={formData.present_km}
+                onChange={(e) => {
+                  const p = e.target.value;
+                  const pNum = Number(p) || 0;
+                  const sNum = Number(formData.starting_km) || 0;
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    present_km: p,
+                    total_km: (sNum + pNum) > 0 ? (sNum + pNum) : ''
+                  }));
+                }}
+                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold text-indigo-700"
+              />
+            </div>
+
+            {/* Live Total KM Banner */}
+            <div className="sm:col-span-2 p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Gauge className="w-4 h-4 text-emerald-600" />
+                <span className="text-xs font-bold text-emerald-950">
+                  Total KM Running (Starting KM + Present Running KM):
+                </span>
+              </div>
+              <span className="text-sm font-black font-mono text-emerald-700">
+                {((Number(formData.starting_km) || 0) + (Number(formData.present_km) || 0)).toLocaleString('en-IN')} KM
+              </span>
             </div>
 
             <div>
