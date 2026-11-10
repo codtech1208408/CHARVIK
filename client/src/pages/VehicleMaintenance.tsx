@@ -1251,38 +1251,6 @@ export const VehicleMaintenance: React.FC = () => {
           maxWidth="max-w-xl"
         >
           <form onSubmit={handleSubmitCompletion} className="space-y-4">
-            {/* Live Auto Due Schedule Banner */}
-            {completingService && (
-              <div className="p-3 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-                <div className="flex items-center gap-2.5">
-                  {completingService.service.intervalType === 'km' ? (
-                    <Gauge className="w-4 h-4 text-blue-600 shrink-0" />
-                  ) : (
-                    <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
-                  )}
-                  <div>
-                    <span className="text-xs font-bold text-slate-800 block">
-                      Auto Due Schedule: {completingService.service.intervalLabel}
-                    </span>
-                    <span className="text-[11px] text-slate-600 font-mono font-medium">
-                      {completingService.service.intervalType === 'km'
-                        ? `${(Number(completionForm.last_service_km) || 0).toLocaleString('en-IN')} KM + ${(completingService.service.interval || 0).toLocaleString('en-IN')} KM = ${(Number(completionForm.odometer_km) || 0).toLocaleString('en-IN')} KM`
-                        : `${completionForm.last_service_date || 'Start'} + ${completingService.service.interval} Days = ${completionForm.completion_date}`}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5 self-end sm:self-center">
-                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Due Target:</span>
-                  <span className="text-xs font-black font-mono px-2.5 py-1 rounded-lg bg-blue-600 text-white shadow-2xs">
-                    {completingService.service.intervalType === 'km'
-                      ? `${(Number(completionForm.odometer_km) || 0).toLocaleString('en-IN')} KM`
-                      : completionForm.completion_date}
-                  </span>
-                </div>
-              </div>
-            )}
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Last service date</label>
