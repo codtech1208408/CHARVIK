@@ -87,6 +87,13 @@ export const NewTyres: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    const handleBusKmUpdated = () => {
+      loadData();
+    };
+    window.addEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    return () => {
+      window.removeEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    };
   }, []);
 
   const loadData = async () => {
@@ -395,8 +402,15 @@ export const NewTyres: React.FC = () => {
                 </tr>
               ) : (
                 filteredTyres.map((t, idx) => {
-                  const vehicleNum = (t.vehicle_number || t.allocated_bus_number || (t.allocated_bus_id ? (buses.find(b => b.id === t.allocated_bus_id)?.registration_number || `Bus #${t.allocated_bus_id}`) : '') || '—').split('(')[0].trim();
-                  const totalKmVal = Number(t.total_km ?? t.km ?? t.present_km) || 0;
+                  const matchedBus = buses.find(b =>
+                    (t.allocated_bus_id && b.id === t.allocated_bus_id) ||
+                    (t.vehicle_number && (b.registration_number === t.vehicle_number || b.bus_number === t.vehicle_number)) ||
+                    (t.allocated_bus_number && (b.registration_number === t.allocated_bus_number || b.bus_number === t.allocated_bus_number))
+                  );
+                  const vehicleNum = (t.vehicle_number || t.allocated_bus_number || matchedBus?.registration_number || matchedBus?.bus_number || (t.allocated_bus_id ? `Bus #${t.allocated_bus_id}` : '') || '—').split('(')[0].trim();
+                  const busKm = Number(matchedBus?.current_odometer_km) || 0;
+                  const storedKm = Number(t.total_km ?? t.km ?? t.present_km) || 0;
+                  const totalKmVal = storedKm > 0 ? storedKm : (busKm > 0 ? busKm : 0);
 
                   return (
                     <tr key={t.id} className="hover:bg-slate-50/60 transition-colors">

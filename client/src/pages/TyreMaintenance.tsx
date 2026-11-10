@@ -209,6 +209,16 @@ export const TyreMaintenance: React.FC = () => {
     loadAllData();
   }, [selectedBus, activeTab]);
 
+  useEffect(() => {
+    const handleBusKmUpdated = () => {
+      loadAllData();
+    };
+    window.addEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    return () => {
+      window.removeEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    };
+  }, []);
+
   const loadAllData = async () => {
     try {
       setLoading(true);
@@ -1186,7 +1196,14 @@ export const TyreMaintenance: React.FC = () => {
                   ) : (
                     filteredNewTyres.map((nt, index) => {
                       const initialKm = Number(nt.km) || 0;
-                      const presentKm = nt.present_km !== undefined && nt.present_km !== null && nt.present_km !== '' ? Number(nt.present_km) : 0;
+                      const matchedBus = buses.find((b: any) =>
+                        String(b.id) === String(nt.allocated_bus_id) ||
+                        (nt.allocated_bus_number && (b.bus_number === nt.allocated_bus_number || b.registration_number === nt.allocated_bus_number)) ||
+                        (nt.vehicle_number && (b.bus_number === nt.vehicle_number || b.registration_number === nt.vehicle_number))
+                      );
+                      const busKm = Number(matchedBus?.current_odometer_km) || 0;
+                      const rawPresentKm = nt.present_km !== undefined && nt.present_km !== null && nt.present_km !== '' ? Number(nt.present_km) : 0;
+                      const presentKm = rawPresentKm > 0 ? rawPresentKm : (busKm > 0 ? busKm : 0);
                       const totalKmRunning = initialKm + presentKm;
                       const diffKm = presentKm >= initialKm ? presentKm - initialKm : 0;
 

@@ -1395,34 +1395,59 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
 
     if ((method === 'POST' || method === 'PUT') && body) {
       try {
-        if (body.bus_id && (Number(body.starting_km) > 0 || Number(body.odometer_km) > 0)) {
-          const sKm = Number(body.starting_km) > 0 ? Number(body.starting_km) : Number(body.odometer_km);
+        const sKm = Number(body.starting_km) > 0 ? Number(body.starting_km) : Number(body.odometer_km) || 0;
+        if (body.bus_id && sKm > 0) {
+          // 1. Update buses collection & cache
           const buses = getLocalCollection<any>('buses');
-          const updatedBuses = buses.map(b => String(b.id) === String(body.bus_id) ? { ...b, current_odometer_km: sKm } : b);
+          const updatedBuses = buses.map(b => String(b.id) === String(body.bus_id) ? {
+            ...b,
+            current_odometer_km: sKm,
+            latest_checkup_km: sKm,
+            odometer_km: sKm,
+            starting_km: sKm,
+            total_km: sKm
+          } : b);
           setLocalCollection('buses', updatedBuses);
-        }
+          try {
+            localStorage.setItem('charvik_cache_buses', JSON.stringify(updatedBuses));
+            localStorage.setItem('charvik_bus_master', JSON.stringify(updatedBuses));
+            supabase.from('buses').update({ current_odometer_km: sKm }).eq('id', body.bus_id).then(() => { });
+          } catch (_) { }
 
-        const newTyres = getLocalCollection<any>('new_tyres');
-        if (Array.isArray(body.tyre_updates) && body.tyre_updates.length > 0) {
-          const updated = newTyres.map(nt => {
-            const tu = body.tyre_updates.find((u: any) => u.id === nt.id || u.tyre_serial_number === nt.tyre_serial_number);
-            if (tu) {
-              const pKm = Number(tu.present_km) || 0;
+          // 2. Direct automatic sync to new_tyres
+          const newTyres = getLocalCollection<any>('new_tyres');
+          const updatedTyres = newTyres.map(nt => {
+            const matches = String(nt.allocated_bus_id) === String(body.bus_id) ||
+              (body.vehicle_number && (nt.allocated_bus_number === body.vehicle_number || nt.vehicle_number === body.vehicle_number));
+            if (matches) {
               const bKm = Number(nt.km) || 0;
-              return { ...nt, present_km: pKm, running_km: pKm >= bKm ? pKm - bKm : pKm };
+              return {
+                ...nt,
+                present_km: sKm,
+                total_km: bKm + sKm,
+                running_km: sKm >= bKm ? sKm - bKm : sKm
+              };
             }
             return nt;
           });
-          setLocalCollection('new_tyres', updated);
-        } else if (body.bus_id && (Number(body.starting_km) > 0 || Number(body.closing_km) > 0)) {
-          const lKm = Number(body.starting_km) > 0 ? Number(body.starting_km) : Number(body.closing_km);
-          const updated = newTyres.map(nt => {
-            if (String(nt.allocated_bus_id) === String(body.bus_id)) {
-              return { ...nt, present_km: lKm, running_km: lKm >= (Number(nt.km) || 0) ? lKm - (Number(nt.km) || 0) : lKm };
+          setLocalCollection('new_tyres', updatedTyres);
+          try {
+            localStorage.setItem('charvik_new_tyres_cache', JSON.stringify(updatedTyres));
+            supabase.from('new_tyres').update({ present_km: sKm }).eq('allocated_bus_id', body.bus_id).then(() => { });
+          } catch (_) { }
+
+          // 3. Direct automatic sync to tyre_records (mounted tyres)
+          const tyreRecords = getLocalCollection<any>('tyre_records');
+          const updatedRecords = tyreRecords.map(tr => {
+            if (String(tr.bus_id) === String(body.bus_id)) {
+              return { ...tr, last_km: sKm, current_km: sKm };
             }
-            return nt;
+            return tr;
           });
-          setLocalCollection('new_tyres', updated);
+          setLocalCollection('tyre_records', updatedRecords);
+          try {
+            localStorage.setItem('charvik_tyre_records_cache', JSON.stringify(updatedRecords));
+          } catch (_) { }
         }
       } catch (_) { }
     }

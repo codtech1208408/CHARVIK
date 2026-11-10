@@ -72,6 +72,13 @@ export const DailyMaintenance: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    const handleBusKmUpdated = () => {
+      loadData();
+    };
+    window.addEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    return () => {
+      window.removeEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    };
   }, []);
 
   const loadData = async () => {

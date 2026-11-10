@@ -156,6 +156,13 @@ export const VehicleMaintenance: React.FC = () => {
 
   useEffect(() => {
     loadFleetData();
+    const handleBusKmUpdated = () => {
+      loadFleetData();
+    };
+    window.addEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    return () => {
+      window.removeEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    };
   }, []);
 
   // Update URL when vehicle selection changes

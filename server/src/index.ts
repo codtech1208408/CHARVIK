@@ -4260,11 +4260,12 @@ app.post('/api/bus-condition', (req: Request, res: Response) => {
     try {
       db.prepare(`
         UPDATE new_tyres SET
-          present_km = CASE WHEN present_km = 0 OR ? > present_km THEN ? ELSE present_km END,
-          running_km = CASE WHEN ? >= km THEN ? - km ELSE running_km END,
+          present_km = ?,
+          total_km = km + ?,
+          running_km = CASE WHEN ? >= km THEN ? - km ELSE ? END,
           updated_at = CURRENT_TIMESTAMP
         WHERE allocated_bus_id = ?
-      `).run(startingKm, startingKm, startingKm, startingKm, c.bus_id);
+      `).run(startingKm, startingKm, startingKm, startingKm, startingKm, c.bus_id);
     } catch (_) { }
   }
 
@@ -4356,15 +4357,16 @@ app.put('/api/bus-condition/:id', (req: Request, res: Response) => {
         }
       }
     } else if (c.bus_id && startingKm > 0) {
-      try {
-        db.prepare(`
-          UPDATE new_tyres SET
-            present_km = CASE WHEN present_km = 0 OR ? > present_km THEN ? ELSE present_km END,
-            running_km = CASE WHEN ? >= km THEN ? - km ELSE running_km END,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE allocated_bus_id = ?
-        `).run(startingKm, startingKm, startingKm, startingKm, c.bus_id);
-      } catch (_) { }
+    try {
+      db.prepare(`
+        UPDATE new_tyres SET
+          present_km = ?,
+          total_km = km + ?,
+          running_km = CASE WHEN ? >= km THEN ? - km ELSE ? END,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE allocated_bus_id = ?
+      `).run(startingKm, startingKm, startingKm, startingKm, startingKm, c.bus_id);
+    } catch (_) { }
     }
 
     logAudit('INSPECTION_UPDATE', 'Bus Condition', id, `Updated vehicle checkup ID ${id}`);

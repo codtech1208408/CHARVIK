@@ -130,6 +130,10 @@ export const DailyKilometers: React.FC = () => {
       }
     };
     loadAuxData();
+    window.addEventListener('charvik_bus_km_updated', loadAuxData);
+    return () => {
+      window.removeEventListener('charvik_bus_km_updated', loadAuxData);
+    };
   }, []);
 
   // Save entries to localStorage
@@ -730,7 +734,16 @@ export const DailyKilometers: React.FC = () => {
                   <select
                     required
                     value={formData.vehicle_number}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, vehicle_number: e.target.value }))}
+                    onChange={(e) => {
+                      const veh = e.target.value;
+                      const matched = buses.find((b) => (b.bus_number && b.bus_number === veh) || (b.registration_number && b.registration_number === veh));
+                      const km = matched?.current_odometer_km || '';
+                      setFormData((prev) => ({
+                        ...prev,
+                        vehicle_number: veh,
+                        last_fuel_km: (!prev.last_fuel_km || prev.last_fuel_km === '' || prev.last_fuel_km === 0) ? km : prev.last_fuel_km
+                      }));
+                    }}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
                   >
                     <option value="">Select Vehicle</option>

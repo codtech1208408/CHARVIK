@@ -101,7 +101,6 @@ export const BusCondition: React.FC = () => {
   const [editingInspection, setEditingInspection] = useState<BusConditionInspection | null>(null);
   const [viewingInspection, setViewingInspection] = useState<BusConditionInspection | null>(null);
   const [isBlankPrintModalOpen, setIsBlankPrintModalOpen] = useState(false);
-  const [vehicleTyres, setVehicleTyres] = useState<any[]>([]);
 
   // Item inline edit state
   const [editingItemNo, setEditingItemNo] = useState<number | null>(null);
@@ -263,7 +262,6 @@ export const BusCondition: React.FC = () => {
         vehicle_model: '',
         starting_km: ''
       }));
-      setVehicleTyres([]);
       return;
     }
     const foundBus = buses.find((b) => String(b.id) === busId);
@@ -275,27 +273,6 @@ export const BusCondition: React.FC = () => {
       vehicle_model: busModel,
       starting_km: foundBus?.current_odometer_km !== undefined ? foundBus.current_odometer_km : ''
     }));
-
-    try {
-      const tyres = await api.getNewTyres({ bus_id: busId }).catch(() => []);
-      setVehicleTyres(tyres || []);
-    } catch (_) {
-      setVehicleTyres([]);
-    }
-  };
-
-  const handleTyreKmChange = (tyreId: number, kmVal: number | string) => {
-    setVehicleTyres((prev) =>
-      prev.map((t) => (t.id === tyreId ? { ...t, present_km: kmVal === '' ? '' : Number(kmVal) } : t))
-    );
-  };
-
-  const handleSyncStartingKmToTyres = () => {
-    const sKm = Number(formData.starting_km);
-    if (!sKm) return;
-    setVehicleTyres((prev) =>
-      prev.map((t) => ({ ...t, present_km: sKm }))
-    );
   };
 
   const parseChecklistData = (dataStr?: string): DailyChecklistItem[] => {
@@ -487,12 +464,7 @@ export const BusCondition: React.FC = () => {
       mechanic_supervisor: formData.mechanic_supervisor,
       defects_found: formData.defects_found,
       roadworthiness_status: roadworthinessStatus,
-      checklist_data: JSON.stringify(formData.items),
-      tyre_updates: vehicleTyres.map((vt) => ({
-        id: vt.id,
-        tyre_serial_number: vt.tyre_serial_number,
-        present_km: Number(vt.present_km) || 0
-      }))
+      checklist_data: JSON.stringify(formData.items)
     };
 
     try {
@@ -504,26 +476,59 @@ export const BusCondition: React.FC = () => {
         success('Daily Vehicle Check Report logged successfully!');
       }
 
-      // Synchronize starting KM into bus odometer so it shows everywhere KM data is displayed across the admin panel
-      if (formData.bus_id) {
+      // Automatically update vehicle starting/odometer KM and sync to all related tabs & tyres
+      if (formData.bus_id && startingKmNum > 0) {
+        // 1. Update bus odometer across fleet
         await api.updateBus(formData.bus_id, {
-          current_odometer_km: startingKmNum
+          current_odometer_km: startingKmNum,
+          starting_km: startingKmNum,
+          odometer_km: startingKmNum
         }).catch(() => { });
-      }
 
-      // Sync tyre present KM updates into New Tyres inventory
-      if (vehicleTyres.length > 0) {
-        for (const vt of vehicleTyres) {
-          if (vt.id) {
-            const pKm = Number(vt.present_km) || 0;
-            const bKm = Number(vt.km) || 0;
-            await api.updateNewTyre(vt.id, {
-              ...vt,
-              present_km: pKm,
-              running_km: pKm >= bKm ? pKm - bKm : pKm
-            }).catch(() => { });
+        // 2. Direct automatic sync to all tyres allotted to this vehicle in New Tyres inventory
+        try {
+          const allNewTyres = await api.getNewTyres().catch(() => []);
+          if (Array.isArray(allNewTyres)) {
+            const vehicleTyresList = allNewTyres.filter((nt: any) =>
+              String(nt.allocated_bus_id) === String(formData.bus_id) ||
+              (formData.vehicle_number && (nt.allocated_bus_number === formData.vehicle_number || nt.vehicle_number === formData.vehicle_number))
+            );
+            for (const vt of vehicleTyresList) {
+              if (vt.id) {
+                const bKm = Number(vt.km) || 0;
+                await api.updateNewTyre(vt.id, {
+                  ...vt,
+                  present_km: startingKmNum,
+                  total_km: bKm + startingKmNum,
+                  running_km: startingKmNum >= bKm ? startingKmNum - bKm : startingKmNum
+                }).catch(() => { });
+              }
+            }
           }
-        }
+        } catch (_) { }
+
+        // 3. Direct automatic sync to tyre records (mounted tyres)
+        try {
+          const tyreRecs = await api.getTyreRecords({ bus_id: formData.bus_id }).catch(() => []);
+          if (Array.isArray(tyreRecs)) {
+            for (const tr of tyreRecs) {
+              if (tr.id) {
+                await api.updateTyreRecord(tr.id, {
+                  ...tr,
+                  last_km: startingKmNum,
+                  current_km: startingKmNum
+                }).catch(() => { });
+              }
+            }
+          }
+        } catch (_) { }
+
+        // 4. Dispatch global event so all tabs/pages update live
+        try {
+          window.dispatchEvent(new CustomEvent('charvik_bus_km_updated', {
+            detail: { bus_id: formData.bus_id, vehicle_number: formData.vehicle_number, km: startingKmNum }
+          }));
+        } catch (_) { }
       }
 
       // Persist any custom inspection items for all future checklists
@@ -998,92 +1003,6 @@ export const BusCondition: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* VEHICLE TYRES & KM UPDATE (DIRECT SYNC TO TYRE MAINTENANCE) */}
-          {formData.bus_id && (
-            <div className="p-4 rounded-2xl border border-blue-200/80 bg-blue-50/40 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black text-xs">
-                    <Disc className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-black text-blue-950 uppercase tracking-wide">
-                      Vehicle Tyres & KM Update
-                    </h4>
-                    <p className="text-[11px] text-blue-700">
-                      Update tyre present running kilometers during daily checkup — automatically syncs to Tyre Maintenance.
-                    </p>
-                  </div>
-                </div>
-
-                {formData.starting_km && vehicleTyres.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleSyncStartingKmToTyres}
-                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-lg transition-colors cursor-pointer self-start sm:self-auto shadow-2xs"
-                  >
-                    Sync Starting KM ({formData.starting_km} KM) to Tyres
-                  </button>
-                )}
-              </div>
-
-              {vehicleTyres.length === 0 ? (
-                <div className="p-3 bg-white/80 rounded-xl border border-blue-100 text-xs text-slate-500">
-                  <p className="font-semibold text-slate-700">No specific new tyres currently assigned to this vehicle in inventory.</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    When new tyres are allotted to this vehicle in Tyre Maintenance, their present running kilometers can be recorded and tracked directly here.
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-white rounded-xl border border-blue-100 overflow-hidden shadow-2xs">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-blue-50/80 text-blue-900 uppercase font-bold text-[10px] tracking-wider border-b border-blue-100">
-                      <tr>
-                        <th className="py-2 px-3">Tyre Number</th>
-                        <th className="py-2 px-3">Position</th>
-                        <th className="py-2 px-3">Before KM</th>
-                        <th className="py-2 px-3">Present Tyre KM Running *</th>
-                        <th className="py-2 px-3">Total KM</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-slate-700">
-                      {vehicleTyres.map((vt) => {
-                        const bKm = Number(vt.km) || 0;
-                        const pKm = Number(vt.present_km) || 0;
-                        const total = bKm + pKm;
-                        return (
-                          <tr key={vt.id} className="hover:bg-blue-50/30">
-                            <td className="py-2 px-3 font-mono font-bold text-blue-900">
-                              {vt.tyre_serial_number}
-                            </td>
-                            <td className="py-2 px-3 font-medium text-slate-600">
-                              {vt.allocated_wheel_position || '-'}
-                            </td>
-                            <td className="py-2 px-3 font-mono text-slate-500">
-                              {bKm > 0 ? `${bKm.toLocaleString('en-IN')} KM` : '0 KM'}
-                            </td>
-                            <td className="py-2 px-3">
-                              <input
-                                type="number"
-                                value={vt.present_km ?? ''}
-                                onChange={(e) => handleTyreKmChange(vt.id, e.target.value)}
-                                placeholder="Enter present tyre KM"
-                                className="w-36 p-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold text-indigo-700 text-xs"
-                              />
-                            </td>
-                            <td className="py-2 px-3 font-mono font-black text-emerald-700">
-                              {total > 0 ? `${total.toLocaleString('en-IN')} KM` : '0 KM'}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Dynamic Items Table */}
           <div className="space-y-2">
