@@ -3101,10 +3101,46 @@ app.get('/api/new-tyres', (req: Request, res: Response) => {
       SELECT n.*, b.bus_number, b.registration_number,
         COALESCE(b.registration_number, b.bus_number, n.allocated_bus_number, n.vehicle_number) as vehicle_number,
         COALESCE(n.starting_km, 0) as starting_km,
-        COALESCE(n.present_km, 0) as present_km,
-        COALESCE(n.total_km, (COALESCE(n.starting_km, 0) + COALESCE(n.present_km, 0)), 0) as total_km
+        COALESCE(
+          (
+            SELECT CASE WHEN c.closing_km > 0 THEN c.closing_km ELSE c.starting_km END
+            FROM bus_condition_inspections c
+            WHERE (
+              (n.allocated_bus_id IS NOT NULL AND c.bus_id = n.allocated_bus_id)
+              OR (b.id IS NOT NULL AND c.bus_id = b.id)
+              OR (n.vehicle_number IS NOT NULL AND (c.registration_number = n.vehicle_number OR c.bus_number = n.vehicle_number))
+            ) AND (c.closing_km > 0 OR c.starting_km > 0)
+            ORDER BY c.inspection_date DESC, c.id DESC
+            LIMIT 1
+          ),
+          b.current_odometer_km,
+          n.present_km,
+          0
+        ) as present_km,
+        (
+          COALESCE(n.starting_km, 0) + 
+          COALESCE(
+            (
+              SELECT CASE WHEN c.closing_km > 0 THEN c.closing_km ELSE c.starting_km END
+              FROM bus_condition_inspections c
+              WHERE (
+                (n.allocated_bus_id IS NOT NULL AND c.bus_id = n.allocated_bus_id)
+                OR (b.id IS NOT NULL AND c.bus_id = b.id)
+                OR (n.vehicle_number IS NOT NULL AND (c.registration_number = n.vehicle_number OR c.bus_number = n.vehicle_number))
+              ) AND (c.closing_km > 0 OR c.starting_km > 0)
+              ORDER BY c.inspection_date DESC, c.id DESC
+              LIMIT 1
+            ),
+            b.current_odometer_km,
+            n.present_km,
+            0
+          )
+        ) as total_km
       FROM new_tyres n
-      LEFT JOIN buses b ON n.allocated_bus_id = b.id
+      LEFT JOIN buses b ON (
+        (n.allocated_bus_id IS NOT NULL AND n.allocated_bus_id > 0 AND n.allocated_bus_id = b.id)
+        OR (b.registration_number = n.vehicle_number OR b.registration_number = n.allocated_bus_number OR b.bus_number = n.vehicle_number)
+      )
       WHERE 1=1
     `;
     const params: any[] = [];

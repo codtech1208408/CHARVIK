@@ -506,6 +506,23 @@ export const BusCondition: React.FC = () => {
             starting_km: startingKmNum,
             odometer_km: startingKmNum
           }).catch(() => { });
+
+          // Update local bus cache
+          try {
+            const rawBuses = localStorage.getItem('charvik_cache_buses') || localStorage.getItem('charvik_buses_data');
+            if (rawBuses) {
+              const bList = JSON.parse(rawBuses);
+              if (Array.isArray(bList)) {
+                const updatedBuses = bList.map((b: any) =>
+                  String(b.id) === String(selectedBusId) || (selectedVehicleNum && (b.registration_number === selectedVehicleNum || b.bus_number === selectedVehicleNum))
+                    ? { ...b, current_odometer_km: startingKmNum, starting_km: startingKmNum, latest_checkup_km: startingKmNum }
+                    : b
+                );
+                localStorage.setItem('charvik_cache_buses', JSON.stringify(updatedBuses));
+                localStorage.setItem('charvik_buses_data', JSON.stringify(updatedBuses));
+              }
+            }
+          } catch (_) { }
         }
 
         // 2. Direct automatic sync to all tyres allotted to this vehicle in New Tyres inventory
@@ -554,7 +571,27 @@ export const BusCondition: React.FC = () => {
           } catch (_) { }
         }
 
-        // 4. Dispatch global event so all tabs/pages update live
+        // 4. Save inspection to local cache
+        try {
+          const insRaw = localStorage.getItem('charvik_inspections_data');
+          const insList = insRaw ? JSON.parse(insRaw) : [];
+          const newInsEntry = {
+            id: editingInspection?.id || Date.now(),
+            bus_id: Number(selectedBusId),
+            registration_number: selectedVehicleNum,
+            bus_number: selectedVehicleNum,
+            vehicle_number: selectedVehicleNum,
+            starting_km: startingKmNum,
+            odometer_km: startingKmNum,
+            inspection_date: inspectionDate,
+            roadworthiness_status: roadworthinessStatus,
+            created_at: new Date().toISOString()
+          };
+          const filteredIns = Array.isArray(insList) ? insList.filter((i: any) => i.id !== newInsEntry.id) : [];
+          localStorage.setItem('charvik_inspections_data', JSON.stringify([newInsEntry, ...filteredIns]));
+        } catch (_) { }
+
+        // 5. Dispatch global event so all tabs/pages update live
         try {
           window.dispatchEvent(new CustomEvent('charvik_bus_km_updated', {
             detail: { bus_id: Number(selectedBusId), vehicle_number: selectedVehicleNum, km: startingKmNum }

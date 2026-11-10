@@ -26,9 +26,12 @@ import {
   X
 } from 'lucide-react';
 import { api } from '../services/api';
+import { BASE_FLEET_BUSES, BASE_FLEET_MAINTENANCE_BUSES } from '../services/seedData';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import type { Bus as BusType } from '../types';
+
+const normalizeVeh = (str?: string) => (str || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
 
 interface NewTyre {
   id: number;
@@ -88,12 +91,67 @@ export const NewTyres: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    const handleBusKmUpdated = () => {
+
+    // 1. Direct event listener for live KM updates from Daily Vehicle Checkup or Odometer update
+    const handleBusKmUpdated = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail;
+      if (detail && detail.km) {
+        const updateKm = Number(detail.km);
+        const targetVeh = normalizeVeh(detail.vehicle_number);
+        const targetBusId = detail.bus_id ? Number(detail.bus_id) : null;
+
+        // Immediately update buses in state so UI updates with 0 lag
+        setBuses((prevBuses) =>
+          prevBuses.map((b) => {
+            const bReg = normalizeVeh(b.registration_number || b.bus_number);
+            if ((targetBusId && Number(b.id) === targetBusId) || (targetVeh && bReg === targetVeh)) {
+              return {
+                ...b,
+                latest_checkup_km: updateKm,
+                current_odometer_km: updateKm
+              };
+            }
+            return b;
+          })
+        );
+
+        // Immediately update new tyres in state
+        setNewTyres((prevTyres) =>
+          prevTyres.map((t) => {
+            const tVeh = normalizeVeh(t.vehicle_number || t.allocated_bus_number);
+            if ((targetBusId && Number(t.allocated_bus_id) === targetBusId) || (targetVeh && tVeh === targetVeh)) {
+              const sKm = Number(t.starting_km ?? t.km) || 0;
+              return {
+                ...t,
+                present_km: updateKm,
+                total_km: sKm + updateKm,
+                running_km: updateKm >= sKm ? updateKm - sKm : updateKm
+              };
+            }
+            return t;
+          })
+        );
+      }
       loadData();
     };
+
+    // 2. Storage event listener for cross-tab sync
+    const handleStorageChange = (e: StorageEvent) => {
+      if (
+        e.key === 'charvik_inspections_data' ||
+        e.key === 'charvik_cache_buses' ||
+        e.key === 'charvik_buses_data' ||
+        e.key === 'charvik_new_tyres_data'
+      ) {
+        loadData();
+      }
+    };
+
     window.addEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+    window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('charvik_bus_km_updated', handleBusKmUpdated);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -106,16 +164,67 @@ export const NewTyres: React.FC = () => {
         api.getBusConditions().catch(() => [])
       ]);
 
-      const enrichedBuses = (busesData || []).map((b: any) => {
-        const latestCheckup = (checkupsData || []).find((c: any) => {
-          if (Number(c.bus_id) === Number(b.id)) return true;
-          const bReg = (b.registration_number || b.bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
-          const cReg = (c.registration_number || c.bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
+      // 1. Gather all buses from API, localStorage, and baseline seed data
+      const seedBuses = [...BASE_FLEET_BUSES, ...BASE_FLEET_MAINTENANCE_BUSES];
+      let storedBuses: any[] = [];
+      try {
+        const raw = localStorage.getItem('charvik_buses_data') || localStorage.getItem('charvik_cache_buses');
+        if (raw) storedBuses = JSON.parse(raw);
+      } catch { }
+
+      const busMap = new Map<string, any>();
+      [...seedBuses, ...(Array.isArray(storedBuses) ? storedBuses : []), ...(Array.isArray(busesData) ? busesData : [])].forEach((b: any) => {
+        if (!b) return;
+        const rawReg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+        const normKey = normalizeVeh(rawReg);
+        if (normKey) {
+          const prev = busMap.get(normKey) || {};
+          busMap.set(normKey, {
+            ...prev,
+            ...b,
+            registration_number: rawReg || prev.registration_number,
+            bus_number: rawReg || prev.bus_number
+          });
+        }
+      });
+
+      // 2. Aggregate all inspection records from both local storage & backend
+      let localInspections: any[] = [];
+      try {
+        const raw = localStorage.getItem('charvik_inspections_data');
+        if (raw) localInspections = JSON.parse(raw);
+      } catch { }
+
+      const allInspections = [
+        ...(Array.isArray(localInspections) ? localInspections : []),
+        ...(Array.isArray(checkupsData) ? checkupsData : [])
+      ];
+
+      // Sort inspections so latest is first
+      allInspections.sort((a: any, b: any) => {
+        const timeA = new Date(a.inspection_date || a.created_at || a.date || 0).getTime();
+        const timeB = new Date(b.inspection_date || b.created_at || b.date || 0).getTime();
+        if (timeB !== timeA) return timeB - timeA;
+        return (Number(b.id) || 0) - (Number(a.id) || 0);
+      });
+
+      // 3. For each bus in busMap, compute effective checkup KM
+      const allBusesList = Array.from(busMap.values());
+      const enrichedBuses = allBusesList.map((b: any) => {
+        const bReg = normalizeVeh(b.registration_number || b.bus_number);
+        const bId = Number(b.id);
+
+        const latestCheckup = allInspections.find((c: any) => {
+          if (!c) return false;
+          if (bId && c.bus_id && Number(c.bus_id) === bId) return true;
+          const cReg = normalizeVeh(c.registration_number || c.bus_number || c.vehicle_number);
           return Boolean(bReg && cReg && bReg === cReg);
         });
-        const checkupKm = Number(latestCheckup?.starting_km || latestCheckup?.odometer_km || 0);
-        const odometerKm = Number(b.current_odometer_km || 0);
-        const effectiveKm = checkupKm > 0 ? checkupKm : odometerKm;
+
+        const checkupKm = Number(latestCheckup?.starting_km || latestCheckup?.odometer_km || latestCheckup?.closing_km || 0);
+        const busOdoKm = Number(b.current_odometer_km || b.starting_km || b.odometer_km || 0);
+        const effectiveKm = Math.max(checkupKm, busOdoKm);
+
         return {
           ...b,
           latest_checkup_km: effectiveKm,
@@ -123,7 +232,35 @@ export const NewTyres: React.FC = () => {
         };
       });
 
-      setNewTyres(tyresData || []);
+      // Sort buses alphabetically by registration number
+      enrichedBuses.sort((a, b) => (a.registration_number || '').localeCompare(b.registration_number || ''));
+
+      // 4. Enrich tyres data with latest vehicle KM
+      const enrichedTyres = (tyresData || []).map((t: any) => {
+        const tVeh = normalizeVeh(t.vehicle_number || t.allocated_bus_number);
+        const tBusId = Number(t.allocated_bus_id);
+
+        const matchedBus = enrichedBuses.find((b: any) => {
+          if (tBusId && Number(b.id) === tBusId) return true;
+          const bReg = normalizeVeh(b.registration_number || b.bus_number);
+          return Boolean(tVeh && bReg && tVeh === bReg);
+        });
+
+        const busKm = Number((matchedBus as any)?.latest_checkup_km || matchedBus?.current_odometer_km || 0);
+        const sKm = Number(t.starting_km ?? t.km) || 0;
+        const rawPresentKm = Number(t.present_km) || 0;
+        const effectivePresentKm = busKm > 0 ? busKm : rawPresentKm;
+        const effectiveTotalKm = sKm + effectivePresentKm;
+
+        return {
+          ...t,
+          present_km: effectivePresentKm > 0 ? effectivePresentKm : (t.present_km || 0),
+          total_km: effectiveTotalKm > 0 ? effectiveTotalKm : (t.total_km || 0),
+          running_km: effectivePresentKm >= sKm ? effectivePresentKm - sKm : effectivePresentKm
+        };
+      });
+
+      setNewTyres(enrichedTyres);
       setBuses(enrichedBuses);
     } catch (err: any) {
       error(err.message || 'Failed to load new tyre inventory');
@@ -133,13 +270,11 @@ export const NewTyres: React.FC = () => {
   };
 
   const handleVehicleChange = (vNumber: string) => {
-    const cleanReg = (vNumber || '').split('(')[0].trim();
-    const matchedBus = buses.find(
-      (b) => {
-        const bReg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
-        return bReg === cleanReg || String(b.id) === cleanReg;
-      }
-    );
+    const cleanReg = (vNumber || '').split('(')[0].trim().toUpperCase();
+    const matchedBus = buses.find((b) => {
+      const bReg = normalizeVeh(b.registration_number || b.bus_number);
+      return bReg === normalizeVeh(cleanReg) || String(b.id) === cleanReg;
+    });
     const busKm = Number((matchedBus as any)?.latest_checkup_km || matchedBus?.current_odometer_km || 0);
 
     setFormData((prev: any) => {
@@ -147,9 +282,9 @@ export const NewTyres: React.FC = () => {
       const pKm = busKm > 0 ? busKm : (Number(prev.present_km) || 0);
       return {
         ...prev,
-        vehicle_number: cleanReg,
+        vehicle_number: matchedBus?.registration_number || cleanReg,
         allocated_bus_id: matchedBus ? matchedBus.id : prev.allocated_bus_id,
-        allocated_bus_number: cleanReg,
+        allocated_bus_number: matchedBus?.registration_number || cleanReg,
         present_km: pKm > 0 ? pKm : '',
         total_km: (sKm + pKm) > 0 ? (sKm + pKm) : ''
       };
@@ -158,9 +293,9 @@ export const NewTyres: React.FC = () => {
 
   const handleOpenAdd = () => {
     setEditingTyre(null);
-    const firstBus = buses[0];
-    const initialReg = (firstBus?.registration_number || firstBus?.bus_number || '').split('(')[0].trim();
-    const initialKm = Number((firstBus as any)?.latest_checkup_km || firstBus?.current_odometer_km || 0);
+    const firstBus = buses.length > 0 ? buses[0] : null;
+    const initialReg = firstBus ? (firstBus.registration_number || firstBus.bus_number || '').split('(')[0].trim() : '';
+    const initialKm = firstBus ? Number((firstBus as any)?.latest_checkup_km || firstBus?.current_odometer_km || 0) : 0;
 
     setFormData({
       purchase_date: new Date().toISOString().split('T')[0],
@@ -184,12 +319,12 @@ export const NewTyres: React.FC = () => {
 
   const handleOpenEdit = (t: NewTyre) => {
     setEditingTyre(t);
+    const tVeh = normalizeVeh(t.vehicle_number || t.allocated_bus_number);
     const matchedBus = buses.find(b =>
-      (t.allocated_bus_id && b.id === t.allocated_bus_id) ||
-      (t.vehicle_number && (b.registration_number === t.vehicle_number || b.bus_number === t.vehicle_number)) ||
-      (t.allocated_bus_number && (b.registration_number === t.allocated_bus_number || b.bus_number === t.allocated_bus_number))
+      (t.allocated_bus_id && Number(b.id) === Number(t.allocated_bus_id)) ||
+      (tVeh && normalizeVeh(b.registration_number || b.bus_number) === tVeh)
     );
-    const cleanVehicle = (t.vehicle_number || t.allocated_bus_number || matchedBus?.registration_number || matchedBus?.bus_number || (t.allocated_bus_id ? `Bus #${t.allocated_bus_id}` : '') || '').split('(')[0].trim();
+    const cleanVehicle = (matchedBus?.registration_number || t.vehicle_number || t.allocated_bus_number || (t.allocated_bus_id ? `Bus #${t.allocated_bus_id}` : '') || '').split('(')[0].trim();
     const busKm = Number((matchedBus as any)?.latest_checkup_km || matchedBus?.current_odometer_km || 0);
     const sKm = Number(t.starting_km ?? t.km) || 0;
     const pKm = busKm > 0 ? busKm : (Number(t.present_km) || 0);
@@ -217,8 +352,13 @@ export const NewTyres: React.FC = () => {
 
   const handleSaveTyre = async (e: React.FormEvent) => {
     e.preventDefault();
+    let currentUser: any = null;
+    try {
+      const rawUser = localStorage.getItem('charvik_user');
+      if (rawUser) currentUser = JSON.parse(rawUser);
+    } catch { }
     const isUserAdmin = Boolean(
-      user?.role?.toLowerCase()?.includes('admin') ||
+      currentUser?.role?.toLowerCase()?.includes('admin') ||
       (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'))
     );
 
@@ -237,7 +377,8 @@ export const NewTyres: React.FC = () => {
       formData.vehicle_number = buses[0]?.registration_number || 'AP16TV1234';
     }
 
-    const cleanVehicle = (formData.vehicle_number || '').split('(')[0].trim();
+    const cleanVehicle = (formData.vehicle_number || '').split('(')[0].trim().toUpperCase();
+    const matchedBus = buses.find((b) => normalizeVeh(b.registration_number || b.bus_number) === normalizeVeh(cleanVehicle));
     const sKm = Number(formData.starting_km) || 0;
     const pKm = Number(formData.present_km) || 0;
     const totalKmVal = sKm + pKm;
@@ -245,6 +386,7 @@ export const NewTyres: React.FC = () => {
     const payload = {
       ...formData,
       vehicle_number: cleanVehicle,
+      allocated_bus_id: matchedBus ? matchedBus.id : formData.allocated_bus_id,
       allocated_bus_number: cleanVehicle,
       starting_km: sKm,
       km: sKm,
@@ -448,13 +590,13 @@ export const NewTyres: React.FC = () => {
                 </tr>
               ) : (
                 filteredTyres.map((t, idx) => {
+                  const tVeh = normalizeVeh(t.vehicle_number || t.allocated_bus_number);
                   const matchedBus = buses.find(b => {
                     if (t.allocated_bus_id && Number(b.id) === Number(t.allocated_bus_id)) return true;
-                    const bReg = (b.registration_number || b.bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
-                    const tVeh = (t.vehicle_number || t.allocated_bus_number || '').split(/[-–(]/)[0].trim().toUpperCase();
+                    const bReg = normalizeVeh(b.registration_number || b.bus_number);
                     return Boolean(bReg && tVeh && bReg === tVeh);
                   });
-                  const vehicleNum = (t.vehicle_number || t.allocated_bus_number || matchedBus?.registration_number || matchedBus?.bus_number || (t.allocated_bus_id ? `Bus #${t.allocated_bus_id}` : '') || '—').split('(')[0].trim();
+                  const vehicleNum = (matchedBus?.registration_number || t.vehicle_number || t.allocated_bus_number || (t.allocated_bus_id ? `Bus #${t.allocated_bus_id}` : '') || '—').split('(')[0].trim();
                   const isAssigned = vehicleNum && vehicleNum !== '—' && vehicleNum !== '-';
 
                   // 1. Starting KM (Initial / Before KM)
@@ -602,9 +744,10 @@ export const NewTyres: React.FC = () => {
                 <option value="">-- Select Vehicle Number --</option>
                 {buses.map((b) => {
                   const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+                  const km = Number((b as any)?.latest_checkup_km || b?.current_odometer_km || 0);
                   return (
-                    <option key={b.id} value={reg}>
-                      {reg}
+                    <option key={b.id || reg} value={reg}>
+                      {reg} {b.model ? `(${b.model})` : ''} {km > 0 ? `• ${km.toLocaleString('en-IN')} KM` : ''}
                     </option>
                   );
                 })}

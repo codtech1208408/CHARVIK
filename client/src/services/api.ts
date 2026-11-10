@@ -1942,13 +1942,17 @@ export const api = {
     // 3. Fallback only if no records anywhere
     if (!buses || buses.length === 0) {
       try {
-        const saved = localStorage.getItem('charvik_cache_buses');
+        const saved = localStorage.getItem('charvik_cache_buses') || localStorage.getItem('charvik_buses_data');
         if (saved) buses = JSON.parse(saved);
       } catch { }
     }
     if (!buses || buses.length === 0) {
       buses = [...BASE_FLEET_BUSES];
     }
+
+    // Always ensure all sample fleet vehicles from seed data are seamlessly available
+    buses = mergeSeedCollection(buses, BASE_FLEET_BUSES);
+    buses = mergeSeedCollection(buses, BASE_FLEET_MAINTENANCE_BUSES);
 
     setLocalCollection('buses', buses);
     return buses;
@@ -3024,15 +3028,90 @@ export const api = {
   deleteTyreRecord: (id: number | string) => request<any>(`/tyre-maintenance/${id}`, { method: 'DELETE' }),
 
   // New Tyres (Stock / Purchases)
-  getNewTyres: (params?: { bus_id?: number | string; status?: string }) => {
+  getNewTyres: async (params?: { bus_id?: number | string; status?: string }) => {
     const cleanParams: any = {};
     if (params?.bus_id && params.bus_id !== 'undefined' && params.bus_id !== 'all') cleanParams.bus_id = params.bus_id;
     if (params?.status && params.status !== 'all') cleanParams.status = params.status;
     const q = new URLSearchParams(cleanParams).toString();
-    return request<any[]>(`/new-tyres${q ? `?${q}` : ''}`);
+
+    let tyres: any[] = [];
+    const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    if (isLocalHost) {
+      try {
+        const res = await request<any[]>(`/new-tyres${q ? `?${q}` : ''}`);
+        if (Array.isArray(res) && res.length > 0) {
+          tyres = res;
+        }
+      } catch { }
+    }
+
+    if (!tyres || tyres.length === 0) {
+      try {
+        const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
+        const { data: remote } = await Promise.race([
+          supabase.from('new_tyres').select('*').order('id', { ascending: false }),
+          timeoutPromise
+        ]) as any;
+        if (Array.isArray(remote) && remote.length > 0) {
+          tyres = remote;
+        }
+      } catch { }
+    }
+
+    if (!tyres || tyres.length === 0) {
+      try {
+        const saved = localStorage.getItem('charvik_new_tyres_data') || localStorage.getItem('charvik_cache_new_tyres');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) tyres = parsed;
+        }
+      } catch { }
+    }
+
+    if (!tyres || tyres.length === 0) {
+      tyres = [...BASE_NEW_TYRES];
+    }
+
+    setLocalCollection('new_tyres', tyres);
+    try {
+      localStorage.setItem('charvik_new_tyres_data', JSON.stringify(tyres));
+    } catch { }
+    return tyres;
   },
-  createNewTyre: (data: any) => request<any>('/new-tyres', { method: 'POST', body: JSON.stringify(data) }),
-  updateNewTyre: (id: number | string, data: any) => request<any>(`/new-tyres/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  createNewTyre: async (data: any) => {
+    try {
+      const res = await request<any>('/new-tyres', { method: 'POST', body: JSON.stringify(data) });
+      const current = getLocalCollection<any>('new_tyres');
+      const newItem = { ...data, id: res?.id || Date.now() };
+      const updated = [newItem, ...current];
+      setLocalCollection('new_tyres', updated);
+      try { localStorage.setItem('charvik_new_tyres_data', JSON.stringify(updated)); } catch { }
+      return res;
+    } catch {
+      const current = getLocalCollection<any>('new_tyres');
+      const newItem = { ...data, id: Date.now() };
+      const updated = [newItem, ...current];
+      setLocalCollection('new_tyres', updated);
+      try { localStorage.setItem('charvik_new_tyres_data', JSON.stringify(updated)); } catch { }
+      return { success: true, id: newItem.id };
+    }
+  },
+  updateNewTyre: async (id: number | string, data: any) => {
+    try {
+      const res = await request<any>(`/new-tyres/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+      const current = getLocalCollection<any>('new_tyres');
+      const updated = current.map((t) => (String(t.id) === String(id) ? { ...t, ...data } : t));
+      setLocalCollection('new_tyres', updated);
+      try { localStorage.setItem('charvik_new_tyres_data', JSON.stringify(updated)); } catch { }
+      return res;
+    } catch {
+      const current = getLocalCollection<any>('new_tyres');
+      const updated = current.map((t) => (String(t.id) === String(id) ? { ...t, ...data } : t));
+      setLocalCollection('new_tyres', updated);
+      try { localStorage.setItem('charvik_new_tyres_data', JSON.stringify(updated)); } catch { }
+      return { success: true, message: 'Updated locally' };
+    }
+  },
   deleteNewTyre: (id: number | string) => request<any>(`/new-tyres/${id}`, { method: 'DELETE' }),
 
   // Wheel Allotment & Tyre Rotation
