@@ -309,20 +309,18 @@ export const DriverRegistration: React.FC = () => {
                 className="flex flex-col items-center relative z-10 cursor-pointer group"
               >
                 <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
-                    isCurrent
+                  className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${isCurrent
                       ? 'bg-blue-600 text-white ring-4 ring-blue-100'
                       : isDone
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-white text-slate-400 border border-slate-300'
-                  }`}
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-white text-slate-400 border border-slate-300'
+                    }`}
                 >
                   {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                 </div>
                 <span
-                  className={`text-[11px] font-bold mt-1.5 whitespace-nowrap ${
-                    isCurrent ? 'text-blue-700' : isDone ? 'text-slate-800' : 'text-slate-400'
-                  }`}
+                  className={`text-[11px] font-bold mt-1.5 whitespace-nowrap ${isCurrent ? 'text-blue-700' : isDone ? 'text-slate-800' : 'text-slate-400'
+                    }`}
                 >
                   {st.title}
                 </span>
@@ -1336,11 +1334,10 @@ export const DriverRegistration: React.FC = () => {
                 <tr className="hover:bg-slate-50">
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Worker Type</td>
                   <td className="p-2.5">
-                    <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
-                      formData.employment_type === 'Temporary'
+                    <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${formData.employment_type === 'Temporary'
                         ? 'bg-amber-100 text-amber-800 border border-amber-300'
                         : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                    }`}>
+                      }`}>
                       {formData.employment_type === 'Temporary' ? 'Temporary Worker' : 'Permanent Worker'}
                     </span>
                   </td>

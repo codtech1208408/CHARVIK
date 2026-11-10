@@ -106,6 +106,12 @@ export const AdminLayout: React.FC = () => {
     return DEFAULT_ADMIN;
   })();
 
+  // Role-Based Access Guards
+  const userRole = (activeUser?.role || '').toLowerCase();
+  const isAdmin = userRole.includes('admin');
+  const isCaptain = userRole.includes('captain');
+  const isOperator = userRole.includes('support') || userRole.includes('helper') || userRole.includes('operator') || userRole.includes('manager');
+
   // Determine current page title
   const getPageTitle = () => {
     const p = location.pathname;
@@ -221,12 +227,6 @@ export const AdminLayout: React.FC = () => {
     if (isOperatorPortal) return <Navigate to="/operator/login" replace />;
     return <Navigate to="/admin/login" replace />;
   }
-
-  // Strict Role-Based Access Guard
-  const userRole = (activeUser?.role || '').toLowerCase();
-  const isAdmin = userRole.includes('admin');
-  const isCaptain = userRole.includes('captain');
-  const isOperator = userRole.includes('support') || userRole.includes('helper') || userRole.includes('operator') || userRole.includes('manager');
 
   const getCategoryForPath = (path: string): string | null => {
     if (path.startsWith('/admin/vehicles') || path.startsWith('/admin/buses') || path.startsWith('/admin/vehicle-registration')) return 'Vehicle Registration';

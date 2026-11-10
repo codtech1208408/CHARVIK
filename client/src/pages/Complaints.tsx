@@ -217,11 +217,10 @@ export const Complaints: React.FC = () => {
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-colors cursor-pointer ${
-                statusFilter === st
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 transition-colors cursor-pointer ${statusFilter === st
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-              }`}
+                }`}
             >
               {st}
             </button>
@@ -303,13 +302,12 @@ export const Complaints: React.FC = () => {
                     </td>
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                          c.priority === 'Critical'
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${c.priority === 'Critical'
                             ? 'bg-rose-100 text-rose-800 border border-rose-300'
                             : c.priority === 'High'
-                            ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                            : 'bg-blue-50 text-blue-700 border border-blue-200'
-                        }`}
+                              ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                              : 'bg-blue-50 text-blue-700 border border-blue-200'
+                          }`}
                       >
                         {c.priority}
                       </span>

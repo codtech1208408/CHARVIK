@@ -143,7 +143,7 @@ export const TaskManagement: React.FC = () => {
   const [systemSettings, setSystemSettings] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    api.getSettings().then(setSystemSettings).catch(() => {});
+    api.getSettings().then(setSystemSettings).catch(() => { });
   }, []);
 
   const isFixedAmountMode = (systemSettings.amount_control_mode || 'company_defined') === 'fixed';
@@ -193,7 +193,7 @@ export const TaskManagement: React.FC = () => {
         }
       }
       return BASE_FLEET_TASKS;
-    } catch {}
+    } catch { }
     return BASE_FLEET_TASKS;
   });
 
@@ -229,7 +229,7 @@ export const TaskManagement: React.FC = () => {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
-    } catch {}
+    } catch { }
   }, [trips]);
 
   useEffect(() => {
@@ -241,7 +241,7 @@ export const TaskManagement: React.FC = () => {
         ]);
         setBuses(Array.isArray(bData) ? bData : []);
         setEmployees(Array.isArray(eData) ? eData : []);
-      } catch {}
+      } catch { }
 
       // Sync tasks from API
       try {
@@ -250,7 +250,7 @@ export const TaskManagement: React.FC = () => {
           setTrips(remoteTasks);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteTasks));
         }
-      } catch {}
+      } catch { }
 
       // Load routes & organizers with seed fallbacks
       try {
@@ -666,8 +666,8 @@ export const TaskManagement: React.FC = () => {
       } as TripDutyItem;
       const updated = trips.map((t) => (t.id === editingTrip.id ? updatedItem : t));
       setTrips(updated);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch {}
-      api.updateTask(editingTrip.id, updatedItem).catch(() => {});
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch { }
+      api.updateTask(editingTrip.id, updatedItem).catch(() => { });
       success(`Trip duty for ${formData.vehicle_number} updated.`);
     } else {
       const newTrip: TripDutyItem = {
@@ -691,7 +691,7 @@ export const TaskManagement: React.FC = () => {
       };
       const updated = [newTrip, ...trips];
       setTrips(updated);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch {}
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch { }
       api.createTask(newTrip).then((saved) => {
         if (saved && saved.id) {
           setTrips((prev) => prev.map((t) => (t.id === newTrip.id ? { ...t, ...saved } : t)));
@@ -706,7 +706,7 @@ export const TaskManagement: React.FC = () => {
     if (!confirm('Are you sure you want to delete this trip record?')) return;
     const filtered = trips.filter((t) => t.id !== id);
     setTrips(filtered);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered)); } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered)); } catch { }
     api.deleteTask(id).catch((err) => console.error('Failed to delete task:', err));
     success('Trip record deleted.');
   };
@@ -717,7 +717,7 @@ export const TaskManagement: React.FC = () => {
     const updatedItem = { ...trip, duty_status: nextStatus };
     const updated = trips.map((t) => (t.id === trip.id ? updatedItem : t));
     setTrips(updated);
-    api.updateTask(trip.id, updatedItem).catch(() => {});
+    api.updateTask(trip.id, updatedItem).catch(() => { });
     success(`Trip ${trip.vehicle_number} marked as ${nextStatus}.`);
   };
 
@@ -726,7 +726,7 @@ export const TaskManagement: React.FC = () => {
     const updatedItem = { ...trip, payment_status: nextPaid };
     const updated = trips.map((t) => (t.id === trip.id ? updatedItem : t));
     setTrips(updated);
-    api.updateTask(trip.id, updatedItem).catch(() => {});
+    api.updateTask(trip.id, updatedItem).catch(() => { });
     success(`Payment for ${trip.vehicle_number} marked as ${nextPaid}.`);
   };
 
@@ -736,7 +736,7 @@ export const TaskManagement: React.FC = () => {
         const nextStatus: TripDutyItem['duty_status'] =
           t.duty_status === 'Completed' ? 'In Progress' : 'Completed';
         const updatedItem = { ...t, duty_status: nextStatus };
-        api.updateTask(t.id, updatedItem).catch(() => {});
+        api.updateTask(t.id, updatedItem).catch(() => { });
         return updatedItem;
       }
       return t;
@@ -1020,11 +1020,10 @@ export const TaskManagement: React.FC = () => {
         <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
           <button
             onClick={() => setActiveTab('assigned')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
-              activeTab === 'assigned'
-                ? 'bg-[#142B4A] text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${activeTab === 'assigned'
+              ? 'bg-[#142B4A] text-white shadow-xs'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
           >
             <Bus className="w-3.5 h-3.5" />
             <span>Assigned Fleet Duties ({filteredDateTrips.length})</span>
@@ -1032,11 +1031,10 @@ export const TaskManagement: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('pending')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
-              activeTab === 'pending'
-                ? 'bg-[#142B4A] text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${activeTab === 'pending'
+              ? 'bg-[#142B4A] text-white shadow-xs'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
           >
             <Clock className="w-3.5 h-3.5" />
             <span>Pending Buses ({pendingBusesCount})</span>
@@ -1059,16 +1057,16 @@ export const TaskManagement: React.FC = () => {
               activeTab === 'assigned'
                 ? `Assigned Fleet Duties (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
                 : activeTab === 'pending'
-                ? `Pending Unassigned Fleet Buses (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
-                : `All Individual Trip Logs (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
+                  ? `Pending Unassigned Fleet Buses (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
+                  : `All Individual Trip Logs (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
             }
             subtitle={`Period: ${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel} • Status: ${statusFilter}`}
             targetId={
               activeTab === 'assigned'
                 ? 'assigned-duties-table-wrap'
                 : activeTab === 'pending'
-                ? 'pending-buses-table-wrap'
-                : 'all-trips-table-wrap'
+                  ? 'pending-buses-table-wrap'
+                  : 'all-trips-table-wrap'
             }
           />
         </div>
@@ -1217,18 +1215,16 @@ export const TaskManagement: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setOperatorViewMode(false)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    !operatorViewMode ? 'bg-[#142B4A] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${!operatorViewMode ? 'bg-[#142B4A] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
                 >
                   Admin Financial Breakdown (Image 2)
                 </button>
                 <button
                   type="button"
                   onClick={() => setOperatorViewMode(true)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    operatorViewMode ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${operatorViewMode ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
                 >
                   Operator Standard Duty Sheet (Image 1)
                 </button>
@@ -1318,11 +1314,10 @@ export const TaskManagement: React.FC = () => {
                           {/* STATUS */}
                           <td className="py-2 px-2.5 text-center border-r border-slate-100">
                             <span
-                              className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider ${
-                                isHold
-                                  ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                                  : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                              }`}
+                              className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider ${isHold
+                                ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                }`}
                             >
                               {isHold ? 'HOLD' : 'RUN'}
                             </span>
@@ -1485,16 +1480,14 @@ export const TaskManagement: React.FC = () => {
                           {/* 6. VEHICLE STATUS */}
                           <td className="py-2 px-2.5">
                             <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                t.vehicle_status.startsWith('HOLD')
-                                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                                  : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                              }`}
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${t.vehicle_status.startsWith('HOLD')
+                                ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                }`}
                             >
                               <span
-                                className={`w-1.5 h-1.5 rounded-full ${
-                                  t.vehicle_status.startsWith('HOLD') ? 'bg-amber-500' : 'bg-emerald-500'
-                                }`}
+                                className={`w-1.5 h-1.5 rounded-full ${t.vehicle_status.startsWith('HOLD') ? 'bg-amber-500' : 'bg-emerald-500'
+                                  }`}
                               ></span>
                               <span>{t.vehicle_status || 'RUN'}</span>
                             </span>
@@ -1885,11 +1878,10 @@ export const TaskManagement: React.FC = () => {
                         }
                       });
                     }}
-                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${
-                      formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
-                        ? 'bg-amber-50/70 text-amber-900 border-amber-300 cursor-not-allowed'
-                        : 'bg-white'
-                    }`}
+                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
+                      ? 'bg-amber-50/70 text-amber-900 border-amber-300 cursor-not-allowed'
+                      : 'bg-white'
+                      }`}
                   />
                 </div>
               </div>
@@ -1991,11 +1983,10 @@ export const TaskManagement: React.FC = () => {
                         }
                       });
                     }}
-                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${
-                      formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
-                        ? 'bg-amber-50/70 text-amber-900 border-amber-300 cursor-not-allowed'
-                        : 'bg-white'
-                    }`}
+                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
+                      ? 'bg-amber-50/70 text-amber-900 border-amber-300 cursor-not-allowed'
+                      : 'bg-white'
+                      }`}
                   />
                 </div>
               </div>
@@ -2231,11 +2222,10 @@ export const TaskManagement: React.FC = () => {
 
                     <div className="flex items-center gap-2">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          t.vehicle_status.startsWith('HOLD')
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-emerald-100 text-emerald-800'
-                        }`}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${t.vehicle_status.startsWith('HOLD')
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-emerald-100 text-emerald-800'
+                          }`}
                       >
                         {t.vehicle_status}
                       </span>

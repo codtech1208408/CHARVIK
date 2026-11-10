@@ -56,7 +56,7 @@ function getAuthHeaders() {
   const token = localStorage.getItem('charvik_token');
   const storedUser = getStoredUser();
   const isAdmin = (storedUser?.role || '').toLowerCase().includes('admin') ||
-                  (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'));
+    (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin'));
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -147,7 +147,7 @@ async function setIdbCollection<T>(key: string, items: T[]): Promise<void> {
     if (!db) return;
     const tx = db.transaction(IDB_STORE, 'readwrite');
     tx.objectStore(IDB_STORE).put(items, key);
-  } catch {}
+  } catch { }
 }
 
 async function getIdbCollection<T>(key: string): Promise<T[] | null> {
@@ -213,7 +213,7 @@ function setLocalCollection<T>(key: string, items: T[]) {
         return copy;
       });
       localStorage.setItem(`charvik_cache_${key}`, JSON.stringify(stripped));
-    } catch {}
+    } catch { }
   }
 }
 
@@ -316,7 +316,7 @@ async function handleFallbackTableCrud(
             }
           }
         }
-      } catch {}
+      } catch { }
 
       let list = localList;
       if (options?.enrich) list = options.enrich(list);
@@ -362,7 +362,7 @@ async function handleFallbackTableCrud(
           }
           break;
         }
-      } catch {}
+      } catch { }
 
       const finalRecord = { ...record, ...(savedData || {}) };
       const reList = [finalRecord, ...currentList.filter((x: any) => String(x.id) !== String(finalRecord.id))];
@@ -375,8 +375,8 @@ async function handleFallbackTableCrud(
           value: JSON.stringify(reList.slice(0, 100)),
           description: `Cloud backup for ${tableKey}`,
           updated_at: new Date().toISOString()
-        }).catch(() => {});
-      } catch {}
+        }).catch(() => { });
+      } catch { }
 
       return finalRecord;
     }
@@ -385,7 +385,7 @@ async function handleFallbackTableCrud(
       try {
         const { data, error } = await supabase.from(supabaseTable).select('*').eq('id', itemId).single();
         if (!error && data) return data;
-      } catch {}
+      } catch { }
       const list = (await getReliableCollection<any>(tableKey)) || [];
       const found = list.find((x: any) => String(x.id) === String(itemId));
       return found || {};
@@ -420,7 +420,7 @@ async function handleFallbackTableCrud(
           }
           break;
         }
-      } catch {}
+      } catch { }
 
       try {
         supabase.from('application_settings').upsert({
@@ -428,8 +428,8 @@ async function handleFallbackTableCrud(
           value: JSON.stringify(updatedList.slice(0, 100)),
           description: `Cloud backup for ${tableKey}`,
           updated_at: new Date().toISOString()
-        }).catch(() => {});
-      } catch {}
+        }).catch(() => { });
+      } catch { }
 
       const found = updatedList.find((x: any) => String(x.id) === String(itemId));
       return found || { ...body, id: itemId };
@@ -444,7 +444,7 @@ async function handleFallbackTableCrud(
       // 2. Background delete from Supabase
       try {
         await supabase.from(supabaseTable).delete().eq('id', itemId);
-      } catch {}
+      } catch { }
 
       try {
         supabase.from('application_settings').upsert({
@@ -452,8 +452,8 @@ async function handleFallbackTableCrud(
           value: JSON.stringify(updatedList.slice(0, 100)),
           description: `Cloud backup for ${tableKey}`,
           updated_at: new Date().toISOString()
-        }).catch(() => {});
-      } catch {}
+        }).catch(() => { });
+      } catch { }
 
       return { success: true };
     }
@@ -810,7 +810,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
               list = mergeWithLocal('employees', data);
               list = (list || []).filter(e => !isDummySeedEmployee(e));
             }
-          } catch {}
+          } catch { }
         } catch {
           list = getLocalCollection<any>('employees').filter(x => x?.is_archived !== 1 && !isDummySeedEmployee(x));
         }
@@ -940,7 +940,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
           try {
             const { data } = await supabase.from('employees').select('*').eq('id', itemId).single();
             if (data) found = data;
-          } catch {}
+          } catch { }
         }
         if (found) {
           return {
@@ -959,7 +959,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         setLocalCollection('employees', list);
         try {
           await supabase.from('employees').update(body).eq('id', itemId);
-        } catch {}
+        } catch { }
         return { success: true, ...body } as any;
       }
 
@@ -968,7 +968,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         setLocalCollection('employees', list);
         try {
           await supabase.from('employees').delete().eq('id', itemId);
-        } catch {}
+        } catch { }
         return { success: true } as any;
       }
     }
@@ -1055,14 +1055,14 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
 
       try {
         await supabase.from('daily_kilometer_entries').insert([newKm]);
-      } catch {}
+      } catch { }
 
       if (body.bus_id) {
         const updatedBuses = buses.map(b => String(b.id) === String(body.bus_id) ? { ...b, current_odometer_km: closeKm } : b);
         setLocalCollection('buses', updatedBuses);
         try {
           await supabase.from('buses').update({ current_odometer_km: closeKm }).eq('id', body.bus_id);
-        } catch {}
+        } catch { }
       }
 
       return newKm as any;
@@ -1088,7 +1088,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       setLocalCollection('daily_km', list);
       try {
         await supabase.from('daily_kilometer_entries').update(body).eq('id', id);
-      } catch {}
+      } catch { }
       return { success: true, ...body } as any;
     }
     if (method === 'DELETE') {
@@ -1096,7 +1096,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       setLocalCollection('daily_km', list);
       try {
         await supabase.from('daily_kilometer_entries').delete().eq('id', id);
-      } catch {}
+      } catch { }
       return { success: true } as any;
     }
   }
@@ -1424,7 +1424,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
           });
           setLocalCollection('new_tyres', updated);
         }
-      } catch (_) {}
+      } catch (_) { }
     }
     return res as any;
   }
@@ -1510,7 +1510,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         setLocalCollection('staff_credentials', list);
         try {
           await supabase.from('administrators').insert([rec]);
-        } catch {}
+        } catch { }
         return { success: true, ...rec } as any;
       }
     } else {
@@ -1547,7 +1547,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     setLocalCollection('routes', routeList);
     try {
       localStorage.setItem('charvik_route_management_data', JSON.stringify(routeList));
-    } catch {}
+    } catch { }
     return (Array.isArray(res) ? routeList : res) as any;
   }
 
@@ -1558,7 +1558,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     setLocalCollection('tasks', taskList);
     try {
       localStorage.setItem('charvik_trip_duty_management_v2', JSON.stringify(taskList));
-    } catch {}
+    } catch { }
     return (Array.isArray(res) ? taskList : res) as any;
   }
 
@@ -1570,7 +1570,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     setLocalCollection('organizers', orgList);
     try {
       localStorage.setItem('charvik_organizer_management_data', JSON.stringify(orgList));
-    } catch {}
+    } catch { }
     return (Array.isArray(res) ? orgList : res) as any;
   }
 
@@ -1667,7 +1667,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     setLocalCollection('daily_maintenance_records', list);
     try {
       localStorage.setItem('charvik_daily_maintenance_cache', JSON.stringify(list));
-    } catch {}
+    } catch { }
     return (Array.isArray(res) ? list : res) as any;
   }
 
@@ -1693,7 +1693,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     setLocalCollection('vyshnavi_service_records', list);
     try {
       localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(list));
-    } catch {}
+    } catch { }
     return (Array.isArray(res) ? list : res) as any;
   }
 
@@ -1728,7 +1728,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     setLocalCollection('vyshnavi_transactions', list);
     try {
       localStorage.setItem('charvik_vyshnavi_transactions_cache', JSON.stringify(list));
-    } catch {}
+    } catch { }
     return (Array.isArray(res) ? list : res) as any;
   }
 
@@ -1738,13 +1738,13 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     if (method === 'POST') {
       try {
         localStorage.setItem('charvik_app_settings', JSON.stringify(body));
-      } catch {}
+      } catch { }
       return { success: true, ...body } as any;
     }
     try {
       const saved = localStorage.getItem('charvik_app_settings');
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return { company_name: 'Charvik Staffing Consultancy' } as any;
   }
   // 17M. FLEET MAINTENANCE VEHICLE UPSERT & DELETE FALLBACK
@@ -1756,7 +1756,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       setLocalCollection('buses', updated);
       try {
         await supabase.from('buses').delete().or(`id.eq.${idParam},registration_number.eq.${idParam},bus_number.eq.${idParam}`);
-      } catch {}
+      } catch { }
       localStorage.removeItem('charvik_fleet_maintenance_cache');
       return { success: true } as any;
     }
@@ -1781,7 +1781,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       setLocalCollection('buses', buses);
       try {
         await supabase.from('buses').upsert(newBus);
-      } catch {}
+      } catch { }
       localStorage.removeItem('charvik_fleet_maintenance_cache');
       return { success: true, id: newBus.id } as any;
     }
@@ -1844,13 +1844,13 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
                 parsedBody.id = (data as any).id;
               }
               mirrorBody = JSON.stringify(parsedBody);
-            } catch {}
+            } catch { }
           }
           handleCloudFallback(endpoint, {
             ...options,
             body: mirrorBody
           }).catch((syncErr) => console.warn('Supabase real-time sync note:', syncErr));
-        } catch {}
+        } catch { }
       }
 
       return data;
@@ -1901,7 +1901,7 @@ export const api = {
       if (Array.isArray(remote) && remote.length > 0) {
         buses = remote;
       }
-    } catch {}
+    } catch { }
 
     // 2. Localhost server merge (if running on localhost)
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -1911,7 +1911,7 @@ export const api = {
         if (Array.isArray(res) && res.length > 0) {
           buses = mergeSeedCollection(res, buses);
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Fallback only if no records anywhere
@@ -1919,7 +1919,7 @@ export const api = {
       try {
         const saved = localStorage.getItem('charvik_cache_buses');
         if (saved) buses = JSON.parse(saved);
-      } catch {}
+      } catch { }
     }
     if (!buses || buses.length === 0) {
       buses = [...BASE_FLEET_BUSES];
@@ -1948,7 +1948,7 @@ export const api = {
       if (Array.isArray(remote) && remote.length > 0) {
         routes = remote;
       }
-    } catch {}
+    } catch { }
 
     // 2. Localhost server merge
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -1958,7 +1958,7 @@ export const api = {
         if (Array.isArray(res) && res.length > 0) {
           routes = mergeSeedCollection(res, routes);
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Fallback only if no records
@@ -1966,7 +1966,7 @@ export const api = {
       try {
         const saved = localStorage.getItem('charvik_route_management_data');
         if (saved) routes = JSON.parse(saved);
-      } catch {}
+      } catch { }
     }
     if (!routes || routes.length === 0) {
       routes = [...BASE_FLEET_ROUTES];
@@ -1993,7 +1993,7 @@ export const api = {
       if (Array.isArray(remote) && remote.length > 0) {
         organizers = remote;
       }
-    } catch {}
+    } catch { }
 
     // 2. Localhost server merge
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -2003,7 +2003,7 @@ export const api = {
         if (Array.isArray(res) && res.length > 0) {
           organizers = mergeSeedCollection(res, organizers);
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Fallback only if no records
@@ -2011,7 +2011,7 @@ export const api = {
       try {
         const saved = localStorage.getItem('charvik_organizer_management_data');
         if (saved) organizers = JSON.parse(saved);
-      } catch {}
+      } catch { }
     }
     if (!organizers || organizers.length === 0) {
       organizers = [...BASE_FLEET_ORGANIZERS];
@@ -2038,7 +2038,7 @@ export const api = {
       if (Array.isArray(remote) && remote.length > 0) {
         payments = remote;
       }
-    } catch {}
+    } catch { }
 
     // 2. Localhost server merge
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -2048,7 +2048,7 @@ export const api = {
         if (Array.isArray(res) && res.length > 0) {
           payments = mergeSeedCollection(res, payments);
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Fallback only if no records
@@ -2056,7 +2056,7 @@ export const api = {
       try {
         const saved = localStorage.getItem('charvik_organizer_payments_data');
         if (saved) payments = JSON.parse(saved);
-      } catch {}
+      } catch { }
     }
 
     localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(payments));
@@ -2085,7 +2085,7 @@ export const api = {
           captain: typeof t.captain === 'string' && t.captain ? JSON.parse(t.captain) : t.captain
         }));
       }
-    } catch {}
+    } catch { }
 
     // 2. Localhost server merge (if server is running on localhost)
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -2095,7 +2095,7 @@ export const api = {
         if (Array.isArray(serverTasks) && serverTasks.length > 0) {
           tasks = mergeSeedCollection(serverTasks, tasks);
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Fallback only if no records anywhere
@@ -2103,7 +2103,7 @@ export const api = {
       try {
         const saved = localStorage.getItem('charvik_trip_duty_management_v2');
         if (saved) tasks = JSON.parse(saved);
-      } catch {}
+      } catch { }
     }
     if (!tasks || tasks.length === 0) {
       tasks = [...BASE_FLEET_TASKS];
@@ -2125,7 +2125,7 @@ export const api = {
         localStorage.setItem('charvik_service_records_v1', JSON.stringify(remote));
         return remote;
       }
-    } catch {}
+    } catch { }
     try {
       const reliable = await getReliableCollection<any>('service_records');
       if (Array.isArray(reliable) && reliable.length > 0) return reliable;
@@ -2137,7 +2137,7 @@ export const api = {
           return parsed;
         }
       }
-    } catch {}
+    } catch { }
     const seed = [...BASE_SERVICE_RECORDS];
     setLocalCollection('service_records', seed);
     localStorage.setItem('charvik_service_records_v1', JSON.stringify(seed));
@@ -2193,7 +2193,7 @@ export const api = {
         localStorage.setItem('charvik_captain_audit_records_v1', JSON.stringify(remote));
         return remote;
       }
-    } catch {}
+    } catch { }
     try {
       const reliable = await getReliableCollection<any>('captain_audit_records');
       if (Array.isArray(reliable) && reliable.length > 0) return reliable;
@@ -2205,7 +2205,7 @@ export const api = {
           return parsed;
         }
       }
-    } catch {}
+    } catch { }
     const seed = [...BASE_CAPTAIN_AUDITS];
     setLocalCollection('captain_audit_records', seed);
     localStorage.setItem('charvik_captain_audit_records_v1', JSON.stringify(seed));
@@ -2279,7 +2279,7 @@ export const api = {
         localStorage.setItem('charvik_fleet_maintenance_cache', JSON.stringify(res));
         return res;
       }
-    } catch {}
+    } catch { }
 
     try {
       const cached = localStorage.getItem('charvik_fleet_maintenance_cache');
@@ -2287,7 +2287,7 @@ export const api = {
         const parsed = JSON.parse(cached);
         if (parsed && Array.isArray(parsed.buses) && parsed.buses.length > 0 && parsed.buses[0]?.services?.length >= 14) return parsed;
       }
-    } catch {}
+    } catch { }
 
     // Synthesize dataset with KM synchronized from Daily Vehicle Checkup
     const today = new Date();
@@ -2338,7 +2338,7 @@ export const api = {
             busKm = Math.max(busKm, Number(match.starting_km || match.odometer_km));
           }
         }
-      } catch {}
+      } catch { }
 
       const busHist = cachedHistory.filter((h: any) => h.bus_id === b.id || h.bus_number === b.bus_number || h.registration_number === b.registration_number);
 
@@ -2519,7 +2519,7 @@ export const api = {
         localStorage.setItem('charvik_fleet_maintenance_history_cache', JSON.stringify(res));
         return res;
       }
-    } catch {}
+    } catch { }
 
     try {
       const cached = localStorage.getItem('charvik_fleet_maintenance_history_cache');
@@ -2530,7 +2530,7 @@ export const api = {
           return parsed;
         }
       }
-    } catch {}
+    } catch { }
 
     if (busId) return BASE_FLEET_MAINTENANCE_HISTORY.filter((p: any) => String(p.bus_id) === String(busId));
     return BASE_FLEET_MAINTENANCE_HISTORY;
@@ -2550,7 +2550,7 @@ export const api = {
       try {
         const cached = localStorage.getItem('charvik_fleet_maintenance_history_cache');
         if (cached) list = JSON.parse(cached);
-      } catch {}
+      } catch { }
       const newEntry = {
         id: Date.now(),
         ...data,
@@ -2612,7 +2612,7 @@ export const api = {
           }
         }
       }
-    } catch {}
+    } catch { }
 
     // 2. Localhost server merge (if running on localhost)
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -2629,7 +2629,7 @@ export const api = {
         if (Array.isArray(data) && data.length > 0) {
           records = mergeSeedCollection(data, records);
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Fallback only if no records anywhere
@@ -2637,7 +2637,7 @@ export const api = {
       try {
         const cached = localStorage.getItem('charvik_daily_maintenance_cache');
         if (cached) records = JSON.parse(cached);
-      } catch {}
+      } catch { }
     }
     if (!records || records.length === 0) {
       records = [...BASE_DAILY_MAINTENANCE_RECORDS];
@@ -2754,7 +2754,7 @@ export const api = {
           }
         }
       }
-    } catch {}
+    } catch { }
 
     // 2. Localhost server merge (if running on localhost)
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -2768,7 +2768,7 @@ export const api = {
         if (Array.isArray(data) && data.length > 0) {
           records = mergeSeedCollection(data, records);
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Fallback only if no records anywhere
@@ -2776,7 +2776,7 @@ export const api = {
       try {
         const cached = localStorage.getItem('charvik_vyshnavi_records_cache');
         if (cached) records = JSON.parse(cached);
-      } catch {}
+      } catch { }
     }
     if (!records || records.length === 0) {
       records = [...BASE_VYSHNAVI_RECORDS];
@@ -2878,7 +2878,7 @@ export const api = {
           }
         }
       }
-    } catch {}
+    } catch { }
 
     // 2. Localhost server merge (if running on localhost)
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -2893,7 +2893,7 @@ export const api = {
         if (Array.isArray(data) && data.length > 0) {
           transactions = mergeSeedCollection(data, transactions);
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Fallback only if no records anywhere
@@ -2901,7 +2901,7 @@ export const api = {
       try {
         const cached = localStorage.getItem('charvik_vyshnavi_transactions_cache');
         if (cached) transactions = JSON.parse(cached);
-      } catch {}
+      } catch { }
     }
     if (!transactions || transactions.length === 0) {
       transactions = [...BASE_VYSHNAVI_TRANSACTIONS];
@@ -3115,7 +3115,7 @@ export const api = {
       if (Array.isArray(remote) && remote.length > 0) {
         employees = remote;
       }
-    } catch {}
+    } catch { }
 
     // 2. Localhost server merge (if running on localhost)
     const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -3130,7 +3130,7 @@ export const api = {
         if (Array.isArray(res) && res.length > 0) {
           employees = mergeSeedCollection(res, employees);
         }
-      } catch {}
+      } catch { }
     }
 
     // 3. Fallback only if no records anywhere
@@ -3138,7 +3138,7 @@ export const api = {
       try {
         const saved = localStorage.getItem('charvik_cache_employees');
         if (saved) employees = JSON.parse(saved);
-      } catch {}
+      } catch { }
     }
     if (!employees || employees.length === 0) {
       employees = [...BASE_FLEET_EMPLOYEES];
