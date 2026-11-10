@@ -591,6 +591,8 @@ export function initDatabase() {
     try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN total_km INTEGER DEFAULT 0`).run(); } catch (_) {}
     try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN vehicle_number TEXT`).run(); } catch (_) {}
     try { db.prepare(`ALTER TABLE new_tyres ADD COLUMN allocated_bus_number TEXT`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE fleet_maintenance_history ADD COLUMN last_service_date DATE`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE fleet_maintenance_history ADD COLUMN last_service_km INTEGER DEFAULT 0`).run(); } catch (_) {}
 
     // Create wheel_allotments table for wheel allotment and tyre rotations
     db.prepare(`

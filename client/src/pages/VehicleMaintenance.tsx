@@ -102,6 +102,8 @@ export const VehicleMaintenance: React.FC = () => {
   } | null>(null);
 
   const [completionForm, setCompletionForm] = useState({
+    last_service_date: '',
+    last_service_km: '' as string | number,
     completion_date: new Date().toISOString().split('T')[0],
     odometer_km: 0,
     cost: 0,
@@ -178,7 +180,16 @@ export const VehicleMaintenance: React.FC = () => {
   // Open "Mark Completed" Modal
   const handleOpenCompleteModal = (vehicle: Vehicle, service: ServiceItem) => {
     setCompletingService({ vehicle, service });
+    const prevDate = service.lastDoneDate && service.lastDoneDate !== '—' && service.lastDoneDate !== '-'
+      ? service.lastDoneDate
+      : (vehicle.last_service_date || '');
+    const prevKm = service.lastDoneKm > 0
+      ? service.lastDoneKm
+      : (vehicle.last_service_km || 0);
+
     setCompletionForm({
+      last_service_date: prevDate,
+      last_service_km: prevKm > 0 ? prevKm : '',
       completion_date: new Date().toISOString().split('T')[0],
       odometer_km: vehicle.current_odometer_km || 0,
       cost: service.intervalType === 'km' ? 4500 : 750,
@@ -234,6 +245,8 @@ export const VehicleMaintenance: React.FC = () => {
       await api.completeFleetMaintenance({
         bus_id: completingService.vehicle.id,
         service_type: completingService.service.name,
+        last_service_date: completionForm.last_service_date || null,
+        last_service_km: Number(completionForm.last_service_km) || 0,
         completion_date: completionForm.completion_date,
         odometer_km: completionForm.odometer_km,
         cost: completionForm.cost,
@@ -1119,7 +1132,7 @@ export const VehicleMaintenance: React.FC = () => {
                   <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
                     <th className="py-2.5 px-3">Date</th>
                     <th className="py-2.5 px-3">Service</th>
-                    <th className="py-2.5 px-3">Previous KM</th>
+                    <th className="py-2.5 px-3">Last Servicing KM</th>
                     <th className="py-2.5 px-3">Odometer KM</th>
                     <th className="py-2.5 px-3">Next Due</th>
                     <th className="py-2.5 px-3">Cost</th>
@@ -1154,7 +1167,10 @@ export const VehicleMaintenance: React.FC = () => {
                             {h.service_type}
                           </td>
                           <td className="py-2 px-3 font-mono text-slate-500">
-                            {h.previous_km ? `${Number(h.previous_km).toLocaleString('en-IN')}` : '—'}
+                            {h.last_service_km || h.previous_km ? `${Number(h.last_service_km || h.previous_km).toLocaleString('en-IN')} KM` : '—'}
+                            {h.last_service_date && (
+                              <span className="block text-[11px] text-slate-400 font-sans">{h.last_service_date}</span>
+                            )}
                           </td>
                           <td className="py-2 px-3 font-mono font-bold text-slate-900">
                             {Number(h.odometer_km || 0).toLocaleString('en-IN')}
@@ -1214,6 +1230,27 @@ export const VehicleMaintenance: React.FC = () => {
           <form onSubmit={handleSubmitCompletion} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Last service date</label>
+                <input
+                  type="date"
+                  value={completionForm.last_service_date}
+                  onChange={(e) => setCompletionForm({ ...completionForm, last_service_date: e.target.value })}
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Last servicing KM</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 45000"
+                  value={completionForm.last_service_km}
+                  onChange={(e) => setCompletionForm({ ...completionForm, last_service_km: e.target.value })}
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold"
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Service completion date *</label>
                 <input
                   type="date"
@@ -1231,7 +1268,7 @@ export const VehicleMaintenance: React.FC = () => {
                   required
                   value={completionForm.odometer_km}
                   onChange={(e) => setCompletionForm({ ...completionForm, odometer_km: Number(e.target.value) })}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono"
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold"
                 />
               </div>
 

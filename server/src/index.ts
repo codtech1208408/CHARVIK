@@ -2576,6 +2576,8 @@ app.post('/api/fleet-maintenance/complete', (req: Request, res: Response) => {
       service_type,
       completion_date,
       odometer_km,
+      last_service_date,
+      last_service_km,
       cost,
       workshop,
       mechanic_name,
@@ -2626,8 +2628,8 @@ app.post('/api/fleet-maintenance/complete', (req: Request, res: Response) => {
       INSERT INTO fleet_maintenance_history (
         bus_id, bus_number, registration_number, service_type, completion_date,
         odometer_km, cost, workshop, mechanic_name, remarks, photos_json,
-        next_due_km, next_due_date
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        next_due_km, next_due_date, last_service_date, last_service_km
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const info = stmt.run(
@@ -2643,7 +2645,9 @@ app.post('/api/fleet-maintenance/complete', (req: Request, res: Response) => {
       remarks || '',
       photosJson,
       nextDueKm || null,
-      nextDueDate || null
+      nextDueDate || null,
+      last_service_date || null,
+      Number(last_service_km) || 0
     );
 
     db.prepare(`
