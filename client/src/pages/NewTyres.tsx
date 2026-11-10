@@ -474,14 +474,9 @@ export const NewTyres: React.FC = () => {
 
                       {/* Total KM (Starting KM + Present Running KM) */}
                       <td className="py-2 px-3 whitespace-nowrap">
-                        <span className="font-mono font-bold text-emerald-700 text-sm block">
+                        <span className="font-mono font-bold text-emerald-700 text-sm">
                           {totalKmVal > 0 ? `${totalKmVal.toLocaleString('en-IN')} KM` : '0 KM'}
                         </span>
-                        {(startingKm > 0 || presentRunningKm > 0) && (
-                          <span className="text-[10px] text-slate-400 font-semibold block">
-                            ({startingKm.toLocaleString('en-IN')} + {presentRunningKm.toLocaleString('en-IN')})
-                          </span>
-                        )}
                       </td>
                       <td className="py-2 px-3">
                         <div className="flex items-center gap-2.5">

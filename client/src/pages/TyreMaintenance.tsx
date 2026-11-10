@@ -1285,11 +1285,8 @@ export const TyreMaintenance: React.FC = () => {
                           </td>
                           {/* 6. TOTAL KM RUNNING (Before KM + Present KM Running) */}
                           <td className="py-3 px-4 whitespace-nowrap">
-                            <span className="font-mono font-black text-emerald-700 block text-xs">
+                            <span className="font-mono font-black text-emerald-700 text-xs">
                               {totalKmRunning > 0 ? `${totalKmRunning.toLocaleString('en-IN')} KM` : '0 KM'}
-                            </span>
-                            <span className="text-[10px] text-slate-400 font-semibold block">
-                              ({initialKm.toLocaleString('en-IN')} + {presentKm.toLocaleString('en-IN')})
                             </span>
                           </td>
                           {/* ACTIONS */}
