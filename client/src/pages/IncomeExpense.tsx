@@ -305,6 +305,7 @@ export const IncomeExpense: React.FC = () => {
       setIsAddModalOpen(false);
       setEditingItem(null);
       await loadData();
+      window.dispatchEvent(new CustomEvent('charvik_income_expenses_updated'));
     } catch (err: any) {
       error(err.message || 'Failed to save transaction');
     }
@@ -320,6 +321,7 @@ export const IncomeExpense: React.FC = () => {
       await api.deleteIncomeExpense(item.id);
       success('Transaction deleted successfully');
       await loadData();
+      window.dispatchEvent(new CustomEvent('charvik_income_expenses_updated'));
     } catch (err: any) {
       error(err.message || 'Failed to delete transaction');
     }
