@@ -1810,6 +1810,157 @@ app.delete('/api/vyshnavi/transactions/:id', (req: Request, res: Response) => {
   }
 });
 
+// ================= INCOME & EXPENSE GENERAL LEDGER =================
+app.get('/api/income-expenses', (req: Request, res: Response) => {
+  try {
+    const { type, payment_mode, search, start_date, end_date } = req.query;
+    let query = 'SELECT * FROM income_expenses WHERE 1=1';
+    const params: any[] = [];
+
+    if (type && type !== 'All') {
+      query += ' AND transaction_type = ?';
+      params.push(type);
+    }
+    if (payment_mode && payment_mode !== 'All') {
+      query += ' AND payment_mode = ?';
+      params.push(payment_mode);
+    }
+    if (start_date) {
+      query += ' AND date >= ?';
+      params.push(start_date);
+    }
+    if (end_date) {
+      query += ' AND date <= ?';
+      params.push(end_date);
+    }
+    if (search) {
+      query += ' AND (category LIKE ? OR party_name LIKE ? OR description LIKE ? OR reference_no LIKE ? OR vehicle_number LIKE ?)';
+      const s = `%${search}%`;
+      params.push(s, s, s, s, s);
+    }
+
+    query += ' ORDER BY date DESC, id DESC';
+    const rows = db.prepare(query).all(...params) as any[];
+
+    // Overall summary calculations
+    const allRows = db.prepare('SELECT transaction_type, amount, payment_mode FROM income_expenses').all() as any[];
+    let totalIncome = 0;
+    let totalExpense = 0;
+    const modeCounts: Record<string, number> = { Cash: 0, 'Bank Transfer': 0, Online: 0, UPI: 0 };
+    for (const r of allRows) {
+      const amt = Number(r.amount) || 0;
+      if (r.transaction_type === 'Income') totalIncome += amt;
+      else if (r.transaction_type === 'Expense') totalExpense += amt;
+      if (r.payment_mode) {
+        modeCounts[r.payment_mode] = (modeCounts[r.payment_mode] || 0) + amt;
+      }
+    }
+
+    return res.json({
+      summary: {
+        totalIncome,
+        totalExpense,
+        netBalance: totalIncome - totalExpense,
+        count: allRows.length,
+        modeCounts
+      },
+      transactions: rows
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/income-expenses', (req: Request, res: Response) => {
+  const t = req.body;
+  if (!t.transaction_type || t.amount === undefined || t.amount === null) {
+    if (!isUserAdmin(req)) {
+      return res.status(400).json({ error: 'Transaction type and amount are required' });
+    }
+  }
+
+  const stmt = db.prepare(`
+    INSERT INTO income_expenses (
+      transaction_type, date, category, amount, payment_mode,
+      proof_url, reference_no, party_name, vehicle_number, description
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  try {
+    const info = stmt.run(
+      t.transaction_type || 'Income',
+      t.date || new Date().toISOString().split('T')[0],
+      (t.category || 'General').trim(),
+      Number(t.amount) || 0,
+      t.payment_mode || 'Cash',
+      t.proof_url || t.receipt_url || '',
+      t.reference_no || t.reference_number || '',
+      t.party_name || '',
+      t.vehicle_number || '',
+      t.description || ''
+    );
+
+    logAudit('CREATE_INCOME_EXPENSE', 'Income & Expense', info.lastInsertRowid, `Recorded ${t.transaction_type} of ₹${t.amount} (${t.category}, ${t.payment_mode})`);
+    return res.status(201).json({
+      success: true,
+      id: info.lastInsertRowid,
+      message: `${t.transaction_type} recorded successfully`
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/income-expenses/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const t = req.body;
+  try {
+    db.prepare(`
+      UPDATE income_expenses SET
+        transaction_type = ?,
+        date = ?,
+        category = ?,
+        amount = ?,
+        payment_mode = ?,
+        proof_url = ?,
+        reference_no = ?,
+        party_name = ?,
+        vehicle_number = ?,
+        description = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      t.transaction_type || 'Income',
+      t.date || new Date().toISOString().split('T')[0],
+      (t.category || 'General').trim(),
+      Number(t.amount) || 0,
+      t.payment_mode || 'Cash',
+      t.proof_url || t.receipt_url || '',
+      t.reference_no || t.reference_number || '',
+      t.party_name || '',
+      t.vehicle_number || '',
+      t.description || '',
+      id
+    );
+
+    logAudit('UPDATE_INCOME_EXPENSE', 'Income & Expense', id, `Updated transaction ${id} (${t.transaction_type})`);
+    return res.json({ success: true, message: 'Transaction updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/income-expenses/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM income_expenses WHERE id = ?').run(id);
+    logAudit('DELETE_INCOME_EXPENSE', 'Income & Expense', id, `Deleted transaction ${id}`);
+    return res.json({ success: true, message: 'Transaction deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= CAPTAIN AUDIT RECORDS CRUD =================
 app.get('/api/captain-audits', (req: Request, res: Response) => {
   try {

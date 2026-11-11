@@ -1327,5 +1327,120 @@ export function initDatabase() {
         }
       }
     } catch {}
+
+    // Income & Expense General Corporate Ledger
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS income_expenses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        transaction_type TEXT NOT NULL, -- 'Income' or 'Expense'
+        date TEXT NOT NULL,
+        category TEXT NOT NULL,
+        amount REAL NOT NULL,
+        payment_mode TEXT NOT NULL DEFAULT 'Cash', -- 'Cash', 'Bank Transfer', 'Online', 'UPI'
+        proof_url TEXT DEFAULT '',
+        reference_no TEXT DEFAULT '',
+        party_name TEXT DEFAULT '',
+        vehicle_number TEXT DEFAULT '',
+        description TEXT DEFAULT '',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
+    try {
+      const ieCount = db.prepare('SELECT COUNT(*) as cnt FROM income_expenses').get() as any;
+      if (!ieCount || ieCount.cnt === 0) {
+        const seedIE = [
+          {
+            type: 'Income',
+            date: '2026-11-05',
+            category: 'Trip Advance / Booking',
+            amount: 45000,
+            mode: 'Bank Transfer',
+            party: 'Sri Krishna Logistics',
+            vehicle: 'AP16TV1234',
+            ref: 'NEFT-2026110501',
+            desc: 'Intercity corporate booking advance'
+          },
+          {
+            type: 'Expense',
+            date: '2026-11-06',
+            category: 'Diesel / Fuel',
+            amount: 14800,
+            mode: 'UPI',
+            party: 'HPCL Highway Petrol Bunk',
+            vehicle: 'AP16TC4567',
+            ref: 'UPI-9928172',
+            desc: '160 Litres Diesel top-up for Vizag route'
+          },
+          {
+            type: 'Income',
+            date: '2026-11-07',
+            category: 'Passenger Fare',
+            amount: 22500,
+            mode: 'Cash',
+            party: 'Counter Ticket Collection',
+            vehicle: 'HR55X1200',
+            ref: 'CASH-8812',
+            desc: 'Daily express passenger ticket collection'
+          },
+          {
+            type: 'Expense',
+            date: '2026-11-07',
+            category: 'Toll & Taxes (FASTag)',
+            amount: 4500,
+            mode: 'Online',
+            party: 'NHAI FASTag Portal',
+            vehicle: 'DL01A1024',
+            ref: 'NET-882910',
+            desc: 'Monthly highway FASTag wallet recharge'
+          },
+          {
+            type: 'Income',
+            date: '2026-11-08',
+            category: 'Client Settlement',
+            amount: 85000,
+            mode: 'Bank Transfer',
+            party: 'Infosys Fleet Services',
+            vehicle: 'AP16TV1234',
+            ref: 'RTGS-772911',
+            desc: 'Monthly corporate staff transport contract retainer'
+          },
+          {
+            type: 'Expense',
+            date: '2026-11-08',
+            category: 'Tyres & Wheel Service',
+            amount: 18000,
+            mode: 'UPI',
+            party: 'Sri Balaji Tyres & Alignment',
+            vehicle: 'HR55X1200',
+            ref: 'UPI-661902',
+            desc: 'Front axle tyre rotation and wheel balancing'
+          },
+          {
+            type: 'Expense',
+            date: '2026-11-09',
+            category: 'Driver Bata / Daily Allowance',
+            amount: 3500,
+            mode: 'Cash',
+            party: 'Driver Akhil & Crew',
+            vehicle: 'AP16TC4567',
+            ref: 'VCH-0921',
+            desc: 'Round-trip duty bata and meal allowance'
+          }
+        ];
+
+        const insertStmt = db.prepare(`
+          INSERT INTO income_expenses (
+            transaction_type, date, category, amount, payment_mode,
+            proof_url, reference_no, party_name, vehicle_number, description
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        for (const s of seedIE) {
+          insertStmt.run(s.type, s.date, s.category, s.amount, s.mode, '', s.ref, s.party, s.vehicle, s.desc);
+        }
+      }
+    } catch (_) {}
   } catch (e) {}
 }

@@ -182,6 +182,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: ShieldCheck,
       activeRoutes: ['/admin/captain-audit', '/captain/audit-record']
     },
+    {
+      label: 'Income & Expense',
+      route: '/admin/income-expense',
+      icon: IndianRupee,
+      activeRoutes: ['/admin/income-expense', '/admin/income-and-expense']
+    },
   ];
 
   const vehicleMaintenanceTabs: NavItemLeaf[] = [
@@ -282,6 +288,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: History,
       hasLiveBadge: true,
       activeRoutes: ['/admin/audit-log']
+    },
+    {
+      label: 'Income & Expense',
+      route: '/admin/income-expense',
+      icon: IndianRupee,
+      activeRoutes: ['/admin/income-expense', '/admin/income-and-expense']
     },
   ];
 

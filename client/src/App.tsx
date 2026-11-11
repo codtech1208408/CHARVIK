@@ -48,6 +48,7 @@ import { SupporterTasks } from './pages/SupporterTasks';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { AuditLog } from './pages/AuditLog';
+import { IncomeExpense } from './pages/IncomeExpense';
 
 export function App() {
   return (
@@ -118,6 +119,8 @@ export function App() {
               <Route path="support-staff/new" element={<SupportStaffRegistration />} />
               <Route path="reports" element={<Reports />} />
               <Route path="audit-log" element={<AuditLog />} />
+              <Route path="income-expense" element={<IncomeExpense />} />
+              <Route path="income-and-expense" element={<IncomeExpense />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 

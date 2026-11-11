@@ -3078,6 +3078,169 @@ export const api = {
     }
   },
 
+  // Corporate Income & Expense Ledger
+  getIncomeExpenses: async (params?: { type?: string; payment_mode?: string; search?: string; start_date?: string; end_date?: string }) => {
+    try {
+      const q = new URLSearchParams();
+      if (params?.type && params.type !== 'All') q.append('type', params.type);
+      if (params?.payment_mode && params.payment_mode !== 'All') q.append('payment_mode', params.payment_mode);
+      if (params?.search) q.append('search', params.search);
+      if (params?.start_date) q.append('start_date', params.start_date);
+      if (params?.end_date) q.append('end_date', params.end_date);
+      const queryStr = q.toString() ? `?${q.toString()}` : '';
+      const res = await request<any>(`/income-expenses${queryStr}`);
+      if (res && Array.isArray(res.transactions)) {
+        localStorage.setItem('charvik_income_expenses_cache', JSON.stringify(res));
+        return res;
+      }
+    } catch (_) {}
+
+    // Fallback local storage
+    let cachedData: any = null;
+    try {
+      const raw = localStorage.getItem('charvik_income_expenses_cache');
+      if (raw) cachedData = JSON.parse(raw);
+    } catch (_) {}
+
+    if (!cachedData || !Array.isArray(cachedData.transactions) || cachedData.transactions.length === 0) {
+      const defaultTx = [
+        { id: 1, transaction_type: 'Income', date: '2026-11-05', category: 'Trip Advance / Booking', amount: 45000, payment_mode: 'Bank Transfer', party_name: 'Sri Krishna Logistics', vehicle_number: 'AP16TV1234', reference_no: 'NEFT-2026110501', description: 'Intercity corporate booking advance' },
+        { id: 2, transaction_type: 'Expense', date: '2026-11-06', category: 'Diesel / Fuel', amount: 14800, payment_mode: 'UPI', party_name: 'HPCL Highway Petrol Bunk', vehicle_number: 'AP16TC4567', reference_no: 'UPI-9928172', description: '160 Litres Diesel top-up for Vizag route' },
+        { id: 3, transaction_type: 'Income', date: '2026-11-07', category: 'Passenger Fare', amount: 22500, payment_mode: 'Cash', party_name: 'Counter Ticket Collection', vehicle_number: 'HR55X1200', reference_no: 'CASH-8812', description: 'Daily express passenger ticket collection' },
+        { id: 4, transaction_type: 'Expense', date: '2026-11-07', category: 'Toll & Taxes (FASTag)', amount: 4500, payment_mode: 'Online', party_name: 'NHAI FASTag Portal', vehicle_number: 'DL01A1024', reference_no: 'NET-882910', description: 'Monthly highway FASTag wallet recharge' },
+        { id: 5, transaction_type: 'Income', date: '2026-11-08', category: 'Client Settlement', amount: 85000, payment_mode: 'Bank Transfer', party_name: 'Infosys Fleet Services', vehicle_number: 'AP16TV1234', reference_no: 'RTGS-772911', description: 'Monthly corporate staff transport contract retainer' },
+        { id: 6, transaction_type: 'Expense', date: '2026-11-08', category: 'Tyres & Wheel Service', amount: 18000, payment_mode: 'UPI', party_name: 'Sri Balaji Tyres & Alignment', vehicle_number: 'HR55X1200', reference_no: 'UPI-661902', description: 'Front axle tyre rotation and wheel balancing' },
+        { id: 7, transaction_type: 'Expense', date: '2026-11-09', category: 'Driver Bata / Daily Allowance', amount: 3500, payment_mode: 'Cash', party_name: 'Driver Akhil & Crew', vehicle_number: 'AP16TC4567', reference_no: 'VCH-0921', description: 'Round-trip duty bata and meal allowance' }
+      ];
+      let totalInc = 0;
+      let totalExp = 0;
+      defaultTx.forEach((t) => {
+        if (t.transaction_type === 'Income') totalInc += t.amount;
+        else totalExp += t.amount;
+      });
+      cachedData = {
+        summary: { totalIncome: totalInc, totalExpense: totalExp, netBalance: totalInc - totalExp, count: defaultTx.length },
+        transactions: defaultTx
+      };
+      localStorage.setItem('charvik_income_expenses_cache', JSON.stringify(cachedData));
+    }
+
+    let list = cachedData.transactions || [];
+    if (params?.type && params.type !== 'All') {
+      list = list.filter((t: any) => (t.transaction_type || '').toLowerCase() === params.type!.toLowerCase());
+    }
+    if (params?.payment_mode && params.payment_mode !== 'All') {
+      list = list.filter((t: any) => (t.payment_mode || '').toLowerCase() === params.payment_mode!.toLowerCase());
+    }
+    if (params?.search) {
+      const s = params.search.toLowerCase();
+      list = list.filter((t: any) =>
+        (t.category || '').toLowerCase().includes(s) ||
+        (t.party_name || '').toLowerCase().includes(s) ||
+        (t.description || '').toLowerCase().includes(s) ||
+        (t.reference_no || '').toLowerCase().includes(s) ||
+        (t.vehicle_number || '').toLowerCase().includes(s)
+      );
+    }
+    return { summary: cachedData.summary, transactions: list };
+  },
+
+  createIncomeExpense: async (data: any) => {
+    try {
+      const res = await request<any>('/income-expenses', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      localStorage.removeItem('charvik_income_expenses_cache');
+      return res;
+    } catch (_) {
+      let cachedData: any = null;
+      try {
+        const raw = localStorage.getItem('charvik_income_expenses_cache');
+        if (raw) cachedData = JSON.parse(raw);
+      } catch {}
+      const list = cachedData?.transactions || [];
+      const newEntry = { id: Date.now(), ...data, created_at: new Date().toISOString() };
+      list.unshift(newEntry);
+      let totalInc = 0;
+      let totalExp = 0;
+      list.forEach((t: any) => {
+        const amt = Number(t.amount) || 0;
+        if (t.transaction_type === 'Income') totalInc += amt;
+        else totalExp += amt;
+      });
+      const updated = {
+        summary: { totalIncome: totalInc, totalExpense: totalExp, netBalance: totalInc - totalExp, count: list.length },
+        transactions: list
+      };
+      localStorage.setItem('charvik_income_expenses_cache', JSON.stringify(updated));
+      return { success: true, id: newEntry.id };
+    }
+  },
+
+  updateIncomeExpense: async (id: number | string, data: any) => {
+    try {
+      const res = await request<any>(`/income-expenses/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      localStorage.removeItem('charvik_income_expenses_cache');
+      return res;
+    } catch (_) {
+      let cachedData: any = null;
+      try {
+        const raw = localStorage.getItem('charvik_income_expenses_cache');
+        if (raw) cachedData = JSON.parse(raw);
+      } catch {}
+      let list = cachedData?.transactions || [];
+      list = list.map((t: any) => (String(t.id) === String(id) ? { ...t, ...data } : t));
+      let totalInc = 0;
+      let totalExp = 0;
+      list.forEach((t: any) => {
+        const amt = Number(t.amount) || 0;
+        if (t.transaction_type === 'Income') totalInc += amt;
+        else totalExp += amt;
+      });
+      const updated = {
+        summary: { totalIncome: totalInc, totalExpense: totalExp, netBalance: totalInc - totalExp, count: list.length },
+        transactions: list
+      };
+      localStorage.setItem('charvik_income_expenses_cache', JSON.stringify(updated));
+      return { success: true };
+    }
+  },
+
+  deleteIncomeExpense: async (id: number | string) => {
+    try {
+      const res = await request<any>(`/income-expenses/${id}`, {
+        method: 'DELETE'
+      });
+      localStorage.removeItem('charvik_income_expenses_cache');
+      return res;
+    } catch (_) {
+      let cachedData: any = null;
+      try {
+        const raw = localStorage.getItem('charvik_income_expenses_cache');
+        if (raw) cachedData = JSON.parse(raw);
+      } catch {}
+      let list = cachedData?.transactions || [];
+      list = list.filter((t: any) => String(t.id) !== String(id));
+      let totalInc = 0;
+      let totalExp = 0;
+      list.forEach((t: any) => {
+        const amt = Number(t.amount) || 0;
+        if (t.transaction_type === 'Income') totalInc += amt;
+        else totalExp += amt;
+      });
+      const updated = {
+        summary: { totalIncome: totalInc, totalExpense: totalExp, netBalance: totalInc - totalExp, count: list.length },
+        transactions: list
+      };
+      localStorage.setItem('charvik_income_expenses_cache', JSON.stringify(updated));
+      return { success: true };
+    }
+  },
+
   // Tyre Maintenance
   getTyreRecords: (params?: { bus_id?: number | string }) => {
     const cleanParams: any = {};
