@@ -24,14 +24,6 @@ export const AdminLayout: React.FC = () => {
     });
   }, []);
 
-  // Set global admin compact text scaling class on root html
-  useEffect(() => {
-    document.documentElement.classList.add('admin-active-view');
-    return () => {
-      document.documentElement.classList.remove('admin-active-view');
-    };
-  }, []);
-
   useEffect(() => {
     AOS.refresh();
   }, [location.pathname]);
@@ -309,7 +301,7 @@ export const AdminLayout: React.FC = () => {
     location.pathname === '/operator/';
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex flex-col admin-portal-scope text-[13px]">
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
       {/* Sidebar - Pinned on desktop */}
       <Sidebar
         isCollapsed={isCollapsed}
@@ -331,7 +323,7 @@ export const AdminLayout: React.FC = () => {
           isCollapsed={isCollapsed}
         />
 
-        <main className={`flex-1 p-4 sm:p-6 lg:p-8 w-full ${isDashboard ? 'max-w-7xl' : 'max-w-[1920px]'} mx-auto pb-24 lg:pb-8`}>
+        <main className={`flex-1 p-4 sm:p-6 lg:p-8 w-full ${isDashboard ? 'max-w-7xl' : 'max-w-[1920px] admin-data-page'} mx-auto pb-24 lg:pb-8`}>
           <ErrorBoundary fallbackTitle="Unable to Load Dashboard View">
             <Outlet />
           </ErrorBoundary>

@@ -560,7 +560,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {!isCollapsed && (
             <div className="w-full mt-2 flex items-center justify-center">
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-xs tracking-wide ${isCaptain
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shadow-xs tracking-wide ${isCaptain
                 ? 'bg-amber-50 text-amber-700 border-amber-200'
                 : isOperator
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -579,38 +579,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Navigation Items List */}
-        <div className="flex-1 overflow-y-auto py-2.5 px-2.5 space-y-1 scrollbar-thin scrollbar-thumb-slate-200">
+        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200">
           {/* Dedicated Sub-Dashboard Back Button & Module Indicator */}
           {isVehicleManagementModule && (
-            <div className="mb-2 space-y-1">
+            <div className="mb-2 space-y-1.5">
               <NavLink
                 to="/admin/dashboard"
                 onClick={() => setIsMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-[#142B4A] transition-colors group border border-slate-200/60"
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-[13px] font-bold text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-[#142B4A] transition-colors group border border-slate-200/60"
                 title="Return to Dashboard"
               >
-                <ArrowLeft className="w-3.5 h-3.5 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
+                <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
                 {!isCollapsed && <span>Dashboard Overview</span>}
               </NavLink>
 
               {!isCollapsed && (
-                <div className="px-3 py-1.5 flex items-center gap-2 rounded-xl bg-blue-50/80 border border-blue-200/90 text-[#142B4A]">
-                  <Truck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span className="text-[10.5px] font-black uppercase tracking-wider">Vehicle Management</span>
+                <div className="px-3.5 py-2 flex items-center gap-2 rounded-2xl bg-blue-50/80 border border-blue-200/90 text-[#142B4A]">
+                  <Truck className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span className="text-xs font-black uppercase tracking-wider">Vehicle Management</span>
                 </div>
               )}
             </div>
           )}
 
           {isVehicleMaintenanceModule && (
-            <div className="mb-2 space-y-1">
+            <div className="mb-2 space-y-1.5">
               <NavLink
                 to="/admin/dashboard"
                 onClick={() => setIsMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-[#142B4A] transition-colors group border border-slate-200/60"
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-[13px] font-bold text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-[#142B4A] transition-colors group border border-slate-200/60"
                 title="Return to Dashboard"
               >
-                <ArrowLeft className="w-3.5 h-3.5 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
+                <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:-translate-x-0.5 transition-transform" />
                 {!isCollapsed && <span>Dashboard Overview</span>}
               </NavLink>
 
@@ -618,7 +618,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink
                   to="/admin/vehicle-maintenance"
                   onClick={() => setIsMobileOpen(false)}
-                  className={`px-3 py-2 flex items-center justify-between rounded-xl border transition-all cursor-pointer ${location.pathname.startsWith('/admin/vehicle-maintenance')
+                  className={`px-3.5 py-2.5 flex items-center justify-between rounded-2xl border transition-all cursor-pointer ${location.pathname.startsWith('/admin/vehicle-maintenance')
                     ? 'bg-[#142B4A] text-white border-[#142B4A] shadow-md shadow-[#142B4A]/25'
                     : 'bg-slate-100/80 border-slate-200/90 text-[#142B4A] hover:bg-slate-200/80'
                     }`}
@@ -626,10 +626,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <div className="flex items-center gap-2">
                     <Wrench
-                      className={`w-3.5 h-3.5 shrink-0 ${location.pathname.startsWith('/admin/vehicle-maintenance') ? 'text-white' : 'text-[#142B4A]'
+                      className={`w-4 h-4 shrink-0 ${location.pathname.startsWith('/admin/vehicle-maintenance') ? 'text-white' : 'text-[#142B4A]'
                         }`}
                     />
-                    <span className="text-[10.5px] font-black uppercase tracking-wider">Vehicle Maintenance</span>
+                    <span className="text-xs font-black uppercase tracking-wider">Vehicle Maintenance</span>
                   </div>
                   {location.pathname.startsWith('/admin/vehicle-maintenance') && (
                     <span className="w-1.5 h-1.5 rounded-full bg-white ml-1.5 shrink-0" />
@@ -666,15 +666,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       }
                     }
                   }}
-                  className={`flex items-center px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 group relative ${isItemActive
+                  className={`flex items-center px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group relative ${isItemActive
                     ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
                     : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
                     } ${isCollapsed ? 'justify-center px-2' : ''}`}
                   title={isCollapsed ? item.label : undefined}
                 >
                   <Icon
-                    className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${isItemActive ? 'text-white' : 'text-[#2563EB]'
-                      } ${isCollapsed ? '' : 'mr-2.5'}`}
+                    className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${isItemActive ? 'text-white' : 'text-[#2563EB]'
+                      } ${isCollapsed ? '' : 'mr-3'}`}
                   />
                   {!isCollapsed && (
                     <span className="truncate flex-1 tracking-tight">{item.label}</span>
@@ -683,7 +683,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {/* LIVE Badge on Dashboard */}
                   {!isCollapsed && item.hasLiveBadge && (
                     <span
-                      className={`ml-auto px-1.5 py-0.5 text-[9px] font-black uppercase rounded-full tracking-wider ${isItemActive
+                      className={`ml-auto px-2 py-0.5 text-[10px] font-black uppercase rounded-full tracking-wider ${isItemActive
                         ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
                         : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}
@@ -709,7 +709,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       aria-label={isSubMenuExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
                     >
                       <ChevronDown
-                        className={`w-3.5 h-3.5 transition-transform duration-200 ${isSubMenuExpanded ? 'rotate-180 text-white' : isItemActive ? 'text-white' : 'text-slate-400'
+                        className={`w-4 h-4 transition-transform duration-200 ${isSubMenuExpanded ? 'rotate-180 text-white' : isItemActive ? 'text-white' : 'text-slate-400'
                           }`}
                       />
                     </button>
@@ -718,7 +718,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Sub-items (Shows only when clicking Tyre Maintenance) */}
                 {isSubMenuExpanded && (
-                  <div className="mt-1 ml-2.5 pl-2.5 pr-2 py-1 border-l-2 border-blue-400/80 bg-blue-50/50 rounded-r-xl space-y-0.5">
+                  <div className="mt-1 ml-3 pl-3 pr-2 py-1.5 border-l-2 border-blue-400/80 bg-blue-50/50 rounded-r-2xl space-y-1">
                     {item.subItems!.map((sub) => {
                       const SubIcon = sub.icon;
                       const isSubActive =
@@ -731,8 +731,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           key={sub.route}
                           to={sub.route}
                           onClick={() => setIsMobileOpen(false)}
-                          className={`flex items-center px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${isSubActive
-                            ? 'bg-blue-600 text-white shadow-xs font-bold'
+                          className={`flex items-center px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${isSubActive
+                            ? 'bg-blue-600 text-white shadow-xs font-extrabold'
                             : 'text-slate-700 hover:text-blue-700 hover:bg-white/80'
                             }`}
                         >
@@ -752,32 +752,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Footer Area: View Public Website & User Actions */}
-        <div className="p-2.5 border-t border-slate-100 bg-slate-50/60 shrink-0 space-y-1.5">
+        <div className="p-3 border-t border-slate-100 bg-slate-50/60 shrink-0 space-y-2">
           {/* Admin shortcut: View Operator Dashboard vs Return to Admin Dashboard */}
           {isAdmin && !isCollapsed && (
             isOperatorPortal ? (
               <Link
                 to="/admin/dashboard"
-                className="w-full flex items-center justify-between p-2 rounded-xl border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all text-[11px] font-bold group cursor-pointer"
+                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all text-xs font-bold group cursor-pointer"
                 title="Return to the Main Admin Dashboard"
               >
                 <div className="flex items-center gap-2">
-                  <ArrowLeft className="w-3.5 h-3.5 text-white group-hover:-translate-x-0.5 transition-transform" />
+                  <ArrowLeft className="w-4 h-4 text-white group-hover:-translate-x-0.5 transition-transform" />
                   <span>Return to Admin Dashboard</span>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-white/80" />
+                <ChevronRight className="w-4 h-4 text-white/80" />
               </Link>
             ) : (
               <Link
                 to="/operator/dashboard"
-                className="w-full flex items-center justify-between p-2 rounded-xl border border-blue-200 bg-blue-50/60 hover:border-blue-500 hover:bg-blue-100/70 hover:shadow-xs transition-all text-[11px] font-bold text-blue-900 group cursor-pointer"
+                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-blue-200 bg-blue-50/60 hover:border-blue-500 hover:bg-blue-100/70 hover:shadow-xs transition-all text-xs font-bold text-blue-900 group cursor-pointer"
                 title="Open Operator Dashboard to inspect real-time staff operations"
               >
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB] group-hover:scale-110 transition-transform" />
+                  <ShieldCheck className="w-4 h-4 text-[#2563EB] group-hover:scale-110 transition-transform" />
                   <span>View Operator Dashboard</span>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-blue-500 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight className="w-4 h-4 text-blue-500 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             )
           )}
@@ -787,25 +787,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
               to="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-between p-2 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:bg-blue-50/30 hover:shadow-xs transition-all text-[11px] font-bold text-slate-800 group"
+              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:bg-blue-50/30 hover:shadow-xs transition-all text-xs font-bold text-slate-800 group"
             >
               <div className="flex items-center gap-2">
-                <ExternalLink className="w-3.5 h-3.5 text-[#2563EB] group-hover:scale-110 transition-transform" />
+                <ExternalLink className="w-4 h-4 text-[#2563EB] group-hover:scale-110 transition-transform" />
                 <span>View Public Website</span>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           )}
 
           {/* User Profile info if available */}
           {!isCollapsed && activeUser && (
-            <div className="px-2.5 py-1.5 bg-white rounded-xl flex items-center space-x-2 border border-slate-200 shadow-xs">
-              <div className="w-6 h-6 rounded-full bg-[#142B4A] text-white flex items-center justify-center font-bold text-[10px] uppercase shadow-xs">
+            <div className="px-3 py-2 bg-white rounded-xl flex items-center space-x-2.5 border border-slate-200 shadow-xs">
+              <div className="w-7 h-7 rounded-full bg-[#142B4A] text-white flex items-center justify-center font-bold text-xs uppercase shadow-xs">
                 {(activeUser.name || 'Admin').slice(0, 2)}
               </div>
               <div className="truncate flex-1">
-                <p className="text-[11px] font-bold text-slate-800 truncate">{activeUser.name}</p>
-                <p className="text-[9.5px] text-slate-500 font-medium truncate">{activeUser.role}</p>
+                <p className="text-xs font-bold text-slate-800 truncate">{activeUser.name}</p>
+                <p className="text-[10px] text-slate-500 font-medium truncate">{activeUser.role}</p>
               </div>
             </div>
           )}
@@ -813,11 +813,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Sign Out */}
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer ${isCollapsed ? 'justify-center' : ''
+            className={`w-full flex items-center px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer ${isCollapsed ? 'justify-center' : ''
               }`}
             title="Sign Out"
           >
-            <LogOut className={`w-3.5 h-3.5 shrink-0 ${isCollapsed ? '' : 'mr-2'}`} />
+            <LogOut className={`w-4 h-4 shrink-0 ${isCollapsed ? '' : 'mr-2.5'}`} />
             {!isCollapsed && <span>Sign Out</span>}
           </button>
         </div>

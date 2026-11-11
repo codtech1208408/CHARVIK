@@ -155,7 +155,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
         {/* Page Title beside the logo (hidden when on Dashboard per user request) */}
         {pageTitle && !pageTitle.toLowerCase().includes('dashboard') && (
           <div className="pl-1 sm:pl-2">
-            <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 flex items-center gap-2">
+            <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
               {pageTitle}
             </h1>
           </div>

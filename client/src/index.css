@@ -40,111 +40,133 @@
 }
 
 /* ==========================================================================
-   ADMIN PANEL GLOBAL COMPACT TYPOGRAPHY & SCALING
-   Decreases text size across all tabs, navigation, tables, and data pages
+   ADMIN DATA PAGES COMPACT TYPOGRAPHY
+   Applies only to tab data pages (NOT main dashboard headings or dashboard cards)
    ========================================================================== */
 
-/* Root rem scaling inside Admin Portal:
-   Default browser root is 16px. Setting html font-size to 13.5px
-   proportionately scales down all rem-based Tailwind typography by ~15.6%.
-   - text-xs:   12px   -> 10.1px
-   - text-sm:   14px   -> 11.8px
-   - text-base: 16px   -> 13.5px
-   - text-lg:   18px   -> 15.2px
-   - text-xl:   20px   -> 16.9px
-   - text-2xl:  24px   -> 20.2px
-   - text-3xl:  30px   -> 25.3px
-*/
-html.admin-active-view,
-html:has(.admin-portal-scope) {
-  font-size: 13.5px;
-}
-
-/* Scoped Admin Portal Container */
-.admin-portal-scope {
+.admin-data-page {
   font-size: 12.5px;
   line-height: 1.45;
-  color: #172B4D;
 }
 
-/* Headings across all admin pages */
-.admin-portal-scope h1 {
-  font-size: 1.3rem !important;
+/* Headings inside tab data pages */
+.admin-data-page h1 {
+  font-size: 1.25rem !important;
   line-height: 1.25 !important;
 }
-.admin-portal-scope h2 {
-  font-size: 1.15rem !important;
+
+.admin-data-page h2 {
+  font-size: 1.1rem !important;
   line-height: 1.3 !important;
 }
-.admin-portal-scope h3 {
-  font-size: 1.02rem !important;
+
+.admin-data-page h3 {
+  font-size: 0.95rem !important;
   line-height: 1.35 !important;
 }
-.admin-portal-scope h4 {
-  font-size: 0.92rem !important;
+
+.admin-data-page h4 {
+  font-size: 0.88rem !important;
   line-height: 1.4 !important;
 }
 
-/* Scale down arbitrary pixel classes used across admin panel */
-.admin-portal-scope .text-\[13px\] {
+/* All Data Tables inside tab data pages */
+.admin-data-page table {
   font-size: 11.5px !important;
 }
-.admin-portal-scope .text-\[11px\] {
+
+.admin-data-page th {
   font-size: 10px !important;
-}
-.admin-portal-scope .text-\[10px\] {
-  font-size: 9px !important;
-}
-.admin-portal-scope .text-\[9px\] {
-  font-size: 8.5px !important;
-}
-
-/* All Data Tables across all admin data pages */
-.admin-portal-scope table {
-  font-size: 11.5px !important;
-}
-.admin-portal-scope th {
-  font-size: 10.5px !important;
   font-weight: 700 !important;
-  letter-spacing: 0.04em !important;
-  padding-top: 0.5rem !important;
-  padding-bottom: 0.5rem !important;
-}
-.admin-portal-scope td {
-  font-size: 11.5px !important;
-  padding-top: 0.5rem !important;
-  padding-bottom: 0.5rem !important;
+  letter-spacing: 0.03em !important;
+  padding-top: 0.45rem !important;
+  padding-bottom: 0.45rem !important;
+  padding-left: 0.65rem !important;
+  padding-right: 0.65rem !important;
 }
 
-/* All Form Controls (Inputs, Selects, Textareas, Labels) across all admin data pages */
-.admin-portal-scope input,
-.admin-portal-scope select,
-.admin-portal-scope textarea {
-  font-size: 11.5px !important;
+.admin-data-page td {
+  font-size: 11px !important;
+  padding-top: 0.45rem !important;
+  padding-bottom: 0.45rem !important;
+  padding-left: 0.65rem !important;
+  padding-right: 0.65rem !important;
 }
-.admin-portal-scope input::placeholder,
-.admin-portal-scope textarea::placeholder {
+
+/* All Form Controls (inputs, selects, textareas, labels) */
+.admin-data-page input,
+.admin-data-page select,
+.admin-data-page textarea {
+  font-size: 11.5px !important;
+  padding-top: 0.4rem !important;
+  padding-bottom: 0.4rem !important;
+}
+
+.admin-data-page input::placeholder,
+.admin-data-page textarea::placeholder {
   font-size: 11px !important;
 }
-.admin-portal-scope label {
+
+.admin-data-page label {
   font-size: 11px !important;
   font-weight: 600;
 }
 
-/* All Buttons & Tab Pills */
-.admin-portal-scope button {
-  letter-spacing: -0.01em;
+/* Buttons & filter pills inside tab data pages */
+.admin-data-page button,
+.admin-data-page [role="tab"] {
+  font-size: 11.5px !important;
 }
-.admin-portal-scope .tab-btn,
-.admin-portal-scope [role="tab"] {
+
+/* Status pills and badges */
+.admin-data-page .badge,
+.admin-data-page [class*="rounded-full"][class*="text-"] {
+  font-size: 10px !important;
+}
+
+/* Standard Tailwind typography overrides scoped ONLY to tab data pages */
+.admin-data-page .text-xs {
   font-size: 11px !important;
 }
 
-/* Compact Sidebar tabs */
-.admin-portal-scope aside nav a,
-.admin-portal-scope aside a,
-.admin-portal-scope aside button {
-  letter-spacing: -0.01em;
+.admin-data-page .text-sm {
+  font-size: 12px !important;
+}
+
+.admin-data-page .text-base {
+  font-size: 13.5px !important;
+}
+
+.admin-data-page .text-lg {
+  font-size: 15px !important;
+}
+
+.admin-data-page .text-xl {
+  font-size: 17px !important;
+}
+
+.admin-data-page .text-2xl {
+  font-size: 19px !important;
+}
+
+.admin-data-page .text-3xl {
+  font-size: 22px !important;
+}
+
+.admin-data-page .text-\[13px\] {
+  font-size: 11.5px !important;
+}
+
+.admin-data-page .text-\[11px\] {
+  font-size: 10px !important;
+}
+
+.admin-data-page .text-\[10px\] {
+  font-size: 9px !important;
+}
+
+.admin-data-page .text-\[9px\] {
+  font-size: 8.5px !important;
 }
 
 /* Printable media styling */
