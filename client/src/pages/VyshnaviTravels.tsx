@@ -725,30 +725,15 @@ export const VyshnaviTravels: React.FC = () => {
     <div className="space-y-6 pb-12">
       {/* Top Header Card */}
       <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
-            <div className="h-16 px-3.5 py-1.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs shrink-0 flex items-center justify-center hover:shadow-xs transition-shadow">
-              <img
-                src={vyshnaviLogo}
-                alt="Vyshnavi Travels Logo"
-                className="h-12 w-auto object-contain max-w-[220px]"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/vyshnavi-logo.png';
-                }}
-              />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
-                <span>Vyshnavi Travels</span>
-                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-100 text-[#142B4A] font-bold uppercase tracking-wider">
-                  Corporate Portal
-                </span>
-              </h1>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Official billing statement generator on Vyshnavi Travels letterhead and full income & expense cash ledger.
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center py-1">
+          <img
+            src={vyshnaviLogo}
+            alt="Vyshnavi Travels"
+            className="h-20 sm:h-24 md:h-28 w-auto object-contain max-w-[340px] sm:max-w-[460px] drop-shadow-2xs transition-all"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/vyshnavi-logo.png';
+            }}
+          />
         </div>
 
         {/* Tab Switcher & Quick Actions */}

@@ -1223,3 +1223,4 @@ export const IncomeExpense: React.FC = () => {
     </div>
   );
 };
+
