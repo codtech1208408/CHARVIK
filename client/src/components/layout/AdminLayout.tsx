@@ -301,7 +301,7 @@ export const AdminLayout: React.FC = () => {
     location.pathname === '/operator/';
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
+    <div className="min-h-screen bg-[#F0F4F9] flex flex-col">
       {/* Sidebar - Pinned on desktop */}
       <Sidebar
         isCollapsed={isCollapsed}
