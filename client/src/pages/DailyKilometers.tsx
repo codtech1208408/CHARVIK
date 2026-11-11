@@ -470,45 +470,45 @@ export const DailyKilometers: React.FC = () => {
          ========================================================================= */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Card 1: TOTAL FUEL COST */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between hover:shadow-md transition-all">
+        <div className="bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F3] to-[#FFE7D1] border-2 border-[#FFD0A8] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">TOTAL FUEL COST</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-[#142B4A] mt-1 tracking-tight">
+            <p className="text-xs font-black text-[#D97706] uppercase tracking-wider">TOTAL FUEL COST</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-amber-900 mt-1 tracking-tight">
               ₹{totalFuelCost.toLocaleString('en-IN')}
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">
+            <p className="text-[11px] font-semibold text-amber-700/80 mt-1">
               {searchVehicle.trim() ? `Filtered for ${searchVehicle.toUpperCase()}` : 'Across all vehicles'}
             </p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
             <IndianRupee className="w-6 h-6" />
           </div>
         </div>
 
         {/* Card 2: TOTAL LITERS PUMPED */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between hover:shadow-md transition-all">
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">TOTAL LITERS PUMPED</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-emerald-600 mt-1 tracking-tight">
+            <p className="text-xs font-black text-[#059669] uppercase tracking-wider">TOTAL LITERS PUMPED</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-emerald-800 mt-1 tracking-tight">
               {totalLiters.toFixed(2)} L
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">Diesel dispensed</p>
+            <p className="text-[11px] font-semibold text-emerald-700/80 mt-1">Diesel dispensed</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
             <Droplet className="w-6 h-6" />
           </div>
         </div>
 
         {/* Card 3: FUELING ENTRIES */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between hover:shadow-md transition-all">
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">FUELING ENTRIES</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-blue-600 mt-1 tracking-tight">
+            <p className="text-xs font-black text-[#0D6EFD] uppercase tracking-wider">FUELING ENTRIES</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-[#0047AB] mt-1 tracking-tight">
               {totalEntriesCount} ENTRIES
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">Total trips refueled</p>
+            <p className="text-[11px] font-semibold text-blue-700/80 mt-1">Total trips refueled</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0D6EFD] to-[#0052CC] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
             <ClipboardList className="w-6 h-6" />
           </div>
         </div>
@@ -598,7 +598,7 @@ export const DailyKilometers: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#DCE6F1] text-black font-bold border-b border-slate-300">
+            <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white font-bold border-b border-blue-900/30">
               <tr>
                 <th className="py-3 px-3.5 border-r border-slate-300 whitespace-nowrap">DATE</th>
                 <th className="py-3 px-3.5 border-r border-slate-300 whitespace-nowrap">VEHICLE NO.</th>

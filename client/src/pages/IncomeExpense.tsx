@@ -525,71 +525,71 @@ export const IncomeExpense: React.FC = () => {
       {/* Top 4 KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* 1. Total Income */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Income</p>
-            <p className="text-2xl sm:text-3xl font-black text-emerald-600 mt-1 font-mono">
+            <p className="text-xs font-black text-[#059669] uppercase tracking-wider">Total Income</p>
+            <p className="text-2xl sm:text-3xl font-black text-[#047857] mt-1 font-mono">
               + ₹{stats.totalIncome.toLocaleString('en-IN')}
             </p>
-            <span className="text-[11px] font-semibold text-slate-400 mt-1 inline-block">
+            <span className="text-[11px] font-semibold text-emerald-700/80 mt-1 inline-block">
               Revenue & Advances
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
             <ArrowUpRight className="w-6 h-6" />
           </div>
         </div>
 
         {/* 2. Total Expense */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[#FFF1F2] via-[#FFF5F6] to-[#FFE2E5] border-2 border-[#FDA4AF] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Expenses</p>
-            <p className="text-2xl sm:text-3xl font-black text-rose-600 mt-1 font-mono">
+            <p className="text-xs font-black text-[#E11D48] uppercase tracking-wider">Total Expenses</p>
+            <p className="text-2xl sm:text-3xl font-black text-[#BE123C] mt-1 font-mono">
               - ₹{stats.totalExpense.toLocaleString('en-IN')}
             </p>
-            <span className="text-[11px] font-semibold text-slate-400 mt-1 inline-block">
+            <span className="text-[11px] font-semibold text-rose-700/80 mt-1 inline-block">
               Fuel, Repairs, Bata & Operations
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F43F5E] to-[#E11D48] text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20">
             <ArrowDownRight className="w-6 h-6" />
           </div>
         </div>
 
         {/* 3. Net Balance */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Net Cash Balance</p>
-            <p className={`text-2xl sm:text-3xl font-black mt-1 font-mono ${stats.netBalance >= 0 ? 'text-[#142B4A]' : 'text-rose-600'}`}>
+            <p className="text-xs font-black text-[#0D6EFD] uppercase tracking-wider">Net Cash Balance</p>
+            <p className={`text-2xl sm:text-3xl font-black mt-1 font-mono ${stats.netBalance >= 0 ? 'text-[#0B5ED7]' : 'text-rose-600'}`}>
               ₹{stats.netBalance.toLocaleString('en-IN')}
             </p>
             <span className={`text-[11px] font-bold mt-1 inline-block ${stats.netBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               {stats.netBalance >= 0 ? '▲ Net Surplus' : '▼ Net Deficit'}
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-[#142B4A]/10 text-[#142B4A] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0D6EFD] to-[#0052CC] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
             <Wallet className="w-6 h-6" />
           </div>
         </div>
 
         {/* 4. Payment Modes Total */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex flex-col justify-between">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Payment Modes Processed</p>
+        <div className="bg-gradient-to-br from-[#F6F0FE] via-[#FAF5FF] to-[#E9DBFC] border-2 border-[#D8B4FE] rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+          <p className="text-xs font-black text-[#8B5CF6] uppercase tracking-wider">Payment Modes Processed</p>
           <div className="grid grid-cols-2 gap-2 mt-2">
-            <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100 text-center">
-              <span className="text-[10px] text-slate-500 font-bold block">UPI</span>
+            <div className="bg-white/80 p-1.5 rounded-lg border border-purple-200 text-center shadow-2xs">
+              <span className="text-[10px] text-purple-700 font-bold block">UPI</span>
               <span className="text-xs font-black text-slate-800 font-mono">₹{(stats.upiTotal / 1000).toFixed(0)}k</span>
             </div>
-            <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100 text-center">
-              <span className="text-[10px] text-slate-500 font-bold block">Bank</span>
+            <div className="bg-white/80 p-1.5 rounded-lg border border-purple-200 text-center shadow-2xs">
+              <span className="text-[10px] text-purple-700 font-bold block">Bank</span>
               <span className="text-xs font-black text-slate-800 font-mono">₹{(stats.bankTotal / 1000).toFixed(0)}k</span>
             </div>
-            <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100 text-center">
-              <span className="text-[10px] text-slate-500 font-bold block">Cash</span>
+            <div className="bg-white/80 p-1.5 rounded-lg border border-purple-200 text-center shadow-2xs">
+              <span className="text-[10px] text-purple-700 font-bold block">Cash</span>
               <span className="text-xs font-black text-slate-800 font-mono">₹{(stats.cashTotal / 1000).toFixed(0)}k</span>
             </div>
-            <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100 text-center">
-              <span className="text-[10px] text-slate-500 font-bold block">Online</span>
+            <div className="bg-white/80 p-1.5 rounded-lg border border-purple-200 text-center shadow-2xs">
+              <span className="text-[10px] text-purple-700 font-bold block">Online</span>
               <span className="text-xs font-black text-slate-800 font-mono">₹{(stats.onlineTotal / 1000).toFixed(0)}k</span>
             </div>
           </div>
@@ -676,8 +676,8 @@ export const IncomeExpense: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="bg-slate-50/80 text-slate-500 uppercase tracking-wider font-bold text-[10px] border-b border-slate-200">
+            <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-[11px] border-b border-blue-900/30">
+              <tr>
                 <th className="py-3 px-4">S.No</th>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-4">Type</th>

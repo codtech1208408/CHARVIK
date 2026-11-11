@@ -29,7 +29,8 @@ import {
   ArrowUpDown,
   Filter,
   Download,
-  AlertCircle
+  AlertCircle,
+  ArrowRight
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
@@ -831,56 +832,91 @@ export const VyshnaviTravels: React.FC = () => {
       {/* ========================================================================= */}
       {activeTab === 'records' && (
         <div className="space-y-6">
-          {/* KPI Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs">
+          {/* KPI Summary Cards (Matching Image 4 Glowing Color Palettes) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* 1. Total Billed (Sky Blue) */}
+            <div className="bg-gradient-to-br from-[#E0F2FE] via-[#BAE6FD] to-[#7DD3FC] border-2 border-[#38BDF8] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Billed</span>
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <FileText className="w-5 h-5" />
+                <span className="text-xs font-black text-sky-950 uppercase tracking-wider">Total Billed</span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-[#0369a1] text-white flex items-center justify-center shadow-md shadow-sky-500/30 group-hover:scale-110 transition-transform">
+                  <FileText className="w-6 h-6" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-slate-900">
+              <div className="mt-3 text-2xl sm:text-3xl font-black text-sky-950 font-mono">
                 ₹{recordMetrics.totalBilled.toLocaleString('en-IN')}
               </div>
-              <p className="mt-1 text-[11px] text-slate-400 font-medium">Sum of all generated statements</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Amount Received</span>
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5" />
+              <div className="mt-2 flex items-center justify-between text-xs text-sky-850 font-semibold">
+                <span className="flex items-center gap-1 text-emerald-700 font-bold">
+                  <span>↑ 12%</span>
+                </span>
+                <span className="text-[11px] text-sky-800/80">All statements</span>
+                <div className="w-6 h-6 rounded-full bg-sky-200/80 text-sky-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3 h-3" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-emerald-700">
+            </div>
+
+            {/* 2. Amount Received (Mint / Emerald) */}
+            <div className="bg-gradient-to-br from-[#DCFCE7] via-[#BBF7D0] to-[#86EFAC] border-2 border-[#4ADE80] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-emerald-950 uppercase tracking-wider">Amount Received</span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10b981] to-[#059669] text-white flex items-center justify-center shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+              </div>
+              <div className="mt-3 text-2xl sm:text-3xl font-black text-emerald-950 font-mono">
                 ₹{recordMetrics.totalReceived.toLocaleString('en-IN')}
               </div>
-              <p className="mt-1 text-[11px] text-slate-400 font-medium">Settled via Bank & UPI</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-rose-600 uppercase tracking-wider">Balance Due</span>
-                <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-                  <Clock className="w-5 h-5" />
+              <div className="mt-2 flex items-center justify-between text-xs text-emerald-850 font-semibold">
+                <span className="flex items-center gap-1 text-emerald-800 font-bold">
+                  <span>↑ 18%</span>
+                </span>
+                <span className="text-[11px] text-emerald-800/80">Settled via Bank & UPI</span>
+                <div className="w-6 h-6 rounded-full bg-emerald-200/80 text-emerald-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3 h-3" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-rose-600">
+            </div>
+
+            {/* 3. Balance Due (Rose / Red) */}
+            <div className="bg-gradient-to-br from-[#FFE4E6] via-[#FECDD3] to-[#FDA4AF] border-2 border-[#FB7185] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-rose-950 uppercase tracking-wider">Balance Due</span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#f43f5e] to-[#e11d48] text-white flex items-center justify-center shadow-md shadow-rose-500/30 group-hover:scale-110 transition-transform">
+                  <Clock className="w-6 h-6" />
+                </div>
+              </div>
+              <div className="mt-3 text-2xl sm:text-3xl font-black text-rose-950 font-mono">
                 ₹{recordMetrics.totalBalance.toLocaleString('en-IN')}
               </div>
-              <p className="mt-1 text-[11px] text-slate-400 font-medium">Pending client clearance</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Records</span>
-                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-                  <Receipt className="w-5 h-5" />
+              <div className="mt-2 flex items-center justify-between text-xs text-rose-850 font-semibold">
+                <span className="flex items-center gap-1 text-rose-800 font-bold">
+                  <span>↑ 5%</span>
+                </span>
+                <span className="text-[11px] text-rose-800/80">Pending clearance</span>
+                <div className="w-6 h-6 rounded-full bg-rose-200/80 text-rose-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3 h-3" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-slate-900">{recordMetrics.count}</div>
-              <p className="mt-1 text-[11px] text-slate-400 font-medium">Service billing records</p>
+            </div>
+
+            {/* 4. Total Records (Lavender / Purple) */}
+            <div className="bg-gradient-to-br from-[#F3E8FF] via-[#E9D5FF] to-[#D8B4FE] border-2 border-[#C084FC] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-purple-950 uppercase tracking-wider">Total Records</span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#9333ea] to-[#7e22ce] text-white flex items-center justify-center shadow-md shadow-purple-500/30 group-hover:scale-110 transition-transform">
+                  <Receipt className="w-6 h-6" />
+                </div>
+              </div>
+              <div className="mt-3 text-2xl sm:text-3xl font-black text-purple-950 font-mono">
+                {recordMetrics.count}
+              </div>
+              <div className="mt-2 flex items-center justify-between text-xs text-purple-850 font-semibold">
+                <span className="text-[11px] text-purple-800/80">Service billing records</span>
+                <div className="w-6 h-6 rounded-full bg-purple-200/80 text-purple-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -933,18 +969,18 @@ export const VyshnaviTravels: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-black text-slate-600 uppercase tracking-wider">
-                    <th className="py-3 px-4">S.No</th>
-                    <th className="py-3 px-4">Record / Invoice #</th>
-                    <th className="py-3 px-4">Date</th>
-                    <th className="py-3 px-4">Billed To (Client)</th>
-                    <th className="py-3 px-4">Billing Period</th>
-                    <th className="py-3 px-4 text-center">Staff Count</th>
-                    <th className="py-3 px-4 text-right">Total Amount</th>
-                    <th className="py-3 px-4 text-right">Received</th>
-                    <th className="py-3 px-4 text-right">Balance Due</th>
-                    <th className="py-3 px-4 text-center">Status</th>
-                    <th className="py-3 px-4 text-center">Actions</th>
+                  <tr className="bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#1e40af] text-white border-b border-blue-900/30 text-[11px] font-black uppercase tracking-wider">
+                    <th className="py-3.5 px-4">S.No</th>
+                    <th className="py-3.5 px-4">Record / Invoice #</th>
+                    <th className="py-3.5 px-4">Date</th>
+                    <th className="py-3.5 px-4">Billed To (Client)</th>
+                    <th className="py-3.5 px-4">Billing Period</th>
+                    <th className="py-3.5 px-4 text-center">Staff Count</th>
+                    <th className="py-3.5 px-4 text-right">Total Amount</th>
+                    <th className="py-3.5 px-4 text-right">Received</th>
+                    <th className="py-3.5 px-4 text-right">Balance Due</th>
+                    <th className="py-3.5 px-4 text-center">Status</th>
+                    <th className="py-3.5 px-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -1052,6 +1088,46 @@ export const VyshnaviTravels: React.FC = () => {
               </table>
             </div>
           </div>
+
+          {/* Bottom Summary Cards (Matching Image 4) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Total Records */}
+            <div className="bg-gradient-to-br from-blue-50 to-sky-100 border border-sky-300 rounded-3xl p-4 flex items-center justify-between shadow-2xs">
+              <div>
+                <p className="text-[11px] font-bold text-sky-800 uppercase tracking-wider">Total Records</p>
+                <p className="text-2xl font-black text-sky-950 mt-0.5">{recordMetrics.count}</p>
+              </div>
+              <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                <FileText className="w-5 h-5" />
+              </div>
+            </div>
+
+            {/* Completed */}
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-100 border border-emerald-300 rounded-3xl p-4 flex items-center justify-between shadow-2xs">
+              <div>
+                <p className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Completed</p>
+                <p className="text-2xl font-black text-emerald-950 mt-0.5">
+                  {records.filter((r) => r.payment_status === 'Paid').length}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+            </div>
+
+            {/* Pending */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-100 border border-amber-300 rounded-3xl p-4 flex items-center justify-between shadow-2xs">
+              <div>
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Pending</p>
+                <p className="text-2xl font-black text-amber-950 mt-0.5">
+                  {records.filter((r) => r.payment_status !== 'Paid').length}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                <Clock className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1060,58 +1136,84 @@ export const VyshnaviTravels: React.FC = () => {
       {/* ========================================================================= */}
       {activeTab === 'transactions' && (
         <div className="space-y-6">
-          {/* KPI Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs">
+          {/* KPI Summary Cards (Matching Glowing Color Palettes) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* Total Income */}
+            <div className="bg-gradient-to-br from-[#DCFCE7] via-[#BBF7D0] to-[#86EFAC] border-2 border-[#4ADE80] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Total Income</span>
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5" />
+                <span className="text-xs font-black text-emerald-950 uppercase tracking-wider">Total Income</span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10b981] to-[#059669] text-white flex items-center justify-center shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+                  <TrendingUp className="w-6 h-6" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-emerald-700">
+              <div className="mt-3 text-2xl sm:text-3xl font-black text-emerald-950 font-mono">
                 + ₹{txnMetrics.totalIncome.toLocaleString('en-IN')}
               </div>
-              <p className="mt-1 text-[11px] text-slate-400 font-medium">Bookings, client settlements & fares</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-rose-600 uppercase tracking-wider">Total Expenses</span>
-                <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-                  <TrendingDown className="w-5 h-5" />
+              <div className="mt-2 flex items-center justify-between text-xs text-emerald-850 font-semibold">
+                <span className="text-[11px] text-emerald-800/80">Bookings, client settlements & fares</span>
+                <div className="w-6 h-6 rounded-full bg-emerald-200/80 text-emerald-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3 h-3" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-rose-600">
+            </div>
+
+            {/* Total Expenses */}
+            <div className="bg-gradient-to-br from-[#FFE4E6] via-[#FECDD3] to-[#FDA4AF] border-2 border-[#FB7185] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-rose-950 uppercase tracking-wider">Total Expenses</span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#f43f5e] to-[#e11d48] text-white flex items-center justify-center shadow-md shadow-rose-500/30 group-hover:scale-110 transition-transform">
+                  <TrendingDown className="w-6 h-6" />
+                </div>
+              </div>
+              <div className="mt-3 text-2xl sm:text-3xl font-black text-rose-950 font-mono">
                 - ₹{txnMetrics.totalExpense.toLocaleString('en-IN')}
               </div>
-              <p className="mt-1 text-[11px] text-slate-400 font-medium">Diesel, maintenance, FASTag, salary</p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Net Cash Flow</span>
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Wallet className="w-5 h-5" />
+              <div className="mt-2 flex items-center justify-between text-xs text-rose-850 font-semibold">
+                <span className="text-[11px] text-rose-800/80">Diesel, maintenance, FASTag, salary</span>
+                <div className="w-6 h-6 rounded-full bg-rose-200/80 text-rose-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3 h-3" />
                 </div>
               </div>
-              <div className={`mt-2 text-2xl font-black ${txnMetrics.netBalance >= 0 ? 'text-blue-900' : 'text-rose-600'}`}>
+            </div>
+
+            {/* Net Cash Flow */}
+            <div className="bg-gradient-to-br from-[#E0F2FE] via-[#BAE6FD] to-[#7DD3FC] border-2 border-[#38BDF8] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-sky-950 uppercase tracking-wider">Net Cash Flow</span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-[#0369a1] text-white flex items-center justify-center shadow-md shadow-sky-500/30 group-hover:scale-110 transition-transform">
+                  <Wallet className="w-6 h-6" />
+                </div>
+              </div>
+              <div className={`mt-3 text-2xl sm:text-3xl font-black font-mono ${txnMetrics.netBalance >= 0 ? 'text-sky-950' : 'text-rose-600'}`}>
                 ₹{txnMetrics.netBalance.toLocaleString('en-IN')}
               </div>
-              <p className="mt-1 text-[11px] text-slate-400 font-medium">
-                {txnMetrics.netBalance >= 0 ? 'Net positive operational surplus' : 'Deficit / outstanding'}
-              </p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Transactions</span>
-                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-                  <Receipt className="w-5 h-5" />
+              <div className="mt-2 flex items-center justify-between text-xs text-sky-850 font-semibold">
+                <span className="text-[11px] text-sky-800/80">
+                  {txnMetrics.netBalance >= 0 ? 'Net operational surplus' : 'Deficit / outstanding'}
+                </span>
+                <div className="w-6 h-6 rounded-full bg-sky-200/80 text-sky-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3 h-3" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-slate-900">{txnMetrics.count}</div>
-              <p className="mt-1 text-[11px] text-slate-400 font-medium">Total entries logged</p>
+            </div>
+
+            {/* Transactions */}
+            <div className="bg-gradient-to-br from-[#F3E8FF] via-[#E9D5FF] to-[#D8B4FE] border-2 border-[#C084FC] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-purple-950 uppercase tracking-wider">Transactions</span>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#9333ea] to-[#7e22ce] text-white flex items-center justify-center shadow-md shadow-purple-500/30 group-hover:scale-110 transition-transform">
+                  <Receipt className="w-6 h-6" />
+                </div>
+              </div>
+              <div className="mt-3 text-2xl sm:text-3xl font-black text-purple-950 font-mono">
+                {txnMetrics.count}
+              </div>
+              <div className="mt-2 flex items-center justify-between text-xs text-purple-850 font-semibold">
+                <span className="text-[11px] text-purple-800/80">Total entries logged</span>
+                <div className="w-6 h-6 rounded-full bg-purple-200/80 text-purple-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1220,18 +1322,18 @@ export const VyshnaviTravels: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-black text-slate-600 uppercase tracking-wider">
-                    <th className="py-3 px-4">S.No</th>
-                    <th className="py-3 px-4">Date</th>
-                    <th className="py-3 px-4 text-center">Type</th>
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4">Vehicle #</th>
-                    <th className="py-3 px-4">Party / Client / Vendor</th>
-                    <th className="py-3 px-4">Description / Particulars</th>
-                    <th className="py-3 px-4">Payment Mode & Ref</th>
-                    <th className="py-3 px-4 text-right">Amount</th>
-                    <th className="py-3 px-4 text-center">Receipt</th>
-                    <th className="py-3 px-4 text-center">Actions</th>
+                  <tr className="bg-gradient-to-r from-[#0284c7] via-[#0369a1] to-[#1e40af] text-white border-b border-blue-900/30 text-[11px] font-black uppercase tracking-wider">
+                    <th className="py-3.5 px-4">S.No</th>
+                    <th className="py-3.5 px-4">Date</th>
+                    <th className="py-3.5 px-4 text-center">Type</th>
+                    <th className="py-3.5 px-4">Category</th>
+                    <th className="py-3.5 px-4">Vehicle #</th>
+                    <th className="py-3.5 px-4">Party / Client / Vendor</th>
+                    <th className="py-3.5 px-4">Description / Particulars</th>
+                    <th className="py-3.5 px-4">Payment Mode & Ref</th>
+                    <th className="py-3.5 px-4 text-right">Amount</th>
+                    <th className="py-3.5 px-4 text-center">Receipt</th>
+                    <th className="py-3.5 px-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">

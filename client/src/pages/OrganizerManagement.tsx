@@ -411,38 +411,38 @@ export const OrganizerManagement: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-2xl shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Total Organizations</p>
-            <h3 className="text-2xl font-black text-slate-800 mt-1">
+            <p className="text-xs font-black text-[#0D6EFD] uppercase tracking-wider">Total Organizations</p>
+            <h3 className="text-2xl font-black text-slate-900 mt-1">
               {organizers.length} Organizations
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Registered partner institutions</p>
+            <p className="text-[11px] font-semibold text-slate-500 mt-0.5">Registered partner institutions</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <Building2 className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">GST Registered</p>
-            <h3 className="text-2xl font-black text-indigo-600 mt-1">{gstCount} Records</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">With verified GSTIN records</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-            <FileText className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0D6EFD] to-[#0052CC] text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+            <Building2 className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[#F6F0FE] via-[#FAF5FF] to-[#E9DBFC] border-2 border-[#D8B4FE] p-5 rounded-2xl shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Contact Directory</p>
-            <h3 className="text-2xl font-black text-emerald-600 mt-1">{organizers.length} Points</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Direct phone & email reach</p>
+            <p className="text-xs font-black text-[#8B5CF6] uppercase tracking-wider">GST Registered</p>
+            <h3 className="text-2xl font-black text-purple-700 mt-1">{gstCount} Records</h3>
+            <p className="text-[11px] font-semibold text-purple-600/80 mt-0.5">With verified GSTIN records</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] text-white flex items-center justify-center shadow-md shadow-purple-500/20 shrink-0">
+            <FileText className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-2xl shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-black text-[#059669] uppercase tracking-wider">Contact Directory</p>
+            <h3 className="text-2xl font-black text-emerald-700 mt-1">{organizers.length} Points</h3>
+            <p className="text-[11px] font-semibold text-emerald-600/80 mt-0.5">Direct phone & email reach</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
+            <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
       </div>
@@ -465,7 +465,7 @@ export const OrganizerManagement: React.FC = () => {
       <div id="organizers-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
+            <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
               <tr>
                 <th className="py-2.5 px-3 w-12 text-center">S.NO</th>
                 <th className="py-2.5 px-3 min-w-[200px]">Organization Name</th>

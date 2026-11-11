@@ -471,23 +471,41 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-center">
-          <p className="text-3xl font-black text-slate-900 tracking-tight">{buses.length}</p>
-          <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">Total Vehicles</p>
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-2xl shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-black text-[#0D6EFD] uppercase tracking-wider">Total Vehicles</p>
+            <p className="text-3xl font-black text-slate-900 tracking-tight mt-1">{buses.length}</p>
+            <p className="text-[11px] font-semibold text-slate-500 mt-0.5">Registered fleet vehicles</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0D6EFD] to-[#0052CC] text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+            <Bus className="w-6 h-6" />
+          </div>
         </div>
 
-        <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-200 shadow-xs flex flex-col justify-center">
-          <p className="text-3xl font-black text-emerald-600 tracking-tight">
-            {buses.filter((b) => b.operational_status === 'Active').length}
-          </p>
-          <p className="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wider">Active</p>
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-2xl shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-black text-[#059669] uppercase tracking-wider">Active</p>
+            <p className="text-3xl font-black text-[#047857] tracking-tight mt-1">
+              {buses.filter((b) => b.operational_status === 'Active').length}
+            </p>
+            <p className="text-[11px] font-semibold text-emerald-700/80 mt-0.5">Currently operational on duty</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
         </div>
 
-        <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 shadow-xs flex flex-col justify-center">
-          <p className="text-3xl font-black text-rose-600 tracking-tight">
-            {buses.filter((b) => b.operational_status === 'Inactive').length}
-          </p>
-          <p className="text-xs font-bold text-rose-700 mt-1 uppercase tracking-wider">Inactive</p>
+        <div className="bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F3] to-[#FFE7D1] border-2 border-[#FFD0A8] p-5 rounded-2xl shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-black text-[#D97706] uppercase tracking-wider">Inactive</p>
+            <p className="text-3xl font-black text-[#B45309] tracking-tight mt-1">
+              {buses.filter((b) => b.operational_status === 'Inactive').length}
+            </p>
+            <p className="text-[11px] font-semibold text-amber-700/80 mt-0.5">Off duty or under service</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] text-white flex items-center justify-center shadow-md shadow-amber-500/20 shrink-0">
+            <AlertCircle className="w-6 h-6" />
+          </div>
         </div>
       </div>
 
@@ -858,7 +876,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
+              <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
                 <tr>
                   <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
                   <th className="py-2.5 px-3">Registration No.</th>

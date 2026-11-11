@@ -559,7 +559,7 @@ export const EmployeeManagement: React.FC = () => {
       <div id="employees-directory-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
+            <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
               <tr>
                 <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
                 <th className="py-2.5 px-3 min-w-[125px]">EMPLOYEE ID</th>

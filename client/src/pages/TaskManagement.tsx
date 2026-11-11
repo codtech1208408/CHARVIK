@@ -971,47 +971,45 @@ export const TaskManagement: React.FC = () => {
       </div>
 
       {/* Fleet KPI Metrics Overview */}
-      <div className="bg-gradient-to-r from-blue-900 via-[#142B4A] to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-sm">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center sm:text-left">
-          <div className="bg-white/10 p-3.5 rounded-xl border border-white/10">
-            <span className="text-[10px] font-bold text-blue-200 uppercase tracking-wider block">
-              Total Fleet Buses
-            </span>
-            <p className="text-2xl font-black text-white mt-0.5">{totalFleetCount}</p>
-            <span className="text-[10px] text-blue-300">Registered Vehicles</span>
-          </div>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
+        <div className="bg-gradient-to-br from-[#0D6EFD] via-[#0B5ED7] to-[#0047AB] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-blue-100 uppercase tracking-wider block">
+            Total Fleet Buses
+          </span>
+          <p className="text-3xl font-black text-white mt-1">{totalFleetCount}</p>
+          <span className="text-[10px] text-blue-200 font-medium">Registered Vehicles</span>
+        </div>
 
-          <div className="bg-emerald-500/20 p-3.5 rounded-xl border border-emerald-400/30">
-            <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider block">
-              Active Assigned
-            </span>
-            <p className="text-2xl font-black text-emerald-400 mt-0.5">{activeAssignedCount}</p>
-            <span className="text-[10px] text-emerald-200">On Duty Today</span>
-          </div>
+        <div className="bg-gradient-to-br from-[#10B981] via-[#059669] to-[#047857] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-emerald-100 uppercase tracking-wider block">
+            Active Assigned
+          </span>
+          <p className="text-3xl font-black text-white mt-1">{activeAssignedCount}</p>
+          <span className="text-[10px] text-emerald-200 font-medium">On Duty Today</span>
+        </div>
 
-          <div className="bg-amber-500/20 p-3.5 rounded-xl border border-amber-400/30">
-            <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">
-              Pending / Unassigned
-            </span>
-            <p className="text-2xl font-black text-amber-400 mt-0.5">{pendingBusesCount}</p>
-            <span className="text-[10px] text-amber-200">Awaiting Allocation</span>
-          </div>
+        <div className="bg-gradient-to-br from-[#F59E0B] via-[#D97706] to-[#B45309] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-amber-100 uppercase tracking-wider block">
+            Pending / Unassigned
+          </span>
+          <p className="text-3xl font-black text-white mt-1">{pendingBusesCount}</p>
+          <span className="text-[10px] text-amber-200 font-medium">Awaiting Allocation</span>
+        </div>
 
-          <div className="bg-blue-500/20 p-3.5 rounded-xl border border-blue-400/30">
-            <span className="text-[10px] font-bold text-blue-300 uppercase tracking-wider block">
-              Completed Buses
-            </span>
-            <p className="text-2xl font-black text-white mt-0.5">{completedBusesCount}</p>
-            <span className="text-[10px] text-blue-200">Trips Finished</span>
-          </div>
+        <div className="bg-gradient-to-br from-[#8B5CF6] via-[#7C3AED] to-[#6D28D9] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-purple-100 uppercase tracking-wider block">
+            Completed Buses
+          </span>
+          <p className="text-3xl font-black text-white mt-1">{completedBusesCount}</p>
+          <span className="text-[10px] text-purple-200 font-medium">Trips Finished</span>
+        </div>
 
-          <div className="bg-rose-500/20 p-3.5 rounded-xl border border-rose-400/30">
-            <span className="text-[10px] font-bold text-rose-300 uppercase tracking-wider block">
-              On Hold Buses
-            </span>
-            <p className="text-2xl font-black text-rose-300 mt-0.5">{holdBusesCount}</p>
-            <span className="text-[10px] text-rose-200">Low Occ / Maint</span>
-          </div>
+        <div className="bg-gradient-to-br from-[#EC4899] via-[#E11D48] to-[#BE123C] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-rose-100 uppercase tracking-wider block">
+            On Hold Buses
+          </span>
+          <p className="text-3xl font-black text-white mt-1">{holdBusesCount}</p>
+          <span className="text-[10px] text-rose-200 font-medium">Low Occ / Maint</span>
         </div>
       </div>
 
@@ -1398,7 +1396,7 @@ export const TaskManagement: React.FC = () => {
             ) : (
               /* Admin Original Table (Image 2) */
               <table className="w-full text-left text-sm" style={{ minWidth: '1050px' }}>
-                <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+                <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-[11px] border-b border-blue-900/30">
                   <tr>
                     <th className="py-2.5 px-2.5 w-12 text-center">S.NO</th>
                     <th className="py-2.5 px-2.5 min-w-[85px] text-center">DATE</th>

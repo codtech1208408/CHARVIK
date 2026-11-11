@@ -585,47 +585,45 @@ export const RecordManagement: React.FC = () => {
       </div>
 
       {/* KPI Cards Overview */}
-      <div className="bg-gradient-to-r from-blue-900 via-[#142B4A] to-slate-900 text-white p-5 sm:p-6 rounded-2xl shadow-sm">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center sm:text-left">
-          <div className="bg-white/10 p-4 rounded-xl border border-white/10">
-            <span className="text-xs font-bold text-blue-200 uppercase tracking-wider block">
-              Total Records
-            </span>
-            <p className="text-3xl font-black text-white mt-1">{metrics.totalCount}</p>
-            <span className="text-xs text-blue-300 mt-0.5 block">Generated Statements</span>
-          </div>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
+        <div className="bg-gradient-to-br from-[#0D6EFD] via-[#0B5ED7] to-[#0047AB] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-blue-100 uppercase tracking-wider block">
+            Total Records
+          </span>
+          <p className="text-3xl font-black text-white mt-1">{metrics.totalCount}</p>
+          <span className="text-[10px] text-blue-200 font-medium mt-0.5 block">Generated Statements</span>
+        </div>
 
-          <div className="bg-emerald-500/20 p-4 rounded-xl border border-emerald-400/30">
-            <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider block">
-              Total Staff Covered
-            </span>
-            <p className="text-3xl font-black text-emerald-400 mt-1">{metrics.totalStaff}</p>
-            <span className="text-xs text-emerald-200 mt-0.5 block">Drivers / Cleaners / Crew</span>
-          </div>
+        <div className="bg-gradient-to-br from-[#10B981] via-[#059669] to-[#047857] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-emerald-100 uppercase tracking-wider block">
+            Total Staff Covered
+          </span>
+          <p className="text-3xl font-black text-white mt-1">{metrics.totalStaff}</p>
+          <span className="text-[10px] text-emerald-200 font-medium mt-0.5 block">Drivers / Cleaners / Crew</span>
+        </div>
 
-          <div className="bg-blue-500/20 p-3.5 rounded-xl border border-blue-400/30">
-            <span className="text-xs font-bold text-blue-300 uppercase tracking-wider block">
-              Total Billed Amount
-            </span>
-            <p className="text-3xl font-black text-white mt-1">₹{metrics.totalBilled.toLocaleString('en-IN')}</p>
-            <span className="text-xs text-blue-200 mt-0.5 block">Total Salary Billed</span>
-          </div>
+        <div className="bg-gradient-to-br from-[#0284C7] via-[#0369A1] to-[#075985] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-sky-100 uppercase tracking-wider block">
+            Total Billed Amount
+          </span>
+          <p className="text-2xl sm:text-3xl font-black text-white mt-1">₹{metrics.totalBilled.toLocaleString('en-IN')}</p>
+          <span className="text-[10px] text-sky-200 font-medium mt-0.5 block">Total Salary Billed</span>
+        </div>
 
-          <div className="bg-emerald-500/20 p-3.5 rounded-xl border border-emerald-400/30">
-            <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider block">
-              Total Received
-            </span>
-            <p className="text-3xl font-black text-emerald-400 mt-1">₹{metrics.totalReceived.toLocaleString('en-IN')}</p>
-            <span className="text-xs text-emerald-200 mt-0.5 block">Payments Collected</span>
-          </div>
+        <div className="bg-gradient-to-br from-[#059669] via-[#047857] to-[#065F46] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-emerald-100 uppercase tracking-wider block">
+            Total Received
+          </span>
+          <p className="text-2xl sm:text-3xl font-black text-white mt-1">₹{metrics.totalReceived.toLocaleString('en-IN')}</p>
+          <span className="text-[10px] text-emerald-200 font-medium mt-0.5 block">Payments Collected</span>
+        </div>
 
-          <div className="bg-rose-500/20 p-3.5 rounded-xl border border-rose-400/30">
-            <span className="text-xs font-bold text-rose-300 uppercase tracking-wider block">
-              Balance Due
-            </span>
-            <p className="text-3xl font-black text-rose-300 mt-1">₹{metrics.totalBalance.toLocaleString('en-IN')}</p>
-            <span className="text-xs text-rose-200 mt-0.5 block">Pending Collection</span>
-          </div>
+        <div className="bg-gradient-to-br from-[#EC4899] via-[#E11D48] to-[#BE123C] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between relative overflow-hidden">
+          <span className="text-[11px] font-bold text-rose-100 uppercase tracking-wider block">
+            Balance Due
+          </span>
+          <p className="text-2xl sm:text-3xl font-black text-white mt-1">₹{metrics.totalBalance.toLocaleString('en-IN')}</p>
+          <span className="text-[10px] text-rose-200 font-medium mt-0.5 block">Pending Collection</span>
         </div>
       </div>
 
@@ -712,7 +710,7 @@ export const RecordManagement: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs uppercase tracking-wider border-b border-slate-200">
+            <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
               <tr>
                 <th className="py-2.5 px-3 text-center w-12">S.NO</th>
                 <th className="py-2.5 px-3 min-w-[95px]">RECORD #</th>

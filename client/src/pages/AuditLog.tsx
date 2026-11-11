@@ -163,54 +163,54 @@ export const AuditLog: React.FC = () => {
 
       {/* 2. SUMMARY METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">TOTAL LOGGED EVENTS</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-[#142B4A] mt-1 tracking-tight">
+            <p className="text-xs font-black text-[#0D6EFD] uppercase tracking-wider">TOTAL LOGGED EVENTS</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 tracking-tight">
               {totalLogs.toLocaleString('en-IN')}
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">Recorded audit entries</p>
+            <p className="text-[11px] font-semibold text-slate-500 mt-1">Recorded audit entries</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0D6EFD] to-[#0052CC] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
             <Layers className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[#F6F0FE] via-[#FAF5FF] to-[#E9DBFC] border-2 border-[#D8B4FE] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">TAB SWITCHES & NAV</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-indigo-600 mt-1 tracking-tight">
+            <p className="text-xs font-black text-[#8B5CF6] uppercase tracking-wider">TAB SWITCHES & NAV</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-purple-700 mt-1 tracking-tight">
               {tabSwitchCount.toLocaleString('en-IN')}
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">Screen & tab switches</p>
+            <p className="text-[11px] font-semibold text-purple-600/80 mt-1">Screen & tab switches</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] text-white flex items-center justify-center shrink-0 shadow-md shadow-purple-500/20">
             <RotateCw className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F3] to-[#FFE7D1] border-2 border-[#FFD0A8] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">MAINTENANCE RENEWALS</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-purple-600 mt-1 tracking-tight">
+            <p className="text-xs font-black text-[#D97706] uppercase tracking-wider">MAINTENANCE RENEWALS</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-amber-700 mt-1 tracking-tight">
               {renewalCount.toLocaleString('en-IN')}
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">AC, Tyre & Air renewals</p>
+            <p className="text-[11px] font-semibold text-amber-700/80 mt-1">AC, Tyre & Air renewals</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
             <RefreshCw className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] rounded-2xl p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">DATA UPDATES</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-emerald-600 mt-1 tracking-tight">
+            <p className="text-xs font-black text-[#059669] uppercase tracking-wider">DATA UPDATES</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-emerald-700 mt-1 tracking-tight">
               {updateCount.toLocaleString('en-IN')}
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">Creates & field edits</p>
+            <p className="text-[11px] font-semibold text-emerald-600/80 mt-1">Creates & field edits</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
             <Activity className="w-6 h-6" />
           </div>
         </div>
@@ -293,7 +293,7 @@ export const AuditLog: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#DCE6F1] text-black font-bold border-b border-slate-300">
+            <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white font-bold border-b border-blue-900/30">
               <tr>
                 <th className="py-3 px-3.5 text-center w-12 border-r border-slate-300">S.NO</th>
                 <th className="py-3 px-3.5 border-r border-slate-300 w-48">DATE & TIME</th>

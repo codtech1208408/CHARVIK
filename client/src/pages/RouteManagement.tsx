@@ -312,60 +312,62 @@ export const RouteManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className={`grid grid-cols-1 ${isAdmin ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-4`}>
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Active Transit Routes</p>
-            <h3 className="text-2xl font-black text-slate-800 mt-1">
+      {/* KPI Cards (Glowing Color Palettes) */}
+      <div className={`grid grid-cols-1 ${isAdmin ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-4 sm:gap-5`}>
+        {/* Card 1: Active Transit Routes (Emerald Gradient) */}
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-3xl shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+          <div className="flex-1">
+            <p className="text-xs font-black text-emerald-900 uppercase tracking-wider">Active Transit Routes</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-emerald-800 mt-1 font-mono">
               {activeRoutesCount} / {routes.length} Active
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Operational transport corridors</p>
+            <p className="text-xs text-emerald-700/90 font-medium mt-1">Operational transport corridors</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <Activity className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 ml-3 shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+            <Activity className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Inactive Transit Routes</p>
-            <h3 className="text-2xl font-black text-slate-600 mt-1">
+        {/* Card 2: Inactive Transit Routes (Orange / Amber Gradient) */}
+        <div className="bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F3] to-[#FFE7D1] border-2 border-[#FFD0A8] p-5 rounded-3xl shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+          <div className="flex-1">
+            <p className="text-xs font-black text-orange-950 uppercase tracking-wider">Inactive Transit Routes</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-orange-800 mt-1 font-mono">
               {inactiveRoutesCount} Routes
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Currently paused corridors</p>
+            <p className="text-xs text-orange-700/90 font-medium mt-1">Currently paused corridors</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
-            <Bus className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F97316] to-[#EA580C] text-white flex items-center justify-center shrink-0 ml-3 shadow-md shadow-orange-500/30 group-hover:scale-110 transition-transform">
+            <Bus className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Average Destination KM</p>
-            <h3 className="text-2xl font-black text-emerald-600 mt-1">
+        {/* Card 3: Average Destination KM (Sky / Blue Gradient) */}
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-3xl shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+          <div className="flex-1">
+            <p className="text-xs font-black text-blue-900 uppercase tracking-wider">Average Destination KM</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-blue-950 mt-1 font-mono">
               {avgDistance} KM
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Average one-way distance</p>
+            <p className="text-xs text-blue-700/90 font-medium mt-1">Average one-way distance</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <MapPin className="w-5 h-5" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 ml-3 shadow-md shadow-blue-500/30 group-hover:scale-110 transition-transform">
+            <MapPin className="w-6 h-6" />
           </div>
         </div>
 
         {isAdmin && (
-          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase">Avg Driver Trip Rate</p>
-              <h3 className="text-2xl font-black text-slate-800 mt-1 font-mono">
-                ₹{routes.length
-                  ? Math.round(routes.reduce((acc, r) => acc + (r.trip_amount || 0), 0) / routes.length).toLocaleString('en-IN')
-                  : 0}
+          /* Card 4: Avg Driver Trip Rate (Purple Gradient) */
+          <div className="bg-gradient-to-br from-[#F6F0FE] via-[#FAF6FE] to-[#E9DBFC] border-2 border-[#D7BFF9] p-5 rounded-3xl shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+            <div className="flex-1">
+              <p className="text-xs font-black text-purple-950 uppercase tracking-wider">Avg Driver Trip Rate</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-purple-900 mt-1 font-mono">
+                ₹{avgTripAmount.toLocaleString('en-IN')}
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Payable to driver per trip</p>
+              <p className="text-xs text-purple-700/90 font-medium mt-1">Configured per-trip pay</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <IndianRupee className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#9333EA] to-[#7E22CE] text-white flex items-center justify-center shrink-0 ml-3 shadow-md shadow-purple-500/30 group-hover:scale-110 transition-transform">
+              <IndianRupee className="w-6 h-6" />
             </div>
           </div>
         )}
@@ -401,16 +403,16 @@ export const RouteManagement: React.FC = () => {
       <div id="route-management-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
+            <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
               <tr>
-                <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
-                <th className="py-2.5 px-3">Service Number</th>
-                <th className="py-2.5 px-3">Starting City (From)</th>
-                <th className="py-2.5 px-3">Ending City (To)</th>
-                <th className="py-2.5 px-3">Destination KM</th>
-                <th className="py-2.5 px-3">Route Status</th>
-                {isAdmin && <th className="py-2.5 px-3">Trip Amount & Commission</th>}
-                <th className="py-2.5 px-3 text-center">Actions</th>
+                <th className="py-3 px-3 w-14 text-center">S.NO</th>
+                <th className="py-3 px-3">Service Number</th>
+                <th className="py-3 px-3">Starting City (From)</th>
+                <th className="py-3 px-3">Ending City (To)</th>
+                <th className="py-3 px-3">Destination KM</th>
+                <th className="py-3 px-3">Route Status</th>
+                {isAdmin && <th className="py-3 px-3">Trip Amount & Commission</th>}
+                <th className="py-3 px-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">

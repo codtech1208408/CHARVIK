@@ -524,69 +524,69 @@ export const Earnings: React.FC = () => {
           </div>
         )}
 
-        {/* 1. TOP 4 KPI CARDS (Matching Reference Video) */}
+        {/* 1. TOP 4 KPI CARDS (Matching Glowing Vibrant Color Palettes) */}
         {!isSwitchingPeriod && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* Card 1: Organizer Amount Received */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-slate-300 hover:shadow-sm transition-all">
+            {/* Card 1: Organizer Amount Received (Royal Blue Gradient) */}
+            <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group cursor-pointer">
               <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <p className="text-xs font-black text-blue-900 uppercase tracking-wider">
                   Organizer Amount Received
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-[#142B4A] tracking-tight">
+                <h3 className="text-2xl sm:text-3xl font-black text-blue-950 tracking-tight font-mono">
                   ₹{totalOrganizerReceived.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-slate-400 font-medium">Collections from organizers</p>
+                <p className="text-xs text-blue-700/90 font-medium">Collections from organizers</p>
               </div>
-              <div className="w-13 h-13 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100/60 shadow-2xs">
+              <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/30 group-hover:scale-110 transition-transform">
                 <Building2 className="w-6 h-6" />
               </div>
             </div>
 
-            {/* Card 2: Task Spend */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-slate-300 hover:shadow-sm transition-all">
+            {/* Card 2: Task Spend (Purple Gradient) */}
+            <div className="bg-gradient-to-br from-[#F6F0FE] via-[#FAF6FE] to-[#E9DBFC] border-2 border-[#D7BFF9] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group cursor-pointer">
               <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <p className="text-xs font-black text-purple-950 uppercase tracking-wider">
                   Task Spend
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-[#142B4A] tracking-tight">
+                <h3 className="text-2xl sm:text-3xl font-black text-purple-900 tracking-tight font-mono">
                   ₹{totalTaskSpend.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-slate-400 font-medium">Salary allocated to tasks</p>
+                <p className="text-xs text-purple-700/90 font-medium">Salary allocated to tasks</p>
               </div>
-              <div className="w-13 h-13 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100/60 shadow-2xs">
+              <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#9333EA] to-[#7E22CE] text-white flex items-center justify-center shrink-0 shadow-md shadow-purple-500/30 group-hover:scale-110 transition-transform">
                 <IndianRupee className="w-6 h-6" />
               </div>
             </div>
 
-            {/* Card 3: Pending Task Payments */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-slate-300 hover:shadow-sm transition-all">
+            {/* Card 3: Pending Task Payments (Rose / Coral Gradient) */}
+            <div className="bg-gradient-to-br from-[#FFF1F2] via-[#FFF5F6] to-[#FFE2E5] border-2 border-[#FECDD3] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group cursor-pointer">
               <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <p className="text-xs font-black text-rose-950 uppercase tracking-wider">
                   Pending Task Payments
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-rose-600 tracking-tight">
+                <h3 className="text-2xl sm:text-3xl font-black text-rose-800 tracking-tight font-mono">
                   ₹{totalPending.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-slate-400 font-medium">Salary balance to pay</p>
+                <p className="text-xs text-rose-700/90 font-medium">Salary balance to pay</p>
               </div>
-              <div className="w-13 h-13 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100/60 shadow-2xs">
+              <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#F43F5E] to-[#E11D48] text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-500/30 group-hover:scale-110 transition-transform">
                 <Clock className="w-6 h-6" />
               </div>
             </div>
 
-            {/* Card 4: Paid for Tasks */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-slate-300 hover:shadow-sm transition-all">
+            {/* Card 4: Paid for Tasks (Emerald Green Gradient) */}
+            <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group cursor-pointer">
               <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <p className="text-xs font-black text-emerald-900 uppercase tracking-wider">
                   Paid for Tasks
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight">
+                <h3 className="text-2xl sm:text-3xl font-black text-emerald-800 tracking-tight font-mono">
                   ₹{totalPaid.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-slate-400 font-medium">Employee task payments</p>
+                <p className="text-xs text-emerald-700/90 font-medium">Employee task payments</p>
               </div>
-              <div className="w-13 h-13 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/60 shadow-2xs">
+              <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
             </div>
@@ -794,15 +794,15 @@ export const Earnings: React.FC = () => {
             {/* Ledger Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm" style={{ minWidth: '780px' }}>
-                <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
+                <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
                   <tr>
-                    <th className="py-2.5 px-3 min-w-[200px]">EMPLOYEE ID &amp; NAME</th>
-                    <th className="py-2.5 px-3 w-32">CATEGORY</th>
-                    <th className="py-2.5 px-3 w-32">TASKS HANDLED</th>
-                    <th className="py-2.5 px-3 w-36">SALARY EARNED</th>
-                    <th className="py-2.5 px-3 w-36">PENDING DUE</th>
-                    <th className="py-2.5 px-3 w-36">SETTLED TOTAL</th>
-                    <th className="py-2.5 px-3 text-center w-28">ACTION</th>
+                    <th className="py-3 px-3 min-w-[200px]">EMPLOYEE ID &amp; NAME</th>
+                    <th className="py-3 px-3 w-32">CATEGORY</th>
+                    <th className="py-3 px-3 w-32">TASKS HANDLED</th>
+                    <th className="py-3 px-3 w-36">SALARY EARNED</th>
+                    <th className="py-3 px-3 w-36">PENDING DUE</th>
+                    <th className="py-3 px-3 w-36">SETTLED TOTAL</th>
+                    <th className="py-3 px-3 text-center w-28">ACTION</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">

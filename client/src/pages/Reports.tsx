@@ -268,7 +268,7 @@ export const Reports: React.FC = () => {
             </div>
           ) : (
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-[11px] border-b border-slate-200">
+              <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-[11px] border-b border-blue-900/30">
                 <tr>
                   <th className="py-2.5 px-3 whitespace-nowrap w-14 text-center">S.NO</th>
                   {Object.keys(reportData.results[0]).map((col) => (

@@ -1881,120 +1881,207 @@ export const VehicleMaintenance: React.FC = () => {
   // =========================================================================
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Fleet Maintenance Overview</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            {summary.totalBuses || vehicles.length} buses · today is {new Date().toISOString().split('T')[0]}
-          </p>
+      {/* Header Hero Banner (Matching Image 2) */}
+      <div className="bg-gradient-to-r from-[#0356C4] via-[#0D6EFD] to-[#0284C7] rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="flex items-center space-x-4 relative z-10">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs border border-white/30 flex items-center justify-center text-white shrink-0 shadow-inner">
+            <Gauge className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Fleet Maintenance Dashboard</h1>
+            <p className="text-xs text-white/90 font-medium mt-1">
+              Monitor your fleet, track maintenance and ensure smooth operations
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 relative z-10">
           <button
             type="button"
             onClick={handleExportExcel}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-[#0356C4] hover:bg-blue-50 text-xs font-black shadow-md transition-all cursor-pointer"
           >
-            <Download className="w-4 h-4 text-slate-600" />
+            <Download className="w-4 h-4 text-[#0356C4]" />
             <span>Export Excel</span>
           </button>
         </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
-      {/* Top 5 Stat Cards (Matching Frame 0) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-        {/* 1. Total Buses */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Buses</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{summary.totalBuses || vehicles.length}</p>
+      {/* Top 5 Stat Cards (Solid Vibrant Palette Matching Image 2) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
+        {/* 1. Total Buses (Solid Blue) */}
+        <div className="bg-gradient-to-br from-[#0284c7] via-[#0369a1] to-[#075985] text-white rounded-3xl p-5 shadow-md shadow-sky-500/20 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white shrink-0 shadow-inner">
+              <Bus className="w-6 h-6" />
+            </div>
+            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold backdrop-blur-xs">
+              ↑ 100%
+            </span>
           </div>
-          <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <Bus className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* 2. Services Due Soon */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Services Due Soon</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{summary.servicesDueSoon || 0}</p>
-          </div>
-          <div className="w-11 h-11 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <Clock className="w-5 h-5" />
+          <div className="mt-4">
+            <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Total Buses</p>
+            <p className="text-3xl font-black text-white mt-1 font-mono">{summary.totalBuses || vehicles.length}</p>
           </div>
         </div>
 
-        {/* 3. Overdue Services */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overdue Services</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{summary.overdueServices || 0}</p>
+        {/* 2. Services Due Soon (Solid Emerald Green) */}
+        <div className="bg-gradient-to-br from-[#10b981] via-[#059669] to-[#047857] text-white rounded-3xl p-5 shadow-md shadow-emerald-500/20 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white shrink-0 shadow-inner">
+              <Wrench className="w-6 h-6" />
+            </div>
+            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold backdrop-blur-xs">
+              ↑ 25%
+            </span>
           </div>
-          <div className="w-11 h-11 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-            <Flame className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* 4. Services Completed */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Services Completed</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{summary.servicesCompleted || 0}</p>
-          </div>
-          <div className="w-11 h-11 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-5 h-5" />
+          <div className="mt-4">
+            <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Services Due Soon</p>
+            <p className="text-3xl font-black text-white mt-1 font-mono">{summary.servicesDueSoon || 0}</p>
           </div>
         </div>
 
-        {/* 5. Vehicles Needing Attention */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs flex items-center justify-between col-span-2 sm:col-span-1">
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Vehicles Needing Attention</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{summary.vehiclesNeedingAttention || 0}</p>
+        {/* 3. Overdue Services (Solid Orange / Amber) */}
+        <div className="bg-gradient-to-br from-[#f59e0b] via-[#d97706] to-[#b45309] text-white rounded-3xl p-5 shadow-md shadow-amber-500/20 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white shrink-0 shadow-inner">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold backdrop-blur-xs">
+              ↑ 88%
+            </span>
           </div>
-          <div className="w-11 h-11 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-5 h-5" />
+          <div className="mt-4">
+            <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Overdue Services</p>
+            <p className="text-3xl font-black text-white mt-1 font-mono">{summary.overdueServices || 0}</p>
+          </div>
+        </div>
+
+        {/* 4. Services Completed (Solid Purple) */}
+        <div className="bg-gradient-to-br from-[#a855f7] via-[#8b5cf6] to-[#7c3aed] text-white rounded-3xl p-5 shadow-md shadow-purple-500/20 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white shrink-0 shadow-inner">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold backdrop-blur-xs">
+              ↑ 100%
+            </span>
+          </div>
+          <div className="mt-4">
+            <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Services Completed</p>
+            <p className="text-3xl font-black text-white mt-1 font-mono">{summary.servicesCompleted || 0}</p>
+          </div>
+        </div>
+
+        {/* 5. Vehicles Needing Attention (Solid Cyan / Teal) */}
+        <div className="bg-gradient-to-br from-[#06b6d4] via-[#0891b2] to-[#0e7490] text-white rounded-3xl p-5 shadow-md shadow-cyan-500/20 flex flex-col justify-between col-span-2 sm:col-span-1">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white shrink-0 shadow-inner">
+              <Flame className="w-6 h-6" />
+            </div>
+            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold backdrop-blur-xs">
+              ↑ 38%
+            </span>
+          </div>
+          <div className="mt-4">
+            <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Vehicles Needing Attention</p>
+            <p className="text-3xl font-black text-white mt-1 font-mono">{summary.vehiclesNeedingAttention || 0}</p>
           </div>
         </div>
       </div>
 
-      {/* Filter and Search Bar (Matching Frame 0) */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+      {/* Filter and Search Bar (Matching Image 2) */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-slate-200/90 shadow-2xs">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
           <input
             type="text"
             placeholder="Search registration number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-slate-400"
+            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-2xl border border-slate-200 focus:outline-none focus:border-blue-500 font-medium"
           />
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap w-full sm:w-auto">
-          {(['All', 'Needs Attention', 'Due Soon', 'Healthy'] as const).map((filter) => (
-            <button
-              key={filter}
-              type="button"
-              onClick={() => setStatusFilter(filter)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                statusFilter === filter
-                  ? 'bg-slate-900 text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
+          {(['All', 'Needs Attention', 'Due Soon', 'Healthy'] as const).map((filter) => {
+            const isSelected = statusFilter === filter;
+            if (filter === 'All') {
+              return (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setStatusFilter(filter)}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  All
+                </button>
+              );
+            }
+            if (filter === 'Needs Attention') {
+              return (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setStatusFilter(filter)}
+                  className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20'
+                      : 'bg-rose-50 text-rose-700 border-2 border-rose-300 hover:bg-rose-100'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                  <span>Needs Attention</span>
+                </button>
+              );
+            }
+            if (filter === 'Due Soon') {
+              return (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setStatusFilter(filter)}
+                  className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                      : 'bg-blue-50 text-blue-700 border-2 border-blue-300 hover:bg-blue-100'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                  <span>Due Soon</span>
+                </button>
+              );
+            }
+            return (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setStatusFilter(filter)}
+                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isSelected
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+                    : 'bg-emerald-50 text-emerald-700 border-2 border-emerald-300 hover:bg-emerald-100'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                <span>Healthy</span>
+              </button>
+            );
+          })}
 
           <select
             value={depotFilter}
             onChange={(e) => setDepotFilter(e.target.value)}
-            className="text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none text-slate-700 font-semibold bg-white"
+            className="text-xs px-3.5 py-2 rounded-full border-2 border-slate-200 focus:outline-none text-slate-700 font-bold bg-white cursor-pointer"
           >
-            <option value="All">All depots</option>
+            <option value="All">All Depots</option>
             {depots.map((d) => (
               <option key={d} value={d}>
                 {d}

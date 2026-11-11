@@ -1493,39 +1493,54 @@ export const EmployeePayments: React.FC = () => {
                 </div>
               </div>
 
-              {/* 3 KPI Summary Cards (Charvik Website Brand Palette) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* TOTAL SALARY EARNED */}
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-sm transition-all">
-                  <p className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">TOTAL SALARY EARNED</p>
-                  <h3 className="text-2xl sm:text-3xl font-black text-[#142B4A] mt-1">
-                    ₹{r.salaryEarned.toLocaleString("en-IN")}
-                  </h3>
-                  <span className="inline-block mt-2 text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
-                    Billed Staff Fees
-                  </span>
+              {/* 3 KPI Summary Cards (Glowing Vibrant Color Palette) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* TOTAL SALARY EARNED (Sky Blue Gradient) */}
+                <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+                  <div className="flex-1">
+                    <p className="text-xs font-black text-blue-900 tracking-wider uppercase">TOTAL SALARY EARNED</p>
+                    <h3 className="text-2xl sm:text-3xl font-black text-blue-950 mt-1 font-mono">
+                      ₹{r.salaryEarned.toLocaleString("en-IN")}
+                    </h3>
+                    <span className="inline-block mt-2 text-xs font-bold text-blue-800 bg-blue-100/90 px-3 py-0.5 rounded-full border border-blue-200">
+                      Billed Staff Fees
+                    </span>
+                  </div>
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shadow-md shadow-blue-500/30 group-hover:scale-110 transition-transform shrink-0 ml-3">
+                    <Wallet className="w-6 h-6" />
+                  </div>
                 </div>
 
-                {/* TOTAL PAID */}
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-sm transition-all">
-                  <p className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">TOTAL PAID</p>
-                  <h3 className="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">
-                    ₹{r.advancePaid.toLocaleString("en-IN")}
-                  </h3>
-                  <span className="inline-block mt-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
-                    Salary – Remaining Due
-                  </span>
+                {/* TOTAL PAID (Emerald Green Gradient) */}
+                <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+                  <div className="flex-1">
+                    <p className="text-xs font-black text-emerald-900 tracking-wider uppercase">TOTAL PAID</p>
+                    <h3 className="text-2xl sm:text-3xl font-black text-emerald-800 mt-1 font-mono">
+                      ₹{r.advancePaid.toLocaleString("en-IN")}
+                    </h3>
+                    <span className="inline-block mt-2 text-xs font-bold text-emerald-800 bg-emerald-100/90 px-3 py-0.5 rounded-full border border-emerald-200">
+                      Salary – Remaining Due
+                    </span>
+                  </div>
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform shrink-0 ml-3">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
                 </div>
 
-                {/* REMAINING DUE */}
-                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-sm transition-all">
-                  <p className="text-[11px] font-bold text-slate-500 tracking-wider uppercase">REMAINING DUE</p>
-                  <h3 className="text-2xl sm:text-3xl font-black text-rose-600 mt-1">
-                    ₹{r.pendingDue.toLocaleString("en-IN")}
-                  </h3>
-                  <span className="inline-block mt-2 text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
-                    Pending Payment
-                  </span>
+                {/* REMAINING DUE (Orange / Rose Gradient) */}
+                <div className="bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F3] to-[#FFE7D1] border-2 border-[#FFD0A8] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+                  <div className="flex-1">
+                    <p className="text-xs font-black text-orange-950 tracking-wider uppercase">REMAINING DUE</p>
+                    <h3 className="text-2xl sm:text-3xl font-black text-orange-800 mt-1 font-mono">
+                      ₹{r.pendingDue.toLocaleString("en-IN")}
+                    </h3>
+                    <span className="inline-block mt-2 text-xs font-bold text-orange-800 bg-orange-100/90 px-3 py-0.5 rounded-full border border-orange-200">
+                      Pending Payment
+                    </span>
+                  </div>
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F97316] to-[#EA580C] text-white flex items-center justify-center shadow-md shadow-orange-500/30 group-hover:scale-110 transition-transform shrink-0 ml-3">
+                    <Clock className="w-6 h-6" />
+                  </div>
                 </div>
               </div>
 
@@ -1548,15 +1563,15 @@ export const EmployeePayments: React.FC = () => {
                 <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs" style={{ minWidth: "750px" }}>
-                      <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
+                      <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
                         <tr>
-                          <th className="py-2 px-3">DATE</th>
-                          <th className="py-2 px-3">TASK DETAILS</th>
-                          <th className="py-2 px-3">VEHICLE NO.</th>
-                          <th className="py-2 px-3">SALARY AMOUNT</th>
-                          <th className="py-2 px-3">PAID AMOUNT</th>
-                          <th className="py-2 px-3">REMAINING DUE</th>
-                          <th className="py-2.5 px-3 text-center">ACTION</th>
+                          <th className="py-3 px-3">DATE</th>
+                          <th className="py-3 px-3">TASK DETAILS</th>
+                          <th className="py-3 px-3">VEHICLE NO.</th>
+                          <th className="py-3 px-3">SALARY AMOUNT</th>
+                          <th className="py-3 px-3">PAID AMOUNT</th>
+                          <th className="py-3 px-3">REMAINING DUE</th>
+                          <th className="py-3 px-3 text-center">ACTION</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -1675,16 +1690,16 @@ export const EmployeePayments: React.FC = () => {
                 <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs" style={{ minWidth: "750px" }}>
-                      <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
+                      <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
                         <tr>
-                          <th className="py-2 px-3">#</th>
-                          <th className="py-2 px-3">DATE</th>
-                          <th className="py-2 px-3">AMOUNT PAID</th>
-                          <th className="py-2 px-3">TYPE</th>
-                          <th className="py-2 px-3">MODE</th>
-                          <th className="py-2 px-3">PROOF</th>
-                          <th className="py-2 px-3">NOTES</th>
-                          <th className="py-2.5 px-3 text-center">ACTION</th>
+                          <th className="py-3 px-3">#</th>
+                          <th className="py-3 px-3">DATE</th>
+                          <th className="py-3 px-3">AMOUNT PAID</th>
+                          <th className="py-3 px-3">TYPE</th>
+                          <th className="py-3 px-3">MODE</th>
+                          <th className="py-3 px-3">PROOF</th>
+                          <th className="py-3 px-3">NOTES</th>
+                          <th className="py-3 px-3 text-center">ACTION</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-slate-700">

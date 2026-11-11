@@ -538,31 +538,34 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* =========================================================================
-          1. HEADER BAR: Welcome & Status
+          1. HEADER BAR: Welcome & Status (Matching Image 1 & 4 colorful hero card)
          ========================================================================= */}
       <div
         data-aos="fade-down"
-        className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-sm flex items-center justify-between"
+        className="bg-gradient-to-r from-white via-blue-50/40 to-indigo-50/60 rounded-3xl border border-blue-200/90 p-5 sm:p-6 shadow-sm flex items-center justify-between relative overflow-hidden"
       >
-        <div className="flex items-center space-x-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#142B4A] flex items-center justify-center text-white shadow-md shrink-0">
-            <Bus className="w-6 h-6 text-blue-400" />
+        <div className="flex items-center space-x-4 relative z-10">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#1E70EB] via-[#1453B8] to-[#0A3875] flex items-center justify-center text-white shadow-lg shadow-blue-500/25 shrink-0">
+            <Bus className="w-7 h-7 text-sky-200" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-black text-[#142B4A] tracking-tight">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-xl sm:text-2xl font-black text-[#0B2546] tracking-tight">
                 Welcome, Admin
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100/90 text-emerald-800 border border-emerald-300 shadow-xs flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 Fleet Operations Live
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
+            <p className="text-xs text-slate-600 font-medium mt-1">
               Bus Fleet & Maintenance Management Platform • Section 3.1 Operations Dashboard
             </p>
           </div>
         </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-blue-400/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
       {/* =========================================================================
@@ -591,67 +594,82 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
-            {/* 1. OPENING BALANCE (Synced from Income & Expense tab) */}
+            {/* 1. OPENING BALANCE (Emerald Palette - Matching Image 1 & 4) */}
             <div
               onClick={() => navigate('/admin/income-expense')}
-              className="bg-[#EAFBF1] rounded-2xl border border-emerald-200/90 p-5 shadow-xs flex items-start justify-between hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group"
+              className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] rounded-3xl border-2 border-[#A5F0C5] p-5 shadow-xs hover:shadow-md hover:border-emerald-400 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
-              <div>
-                <p className="text-xs font-black text-emerald-800 uppercase tracking-wider">
+              <div className="relative z-10 flex-1">
+                <p className="text-xs font-black text-emerald-900 uppercase tracking-wider">
                   OPENING BALANCE
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-emerald-700 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                <h3 className="text-2xl sm:text-3xl font-black text-emerald-800 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                   ₹{openingBalanceStats.openingBalance.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-emerald-600/90 font-medium mt-1 flex items-center gap-1">
+                <p className="text-xs text-emerald-700/90 font-medium mt-1.5 flex items-center gap-1">
                   <span>Updated from Income & Expense tab</span>
                   <ExternalLink className="w-3 h-3 opacity-70" />
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                <Wallet className="w-5 h-5" />
+              <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+                  <Wallet className="w-6 h-6" />
+                </div>
+                <div className="w-7 h-7 rounded-full bg-emerald-200/80 text-emerald-800 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
               </div>
             </div>
 
-            {/* 2. PAID TO EMPLOYEES (From Opening Balance) */}
+            {/* 2. PAID TO EMPLOYEES (Royal Blue Palette - Matching Image 1 & 4) */}
             <div
               onClick={() => navigate('/admin/employee-payments')}
-              className="bg-[#F0F5FF] rounded-2xl border border-blue-200/90 p-5 shadow-xs flex items-start justify-between hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
+              className="bg-gradient-to-br from-[#EEF5FF] via-[#F5F8FF] to-[#DBEAFF] rounded-3xl border-2 border-[#B8D7FF] p-5 shadow-xs hover:shadow-md hover:border-blue-400 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
-              <div>
-                <p className="text-xs font-black text-blue-800 uppercase tracking-wider">
+              <div className="relative z-10 flex-1">
+                <p className="text-xs font-black text-blue-900 uppercase tracking-wider">
                   PAID TO EMPLOYEES
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-blue-900 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                <h3 className="text-2xl sm:text-3xl font-black text-blue-950 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                   ₹{openingBalanceStats.paidToEmployees.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-blue-600/80 font-medium mt-1">
+                <p className="text-xs text-blue-700/90 font-medium mt-1.5">
                   Disbursed from opening balance
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                <HandCoins className="w-5 h-5" />
+              <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shadow-md shadow-blue-500/30 group-hover:scale-110 transition-transform">
+                  <HandCoins className="w-6 h-6" />
+                </div>
+                <div className="w-7 h-7 rounded-full bg-blue-200/80 text-blue-800 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
               </div>
             </div>
 
-            {/* 3. REMAINING BALANCE IN OPENING BALANCE */}
+            {/* 3. REMAINING BALANCE (Orange / Amber Palette - Matching Image 1 & 4) */}
             <div
               onClick={() => navigate('/admin/income-expense')}
-              className="bg-[#EDFBFB] rounded-2xl border border-teal-200/90 p-5 shadow-xs flex items-start justify-between hover:border-teal-400 hover:shadow-md transition-all cursor-pointer group"
+              className="bg-gradient-to-br from-[#FFF5EC] via-[#FFF9F3] to-[#FFE7D1] rounded-3xl border-2 border-[#FFD0A8] p-5 shadow-xs hover:shadow-md hover:border-orange-400 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
-              <div>
-                <p className="text-xs font-black text-teal-800 uppercase tracking-wider">
+              <div className="relative z-10 flex-1">
+                <p className="text-xs font-black text-orange-950 uppercase tracking-wider">
                   REMAINING BALANCE
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-teal-800 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                <h3 className="text-2xl sm:text-3xl font-black text-orange-800 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                   ₹{openingBalanceStats.remainingOpeningBalance.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-teal-600/90 font-medium mt-1">
+                <p className="text-xs text-orange-700/90 font-medium mt-1.5">
                   Balance left in opening funds
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                <PiggyBank className="w-5 h-5" />
+              <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F97316] to-[#EA580C] text-white flex items-center justify-center shadow-md shadow-orange-500/30 group-hover:scale-110 transition-transform">
+                  <PiggyBank className="w-6 h-6" />
+                </div>
+                <div className="w-7 h-7 rounded-full bg-orange-200/80 text-orange-800 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
               </div>
             </div>
           </div>
@@ -674,67 +692,82 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
-            {/* 4. MEMBERS WITH TASK */}
+            {/* 4. MEMBERS WITH TASK (Purple Palette - Matching Image 3 & 4) */}
             <div
               onClick={() => setShowMembersModal(true)}
-              className="bg-[#F7F2FE] rounded-2xl border border-purple-200/90 p-5 shadow-xs flex items-start justify-between hover:border-purple-400 hover:shadow-md transition-all cursor-pointer group"
+              className="bg-gradient-to-br from-[#F6F0FE] via-[#FAF6FE] to-[#E9DBFC] rounded-3xl border-2 border-[#D7BFF9] p-5 shadow-xs hover:shadow-md hover:border-purple-400 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
-              <div>
-                <p className="text-xs font-black text-purple-800 uppercase tracking-wider">
+              <div className="relative z-10 flex-1">
+                <p className="text-xs font-black text-purple-950 uppercase tracking-wider">
                   MEMBERS WITH TASK
                 </p>
                 <h3 className="text-2xl sm:text-3xl font-black text-purple-900 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left">
                   {taskStats.membersCount} Members
                 </h3>
-                <p className="text-xs text-purple-600/80 font-medium mt-1 flex items-center gap-1">
+                <p className="text-xs text-purple-700/90 font-medium mt-1.5 flex items-center gap-1">
                   <span>Assigned crew on duty</span>
-                  <span className="underline font-bold ml-1 text-purple-700">Click to view</span>
+                  <span className="underline font-bold ml-1 text-purple-800">Click to view</span>
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                <UserCheck className="w-5 h-5" />
+              <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#9333EA] to-[#7E22CE] text-white flex items-center justify-center shadow-md shadow-purple-500/30 group-hover:scale-110 transition-transform">
+                  <UserCheck className="w-6 h-6" />
+                </div>
+                <div className="w-7 h-7 rounded-full bg-purple-200/80 text-purple-800 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
               </div>
             </div>
 
-            {/* 5. SALARY PAID */}
+            {/* 5. SALARY PAID (Emerald Palette - Matching Image 1 & 4) */}
             <div
               onClick={() => navigate('/admin/employee-payments')}
-              className="bg-[#EAFBF1] rounded-2xl border border-emerald-200/90 p-5 shadow-xs flex items-start justify-between hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group"
+              className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] rounded-3xl border-2 border-[#A5F0C5] p-5 shadow-xs hover:shadow-md hover:border-emerald-400 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
-              <div>
-                <p className="text-xs font-black text-emerald-800 uppercase tracking-wider">
+              <div className="relative z-10 flex-1">
+                <p className="text-xs font-black text-emerald-900 uppercase tracking-wider">
                   SALARY PAID
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-emerald-700 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                <h3 className="text-2xl sm:text-3xl font-black text-emerald-800 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                   ₹{taskStats.salaryPaid.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-emerald-600/80 font-medium mt-1">
+                <p className="text-xs text-emerald-700/90 font-medium mt-1.5">
                   Disbursed salary to task staff
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                <CheckCircle2 className="w-5 h-5" />
+              <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div className="w-7 h-7 rounded-full bg-emerald-200/80 text-emerald-800 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
               </div>
             </div>
 
-            {/* 6. REMAINING SALARY */}
+            {/* 6. REMAINING SALARY (Rose / Coral Palette - Matching Image 4) */}
             <div
               onClick={() => navigate('/admin/employee-payments')}
-              className="bg-[#FFF6EA] rounded-2xl border border-amber-200/90 p-5 shadow-xs flex items-start justify-between hover:border-amber-400 hover:shadow-md transition-all cursor-pointer group"
+              className="bg-gradient-to-br from-[#FFF1F2] via-[#FFF5F6] to-[#FFE2E5] rounded-3xl border-2 border-[#FECDD3] p-5 shadow-xs hover:shadow-md hover:border-rose-400 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
-              <div>
-                <p className="text-xs font-black text-amber-800 uppercase tracking-wider">
+              <div className="relative z-10 flex-1">
+                <p className="text-xs font-black text-rose-950 uppercase tracking-wider">
                   REMAINING SALARY
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-amber-700 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                <h3 className="text-2xl sm:text-3xl font-black text-rose-800 mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                   ₹{taskStats.remainingSalary.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-amber-600/80 font-medium mt-1">
+                <p className="text-xs text-rose-700/90 font-medium mt-1.5">
                   Pending staff salary dues
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
-                <Clock className="w-5 h-5" />
+              <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F43F5E] to-[#E11D48] text-white flex items-center justify-center shadow-md shadow-rose-500/30 group-hover:scale-110 transition-transform">
+                  <Clock className="w-6 h-6" />
+                </div>
+                <div className="w-7 h-7 rounded-full bg-rose-200/80 text-rose-800 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
               </div>
             </div>
           </div>
@@ -755,34 +788,34 @@ export const Dashboard: React.FC = () => {
           {/* Total Buses Card (Blue Theme matching Image 1) */}
           <div
             onClick={() => navigate('/admin/buses')}
-            className="bg-[#F0F5FF] rounded-2xl border border-blue-200/90 p-5 shadow-xs flex items-center justify-between hover:shadow-md hover:border-blue-400 transition-all cursor-pointer group"
+            className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] rounded-3xl border-2 border-[#B8D7FF] p-5 shadow-xs flex items-center justify-between hover:shadow-md hover:border-blue-400 transition-all cursor-pointer group"
           >
             <div className="flex-1">
-              <p className="text-xs font-black text-blue-800 uppercase tracking-wider">Total Buses</p>
+              <p className="text-xs font-black text-blue-900 uppercase tracking-wider">Total Buses</p>
               <h3 className="text-2xl sm:text-3xl font-black text-blue-950 mt-1 tracking-tight group-hover:text-blue-700 transition-colors">
                 {totalBusesVal}
               </h3>
-              <p className="text-xs text-blue-600 font-medium mt-1">Registered fleet vehicles</p>
+              <p className="text-xs text-blue-700 font-medium mt-1">Registered fleet vehicles</p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 ml-4 shadow-xs group-hover:scale-105 transition-transform">
-              <Bus className="w-6 h-6" />
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 ml-4 shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
+              <Bus className="w-7 h-7" />
             </div>
           </div>
 
           {/* Active Buses Card (Green Theme matching Image 1) */}
           <div
             onClick={() => navigate('/admin/buses?status=Active')}
-            className="bg-[#EAFBF1] rounded-2xl border border-emerald-200/90 p-5 shadow-xs flex items-center justify-between hover:shadow-md hover:border-emerald-400 transition-all cursor-pointer group"
+            className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] rounded-3xl border-2 border-[#A5F0C5] p-5 shadow-xs flex items-center justify-between hover:shadow-md hover:border-emerald-400 transition-all cursor-pointer group"
           >
             <div className="flex-1">
-              <p className="text-xs font-black text-emerald-800 uppercase tracking-wider">Active Buses</p>
+              <p className="text-xs font-black text-emerald-900 uppercase tracking-wider">Active Buses</p>
               <h3 className="text-2xl sm:text-3xl font-black text-emerald-800 mt-1 tracking-tight group-hover:text-emerald-700 transition-colors">
                 {activeBusesVal}
               </h3>
-              <p className="text-xs text-emerald-600 font-medium mt-1">Currently on duty & running</p>
+              <p className="text-xs text-emerald-700 font-medium mt-1">Currently on duty & running</p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 ml-4 shadow-xs group-hover:scale-105 transition-transform">
-              <CheckCircle2 className="w-6 h-6" />
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 ml-4 shadow-md shadow-emerald-500/25 group-hover:scale-105 transition-transform">
+              <CheckCircle2 className="w-7 h-7" />
             </div>
           </div>
         </div>
@@ -840,7 +873,7 @@ export const Dashboard: React.FC = () => {
               return (
                 <div
                   key={bus.id || idx}
-                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between"
+                  className="bg-white rounded-3xl border-2 border-slate-100 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-200 p-5 flex flex-col justify-between"
                 >
                   <div>
                     {/* Header: Reg Number, Model, Needs Attention / Due Soon badge */}
@@ -855,12 +888,12 @@ export const Dashboard: React.FC = () => {
                       </div>
 
                       {overdueCount > 0 ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200 shrink-0">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border-2 border-rose-300 shadow-xs shrink-0">
                           <Flame className="w-3.5 h-3.5" />
                           <span>Needs Attention</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 shrink-0">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border-2 border-amber-300 shadow-xs shrink-0">
                           <Clock className="w-3.5 h-3.5" />
                           <span>Due Soon</span>
                         </span>
@@ -868,12 +901,12 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Odometer KM Box (Synced dynamically from Daily Vehicle Checkup) */}
-                    <div className="my-3 py-3 px-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-center gap-2.5 text-center">
-                      <Gauge className="w-5 h-5 text-slate-400" />
-                      <span className="text-2xl font-black text-slate-800 tracking-tight">
+                    <div className="my-3 py-3 px-4 rounded-2xl bg-gradient-to-r from-slate-50 via-blue-50/40 to-indigo-50/40 border border-blue-100 flex items-center justify-center gap-2.5 text-center">
+                      <Gauge className="w-5 h-5 text-blue-500" />
+                      <span className="text-2xl font-black text-slate-900 tracking-tight font-mono">
                         {Number(bus.current_odometer_km || 0).toLocaleString('en-IN')}
                       </span>
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                         KM
                       </span>
                     </div>
@@ -947,7 +980,7 @@ export const Dashboard: React.FC = () => {
                           )}`
                         )
                       }
-                      className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
                     >
                       <span>Open profile</span>
                       <ArrowRight className="w-3.5 h-3.5" />

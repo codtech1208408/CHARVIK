@@ -10,7 +10,11 @@ import {
   Trash2,
   Clock,
   Filter,
-  ExternalLink
+  ExternalLink,
+  ArrowRight,
+  TrendingUp,
+  Users,
+  Check
 } from 'lucide-react';
 import { useToast } from '../components/common/Toast';
 
@@ -97,63 +101,88 @@ export const WebsiteInquiries: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-blue-600" />
-            <span>Website Inquiries & Customer Leads</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Incoming quote requests, client contact messages, and staffing consultations from the public portal.
-          </p>
+      {/* Page Hero Banner (Matching Image 3) */}
+      <div className="bg-gradient-to-r from-[#0052cc] via-[#1a73e8] to-[#0d47a1] rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="flex items-center space-x-4 relative z-10">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs border border-white/30 flex items-center justify-center text-white shrink-0 shadow-inner">
+            <Bell className="w-7 h-7 text-sky-200" />
+          </div>
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Website Inquiries & Customer Leads
+            </h2>
+            <p className="text-xs text-white/90 font-medium mt-1">
+              Incoming quote requests, client contact messages, and staffing consultations from the public portal.
+            </p>
+          </div>
         </div>
 
         <a
           href="/contact"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-blue-700 bg-white hover:bg-blue-50 transition-all shadow-md shrink-0 relative z-10 cursor-pointer"
         >
           <span>View Public Contact Form</span>
-          <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+          <ExternalLink className="w-4 h-4 text-blue-700" />
         </a>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">New Inquiries</p>
-            <h3 className="text-2xl font-black text-amber-600 mt-1">{newCount} Leads</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Awaiting first follow-up</p>
+      {/* KPI Cards (Matching Image 3 Glowing Color Palettes) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        {/* 1. New Inquiries (Cyan / Sky) */}
+        <div className="bg-gradient-to-br from-[#E0F2FE] via-[#BAE6FD] to-[#7DD3FC] border-2 border-[#38BDF8] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group cursor-pointer">
+          <div className="flex-1">
+            <p className="text-xs font-black text-sky-950 uppercase tracking-wider">New Inquiries</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-sky-950 mt-1">{newCount} Leads</h3>
+            <p className="text-xs text-sky-800/90 font-semibold mt-1">Awaiting first follow-up</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-            <Bell className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Total Submissions</p>
-            <h3 className="text-2xl font-black text-slate-800 mt-1">{inquiries.length} Inquiries</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Received through website</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <MessageSquare className="w-5 h-5" />
+          <div className="flex flex-col items-end gap-3 shrink-0 ml-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white flex items-center justify-center shadow-md shadow-sky-500/30 group-hover:scale-110 transition-transform">
+              <Bell className="w-6 h-6" />
+            </div>
+            <div className="w-7 h-7 rounded-full bg-sky-200/80 text-sky-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Converted Clients</p>
-            <h3 className="text-2xl font-black text-emerald-600 mt-1">
+        {/* 2. Total Submissions (Mint / Emerald) */}
+        <div className="bg-gradient-to-br from-[#DCFCE7] via-[#BBF7D0] to-[#86EFAC] border-2 border-[#4ADE80] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group cursor-pointer">
+          <div className="flex-1">
+            <p className="text-xs font-black text-emerald-950 uppercase tracking-wider">Total Submissions</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-emerald-950 mt-1">{inquiries.length} Inquiries</h3>
+            <p className="text-xs text-emerald-800/90 font-semibold mt-1">Received through website</p>
+          </div>
+          <div className="flex flex-col items-end gap-3 shrink-0 ml-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+              <MessageSquare className="w-6 h-6" />
+            </div>
+            <div className="w-7 h-7 rounded-full bg-emerald-200/80 text-emerald-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Converted Clients (Lavender / Purple) */}
+        <div className="bg-gradient-to-br from-[#F3E8FF] via-[#E9D5FF] to-[#D8B4FE] border-2 border-[#C084FC] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group cursor-pointer">
+          <div className="flex-1">
+            <p className="text-xs font-black text-purple-950 uppercase tracking-wider">Converted Clients</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-purple-950 mt-1">
               {inquiries.filter((i) => i.status === 'Converted').length} Converted
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Signed fleet service contracts</p>
+            <p className="text-xs text-purple-800/90 font-semibold mt-1">Signed fleet service contracts</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5" />
+          <div className="flex flex-col items-end gap-3 shrink-0 ml-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-purple-500/30 group-hover:scale-110 transition-transform">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div className="w-7 h-7 rounded-full bg-purple-200/80 text-purple-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
           </div>
         </div>
       </div>
@@ -191,16 +220,16 @@ export const WebsiteInquiries: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50/80 text-slate-700 uppercase font-bold tracking-wider text-xs tracking-wider border-b border-slate-200">
+            <thead className="bg-gradient-to-r from-[#0052cc] via-[#1a73e8] to-[#0d47a1] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
               <tr>
-                <th className="py-2.5 px-3 w-14 text-center">S.NO</th>
-                <th className="py-2.5 px-3">Date</th>
-                <th className="py-2.5 px-3">Prospect Name</th>
-                <th className="py-2.5 px-3">Contact Phone & Email</th>
-                <th className="py-2.5 px-3">Service Requested</th>
-                <th className="py-2.5 px-3">Inquiry Message</th>
-                <th className="py-2.5 px-3">Lead Status</th>
-                <th className="py-2.5 px-3 text-center">Action</th>
+                <th className="py-3 px-3 w-14 text-center">S.NO</th>
+                <th className="py-3 px-3">Date</th>
+                <th className="py-3 px-3">Prospect Name</th>
+                <th className="py-3 px-3">Contact Phone & Email</th>
+                <th className="py-3 px-3">Service Requested</th>
+                <th className="py-3 px-3">Inquiry Message</th>
+                <th className="py-3 px-3">Lead Status</th>
+                <th className="py-3 px-3 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -269,6 +298,59 @@ export const WebsiteInquiries: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Bottom Summary Cards (Matching Image 3) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Inquiries */}
+        <div className="bg-gradient-to-br from-blue-50 to-sky-100 border border-sky-300 rounded-3xl p-4 flex items-center justify-between shadow-2xs">
+          <div>
+            <p className="text-[11px] font-bold text-sky-800 uppercase tracking-wider">Total Inquiries</p>
+            <p className="text-2xl font-black text-sky-950 mt-0.5">{inquiries.length}</p>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xs">
+            <MessageSquare className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Converted Leads */}
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-100 border border-emerald-300 rounded-3xl p-4 flex items-center justify-between shadow-2xs">
+          <div>
+            <p className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Converted Leads</p>
+            <p className="text-2xl font-black text-emerald-950 mt-0.5">
+              {inquiries.filter((i) => i.status === 'Converted').length}
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Pending Follow-ups */}
+        <div className="bg-gradient-to-br from-amber-50 to-orange-100 border border-amber-300 rounded-3xl p-4 flex items-center justify-between shadow-2xs">
+          <div>
+            <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Pending Follow-ups</p>
+            <p className="text-2xl font-black text-amber-950 mt-0.5">
+              {inquiries.filter((i) => i.status === 'New' || i.status === 'Contacted').length}
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
+            <Clock className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Total Clients */}
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-100 border border-purple-300 rounded-3xl p-4 flex items-center justify-between shadow-2xs">
+          <div>
+            <p className="text-[11px] font-bold text-purple-800 uppercase tracking-wider">Total Clients</p>
+            <p className="text-2xl font-black text-purple-950 mt-0.5">
+              {inquiries.filter((i) => i.status === 'Converted' || i.status === 'Closed').length}
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-xs">
+            <Users className="w-5 h-5" />
+          </div>
         </div>
       </div>
     </div>
