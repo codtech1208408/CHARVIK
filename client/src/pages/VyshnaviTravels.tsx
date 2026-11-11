@@ -36,6 +36,7 @@ import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
 import type { VyshnaviRecord, VyshnaviTransaction, VyshnaviServiceItem, Bus as BusType } from '../types';
+import vyshnaviLogo from '../assets/vyshnavi-logo.png';
 
 const DEFAULT_BANK_DETAILS = {
   bank_name: 'Kotak Mahindra Bank',
@@ -725,12 +726,19 @@ export const VyshnaviTravels: React.FC = () => {
       {/* Top Header Card */}
       <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#0F2042] to-[#1E3A8A] flex items-center justify-center text-white shadow-md shadow-blue-900/10">
-              <Bus className="w-6 h-6 text-amber-400" />
+          <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+            <div className="h-16 px-3.5 py-1.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs shrink-0 flex items-center justify-center hover:shadow-xs transition-shadow">
+              <img
+                src={vyshnaviLogo}
+                alt="Vyshnavi Travels Logo"
+                className="h-12 w-auto object-contain max-w-[220px]"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/vyshnavi-logo.png';
+                }}
+              />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
                 <span>Vyshnavi Travels</span>
                 <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-100 text-[#142B4A] font-bold uppercase tracking-wider">
                   Corporate Portal
