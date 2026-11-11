@@ -148,7 +148,13 @@ export const IncomeExpense: React.FC = () => {
       if (typeFilter !== 'All' && t.transaction_type !== typeFilter) return false;
 
       // 2. Payment Mode
-      if (modeFilter !== 'All' && t.payment_mode !== modeFilter) return false;
+      if (modeFilter !== 'All') {
+        if (modeFilter === 'Online / Net Banking') {
+          if (t.payment_mode !== 'Online / Net Banking' && t.payment_mode !== 'Online') return false;
+        } else if (t.payment_mode !== modeFilter) {
+          return false;
+        }
+      }
 
       // 3. Date Preset
       if (datePreset === 'Today' && t.date !== todayStr) return false;
@@ -426,10 +432,12 @@ export const IncomeExpense: React.FC = () => {
           </span>
         );
       case 'Online':
+      case 'Online / Net Banking':
+      case 'Online/Net Banking':
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
             <CreditCard className="w-3 h-3 text-purple-600" />
-            <span>Online</span>
+            <span>Online / Net Banking</span>
           </span>
         );
       case 'UPI':
@@ -451,6 +459,8 @@ export const IncomeExpense: React.FC = () => {
       case 'Bank Transfer':
         return 'Attach Bank Counterfoil / Transfer Slip / NEFT/RTGS Advice';
       case 'Online':
+      case 'Online / Net Banking':
+      case 'Online/Net Banking':
         return 'Attach Net Banking Confirmation / Payment Gateway Receipt';
       case 'UPI':
       default:
@@ -633,7 +643,7 @@ export const IncomeExpense: React.FC = () => {
             <option value="All">All Payment Modes</option>
             <option value="Cash">Cash</option>
             <option value="Bank Transfer">Bank Transfer</option>
-            <option value="Online">Online</option>
+            <option value="Online / Net Banking">Online / Net Banking</option>
             <option value="UPI">UPI</option>
           </select>
 
@@ -916,9 +926,9 @@ export const IncomeExpense: React.FC = () => {
                 className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 bg-white font-semibold text-slate-800 cursor-pointer"
               >
                 <option value="Cash">Cash</option>
-                <option value="Bank Transfer">Bank Transfer (NEFT / RTGS / IMPS)</option>
-                <option value="Online">Online / Net Banking / Gateway</option>
-                <option value="UPI">UPI (PhonePe / Google Pay / Paytm)</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Online / Net Banking">Online / Net Banking</option>
+                <option value="UPI">UPI</option>
               </select>
             </div>
           </div>

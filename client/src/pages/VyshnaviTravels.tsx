@@ -1816,9 +1816,10 @@ export const VyshnaviTravels: React.FC = () => {
                 onChange={(e) => setTxnForm({ ...txnForm, payment_mode: e.target.value })}
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none"
               >
-                <option value="UPI">UPI (PhonePe / GPay / PayTM)</option>
                 <option value="Cash">Cash</option>
-                <option value="Bank Transfer">Bank Transfer / NEFT / IMPS</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Online / Net Banking">Online / Net Banking</option>
+                <option value="UPI">UPI</option>
                 <option value="FASTag">FASTag</option>
                 <option value="Cheque">Cheque</option>
                 <option value="Other">Other</option>
