@@ -35,7 +35,8 @@ import {
   PiggyBank,
   UserCheck,
   Briefcase,
-  HandCoins
+  HandCoins,
+  FileText
 } from 'lucide-react';
 import { StatCard } from '../components/common/StatCard';
 import { Modal } from '../components/common/Modal';
