@@ -4,7 +4,7 @@ import {
   ArrowLeft, User, Bus, ShieldCheck, IndianRupee, CheckCircle2, Clock,
   Calendar, Download, MapPin, Hash, AlertCircle, ChevronLeft, ChevronRight, Search,
   Users, ChevronDown, Filter, Wallet, ArrowRight, Receipt, Printer, X,
-  Upload, Image as ImageIcon, Eye
+  Upload, Image as ImageIcon, Eye, FileText
 } from "lucide-react";
 import { api } from "../services/api";
 import { useToast } from "../components/common/Toast";
@@ -250,6 +250,7 @@ export const EmployeePayments: React.FC = () => {
   // Selected employee for detailed ledger
   const selectedEmployeeRecord = useMemo((): EmployeePaymentRecord | null => {
     if (allEmployeeRecords.length === 0) return null;
+    if (searchParams.get("view") === "all") return null;
     if (!empName && !empCode) return allEmployeeRecords[0];
     const nameKey = empName.trim().toLowerCase();
     const codeKey = empCode.trim().toLowerCase();
@@ -261,7 +262,7 @@ export const EmployeePayments: React.FC = () => {
         return false;
       }) || allEmployeeRecords[0]
     );
-  }, [allEmployeeRecords, empName, empCode]);
+  }, [allEmployeeRecords, empName, empCode, searchParams]);
 
   // Filtered trips for individual employee ledger
   const filteredTrips = useMemo(() => {
@@ -754,6 +755,177 @@ export const EmployeePayments: React.FC = () => {
     });
   };
 
+  const handlePrintOverallPayments = () => {
+    if (allEmployeeRecords.length === 0) {
+      error("No employee payment records found to print");
+      return;
+    }
+
+    // Filter employees who have activity or payments, or all registered staff
+    const paidEmployees = allEmployeeRecords.filter(
+      (e) => e.salaryEarned > 0 || e.advancePaid > 0 || e.settledTotal > 0 || e.tasksHandled > 0
+    );
+    const listToPrint = paidEmployees.length > 0 ? paidEmployees : allEmployeeRecords;
+
+    const totalSalary = listToPrint.reduce((acc, e) => acc + (e.salaryEarned || 0), 0);
+    const totalPaid = listToPrint.reduce((acc, e) => acc + (e.advancePaid || e.settledTotal || 0), 0);
+    const totalRemaining = listToPrint.reduce((acc, e) => acc + (e.pendingDue || 0), 0);
+
+    const rowsHtml = listToPrint
+      .map((e, idx) => {
+        const paidAmount = e.advancePaid || e.settledTotal || 0;
+        const dueAmount = e.pendingDue || 0;
+        const isPaidInFull = dueAmount === 0 && paidAmount > 0;
+        const statusText = isPaidInFull
+          ? "PAID (100%)"
+          : paidAmount > 0
+          ? "PARTIAL"
+          : dueAmount > 0
+          ? "PENDING"
+          : "NIL";
+        const statusColor = isPaidInFull ? "#047857" : paidAmount > 0 ? "#1d4ed8" : "#b45309";
+        const statusBg = isPaidInFull ? "#ecfdf5" : paidAmount > 0 ? "#eff6ff" : "#fffbeb";
+
+        return `
+          <tr style="border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+            <td style="padding: 9px 8px; text-align: center; color: #64748b; font-weight: bold;">${idx + 1}</td>
+            <td style="padding: 9px 10px; font-weight: bold; color: #0f172a;">
+              <div style="font-size: 12px;">${e.full_name}</div>
+              <div style="font-size: 9px; color: #94a3b8; font-family: monospace;">ID: ${formatEmployeeId(e.employee_code, e.role)}</div>
+            </td>
+            <td style="padding: 9px 10px;">
+              <span style="background: #f1f5f9; color: #334155; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: bold; border: 1px solid #cbd5e1;">
+                ${e.role}
+              </span>
+            </td>
+            <td style="padding: 9px 10px; color: #475569; font-family: monospace;">${e.phone || "-"}</td>
+            <td style="padding: 9px 8px; text-align: center; font-weight: bold; color: #1e293b;">${e.tasksHandled}</td>
+            <td style="padding: 9px 10px; text-align: right; font-weight: bold; color: #0f172a; font-family: monospace;">
+              ₹${e.salaryEarned.toLocaleString("en-IN")}
+            </td>
+            <td style="padding: 9px 10px; text-align: right; font-weight: 900; color: #047857; font-family: monospace; background: #f0fdf4;">
+              ₹${paidAmount.toLocaleString("en-IN")}
+            </td>
+            <td style="padding: 9px 10px; text-align: right; font-weight: 900; color: ${dueAmount > 0 ? "#e11d48" : "#64748b"}; font-family: monospace; background: ${dueAmount > 0 ? "#fff1f2" : "transparent"};">
+              ₹${dueAmount.toLocaleString("en-IN")}
+            </td>
+            <td style="padding: 9px 8px; text-align: center;">
+              <span style="background: ${statusBg}; color: ${statusColor}; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 800; border: 1px solid ${statusColor}40;">
+                ${statusText}
+              </span>
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    const grandTotalRow = `
+      <tr style="background: #142B4A; color: #ffffff; font-weight: 900; font-size: 11px;">
+        <td colspan="4" style="padding: 10px 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+          GRAND TOTAL (${listToPrint.length} EMPLOYEES)
+        </td>
+        <td style="padding: 10px 8px; text-align: center;">
+          ${listToPrint.reduce((acc, e) => acc + e.tasksHandled, 0)} trips
+        </td>
+        <td style="padding: 10px 10px; text-align: right; font-family: monospace;">
+          ₹${totalSalary.toLocaleString("en-IN")}
+        </td>
+        <td style="padding: 10px 10px; text-align: right; font-family: monospace; color: #4ade80;">
+          ₹${totalPaid.toLocaleString("en-IN")}
+        </td>
+        <td style="padding: 10px 10px; text-align: right; font-family: monospace; color: #fca5a5;">
+          ₹${totalRemaining.toLocaleString("en-IN")}
+        </td>
+        <td style="padding: 10px 8px; text-align: center;">
+          ${totalRemaining === 0 ? "ALL SETTLED" : "DUES PENDING"}
+        </td>
+      </tr>
+    `;
+
+    printSheet({
+      title: "All Employees Payment & Salary Statement",
+      subtitle: `Overall Fleet Crew Disbursements & Outstanding Dues Summary | Total Staff: ${listToPrint.length}`,
+      orientation: "landscape",
+      htmlContent: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px 24px; color: #0f172a;">
+          <div style="border-bottom: 2.5px solid #142B4A; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+              <div style="font-size: 18px; font-weight: 900; color: #142B4A; letter-spacing: -0.5px;">
+                CHARVIK STAFFING CONSULTANCY
+              </div>
+              <div style="font-size: 14px; font-weight: bold; color: #334155; margin-top: 2px;">
+                Overall Employee Payments & Disbursed Salary Statement
+              </div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">
+                Fleet Operations Staff Payout Ledger • Verified Accounts Copy
+              </div>
+            </div>
+            <div style="text-align: right; font-size: 11px; color: #475569;">
+              <div><strong>Generated Date:</strong> ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
+              <div><strong>Time:</strong> ${new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</div>
+              <div><strong>Staff Covered:</strong> ${listToPrint.length} of ${allEmployeeRecords.length} registered</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 14px; margin-bottom: 20px;">
+            <div style="flex: 1; padding: 12px 14px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px;">
+              <div style="font-size: 10px; font-weight: bold; color: #475569; text-transform: uppercase;">Total Salary Earned</div>
+              <div style="font-size: 17px; font-weight: 900; color: #0f172a; margin-top: 3px; font-family: monospace;">₹${totalSalary.toLocaleString("en-IN")}</div>
+              <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Total task remuneration obligation</div>
+            </div>
+            <div style="flex: 1; padding: 12px 14px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px;">
+              <div style="font-size: 10px; font-weight: bold; color: #15803d; text-transform: uppercase;">Total Amount Paid</div>
+              <div style="font-size: 17px; font-weight: 900; color: #166534; margin-top: 3px; font-family: monospace;">₹${totalPaid.toLocaleString("en-IN")}</div>
+              <div style="font-size: 10px; color: #15803d; margin-top: 2px;">Disbursed via Bata, Advance & Settlements</div>
+            </div>
+            <div style="flex: 1; padding: 12px 14px; background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px;">
+              <div style="font-size: 10px; font-weight: bold; color: #be123c; text-transform: uppercase;">Total Remaining Balance Due</div>
+              <div style="font-size: 17px; font-weight: 900; color: #9f1239; margin-top: 3px; font-family: monospace;">₹${totalRemaining.toLocaleString("en-IN")}</div>
+              <div style="font-size: 10px; color: #be123c; margin-top: 2px;">Outstanding unpaid crew balance</div>
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; border: 1px solid #cbd5e1;">
+            <thead>
+              <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; font-size: 10px; text-transform: uppercase; color: #334155; font-weight: 800;">
+                <th style="padding: 8px 6px; text-align: center; width: 40px;">S.No</th>
+                <th style="padding: 8px 10px; text-align: left;">Employee Name & ID</th>
+                <th style="padding: 8px 10px; text-align: left; width: 90px;">Role</th>
+                <th style="padding: 8px 10px; text-align: left; width: 110px;">Phone</th>
+                <th style="padding: 8px 8px; text-align: center; width: 60px;">Trips</th>
+                <th style="padding: 8px 10px; text-align: right; width: 120px;">Salary Earned</th>
+                <th style="padding: 8px 10px; text-align: right; width: 120px;">Paid Amount</th>
+                <th style="padding: 8px 10px; text-align: right; width: 120px;">Remaining Due</th>
+                <th style="padding: 8px 8px; text-align: center; width: 90px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+            <tfoot>
+              ${grandTotalRow}
+            </tfoot>
+          </table>
+
+          <div style="margin-top: 36px; padding-top: 16px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 11px; color: #475569;">
+            <div style="text-align: center; width: 180px;">
+              <div style="height: 32px;"></div>
+              <div style="border-top: 1px solid #94a3b8; padding-top: 4px; font-weight: bold;">Prepared by (Operations)</div>
+            </div>
+            <div style="text-align: center; width: 180px;">
+              <div style="height: 32px;"></div>
+              <div style="border-top: 1px solid #94a3b8; padding-top: 4px; font-weight: bold;">Accounts / Finance Officer</div>
+            </div>
+            <div style="text-align: center; width: 180px;">
+              <div style="height: 32px;"></div>
+              <div style="border-top: 1px solid #94a3b8; padding-top: 4px; font-weight: bold;">Authorized Signatory</div>
+            </div>
+          </div>
+        </div>
+      `
+    });
+  };
+
   return (
     <div className="space-y-6 pb-12">
       {/* ========================================================= */}
@@ -768,9 +940,9 @@ export const EmployeePayments: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => setSearchParams({ view: "all" })}
                 className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-50 transition-all shadow-2xs cursor-pointer shrink-0"
-                title="Go Back"
+                title="View All Employees Directory"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -783,6 +955,10 @@ export const EmployeePayments: React.FC = () => {
                   <select
                     value={r.employee_code || r.full_name}
                     onChange={(e) => {
+                      if (e.target.value === "__ALL__") {
+                        setSearchParams({ view: "all" });
+                        return;
+                      }
                       const target = allEmployeeRecords.find(
                         (x) => (x.employee_code || x.full_name) === e.target.value
                       );
@@ -791,19 +967,30 @@ export const EmployeePayments: React.FC = () => {
                     className="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 shadow-2xs outline-none cursor-pointer"
                     title="Switch Staff Member"
                   >
+                    <option value="__ALL__">-- All Employees Directory --</option>
                     {allEmployeeRecords.map((x) => (
                       <option key={x.id + x.full_name} value={x.employee_code || x.full_name}>
                         {x.full_name} ({x.role})
                       </option>
                     ))}
                   </select>
+
+                  <button
+                    type="button"
+                    onClick={() => setSearchParams({ view: "all" })}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer whitespace-nowrap ml-1"
+                    title="Switch to full employee payment directory"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>View All Staff</span>
+                  </button>
                 </div>
                 <p className="text-xs text-slate-400 font-medium mt-0.5">Official employee record</p>
               </div>
             </div>
 
             {/* Top Right Action Buttons */}
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
               <button
                 type="button"
                 onClick={() => handleOpenRecordPayment(r)}
@@ -817,9 +1004,20 @@ export const EmployeePayments: React.FC = () => {
                 type="button"
                 onClick={handlePrintBiodata}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200/80 hover:bg-slate-50 transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                title="Print biodata for this employee"
               >
                 <Printer className="w-3.5 h-3.5 text-slate-500" />
                 <span>Print Biodata</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePrintOverallPayments}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                title="Print overall salary and payout statement for all employees"
+              >
+                <FileText className="w-3.5 h-3.5 text-emerald-100" />
+                <span>Print All Paid Employees</span>
               </button>
             </div>
           </div>
@@ -1245,6 +1443,15 @@ export const EmployeePayments: React.FC = () => {
                   >
                     <Download className="w-3.5 h-3.5 text-slate-500" />
                     Export CSV
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePrintOverallPayments}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                    title="Print Overall Statement for All Paid Employees"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Print All Paid Employees</span>
                   </button>
                   <PrintButton
                     title="All Employee Payments Ledger"
