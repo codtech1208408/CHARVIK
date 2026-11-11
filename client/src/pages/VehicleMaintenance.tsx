@@ -26,7 +26,11 @@ import {
   Check,
   RefreshCw,
   ExternalLink,
-  Shield
+  Shield,
+  ChevronDown,
+  ChevronUp,
+  List,
+  LayoutGrid
 } from 'lucide-react';
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
@@ -145,6 +149,8 @@ export const VehicleMaintenance: React.FC = () => {
   });
 
   const [previewPhotoModal, setPreviewPhotoModal] = useState<string | null>(null);
+  const [expandedServiceKey, setExpandedServiceKey] = useState<string | null>(null);
+  const [serviceViewMode, setServiceViewMode] = useState<'list' | 'grid'>('list');
 
   // Load Data
   const loadFleetData = async () => {
@@ -1082,103 +1088,314 @@ export const VehicleMaintenance: React.FC = () => {
             SERVICE STATUS SECTION (Matching Frame 5 & 6)
            ========================================================================= */}
         <div className="space-y-4">
-          <div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">Service Status</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Intervals are calculated from the last completion of each service — completing a service resets its next due automatically.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">Service Status</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Intervals are calculated from the last completion of each service — completing a service resets its next due automatically.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+              {serviceViewMode === 'list' && (
+                <button
+                  type="button"
+                  onClick={() => setExpandedServiceKey(expandedServiceKey ? null : v.services[0]?.key || null)}
+                  className="px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                >
+                  {expandedServiceKey ? 'Close Active Box' : 'Open First'}
+                </button>
+              )}
+              <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80">
+                <button
+                  type="button"
+                  onClick={() => setServiceViewMode('list')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    serviceViewMode === 'list'
+                      ? 'bg-white text-slate-900 shadow-2xs font-extrabold'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                  title="Vertical list view"
+                >
+                  <List className="w-3.5 h-3.5" />
+                  <span>List View</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setServiceViewMode('grid')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    serviceViewMode === 'grid'
+                      ? 'bg-white text-slate-900 shadow-2xs font-extrabold'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                  title="Grid box view"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span>Grid Boxes</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {v.services.map((s) => {
-              const isOverdue = s.isOverdue;
-              const isDueSoon = s.isDueSoon;
+          {serviceViewMode === 'list' ? (
+            /* Vertical List: Names show one by one vertically; click individually to show box */
+            <div className="space-y-2.5">
+              {v.services.map((s, idx) => {
+                const isOverdue = s.isOverdue;
+                const isDueSoon = s.isDueSoon;
+                const isExpanded = expandedServiceKey === s.key;
 
-              return (
-                <div
-                  key={s.key}
-                  className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    {/* Header: Name and Status Badge */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h3 className="font-extrabold text-base text-slate-900 leading-snug">{s.name}</h3>
-                        <p className="text-xs text-slate-500 font-medium mt-0.5">{s.intervalLabel}</p>
+                return (
+                  <div
+                    key={s.key}
+                    className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
+                      isExpanded
+                        ? 'border-blue-400 shadow-sm ring-1 ring-blue-100'
+                        : isOverdue
+                        ? 'border-rose-200/90 hover:border-rose-300 shadow-2xs'
+                        : isDueSoon
+                        ? 'border-amber-200/90 hover:border-amber-300 shadow-2xs'
+                        : 'border-slate-200/90 hover:border-slate-300 shadow-2xs'
+                    }`}
+                  >
+                    {/* Clickable Header Row: Name displayed vertically one by one */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedServiceKey(isExpanded ? null : s.key)}
+                      className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-50/60 transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <span
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                            isOverdue
+                              ? 'bg-rose-100 text-rose-700'
+                              : isDueSoon
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <h3 className="font-extrabold text-sm sm:text-base text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                            {s.name}
+                          </h3>
+                          <p className="text-xs text-slate-400 font-medium truncate">
+                            {s.intervalLabel}
+                          </p>
+                        </div>
                       </div>
-                      <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
+
+                      <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 ml-3">
+                        <span className="hidden md:inline-block text-xs font-semibold text-slate-500">
+                          {s.intervalType === 'km'
+                            ? `Next: ${s.nextDueKm.toLocaleString('en-IN')} KM`
+                            : `Next: ${s.nextDueDate}`}
+                        </span>
+
+                        <span
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
+                            isOverdue
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : isDueSoon
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          }`}
+                        >
+                          {isOverdue && <Flame className="w-3.5 h-3.5 text-rose-500" />}
+                          {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                          {!isOverdue && !isDueSoon && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                          <span>{s.status}</span>
+                        </span>
+
+                        <ChevronDown
+                          className={`w-5 h-5 text-slate-400 transition-transform duration-200 shrink-0 ${
+                            isExpanded ? 'rotate-180 text-blue-600' : 'group-hover:text-slate-600'
+                          }`}
+                        />
+                      </div>
+                    </button>
+
+                    {/* When clicked individually: SHOW THE EXACT BOX ("like this boxes") */}
+                    {isExpanded && (
+                      <div className="border-t border-slate-100 bg-slate-50/50 p-4 sm:p-5 flex justify-center">
+                        <div className="w-full max-w-md bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm flex flex-col justify-between">
+                          <div>
+                            {/* Header: Name and Status Badge */}
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h3 className="font-extrabold text-base text-slate-900 leading-snug">{s.name}</h3>
+                                <p className="text-xs text-slate-500 font-medium mt-0.5">{s.intervalLabel}</p>
+                              </div>
+                              <span
+                                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
+                                  isOverdue
+                                    ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                    : isDueSoon
+                                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                }`}
+                              >
+                                {isOverdue && <Flame className="w-3.5 h-3.5 text-rose-500" />}
+                                {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                                {!isOverdue && !isDueSoon && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                                <span>{s.status}</span>
+                              </span>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="mt-4 w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-300 ${
+                                  isOverdue ? 'bg-rose-500' : isDueSoon ? 'bg-amber-500' : 'bg-emerald-500'
+                                }`}
+                                style={{ width: `${Math.max(5, s.progressPercent)}%` }}
+                              />
+                            </div>
+
+                            {/* Last Done / Next Due Stats */}
+                            <div className="mt-4 space-y-2 text-sm text-slate-600">
+                              <div className="flex justify-between">
+                                <span className="text-slate-400">Last done</span>
+                                <span className="font-semibold text-slate-800">
+                                  {s.intervalType === 'km'
+                                    ? `${s.lastDoneKm.toLocaleString('en-IN')} KM`
+                                    : s.lastDoneDate}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-400">Next due</span>
+                                <span className="font-bold text-slate-900 font-mono">
+                                  {s.intervalType === 'km'
+                                    ? `${s.nextDueKm.toLocaleString('en-IN')} KM`
+                                    : s.nextDueDate}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Status Text Line */}
+                            <p
+                              className={`text-sm font-bold mt-3.5 ${
+                                isOverdue
+                                  ? 'text-rose-600'
+                                  : isDueSoon
+                                  ? 'text-amber-600'
+                                  : 'text-emerald-600'
+                              }`}
+                            >
+                              {s.statusText}
+                            </p>
+                          </div>
+
+                          {/* Mark Completed Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenCompleteModal(v, s)}
+                            className="mt-4 w-full py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50/70 hover:bg-slate-100/80 text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <CheckCircle2 className="w-4 h-4 text-slate-500" />
+                            <span>Mark Completed</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* Grid View: 4-column cards */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {v.services.map((s) => {
+                const isOverdue = s.isOverdue;
+                const isDueSoon = s.isDueSoon;
+
+                return (
+                  <div
+                    key={s.key}
+                    className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Header: Name and Status Badge */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h3 className="font-extrabold text-base text-slate-900 leading-snug">{s.name}</h3>
+                          <p className="text-xs text-slate-500 font-medium mt-0.5">{s.intervalLabel}</p>
+                        </div>
+                        <span
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
+                            isOverdue
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : isDueSoon
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          }`}
+                        >
+                          {isOverdue && <Flame className="w-3.5 h-3.5 text-rose-500" />}
+                          {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                          {!isOverdue && !isDueSoon && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                          <span>{s.status}</span>
+                        </span>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="mt-4 w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${
+                            isOverdue ? 'bg-rose-500' : isDueSoon ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${Math.max(5, s.progressPercent)}%` }}
+                        />
+                      </div>
+
+                      {/* Last Done / Next Due Stats */}
+                      <div className="mt-4 space-y-2 text-sm text-slate-600">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Last done</span>
+                          <span className="font-semibold text-slate-800">
+                            {s.intervalType === 'km'
+                              ? `${s.lastDoneKm.toLocaleString('en-IN')} KM`
+                              : s.lastDoneDate}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Next due</span>
+                          <span className="font-bold text-slate-900 font-mono">
+                            {s.intervalType === 'km'
+                              ? `${s.nextDueKm.toLocaleString('en-IN')} KM`
+                              : s.nextDueDate}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Status Text Line */}
+                      <p
+                        className={`text-sm font-bold mt-3.5 ${
                           isOverdue
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            ? 'text-rose-600'
                             : isDueSoon
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            ? 'text-amber-600'
+                            : 'text-emerald-600'
                         }`}
                       >
-                        {isOverdue && <Flame className="w-3.5 h-3.5 text-rose-500" />}
-                        {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
-                        {!isOverdue && !isDueSoon && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
-                        <span>{s.status}</span>
-                      </span>
+                        {s.statusText}
+                      </p>
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="mt-4 w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${
-                          isOverdue ? 'bg-rose-500' : isDueSoon ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${Math.max(5, s.progressPercent)}%` }}
-                      />
-                    </div>
-
-                    {/* Last Done / Next Due Stats */}
-                    <div className="mt-4 space-y-2 text-sm text-slate-600">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Last done</span>
-                        <span className="font-semibold text-slate-800">
-                          {s.intervalType === 'km'
-                            ? `${s.lastDoneKm.toLocaleString('en-IN')} KM`
-                            : s.lastDoneDate}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Next due</span>
-                        <span className="font-bold text-slate-900 font-mono">
-                          {s.intervalType === 'km'
-                            ? `${s.nextDueKm.toLocaleString('en-IN')} KM`
-                            : s.nextDueDate}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Status Text Line */}
-                    <p
-                      className={`text-sm font-bold mt-3.5 ${
-                        isOverdue
-                          ? 'text-rose-600'
-                          : isDueSoon
-                          ? 'text-amber-600'
-                          : 'text-emerald-600'
-                      }`}
+                    {/* Mark Completed Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenCompleteModal(v, s)}
+                      className="mt-4 w-full py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50/70 hover:bg-slate-100/80 text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                     >
-                      {s.statusText}
-                    </p>
+                      <CheckCircle2 className="w-4 h-4 text-slate-500" />
+                      <span>Mark Completed</span>
+                    </button>
                   </div>
-
-                  {/* Mark Completed Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleOpenCompleteModal(v, s)}
-                    className="mt-4 w-full py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50/70 hover:bg-slate-100/80 text-slate-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-slate-500" />
-                    <span>Mark Completed</span>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* =========================================================================
