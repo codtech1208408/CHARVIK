@@ -628,7 +628,7 @@ export const VyshnaviTravels: React.FC = () => {
           <style>
             @page {
               size: A4 portrait;
-              margin: 8mm 10mm;
+              margin: 6mm 8mm;
             }
             html, body {
               margin: 0 !important;
@@ -645,6 +645,24 @@ export const VyshnaviTravels: React.FC = () => {
               margin: 0 auto !important;
               padding: 0 !important;
               background: #ffffff !important;
+            }
+            #vyshnavi-printable-letterhead {
+              box-shadow: none !important;
+              border: none !important;
+              padding: 4mm 6mm !important;
+              max-width: 100% !important;
+              width: 100% !important;
+              min-height: auto !important;
+            }
+            @media print {
+              #vyshnavi-printable-letterhead {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                min-height: auto !important;
+              }
             }
           </style>
         </head>
@@ -1944,12 +1962,13 @@ export const VyshnaviTravels: React.FC = () => {
                 className="bg-white mx-auto shadow-xl rounded-sm p-8 text-slate-900 font-sans flex flex-col justify-between"
                 style={{ width: '100%', maxWidth: '780px', minHeight: '1050px' }}
               >
-                {/* 1. Official Letterhead Header (Image 1 top) */}
+                {/* 1. Official Letterhead Header */}
                 <div>
-                  <div style={{ height: '112px', overflow: 'hidden', width: '100%' }}>
+                  <div className="w-full">
                     <img
-                      src="/vyshnavi-travels-letterhead.jpg"
+                      src="/vyshnavi-letterhead-header-clean.png"
                       alt="Vyshnavi Travels Official Letterhead Header"
+                      className="w-full h-auto block rounded-t"
                       style={{ width: '100%', height: 'auto', display: 'block' }}
                     />
                   </div>
@@ -2159,13 +2178,14 @@ export const VyshnaviTravels: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 6. Official Letterhead Bottom Footer (Image 1 bottom) */}
-                <div className="mt-8">
-                  <div style={{ height: '62px', overflow: 'hidden', width: '100%', position: 'relative' }}>
+                {/* 6. Official Letterhead Bottom Footer */}
+                <div className="mt-8 pt-2">
+                  <div className="w-full">
                     <img
-                      src="/vyshnavi-travels-letterhead.jpg"
+                      src="/vyshnavi-letterhead-footer-clean.png"
                       alt="Vyshnavi Travels Official Letterhead Footer"
-                      style={{ width: '100%', height: 'auto', display: 'block', position: 'absolute', bottom: 0, left: 0 }}
+                      className="w-full h-auto block"
+                      style={{ width: '100%', height: 'auto', display: 'block' }}
                     />
                   </div>
                 </div>
