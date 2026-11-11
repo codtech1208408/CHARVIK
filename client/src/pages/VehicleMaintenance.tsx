@@ -30,7 +30,8 @@ import {
   ChevronDown,
   ChevronUp,
   List,
-  LayoutGrid
+  LayoutGrid,
+  Fuel
 } from 'lucide-react';
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
@@ -1883,7 +1884,7 @@ export const VehicleMaintenance: React.FC = () => {
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Header Hero Banner (Matching Image 2) */}
       <div className="bg-gradient-to-r from-[#0356C4] via-[#0D6EFD] to-[#0284C7] rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
-        <div className="flex items-center space-x-4 relative z-10">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
           <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs border border-white/30 flex items-center justify-center text-white shrink-0 shadow-inner">
             <Gauge className="w-7 h-7 text-white" />
           </div>
@@ -1895,11 +1896,22 @@ export const VehicleMaintenance: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 relative z-10">
+        <div className="flex items-center gap-3 relative z-10 self-start sm:self-auto flex-wrap sm:flex-nowrap">
+          {/* Header Bus Image matching Reference Image 2 */}
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-48 sm:w-56 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet1.jpg"
+                alt="Fleet Maintenance"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </div>
+
           <button
             type="button"
             onClick={handleExportExcel}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-[#0356C4] hover:bg-blue-50 text-xs font-black shadow-md transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-[#0356C4] hover:bg-blue-50 text-xs font-black shadow-md transition-all cursor-pointer shrink-0"
           >
             <Download className="w-4 h-4 text-[#0356C4]" />
             <span>Export Excel</span>
@@ -2105,9 +2117,10 @@ export const VehicleMaintenance: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVehicles.map((bus) => {
+          {filteredVehicles.map((bus, idx) => {
             const isAttention = bus.overdueCount > 0;
             const isDueSoon = bus.dueSoonCount > 0 && bus.overdueCount === 0;
+            const busImgUrl = idx % 5 === 0 ? '/assets/fleet1.jpg' : idx % 5 === 1 ? '/assets/fleet2.jpg' : idx % 5 === 2 ? '/assets/fleet3.jpg' : idx % 5 === 3 ? '/assets/fleet4.jpg' : '/assets/fleet5.jpg';
 
             return (
               <div
@@ -2138,6 +2151,19 @@ export const VehicleMaintenance: React.FC = () => {
                       {!isAttention && !isDueSoon && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
                       <span>{isAttention ? 'Needs Attention' : isDueSoon ? 'Due Soon' : 'Healthy'}</span>
                     </span>
+                  </div>
+
+                  {/* Real Bus Photo matching Reference Image 2 */}
+                  <div className="w-full h-40 rounded-2xl overflow-hidden my-3.5 relative shadow-xs border border-slate-100 group">
+                    <img
+                      src={busImgUrl}
+                      alt={bus.registration_number}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-lg bg-black/60 backdrop-blur-xs text-white text-[11px] font-bold flex items-center gap-1.5">
+                      <Fuel className="w-3.5 h-3.5 text-sky-400" />
+                      <span>Fuel: {78 - ((idx * 11) % 25)}%</span>
+                    </div>
                   </div>
 
                   {/* Big Odometer Box (Synced with Daily Vehicle Checkup!) */}

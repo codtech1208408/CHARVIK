@@ -36,7 +36,8 @@ import {
   UserCheck,
   Briefcase,
   HandCoins,
-  FileText
+  FileText,
+  Fuel
 } from 'lucide-react';
 import { StatCard } from '../components/common/StatCard';
 import { Modal } from '../components/common/Modal';
@@ -539,13 +540,13 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* =========================================================================
-          1. HEADER BAR: Welcome & Status (Vibrant Royal Blue Hero Banner matching Reference Images 2, 3 & 4)
+          1. HEADER BAR: Welcome & Status (Vibrant Royal Blue Hero Banner matching Reference Images 1 & 2)
          ========================================================================= */}
       <div
         data-aos="fade-down"
-        className="bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] rounded-3xl p-6 sm:p-7 shadow-lg shadow-blue-500/20 text-white flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden"
+        className="bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] rounded-3xl p-6 sm:p-7 shadow-lg shadow-blue-500/20 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative overflow-hidden"
       >
-        <div className="flex items-center space-x-4 relative z-10">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
           <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
             <Bus className="w-8 h-8 text-white drop-shadow-sm" />
           </div>
@@ -565,21 +566,37 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 relative z-10 self-start md:self-auto flex-wrap">
-          <button
-            onClick={() => navigate('/admin/vehicle-maintenance')}
-            className="px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-          >
-            <Wrench className="w-4 h-4 text-sky-200" />
-            <span>Fleet Maintenance</span>
-          </button>
-          <button
-            onClick={() => navigate('/admin/vyshnavi-travels')}
-            className="px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-          >
-            <FileText className="w-4 h-4 text-emerald-200" />
-            <span>Corporate Portal</span>
-          </button>
+        {/* Bus image & quick action buttons (Matching Reference Image 1 & 2) */}
+        <div className="flex items-center gap-4 relative z-10 self-start lg:self-auto flex-wrap sm:flex-nowrap">
+          <div className="relative shrink-0">
+            <div className="w-64 sm:w-80 h-28 sm:h-32 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet1.jpg"
+                alt="Charvik Luxury Fleet"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2.5">
+                <span className="text-[11px] font-black text-white tracking-wider uppercase drop-shadow-xs">Premium Fleet Coach</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 shrink-0">
+            <button
+              onClick={() => navigate('/admin/vehicle-maintenance')}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+            >
+              <Wrench className="w-4 h-4 text-sky-200" />
+              <span>Fleet Maintenance</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/vyshnavi-travels')}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+            >
+              <FileText className="w-4 h-4 text-emerald-200" />
+              <span>Corporate Portal</span>
+            </button>
+          </div>
         </div>
 
         {/* Decorative luminous gradient glows */}
@@ -798,7 +815,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* =========================================================================
-          2. PRIMARY FLEET METRICS: TOTAL & ACTIVE BUSES (Colored like Image 1)
+          2. PRIMARY FLEET METRICS: TOTAL & ACTIVE BUSES (Colored like Image 1 with Highway Bus Graphic)
          ========================================================================= */}
       <div>
         <div className="flex items-center justify-between mb-2.5 px-0.5">
@@ -808,40 +825,64 @@ export const Dashboard: React.FC = () => {
               Primary Fleet Metrics
             </h3>
           </div>
-          <span className="text-xs font-bold text-blue-600">Core Fleet Status</span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-          {/* Total Buses Card (Blue Theme matching Image 1) */}
-          <div
+          <button
+            type="button"
             onClick={() => navigate('/admin/buses')}
-            className="bg-gradient-to-br from-[#DBEAFE] via-[#BFDBFE] to-[#93C5FD] rounded-3xl border-2 border-[#3B82F6] p-5 sm:p-6 shadow-md shadow-blue-500/15 hover:shadow-xl hover:border-blue-600 transition-all cursor-pointer group flex items-center justify-between"
+            className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
           >
-            <div className="flex-1">
-              <p className="text-xs font-black text-[#172554] uppercase tracking-wider">Total Buses</p>
-              <h3 className="text-2xl sm:text-3xl font-black text-[#0f172a] mt-1 tracking-tight group-hover:text-blue-900 transition-colors">
-                {totalBusesVal}
-              </h3>
-              <p className="text-xs text-[#1E40AF] font-bold mt-1">Registered fleet vehicles</p>
+            <span>View Details</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="bg-white rounded-3xl border-2 border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-5 overflow-hidden">
+          {/* Left: 2 Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-[58%]">
+            {/* Total Buses Card (Blue Theme matching Image 1) */}
+            <div
+              onClick={() => navigate('/admin/buses')}
+              className="bg-gradient-to-br from-[#DBEAFE] via-[#BFDBFE] to-[#93C5FD] rounded-3xl border-2 border-[#3B82F6] p-5 sm:p-6 shadow-md shadow-blue-500/15 hover:shadow-xl hover:border-blue-600 transition-all cursor-pointer group flex items-center justify-between"
+            >
+              <div className="flex-1">
+                <p className="text-xs font-black text-[#172554] uppercase tracking-wider">Total Buses</p>
+                <h3 className="text-2xl sm:text-3xl font-black text-[#0f172a] mt-1 tracking-tight group-hover:text-blue-900 transition-colors">
+                  {totalBusesVal}
+                </h3>
+                <p className="text-xs text-[#1E40AF] font-bold mt-1">Registered fleet vehicles</p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 ml-4 shadow-lg shadow-blue-700/30 ring-4 ring-blue-500/20 group-hover:scale-105 transition-transform">
+                <Bus className="w-7 h-7 text-white" />
+              </div>
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 ml-4 shadow-lg shadow-blue-700/30 ring-4 ring-blue-500/20 group-hover:scale-105 transition-transform">
-              <Bus className="w-7 h-7 text-white" />
+
+            {/* Active Buses Card (Green Theme matching Image 1) */}
+            <div
+              onClick={() => navigate('/admin/buses?status=Active')}
+              className="bg-gradient-to-br from-[#D1FAE5] via-[#A7F3D0] to-[#6EE7B7] rounded-3xl border-2 border-[#10B981] p-5 sm:p-6 shadow-md shadow-emerald-500/15 hover:shadow-xl hover:border-emerald-600 transition-all cursor-pointer group flex items-center justify-between"
+            >
+              <div className="flex-1">
+                <p className="text-xs font-black text-[#064E3B] uppercase tracking-wider">Active Buses</p>
+                <h3 className="text-2xl sm:text-3xl font-black text-[#022c22] mt-1 tracking-tight group-hover:text-emerald-900 transition-colors">
+                  {activeBusesVal}
+                </h3>
+                <p className="text-xs text-[#065F46] font-bold mt-1">Currently on duty & running</p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#047857] text-white flex items-center justify-center shrink-0 ml-4 shadow-lg shadow-emerald-700/30 ring-4 ring-emerald-500/20 group-hover:scale-105 transition-transform">
+                <CheckCircle2 className="w-7 h-7 text-white" />
+              </div>
             </div>
           </div>
 
-          {/* Active Buses Card (Green Theme matching Image 1) */}
-          <div
-            onClick={() => navigate('/admin/buses?status=Active')}
-            className="bg-gradient-to-br from-[#D1FAE5] via-[#A7F3D0] to-[#6EE7B7] rounded-3xl border-2 border-[#10B981] p-5 sm:p-6 shadow-md shadow-emerald-500/15 hover:shadow-xl hover:border-emerald-600 transition-all cursor-pointer group flex items-center justify-between"
-          >
-            <div className="flex-1">
-              <p className="text-xs font-black text-[#064E3B] uppercase tracking-wider">Active Buses</p>
-              <h3 className="text-2xl sm:text-3xl font-black text-[#022c22] mt-1 tracking-tight group-hover:text-emerald-900 transition-colors">
-                {activeBusesVal}
-              </h3>
-              <p className="text-xs text-[#065F46] font-bold mt-1">Currently on duty & running</p>
-            </div>
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#047857] text-white flex items-center justify-center shrink-0 ml-4 shadow-lg shadow-emerald-700/30 ring-4 ring-emerald-500/20 group-hover:scale-105 transition-transform">
-              <CheckCircle2 className="w-7 h-7 text-white" />
+          {/* Right: Panoramic Highway Bus Photo (Matching Reference Image 1) */}
+          <div className="w-full lg:w-[42%] h-36 rounded-2xl overflow-hidden shadow-md border-2 border-slate-100 relative shrink-0 group">
+            <img
+              src="/assets/fleet5.jpg"
+              alt="Fleet Bus on Highway"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-950/70 via-transparent to-transparent flex flex-col justify-end p-3.5 text-white">
+              <span className="text-[10px] font-black uppercase tracking-wider text-sky-300">Express Transit Fleet</span>
+              <span className="text-sm font-extrabold drop-shadow-md">Active Highway Intercity Operations</span>
             </div>
           </div>
         </div>
@@ -895,6 +936,7 @@ export const Dashboard: React.FC = () => {
             {alertVehicles.map((bus: any, idx: number) => {
               const overdueCount = (bus.services || []).filter((s: any) => s.isOverdue).length;
               const dueSoonCount = (bus.services || []).filter((s: any) => s.isDueSoon).length;
+              const busImgUrl = idx % 5 === 0 ? '/assets/fleet1.jpg' : idx % 5 === 1 ? '/assets/fleet2.jpg' : idx % 5 === 2 ? '/assets/fleet3.jpg' : idx % 5 === 3 ? '/assets/fleet4.jpg' : '/assets/fleet5.jpg';
 
               return (
                 <div
@@ -907,7 +949,7 @@ export const Dashboard: React.FC = () => {
                 >
                   <div>
                     {/* Header: Reg Number, Model, Needs Attention / Due Soon badge */}
-                    <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
                         <h4 className="font-black text-slate-900 text-lg tracking-wide">
                           {bus.registration_number || bus.bus_number}
@@ -928,6 +970,19 @@ export const Dashboard: React.FC = () => {
                           <span>Due Soon</span>
                         </span>
                       )}
+                    </div>
+
+                    {/* Real Bus Image matching Reference Image 2 */}
+                    <div className="w-full h-36 rounded-2xl overflow-hidden my-3 relative shadow-xs border border-slate-100 group">
+                      <img
+                        src={busImgUrl}
+                        alt={bus.registration_number || bus.bus_number}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-lg bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold flex items-center gap-1">
+                        <Fuel className="w-3 h-3 text-sky-400" />
+                        <span>Fuel: {85 - ((idx * 7) % 30)}%</span>
+                      </div>
                     </div>
 
                     {/* Odometer KM Box (Synced dynamically from Daily Vehicle Checkup) */}
