@@ -3562,6 +3562,7 @@ export const api = {
   // Employee Recorded Payments
   getEmployeePayments: () => request<any[]>('/employee-payments'),
   createEmployeePayment: (data: any) => request<any>('/employee-payments', { method: 'POST', body: JSON.stringify(data) }),
+  updateEmployeePayment: (id: string | number, data: any) => request<any>(`/employee-payments/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteEmployeePayment: (id: string | number) => request<any>(`/employee-payments/${id}`, { method: 'DELETE' }),
 
   // File Upload

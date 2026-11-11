@@ -60,13 +60,7 @@ export function printSheet(options: PrintOptions): void {
     bodyContent = clone.innerHTML;
   }
 
-  const printWindow = window.open('', '_blank', 'width=1200,height=850');
-  if (!printWindow) {
-    alert('Pop-up was blocked. Please allow pop-ups for this site to view the print sheet.');
-    return;
-  }
-
-  printWindow.document.write(`
+  const htmlDoc = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -75,7 +69,7 @@ export function printSheet(options: PrintOptions): void {
       <style>
         @page {
           size: ${orientation === 'landscape' ? 'A4 landscape' : 'A4 portrait'};
-          margin: 12mm 10mm;
+          margin: 10mm 10mm;
         }
         * {
           margin: 0;
@@ -88,7 +82,7 @@ export function printSheet(options: PrintOptions): void {
           font-size: 11px;
           line-height: 1.4;
           background: #ffffff;
-          padding: 15px;
+          padding: 12px;
         }
         .print-header {
           display: flex;
@@ -164,11 +158,9 @@ export function printSheet(options: PrintOptions): void {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
-        /* Hide unnecessary SVG icons */
         svg {
           display: none !important;
         }
-        /* Badges & Pills */
         .badge, [class*="rounded-full"], [class*="rounded-lg"] {
           border: 1px solid #94a3b8 !important;
           background: #f1f5f9 !important;
@@ -237,17 +229,57 @@ export function printSheet(options: PrintOptions): void {
           Authorized Signatory & Stamp
         </div>
       </div>
-
-      <script>
-        window.onload = function() {
-          setTimeout(function() {
-            window.print();
-          }, 300);
-        };
-      <\/script>
     </body>
     </html>
-  `);
+  `;
 
-  printWindow.document.close();
+  // Prefer hidden iframe printing so modern browsers never block pop-ups
+  try {
+    let iframe = document.getElementById('charvik-universal-print-frame') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'charvik-universal-print-frame';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (doc) {
+      doc.open();
+      doc.write(htmlDoc);
+      doc.close();
+
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch {
+          window.print();
+        }
+      }, 350);
+      return;
+    }
+  } catch (e) {
+    console.warn('Iframe print error, falling back to window.open', e);
+  }
+
+  // Fallback to window.open if iframe is blocked by security context
+  const printWindow = window.open('', '_blank', 'width=1200,height=850');
+  if (printWindow) {
+    printWindow.document.write(htmlDoc);
+    printWindow.document.close();
+    setTimeout(() => {
+      try {
+        printWindow.focus();
+        printWindow.print();
+      } catch {}
+    }, 400);
+  } else {
+    window.print();
+  }
 }

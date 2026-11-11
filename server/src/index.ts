@@ -1341,6 +1341,84 @@ app.post('/api/organizer-payments', (req: Request, res: Response) => {
   }
 });
 
+// ================= EMPLOYEE PAYMENTS CRUD =================
+app.get('/api/employee-payments', (req: Request, res: Response) => {
+  try {
+    const list = db.prepare('SELECT * FROM employee_payments ORDER BY payment_date DESC, created_at DESC').all();
+    return res.json(list);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/employee-payments', (req: Request, res: Response) => {
+  const p = req.body;
+  const id = p.id || ('REC-' + Date.now().toString().slice(-6));
+  try {
+    db.prepare(`
+      INSERT INTO employee_payments (id, employee_name, employee_code, role, amount, payment_date, payment_mode, payment_type, payment_proof, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      p.employee_name || 'Staff Member',
+      p.employee_code || '-',
+      p.role || 'Driver',
+      Number(p.amount) || 0,
+      p.payment_date || new Date().toISOString().split('T')[0],
+      p.payment_mode || 'Cash',
+      p.payment_type || 'Bata',
+      p.payment_proof || '',
+      p.notes || ''
+    );
+    const created = { id, ...p };
+    logAudit('RECORD_EMPLOYEE_PAYMENT', 'Employee Payments', id, `Recorded ₹${p.amount} payment to ${p.employee_name}`);
+    return res.status(201).json(created);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/employee-payments/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const p = req.body;
+  try {
+    db.prepare(`
+      UPDATE employee_payments SET
+        amount = ?,
+        payment_date = ?,
+        payment_mode = ?,
+        payment_type = ?,
+        payment_proof = ?,
+        notes = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(
+      Number(p.amount) || 0,
+      p.payment_date || new Date().toISOString().split('T')[0],
+      p.payment_mode || 'Cash',
+      p.payment_type || 'Bata',
+      p.payment_proof || '',
+      p.notes || '',
+      id
+    );
+    logAudit('UPDATE_EMPLOYEE_PAYMENT', 'Employee Payments', id, `Updated payment ${id} for ${p.employee_name || 'staff'}`);
+    return res.json({ message: 'Payment record updated successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/employee-payments/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    db.prepare('DELETE FROM employee_payments WHERE id = ?').run(id);
+    logAudit('DELETE_EMPLOYEE_PAYMENT', 'Employee Payments', id, `Deleted payment ${id}`);
+    return res.json({ message: 'Payment record deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= TASK MANAGEMENT (TRIP DUTIES) CRUD =================
 app.get('/api/tasks', (req: Request, res: Response) => {
   try {

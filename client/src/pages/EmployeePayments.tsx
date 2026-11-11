@@ -4,7 +4,7 @@ import {
   ArrowLeft, User, Bus, ShieldCheck, IndianRupee, CheckCircle2, Clock,
   Calendar, Download, MapPin, Hash, AlertCircle, ChevronLeft, ChevronRight, Search,
   Users, ChevronDown, Filter, Wallet, ArrowRight, Receipt, Printer, X,
-  Upload, Image as ImageIcon, Eye, FileText
+  Upload, Image as ImageIcon, Eye, FileText, Edit2, Trash2
 } from "lucide-react";
 import { api } from "../services/api";
 import { useToast } from "../components/common/Toast";
@@ -22,6 +22,7 @@ interface TripEntry {
   advance: number;
   balance_due: number;
   isPaid: boolean;
+  slot?: "driver1" | "driver2" | "helper" | "captain";
 }
 
 interface RecordedPayment {
@@ -98,6 +99,32 @@ export const EmployeePayments: React.FC = () => {
     notes: ""
   });
   const [previewProofModal, setPreviewProofModal] = useState<string | null>(null);
+
+  // Edit / Delete Trip Modals
+  const [editingTrip, setEditingTrip] = useState<{
+    trip: TripEntry;
+    date: string;
+    route_corridor: string;
+    vehicle_number: string;
+    salary: string;
+    advance: string;
+  } | null>(null);
+  const [deletingTrip, setDeletingTrip] = useState<TripEntry | null>(null);
+
+  // Edit / Delete Payment Modals
+  const [editingPayment, setEditingPayment] = useState<{
+    id: string;
+    employee_name: string;
+    employee_code: string;
+    role: string;
+    amount: string;
+    payment_date: string;
+    payment_type: "Bata" | "Salary" | "Advance";
+    payment_mode: "Cash" | "Online" | "UPI" | "Bank Transfer";
+    payment_proof?: string;
+    notes?: string;
+  } | null>(null);
+  const [deletingPayment, setDeletingPayment] = useState<RecordedPayment | null>(null);
 
   useEffect(() => {
     loadData();
@@ -177,14 +204,14 @@ export const EmployeePayments: React.FC = () => {
     // 2. Accumulate tasks
     periodFilteredTasks.forEach((t) => {
       const isTripPaid = t.payment_status === "Paid";
-      const slots: { data: any; defaultRole: "Driver" | "Helper" | "Captain" }[] = [
-        { data: t.driver1, defaultRole: "Driver" },
-        { data: t.driver2, defaultRole: "Driver" },
-        { data: t.helper, defaultRole: "Helper" },
-        { data: t.captain, defaultRole: "Captain" }
+      const slots: { data: any; defaultRole: "Driver" | "Helper" | "Captain"; slotKey: "driver1" | "driver2" | "helper" | "captain" }[] = [
+        { data: t.driver1, defaultRole: "Driver", slotKey: "driver1" },
+        { data: t.driver2, defaultRole: "Driver", slotKey: "driver2" },
+        { data: t.helper, defaultRole: "Helper", slotKey: "helper" },
+        { data: t.captain, defaultRole: "Captain", slotKey: "captain" }
       ];
 
-      slots.forEach(({ data, defaultRole }) => {
+      slots.forEach(({ data, defaultRole, slotKey }) => {
         if (!data || !data.employee_name) return;
         const name = String(data.employee_name).trim();
         const code = (data.employee_code || "").trim();
@@ -237,7 +264,8 @@ export const EmployeePayments: React.FC = () => {
           salary: sal,
           advance: adv,
           balance_due: due,
-          isPaid: isTripPaid
+          isPaid: isTripPaid,
+          slot: slotKey
         });
       });
     });
@@ -926,6 +954,374 @@ export const EmployeePayments: React.FC = () => {
     });
   };
 
+  // 1. Print Individual Payment Receipt
+  const handlePrintReceipt = (payment: RecordedPayment) => {
+    printSheet({
+      title: "CHARVIK FLEET MANAGEMENT - PAYMENT RECEIPT",
+      subtitle: `Receipt No: ${payment.id} | Staff: ${payment.employee_name} (${payment.employee_code})`,
+      orientation: "portrait",
+      htmlContent: `
+        <div style="font-family: sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px;">
+          <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 16px; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #142B4A; font-size: 22px;">CHARVIK FLEET MANAGEMENT</h2>
+            <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Official Staff Payment & Advance Receipt</p>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Receipt Number:</td>
+              <td style="padding: 8px 0; font-weight: bold; font-family: monospace; text-align: right;">${payment.id}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Payment Date:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.payment_date || (payment as any).date}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Staff Member:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.employee_name} (${payment.employee_code})</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Staff Role:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.role}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Payment Type:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.payment_type}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Payment Mode:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.payment_mode}</td>
+            </tr>
+            ${payment.notes ? `
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Notes:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.notes}</td>
+            </tr>` : ''}
+            <tr style="border-top: 2px dashed #cbd5e1; border-bottom: 2px dashed #cbd5e1;">
+              <td style="padding: 14px 0; font-size: 15px; font-weight: bold; color: #142B4A;">Amount Paid:</td>
+              <td style="padding: 14px 0; font-size: 18px; font-weight: 900; color: #047857; text-align: right;">₹${payment.amount.toLocaleString("en-IN")}</td>
+            </tr>
+          </table>
+          <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 12px; color: #64748b;">
+            <div>
+              <p style="margin: 0; border-top: 1px solid #cbd5e1; padding-top: 6px; width: 140px; text-align: center;">Staff Signature</p>
+            </div>
+            <div>
+              <p style="margin: 0; border-top: 1px solid #cbd5e1; padding-top: 6px; width: 140px; text-align: center;">Authorized Signatory</p>
+            </div>
+          </div>
+        </div>
+      `
+    });
+  };
+
+  // 2. Print Single Trip Duty & Remuneration Slip
+  const handlePrintTripSlip = (trip: TripEntry) => {
+    if (!r) return;
+    printSheet({
+      title: "CHARVIK FLEET MANAGEMENT - TRIP DUTY & SALARY SLIP",
+      subtitle: `Trip ID: #${trip.id} | Staff: ${r.full_name} (${formatEmployeeId(r.employee_code, r.role)})`,
+      orientation: "portrait",
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; padding: 24px; max-width: 650px; margin: 0 auto; border: 1.5px solid #cbd5e1; border-radius: 14px;">
+          <div style="border-bottom: 2.5px solid #142B4A; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h2 style="margin: 0; color: #142B4A; font-size: 20px; font-weight: 900;">CHARVIK STAFFING CONSULTANCY</h2>
+              <p style="margin: 3px 0 0; color: #64748b; font-size: 12px;">Official Trip Duty Voucher & Staff Remuneration Record</p>
+            </div>
+            <div style="text-align: right;">
+              <span style="background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: bold; border: 1px solid #bfdbfe;">
+                ${trip.isPaid ? 'PAID IN FULL' : 'PAYMENT DUE'}
+              </span>
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+            <tr style="background: #f8fafc;">
+              <td style="padding: 9px 12px; font-weight: bold; color: #64748b; width: 35%;">Employee Name:</td>
+              <td style="padding: 9px 12px; font-weight: 800; color: #0f172a;">${r.full_name} (${r.role})</td>
+            </tr>
+            <tr>
+              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Employee Code / ID:</td>
+              <td style="padding: 9px 12px; font-weight: 700; font-family: monospace;">${formatEmployeeId(r.employee_code, r.role)}</td>
+            </tr>
+            <tr style="background: #f8fafc;">
+              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Trip Date:</td>
+              <td style="padding: 9px 12px; font-weight: 700;">${trip.date}</td>
+            </tr>
+            <tr>
+              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Vehicle Number:</td>
+              <td style="padding: 9px 12px; font-weight: 800; font-family: monospace; color: #142B4A;">${trip.vehicle_number}</td>
+            </tr>
+            <tr style="background: #f8fafc;">
+              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Task / Route Details:</td>
+              <td style="padding: 9px 12px; font-weight: 700;">${trip.route_corridor}</td>
+            </tr>
+            ${trip.service_number ? `
+            <tr>
+              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Service Number:</td>
+              <td style="padding: 9px 12px; font-weight: 700; font-family: monospace;">${trip.service_number}</td>
+            </tr>` : ''}
+          </table>
+
+          <div style="background: #f1f5f9; border-radius: 8px; padding: 14px; margin-bottom: 24px; border: 1px solid #cbd5e1;">
+            <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid #cbd5e1; font-size: 13px;">
+              <span style="font-weight: 600; color: #475569;">Gross Trip Salary:</span>
+              <strong style="color: #0f172a; font-family: monospace;">₹${trip.salary.toLocaleString("en-IN")}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #cbd5e1; font-size: 13px;">
+              <span style="font-weight: 600; color: #15803d;">Advance / Paid Amount:</span>
+              <strong style="color: #166534; font-family: monospace;">₹${trip.advance.toLocaleString("en-IN")}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-top: 8px; font-size: 15px;">
+              <span style="font-weight: 800; color: #be123c;">Remaining Balance Due:</span>
+              <strong style="color: #9f1239; font-weight: 900; font-family: monospace;">₹${trip.balance_due.toLocaleString("en-IN")}</strong>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 11px; color: #64748b;">
+            <div style="text-align: center; width: 140px;">
+              <div style="border-top: 1px solid #94a3b8; padding-top: 5px;">Staff Signature</div>
+            </div>
+            <div style="text-align: center; width: 140px;">
+              <div style="border-top: 1px solid #94a3b8; padding-top: 5px;">Supervisor Sign</div>
+            </div>
+            <div style="text-align: center; width: 140px;">
+              <div style="border-top: 1px solid #94a3b8; padding-top: 5px;">Accounts Incharge</div>
+            </div>
+          </div>
+        </div>
+      `
+    });
+  };
+
+  // 3. Print Complete Trip Ledger for this Employee
+  const handlePrintTripLedger = () => {
+    if (!r || filteredTrips.length === 0) {
+      error("No trips available to print for this employee.");
+      return;
+    }
+    const totalSal = filteredTrips.reduce((a, b) => a + (b.salary || 0), 0);
+    const totalAdv = filteredTrips.reduce((a, b) => a + (b.advance || 0), 0);
+    const totalDue = filteredTrips.reduce((a, b) => a + (b.balance_due || 0), 0);
+
+    const tripRows = filteredTrips
+      .map((t, idx) => {
+        const formattedDate = (() => {
+          if (!t.date) return "-";
+          const parts = t.date.split("-");
+          return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : t.date;
+        })();
+        return `
+          <tr style="border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+            <td style="padding: 8px; text-align: center; font-weight: bold; color: #64748b;">${idx + 1}</td>
+            <td style="padding: 8px 10px; font-weight: 600;">${formattedDate}</td>
+            <td style="padding: 8px 10px; font-weight: bold; color: #0f172a;">${t.route_corridor}</td>
+            <td style="padding: 8px 10px; font-family: monospace; font-weight: bold; color: #142B4A;">${t.vehicle_number}</td>
+            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: bold;">₹${t.salary.toLocaleString("en-IN")}</td>
+            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: bold; color: #166534;">₹${t.advance.toLocaleString("en-IN")}</td>
+            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 900; color: ${t.balance_due > 0 ? '#e11d48' : '#64748b'};">₹${t.balance_due.toLocaleString("en-IN")}</td>
+            <td style="padding: 8px; text-align: center;">
+              <span style="padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; background: ${t.isPaid ? '#ecfdf5' : '#fff1f2'}; color: ${t.isPaid ? '#047857' : '#e11d48'}; border: 1px solid ${t.isPaid ? '#a7f3d0' : '#fecdd3'};">
+                ${t.isPaid ? 'PAID' : 'PENDING'}
+              </span>
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    printSheet({
+      title: `${r.full_name} - Trip Duty & Salary Ledger`,
+      subtitle: `Official Fleet Trips Record | Staff ID: ${formatEmployeeId(r.employee_code, r.role)} | Role: ${r.role}`,
+      orientation: "landscape",
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #0f172a;">
+          <div style="border-bottom: 2.5px solid #142B4A; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between;">
+            <div>
+              <h2 style="margin: 0; color: #142B4A; font-size: 19px; font-weight: 900;">CHARVIK STAFFING CONSULTANCY</h2>
+              <p style="margin: 2px 0 0; color: #475569; font-size: 13px;">Trip Duty Ledger: <strong>${r.full_name}</strong> (${r.role} - ${formatEmployeeId(r.employee_code, r.role)})</p>
+            </div>
+            <div style="text-align: right; font-size: 11px; color: #64748b;">
+              <div>Date: ${new Date().toLocaleDateString("en-IN")}</div>
+              <div>Total Trips: ${filteredTrips.length}</div>
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #cbd5e1;">
+            <thead>
+              <tr style="background: #142B4A; color: white; font-size: 10px; text-transform: uppercase;">
+                <th style="padding: 8px 6px; text-align: center;">#</th>
+                <th style="padding: 8px 10px; text-align: left;">Date</th>
+                <th style="padding: 8px 10px; text-align: left;">Task / Route</th>
+                <th style="padding: 8px 10px; text-align: left;">Vehicle No</th>
+                <th style="padding: 8px 10px; text-align: right;">Salary</th>
+                <th style="padding: 8px 10px; text-align: right;">Paid Amount</th>
+                <th style="padding: 8px 10px; text-align: right;">Remaining Due</th>
+                <th style="padding: 8px 6px; text-align: center;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tripRows}
+            </tbody>
+            <tfoot>
+              <tr style="background: #f1f5f9; font-weight: 900; font-size: 11px; border-top: 2px solid #cbd5e1;">
+                <td colspan="4" style="padding: 10px 12px; text-transform: uppercase;">Total (${filteredTrips.length} Trips)</td>
+                <td style="padding: 10px; text-align: right; font-family: monospace;">₹${totalSal.toLocaleString("en-IN")}</td>
+                <td style="padding: 10px; text-align: right; font-family: monospace; color: #166534;">₹${totalAdv.toLocaleString("en-IN")}</td>
+                <td style="padding: 10px; text-align: right; font-family: monospace; color: #e11d48;">₹${totalDue.toLocaleString("en-IN")}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `
+    });
+  };
+
+  // 4. Save Trip Edit
+  const handleSaveTripEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTrip) return;
+
+    const taskToUpdate = tasks.find((t) => t.id === editingTrip.trip.id);
+    if (!taskToUpdate) {
+      error("Task record not found");
+      return;
+    }
+
+    const slotKey = editingTrip.trip.slot || "driver1";
+    const slotData = taskToUpdate[slotKey] || {};
+
+    const newSalary = Number(editingTrip.salary) || 0;
+    const newAdvance = Number(editingTrip.advance) || 0;
+    const newDue = Math.max(0, newSalary - newAdvance);
+
+    const updatedTask = {
+      ...taskToUpdate,
+      trip_start_date: editingTrip.date,
+      route_corridor: editingTrip.route_corridor,
+      vehicle_number: editingTrip.vehicle_number,
+      [slotKey]: {
+        ...slotData,
+        salary_amount: newSalary,
+        advance_amount: newAdvance,
+        balance_due: newDue
+      }
+    };
+
+    if (newAdvance >= newSalary && newSalary > 0) {
+      updatedTask.payment_status = "Paid";
+    }
+
+    try {
+      await api.updateTask(updatedTask.id, updatedTask);
+      const updatedTasks = tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t));
+      setTasks(updatedTasks);
+      try {
+        localStorage.setItem("charvik_trip_duty_management_v2", JSON.stringify(updatedTasks));
+      } catch {}
+      setEditingTrip(null);
+      success("Trip record updated successfully!");
+    } catch (err: any) {
+      error(err.message || "Failed to update trip record");
+    }
+  };
+
+  // 5. Confirm Delete Trip
+  const handleConfirmDeleteTrip = async () => {
+    if (!deletingTrip) return;
+
+    const taskToUpdate = tasks.find((t) => t.id === deletingTrip.id);
+    if (!taskToUpdate) {
+      error("Task record not found");
+      setDeletingTrip(null);
+      return;
+    }
+
+    const slotKey = deletingTrip.slot || "driver1";
+
+    try {
+      const otherSlots = (["driver1", "driver2", "helper", "captain"] as const).filter((s) => s !== slotKey);
+      const hasOtherStaff = otherSlots.some((s) => taskToUpdate[s] && taskToUpdate[s].employee_name);
+
+      if (!hasOtherStaff) {
+        await api.deleteTask(deletingTrip.id);
+        const updatedTasks = tasks.filter((t) => t.id !== deletingTrip.id);
+        setTasks(updatedTasks);
+        try {
+          localStorage.setItem("charvik_trip_duty_management_v2", JSON.stringify(updatedTasks));
+        } catch {}
+      } else {
+        const updatedTask = {
+          ...taskToUpdate,
+          [slotKey]: null
+        };
+        await api.updateTask(updatedTask.id, updatedTask);
+        const updatedTasks = tasks.map((t) => (t.id === updatedTask.id ? updatedTask : t));
+        setTasks(updatedTasks);
+        try {
+          localStorage.setItem("charvik_trip_duty_management_v2", JSON.stringify(updatedTasks));
+        } catch {}
+      }
+
+      setDeletingTrip(null);
+      success("Trip record deleted successfully!");
+    } catch (err: any) {
+      error(err.message || "Failed to delete trip record");
+    }
+  };
+
+  // 6. Save Payment Edit
+  const handleSavePaymentEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPayment) return;
+
+    const updated: RecordedPayment = {
+      id: editingPayment.id,
+      employee_name: editingPayment.employee_name,
+      employee_code: editingPayment.employee_code,
+      role: editingPayment.role,
+      amount: Number(editingPayment.amount) || 0,
+      payment_date: editingPayment.payment_date,
+      payment_type: editingPayment.payment_type,
+      payment_mode: editingPayment.payment_mode,
+      payment_proof: editingPayment.payment_proof || undefined,
+      notes: editingPayment.notes || undefined,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      await api.updateEmployeePayment(updated.id, updated);
+      const updatedHistory = paymentHistory.map((p) => (p.id === updated.id ? updated : p));
+      setPaymentHistory(updatedHistory);
+      try {
+        localStorage.setItem("charvik_employee_recorded_payments", JSON.stringify(updatedHistory));
+      } catch {}
+      setEditingPayment(null);
+      success("Payment record updated successfully!");
+    } catch (err: any) {
+      error(err.message || "Failed to update payment record");
+    }
+  };
+
+  // 7. Confirm Delete Payment
+  const handleConfirmDeletePayment = async () => {
+    if (!deletingPayment) return;
+
+    try {
+      await api.deleteEmployeePayment(deletingPayment.id);
+      const updatedHistory = paymentHistory.filter((p) => p.id !== deletingPayment.id);
+      setPaymentHistory(updatedHistory);
+      try {
+        localStorage.setItem("charvik_employee_recorded_payments", JSON.stringify(updatedHistory));
+      } catch {}
+      setDeletingPayment(null);
+      success("Payment record deleted successfully!");
+    } catch (err: any) {
+      error(err.message || "Failed to delete payment record");
+    }
+  };
+
   return (
     <div className="space-y-6 pb-12">
       {/* ========================================================= */}
@@ -1135,7 +1531,20 @@ export const EmployeePayments: React.FC = () => {
 
               {/* Records of Trips */}
               <div>
-                <h3 className="text-base font-bold text-slate-800 mb-3">Records of Trips</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-base font-bold text-slate-800">Records of Trips</h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handlePrintTripLedger}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+                      title="Print All Trips for this Employee"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Print Trips</span>
+                    </button>
+                  </div>
+                </div>
                 <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs" style={{ minWidth: "750px" }}>
@@ -1147,12 +1556,13 @@ export const EmployeePayments: React.FC = () => {
                           <th className="py-2 px-3">SALARY AMOUNT</th>
                           <th className="py-2 px-3">PAID AMOUNT</th>
                           <th className="py-2 px-3">REMAINING DUE</th>
+                          <th className="py-2.5 px-3 text-center">ACTION</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 text-slate-700">
                         {paginatedTrips.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="py-12 text-center text-slate-400 font-medium">
+                            <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
                               No trip records found for this employee.
                             </td>
                           </tr>
@@ -1184,6 +1594,43 @@ export const EmployeePayments: React.FC = () => {
                                 </td>
                                 <td className="py-2 px-3 font-mono font-bold text-rose-600 whitespace-nowrap">
                                   ₹{trip.balance_due.toLocaleString("en-IN")}
+                                </td>
+                                <td className="py-2 px-3 text-center whitespace-nowrap">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => handlePrintTripSlip(trip)}
+                                      className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                      title="Print Duty & Salary Slip"
+                                    >
+                                      <Printer className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setEditingTrip({
+                                          trip,
+                                          date: trip.date,
+                                          route_corridor: trip.route_corridor,
+                                          vehicle_number: trip.vehicle_number,
+                                          salary: String(trip.salary),
+                                          advance: String(trip.advance)
+                                        })
+                                      }
+                                      className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
+                                      title="Edit Trip Details"
+                                    >
+                                      <Edit2 className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setDeletingTrip(trip)}
+                                      className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+                                      title="Delete Trip Record"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -1277,14 +1724,46 @@ export const EmployeePayments: React.FC = () => {
                                 )}
                               </td>
                               <td className="py-2 px-3 text-slate-500">{p.notes || "-"}</td>
-                              <td className="py-2 px-3 text-center">
-                                <button
-                                  onClick={() => handlePrintReceipt(p)}
-                                  className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                                  title="Print Receipt"
-                                >
-                                  <Printer className="w-4 h-4" />
-                                </button>
+                              <td className="py-2 px-3 text-center whitespace-nowrap">
+                                <div className="flex items-center justify-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePrintReceipt(p)}
+                                    className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                    title="Print Receipt"
+                                  >
+                                    <Printer className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setEditingPayment({
+                                        id: p.id,
+                                        employee_name: p.employee_name,
+                                        employee_code: p.employee_code,
+                                        role: p.role,
+                                        amount: String(p.amount),
+                                        payment_date: p.payment_date || (p as any).date,
+                                        payment_type: p.payment_type || "Bata",
+                                        payment_mode: p.payment_mode || "Cash",
+                                        payment_proof: p.payment_proof,
+                                        notes: p.notes
+                                      })
+                                    }
+                                    className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
+                                    title="Edit Payment"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setDeletingPayment(p)}
+                                    className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="Delete Payment"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))
@@ -2053,6 +2532,330 @@ export const EmployeePayments: React.FC = () => {
                 alt="Payment proof full"
                 className="max-h-[70vh] w-auto rounded-xl object-contain"
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Trip Modal */}
+      {editingTrip && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setEditingTrip(null)}
+        >
+          <div
+            className="relative max-w-lg w-full bg-white rounded-3xl p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Edit Trip Duty Record</h3>
+                <p className="text-xs text-slate-500">Update date, vehicle, route, and staff remuneration</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingTrip(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveTripEdit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Trip Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={editingTrip.date}
+                    onChange={(e) => setEditingTrip({ ...editingTrip, date: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Vehicle Number</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingTrip.vehicle_number}
+                    onChange={(e) => setEditingTrip({ ...editingTrip, vehicle_number: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none font-mono uppercase font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Task / Route Details</label>
+                <input
+                  type="text"
+                  required
+                  value={editingTrip.route_corridor}
+                  onChange={(e) => setEditingTrip({ ...editingTrip, route_corridor: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Salary Amount (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={editingTrip.salary}
+                    onChange={(e) => setEditingTrip({ ...editingTrip, salary: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Paid Amount (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={editingTrip.advance}
+                    onChange={(e) => setEditingTrip({ ...editingTrip, advance: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none font-bold text-emerald-600"
+                  />
+                </div>
+              </div>
+
+              {/* Calculated Remaining Due */}
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-600">Calculated Remaining Due:</span>
+                <span className="font-black text-sm text-rose-600 font-mono">
+                  ₹{Math.max(0, (Number(editingTrip.salary) || 0) - (Number(editingTrip.advance) || 0)).toLocaleString("en-IN")}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingTrip(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 border border-slate-200 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] shadow-xs cursor-pointer"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Trip Confirmation */}
+      {deletingTrip && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setDeletingTrip(null)}
+        >
+          <div
+            className="relative max-w-md w-full bg-white rounded-3xl p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Delete Trip Record?</h3>
+                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-rose-50/60 border border-rose-100 text-xs text-rose-950 space-y-1">
+              <p><strong>Route:</strong> {deletingTrip.route_corridor}</p>
+              <p><strong>Vehicle:</strong> {deletingTrip.vehicle_number}</p>
+              <p><strong>Date:</strong> {deletingTrip.date}</p>
+              <p><strong>Salary Amount:</strong> ₹{deletingTrip.salary.toLocaleString("en-IN")}</p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingTrip(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 border border-slate-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteTrip}
+                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-xs cursor-pointer"
+              >
+                Yes, Delete Trip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Payment Modal */}
+      {editingPayment && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setEditingPayment(null)}
+        >
+          <div
+            className="relative max-w-lg w-full bg-white rounded-3xl p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Edit Payment Record</h3>
+                <p className="text-xs text-slate-500">Receipt No: {editingPayment.id} | Staff: {editingPayment.employee_name}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingPayment(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSavePaymentEdit} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Amount Paid (₹)</label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={editingPayment.amount}
+                  onChange={(e) => setEditingPayment({ ...editingPayment, amount: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none font-bold text-emerald-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Payment Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={editingPayment.payment_date}
+                    onChange={(e) => setEditingPayment({ ...editingPayment, payment_date: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Payment Type</label>
+                  <select
+                    value={editingPayment.payment_type}
+                    onChange={(e) =>
+                      setEditingPayment({
+                        ...editingPayment,
+                        payment_type: e.target.value as "Bata" | "Salary" | "Advance"
+                      })
+                    }
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none font-semibold"
+                  >
+                    <option value="Bata">Bata</option>
+                    <option value="Salary">Salary</option>
+                    <option value="Advance">Advance</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Payment Mode</label>
+                <select
+                  value={editingPayment.payment_mode}
+                  onChange={(e) =>
+                    setEditingPayment({
+                      ...editingPayment,
+                      payment_mode: e.target.value as "Cash" | "Online" | "UPI" | "Bank Transfer"
+                    })
+                  }
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none font-semibold"
+                >
+                  <option value="Cash">Cash</option>
+                  <option value="Online">Online</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Notes (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="Reference or transaction notes"
+                  value={editingPayment.notes || ""}
+                  onChange={(e) => setEditingPayment({ ...editingPayment, notes: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#142B4A] outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingPayment(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 border border-slate-200 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] shadow-xs cursor-pointer"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Payment Confirmation */}
+      {deletingPayment && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setDeletingPayment(null)}
+        >
+          <div
+            className="relative max-w-md w-full bg-white rounded-3xl p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Delete Payment Record?</h3>
+                <p className="text-xs text-slate-500">This action will remove the record from ledger.</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-rose-50/60 border border-rose-100 text-xs text-rose-950 space-y-1">
+              <p><strong>Receipt No:</strong> {deletingPayment.id}</p>
+              <p><strong>Staff:</strong> {deletingPayment.employee_name}</p>
+              <p><strong>Date:</strong> {deletingPayment.payment_date}</p>
+              <p><strong>Amount Paid:</strong> ₹{deletingPayment.amount.toLocaleString("en-IN")}</p>
+              <p><strong>Mode:</strong> {deletingPayment.payment_mode} ({deletingPayment.payment_type})</p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingPayment(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 border border-slate-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeletePayment}
+                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-xs cursor-pointer"
+              >
+                Yes, Delete Payment
+              </button>
             </div>
           </div>
         </div>

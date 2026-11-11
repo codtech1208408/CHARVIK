@@ -553,6 +553,24 @@ export function initDatabase() {
       )
     `).run();
 
+    // Create employee_payments table for staff disbursements & salary settlements
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS employee_payments (
+        id TEXT PRIMARY KEY,
+        employee_name TEXT NOT NULL,
+        employee_code TEXT NOT NULL,
+        role TEXT NOT NULL,
+        amount REAL NOT NULL,
+        payment_date DATE NOT NULL,
+        payment_mode TEXT NOT NULL,
+        payment_type TEXT NOT NULL,
+        payment_proof TEXT,
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+
     // Create new_tyres table for new tyre stock / purchases
     db.prepare(`
       CREATE TABLE IF NOT EXISTS new_tyres (
