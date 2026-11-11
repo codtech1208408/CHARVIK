@@ -14,6 +14,7 @@ import {
   IndianRupee
 } from 'lucide-react';
 import { api } from '../services/api';
+import { Badge } from '../components/common/Badge';
 import { useToast } from '../components/common/Toast';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -742,17 +743,7 @@ export const Settings: React.FC = () => {
                         )}
                       </td>
                       <td className="py-3 px-3">
-                        {staff.status === 'Active' ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Active
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
-                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                            Disabled
-                          </span>
-                        )}
+                        <Badge status={staff.status === 'Active' ? 'Active' : 'Inactive'} />
                       </td>
                       <td className="py-3 px-3 text-right space-x-1.5">
                         {staff.role !== 'Super Admin' && (

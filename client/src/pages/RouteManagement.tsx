@@ -13,6 +13,8 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
+import { Badge } from '../components/common/Badge';
+import { StatusToggle } from '../components/common/StatusToggle';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
 import { useAuth } from '../context/AuthContext';
@@ -478,16 +480,7 @@ export const RouteManagement: React.FC = () => {
                     </td>
 
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                          r.status === 'Active'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-slate-100 text-slate-600 border-slate-200'
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${r.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
-                        <span>{r.status}</span>
-                      </span>
+                      <Badge status={r.status} />
                     </td>
 
                     {isAdmin && (
@@ -603,52 +596,10 @@ export const RouteManagement: React.FC = () => {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-800 mb-2">
-              Status
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {/* Active Option */}
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, status: 'Active' })}
-                className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-2xl transition-all cursor-pointer ${
-                  formData.status === 'Active'
-                    ? 'border-2 border-[#10b981] bg-[#ecfdf5] text-[#064e3b] font-bold shadow-xs'
-                    : 'border border-slate-200 bg-white text-slate-500 hover:border-slate-300 font-semibold'
-                }`}
-              >
-                <span
-                  className={`w-3.5 h-3.5 rounded-full shrink-0 shadow-xs ${
-                    formData.status === 'Active'
-                      ? 'bg-gradient-to-tr from-[#10b981] to-[#34d399]'
-                      : 'bg-[#10b981]/40'
-                  }`}
-                />
-                <span className="text-sm">Active</span>
-              </button>
-
-              {/* Inactive Option */}
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, status: 'Inactive' })}
-                className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-2xl transition-all cursor-pointer ${
-                  formData.status === 'Inactive'
-                    ? 'border-2 border-slate-700 bg-slate-100 text-slate-900 font-bold shadow-xs'
-                    : 'border border-slate-200 bg-white text-[#475569] hover:border-slate-300 font-semibold'
-                }`}
-              >
-                <span
-                  className={`w-3.5 h-3.5 rounded-full shrink-0 shadow-xs ${
-                    formData.status === 'Inactive'
-                      ? 'bg-slate-800'
-                      : 'bg-[#334155]'
-                  }`}
-                />
-                <span className="text-sm">Inactive</span>
-              </button>
-            </div>
-          </div>
+          <StatusToggle
+            value={formData.status || 'Active'}
+            onChange={(val) => setFormData({ ...formData, status: val })}
+          />
 
           {/* Admin Only: Fixed Trip Amount & Operator Commission */}
           {isAdmin && (

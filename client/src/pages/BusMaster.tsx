@@ -31,6 +31,7 @@ import {
 import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
 import { Badge } from '../components/common/Badge';
+import { StatusToggle } from '../components/common/StatusToggle';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
@@ -816,20 +817,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
 
                   {/* Card Footer: Status & Actions */}
                   <div className="flex items-center justify-between pt-3 mt-1">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
-                        isActive
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                          : 'bg-rose-50 text-rose-700 border-rose-300'
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          isActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
-                        }`}
-                      ></span>
-                      <span>{b.operational_status || 'Inactive'}</span>
-                    </span>
+                    <Badge status={b.operational_status || 'Inactive'} />
 
                     <div className="flex items-center space-x-1">
                       <button
@@ -1043,52 +1031,12 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
           </div>
 
           {/* Status Selection (Active / Inactive pills) */}
-          <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1.5">
-              Status *
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {/* Active Option */}
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, operational_status: 'Active' })}
-                className={`flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-2xl transition-all cursor-pointer ${
-                  formData.operational_status === 'Active'
-                    ? 'border-2 border-[#10b981] bg-[#ecfdf5] text-[#064e3b] font-bold shadow-xs'
-                    : 'border border-slate-200 bg-white text-slate-500 hover:border-slate-300 font-semibold'
-                }`}
-              >
-                <span
-                  className={`w-3.5 h-3.5 rounded-full shrink-0 shadow-xs ${
-                    formData.operational_status === 'Active'
-                      ? 'bg-gradient-to-tr from-[#10b981] to-[#34d399]'
-                      : 'bg-[#10b981]/40'
-                  }`}
-                />
-                <span className="text-sm font-bold">Active</span>
-              </button>
-
-              {/* Inactive Option */}
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, operational_status: 'Inactive' })}
-                className={`flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-2xl transition-all cursor-pointer ${
-                  formData.operational_status === 'Inactive'
-                    ? 'border-2 border-slate-700 bg-slate-100 text-slate-900 font-bold shadow-xs'
-                    : 'border border-slate-200 bg-white text-[#475569] hover:border-slate-300 font-semibold'
-                }`}
-              >
-                <span
-                  className={`w-3.5 h-3.5 rounded-full shrink-0 shadow-xs ${
-                    formData.operational_status === 'Inactive'
-                      ? 'bg-slate-800'
-                      : 'bg-[#334155]'
-                  }`}
-                />
-                <span className="text-sm font-bold">Inactive</span>
-              </button>
-            </div>
-          </div>
+          <StatusToggle
+            label="Status"
+            required
+            value={formData.operational_status || 'Active'}
+            onChange={(val) => setFormData({ ...formData, operational_status: val })}
+          />
 
           {/* Vehicle Identification Numbers */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

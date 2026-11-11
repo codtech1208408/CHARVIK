@@ -6,9 +6,30 @@ interface BadgeProps {
 }
 
 export const Badge: React.FC<BadgeProps> = ({ status, className = '' }) => {
+  if (status === 'Active') {
+    return (
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border-2 border-[#10b981] bg-[#ecfdf5] text-[#064e3b] shadow-xs ${className}`}
+      >
+        <span className="w-2 h-2 mr-1.5 rounded-full shrink-0 shadow-xs bg-gradient-to-tr from-[#10b981] to-[#34d399]" />
+        <span>Active</span>
+      </span>
+    );
+  }
+
+  if (status === 'Inactive') {
+    return (
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border-2 border-slate-700 bg-slate-100 text-slate-900 shadow-xs ${className}`}
+      >
+        <span className="w-2 h-2 mr-1.5 rounded-full shrink-0 shadow-xs bg-slate-800" />
+        <span>Inactive</span>
+      </span>
+    );
+  }
+
   const getColors = () => {
     switch (status) {
-      case 'Active':
       case 'Completed':
       case 'Fit for Service':
       case 'Verified':
@@ -43,7 +64,6 @@ export const Badge: React.FC<BadgeProps> = ({ status, className = '' }) => {
       case 'Open':
         return 'bg-rose-50 text-rose-700 border-rose-200';
 
-      case 'Inactive':
       case 'Out of Service':
       case 'On Hold':
       case 'Cancelled':

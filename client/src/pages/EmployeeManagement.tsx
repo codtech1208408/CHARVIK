@@ -35,6 +35,7 @@ import {
 import { api } from '../services/api';
 import type { Employee } from '../types';
 import { Badge } from '../components/common/Badge';
+import { StatusToggle } from '../components/common/StatusToggle';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
@@ -841,17 +842,7 @@ export const EmployeeManagement: React.FC = () => {
                         </td>
 
                         <td className="py-2 px-3">
-                          {s.status === 'Active' ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">
-                              <Check className="w-3 h-3" />
-                              <span>Active</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
-                              <X className="w-3 h-3" />
-                              <span>Disabled</span>
-                            </span>
-                          )}
+                          <Badge status={s.status === 'Active' ? 'Active' : 'Inactive'} />
                         </td>
 
                         <td className="py-2 px-3 text-center">
@@ -2505,21 +2496,7 @@ export const EmployeeManagement: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Employment Status</label>
-                    <select
-                      value={editFormData.employment_status}
-                      onChange={(e) => setEditFormData({ ...editFormData, employment_status: e.target.value })}
-                      className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none"
-                    >
-                      <option value="Active">Active</option>
-                      <option value="On Leave">On Leave</option>
-                      <option value="Suspended">Suspended</option>
-                      <option value="Inactive">Inactive</option>
-                    </select>
-                  </div>
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Assigned Fleet Bus</label>
                     <select
@@ -2546,6 +2523,13 @@ export const EmployeeManagement: React.FC = () => {
                     />
                   </div>
                 </div>
+
+                {/* Status Selection (Active / Inactive pills) */}
+                <StatusToggle
+                  label="Employment Status"
+                  value={editFormData.employment_status || 'Active'}
+                  onChange={(val) => setEditFormData({ ...editFormData, employment_status: val })}
+                />
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Internal Remarks</label>

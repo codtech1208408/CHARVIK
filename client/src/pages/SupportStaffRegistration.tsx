@@ -20,6 +20,7 @@ import {
 import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
 import { Modal } from '../components/common/Modal';
+import { StatusToggle } from '../components/common/StatusToggle';
 import { useToast } from '../components/common/Toast';
 import { getNextEmployeeCode } from '../utils/employeeCode';
 import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
@@ -862,7 +863,7 @@ export const SupportStaffRegistration: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Employee Code *</label>
                   <input
@@ -883,20 +884,14 @@ export const SupportStaffRegistration: React.FC = () => {
                     className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Status</label>
-                  <select
-                    value={formData.employment_status}
-                    onChange={(e) => handleInputChange('employment_status', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="On Leave">On Leave</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
               </div>
+
+              {/* Status Selection (Active / Inactive) */}
+              <StatusToggle
+                label="Status"
+                value={formData.employment_status || 'Active'}
+                onChange={(val) => handleInputChange('employment_status', val)}
+              />
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Assigned Bus</label>
