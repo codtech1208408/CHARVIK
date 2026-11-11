@@ -765,10 +765,9 @@ export const NewTyres: React.FC = () => {
                 <option value="">-- Select Vehicle Number --</option>
                 {buses.map((b) => {
                   const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
-                  const km = Number((b as any)?.latest_checkup_km || b?.current_odometer_km || 0);
                   return (
                     <option key={b.id || reg} value={reg}>
-                      {reg} {b.model ? `(${b.model})` : ''} {km > 0 ? `• ${km.toLocaleString('en-IN')} KM` : ''}
+                      {reg}
                     </option>
                   );
                 })}
