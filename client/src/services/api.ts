@@ -2336,7 +2336,8 @@ export const api = {
       { key: 'battery_service', name: 'Battery Service', intervalType: 'km', interval: 120000, label: 'Every 1,20,000 KM' },
       { key: 'vehicle_deep_cleaning', name: 'Vehicle Deep Cleaning', intervalType: 'date', interval: 30, label: 'Every month one time' },
       { key: 'break_liner', name: 'Break Liner', intervalType: 'km', interval: 30000, label: 'Every 30,000 KM' },
-      { key: 'vehicle_greecing', name: 'Vehicle Greecing', intervalType: 'date', interval: 10, label: 'Every 10 days' }
+      { key: 'vehicle_greecing', name: 'Vehicle Greecing', intervalType: 'date', interval: 10, label: 'Every 10 days' },
+      { key: 'vehicle_documents', name: 'Vehicle Documents', intervalType: 'date', interval: 365, label: 'Statutory Compliance' }
     ];
 
     let cachedHistory: any[] = [];
@@ -2437,7 +2438,57 @@ export const api = {
         let isOverdue = false;
         let isDueSoon = false;
 
-        if (spec.intervalType === 'km') {
+        if (spec.key === 'vehicle_documents') {
+          const docList = [
+            { name: 'Fitness', date: b.fitness_expiry },
+            { name: 'Tax', date: b.tax_valid_upto },
+            { name: 'Insurance', date: b.insurance_expiry },
+            { name: 'PUCC', date: b.puc_expiry },
+            { name: 'Permit', date: b.permit_expiry },
+            { name: 'AITP', date: b.aitp_valid_upto }
+          ].filter((d) => d.date && d.date !== '—' && d.date !== '-');
+
+          let earliestDoc: any = null;
+          let minDays = Infinity;
+          for (const d of docList) {
+            const dt = new Date(d.date);
+            if (!isNaN(dt.getTime())) {
+              const diff = Math.ceil((dt.getTime() - today.getTime()) / (1000 * 3600 * 24));
+              if (diff < minDays) {
+                minDays = diff;
+                earliestDoc = d;
+              }
+            }
+          }
+
+          lastDoneDate = latest?.completion_date || b.registration_date || b.last_service_date || todayStr;
+
+          if (earliestDoc) {
+            nextDueDate = earliestDoc.date;
+            if (minDays < 0) {
+              status = 'Overdue';
+              isOverdue = true;
+              statusText = `${earliestDoc.name} Overdue (${Math.abs(minDays)}d)`;
+              progressPercent = 100;
+            } else if (minDays <= 30) {
+              status = 'Due Soon';
+              isDueSoon = true;
+              statusText = `${earliestDoc.name} Due in ${minDays} day${minDays === 1 ? '' : 's'}`;
+              progressPercent = 85;
+            } else {
+              status = 'OK';
+              statusText = 'All Documents Valid';
+              progressPercent = 25;
+            }
+          } else {
+            const nextDateObj = new Date(today);
+            nextDateObj.setDate(nextDateObj.getDate() + 365);
+            nextDueDate = latest?.next_due_date || nextDateObj.toISOString().split('T')[0];
+            status = 'OK';
+            statusText = 'All Documents Valid';
+            progressPercent = 25;
+          }
+        } else if (spec.intervalType === 'km') {
           nextDueKm = lastDoneKm + spec.interval;
           const diffKm = nextDueKm - busKm;
           const runKm = Math.max(0, busKm - lastDoneKm);
@@ -2573,6 +2624,19 @@ export const api = {
       });
       // Invalidate cache
       localStorage.removeItem('charvik_fleet_maintenance_cache');
+      if (data.bus_id && (data.fitness_expiry || data.tax_valid_upto || data.insurance_expiry || data.puc_expiry || data.permit_expiry || data.aitp_valid_upto || data.registration_date)) {
+        try {
+          const busesRaw = localStorage.getItem('buses');
+          if (busesRaw) {
+            const busesList = JSON.parse(busesRaw);
+            const idx = busesList.findIndex((b: any) => String(b.id) === String(data.bus_id) || b.registration_number === data.registration_number);
+            if (idx >= 0) {
+              busesList[idx] = { ...busesList[idx], ...data };
+              localStorage.setItem('buses', JSON.stringify(busesList));
+            }
+          }
+        } catch (_) {}
+      }
       return res;
     } catch {
       let list = [...BASE_FLEET_MAINTENANCE_HISTORY];

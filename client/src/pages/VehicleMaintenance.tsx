@@ -25,7 +25,8 @@ import {
   Trash2,
   Check,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Shield
 } from 'lucide-react';
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
@@ -62,6 +63,13 @@ interface Vehicle {
   driver_name?: string;
   last_service_date?: string;
   last_service_km?: number;
+  registration_date?: string;
+  tax_valid_upto?: string;
+  insurance_expiry?: string;
+  fitness_expiry?: string;
+  permit_expiry?: string;
+  puc_expiry?: string;
+  aitp_valid_upto?: string;
   status: 'Healthy' | 'Due Soon' | 'Needs Attention';
   overdueCount: number;
   dueSoonCount: number;
@@ -111,6 +119,16 @@ export const VehicleMaintenance: React.FC = () => {
     mechanic_name: '',
     remarks: '',
     photos: [] as string[]
+  });
+
+  const [docForm, setDocForm] = useState({
+    registration_date: '',
+    fitness_expiry: '',
+    tax_valid_upto: '',
+    insurance_expiry: '',
+    puc_expiry: '',
+    permit_expiry: '',
+    aitp_valid_upto: ''
   });
 
   const [vehicleForm, setVehicleForm] = useState({
@@ -181,6 +199,19 @@ export const VehicleMaintenance: React.FC = () => {
   const handleOpenCompleteModal = (vehicle: Vehicle, service: ServiceItem) => {
     setCompletingService({ vehicle, service });
     const isKm = service.intervalType === 'km';
+    const isDocService = service.key === 'vehicle_documents' || service.name === 'Vehicle Documents';
+
+    if (isDocService) {
+      setDocForm({
+        registration_date: vehicle.registration_date || '',
+        fitness_expiry: vehicle.fitness_expiry || '',
+        tax_valid_upto: vehicle.tax_valid_upto || '',
+        insurance_expiry: vehicle.insurance_expiry || '',
+        puc_expiry: vehicle.puc_expiry || '',
+        permit_expiry: vehicle.permit_expiry || '',
+        aitp_valid_upto: vehicle.aitp_valid_upto || ''
+      });
+    }
 
     // 1. Last Done Values
     const prevDate = service.lastDoneDate && service.lastDoneDate !== '—' && service.lastDoneDate !== '-'
@@ -222,10 +253,10 @@ export const VehicleMaintenance: React.FC = () => {
       last_service_km: prevKm > 0 ? prevKm : '',
       completion_date: autoCompletionDate,
       odometer_km: autoCompletionKm,
-      cost: isKm ? 4500 : 750,
-      workshop: 'Charvik Central Workshop',
-      mechanic_name: '',
-      remarks: '',
+      cost: isDocService ? 1200 : (isKm ? 4500 : 750),
+      workshop: isDocService ? 'RTO & Statutory Authority' : 'Charvik Central Workshop',
+      mechanic_name: isDocService ? 'Fleet Compliance Officer' : '',
+      remarks: isDocService ? 'All document validities verified and updated.' : '',
       photos: []
     });
   };
@@ -271,7 +302,14 @@ export const VehicleMaintenance: React.FC = () => {
     e.preventDefault();
     if (!completingService) return;
 
+    const isDocService = completingService.service.key === 'vehicle_documents' || completingService.service.name === 'Vehicle Documents';
+
     try {
+      if (isDocService) {
+        // Direct save of the 7 document dates to the bus
+        await api.updateBus(completingService.vehicle.id, docForm).catch(() => {});
+      }
+
       await api.completeFleetMaintenance({
         bus_id: completingService.vehicle.id,
         service_type: completingService.service.name,
@@ -283,10 +321,11 @@ export const VehicleMaintenance: React.FC = () => {
         workshop: completionForm.workshop,
         mechanic_name: completionForm.mechanic_name,
         remarks: completionForm.remarks,
-        photos: completionForm.photos
+        photos: completionForm.photos,
+        ...(isDocService ? docForm : {})
       });
 
-      success(`Marked "${completingService.service.name}" as completed!`);
+      success(isDocService ? 'Vehicle Documents marked as completed and validity dates updated!' : `Marked "${completingService.service.name}" as completed!`);
 
       // If completed at an odometer reading, sync bus odometer across fleet
       const compOdo = Number(completionForm.odometer_km) || 0;
@@ -1247,10 +1286,133 @@ export const VehicleMaintenance: React.FC = () => {
           isOpen={!!completingService}
           onClose={() => setCompletingService(null)}
           title={`Mark Completed — ${completingService?.service.name}`}
-          subtitle={`Interval: ${completingService?.service.intervalLabel}. Completing resets this service's next due to the completion odometer + ${completingService?.service.intervalLabel}.`}
-          maxWidth="max-w-xl"
+          subtitle={
+            completingService?.service.key === 'vehicle_documents' || completingService?.service.name === 'Vehicle Documents'
+              ? 'Review and update vehicle registration and compliance certificate validity dates.'
+              : `Interval: ${completingService?.service.intervalLabel}. Completing resets this service's next due to the completion odometer + ${completingService?.service.intervalLabel}.`
+          }
+          maxWidth={completingService?.service.key === 'vehicle_documents' || completingService?.service.name === 'Vehicle Documents' ? 'max-w-2xl' : 'max-w-xl'}
         >
           <form onSubmit={handleSubmitCompletion} className="space-y-4">
+            {completingService?.service.key === 'vehicle_documents' || completingService?.service.name === 'Vehicle Documents' ? (
+              <div className="space-y-4">
+                {/* DOCUMENT & COMPLIANCE VALIDITY Card (Matching user screenshot) */}
+                <div className="bg-slate-50/70 p-4 sm:p-5 rounded-2xl border border-slate-200/90 space-y-4">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <Shield className="w-4 h-4 text-blue-600 shrink-0" />
+                    <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      DOCUMENT & COMPLIANCE VALIDITY
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Left Column */}
+                    <div className="space-y-3.5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Registration Date</label>
+                        <input
+                          type="date"
+                          value={docForm.registration_date}
+                          onChange={(e) => setDocForm({ ...docForm, registration_date: e.target.value })}
+                          className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-600 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Tax Valid Upto</label>
+                        <input
+                          type="date"
+                          value={docForm.tax_valid_upto}
+                          onChange={(e) => setDocForm({ ...docForm, tax_valid_upto: e.target.value })}
+                          className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-600 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">PUCC Valid Upto</label>
+                        <input
+                          type="date"
+                          value={docForm.puc_expiry}
+                          onChange={(e) => setDocForm({ ...docForm, puc_expiry: e.target.value })}
+                          className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-600 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">AITP Valid Upto</label>
+                        <input
+                          type="date"
+                          value={docForm.aitp_valid_upto}
+                          onChange={(e) => setDocForm({ ...docForm, aitp_valid_upto: e.target.value })}
+                          className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-600 font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="space-y-3.5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Fitness Valid Upto</label>
+                        <input
+                          type="date"
+                          value={docForm.fitness_expiry}
+                          onChange={(e) => setDocForm({ ...docForm, fitness_expiry: e.target.value })}
+                          className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-600 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Insurance Valid Upto</label>
+                        <input
+                          type="date"
+                          value={docForm.insurance_expiry}
+                          onChange={(e) => setDocForm({ ...docForm, insurance_expiry: e.target.value })}
+                          className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-600 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Permit Valid Upto</label>
+                        <input
+                          type="date"
+                          value={docForm.permit_expiry}
+                          onChange={(e) => setDocForm({ ...docForm, permit_expiry: e.target.value })}
+                          className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-600 font-medium"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Verification / Renewal Date *</label>
+                    <input
+                      type="date"
+                      required
+                      value={completionForm.completion_date}
+                      onChange={(e) => setCompletionForm({ ...completionForm, completion_date: e.target.value })}
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Renewal / Compliance Cost (₹)</label>
+                    <input
+                      type="number"
+                      value={completionForm.cost}
+                      onChange={(e) => setCompletionForm({ ...completionForm, cost: Number(e.target.value) })}
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Remarks & Compliance Notes</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Document renewal details, payment ref, RTO authority..."
+                    value={completionForm.remarks}
+                    onChange={(e) => setCompletionForm({ ...completionForm, remarks: e.target.value })}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+            ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Last service date</label>
@@ -1342,7 +1504,10 @@ export const VehicleMaintenance: React.FC = () => {
                 />
               </div>
             </div>
+            )}
 
+            {!(completingService?.service.key === 'vehicle_documents' || completingService?.service.name === 'Vehicle Documents') && (
+            <>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Mechanic name</label>
               <input
@@ -1364,6 +1529,8 @@ export const VehicleMaintenance: React.FC = () => {
                 className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
               />
             </div>
+            </>
+            )}
 
             {/* 2-3 Photos Upload (User Request) */}
             <div className="pt-2 border-t border-slate-100">

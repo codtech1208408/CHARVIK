@@ -2227,7 +2227,14 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     operations_manager: 'Priya Sharma',
     last_service_date: '2026-10-13',
     last_service_km: 305000,
-    driver_name: 'Sunil Yadav'
+    driver_name: 'Sunil Yadav',
+    registration_date: '2023-01-10',
+    fitness_expiry: '2027-01-10',
+    tax_valid_upto: '2027-03-31',
+    insurance_expiry: '2027-02-15',
+    puc_expiry: '2027-04-10',
+    permit_expiry: '2027-12-31',
+    aitp_valid_upto: '2027-12-31'
   },
   {
     id: 102,
@@ -2242,7 +2249,14 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     operations_manager: 'Priya Sharma',
     last_service_date: '2026-10-30',
     last_service_km: 61000,
-    driver_name: 'Rahul Chauhan'
+    driver_name: 'Rahul Chauhan',
+    registration_date: '2023-03-15',
+    fitness_expiry: '2027-03-15',
+    tax_valid_upto: '2027-03-31',
+    insurance_expiry: '2027-03-15',
+    puc_expiry: '2027-05-20',
+    permit_expiry: '2027-12-31',
+    aitp_valid_upto: '2027-12-31'
   },
   {
     id: 103,
@@ -2257,7 +2271,14 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     operations_manager: 'Priya Sharma',
     last_service_date: '2026-10-28',
     last_service_km: 85000,
-    driver_name: 'Vikram Patil'
+    driver_name: 'Vikram Patil',
+    registration_date: '2023-02-18',
+    fitness_expiry: '2027-02-18',
+    tax_valid_upto: '2027-03-31',
+    insurance_expiry: '2027-02-18',
+    puc_expiry: '2027-06-15',
+    permit_expiry: '2027-12-31',
+    aitp_valid_upto: '2027-12-31'
   },
   {
     id: 104,
@@ -2272,7 +2293,14 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     operations_manager: 'Priya Sharma',
     last_service_date: '2026-10-08',
     last_service_km: 270000,
-    driver_name: 'Amit Singh'
+    driver_name: 'Amit Singh',
+    registration_date: '2022-11-20',
+    fitness_expiry: '2026-12-05',
+    tax_valid_upto: '2027-03-31',
+    insurance_expiry: '2026-11-20',
+    puc_expiry: '2026-11-28',
+    permit_expiry: '2027-10-15',
+    aitp_valid_upto: '2027-10-15'
   },
   {
     id: 105,
@@ -2287,7 +2315,14 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     operations_manager: 'Priya Sharma',
     last_service_date: '2026-10-26',
     last_service_km: 125000,
-    driver_name: 'Manoj Reddy'
+    driver_name: 'Manoj Reddy',
+    registration_date: '2023-04-12',
+    fitness_expiry: '2027-04-12',
+    tax_valid_upto: '2027-03-31',
+    insurance_expiry: '2027-04-12',
+    puc_expiry: '2027-07-22',
+    permit_expiry: '2027-12-31',
+    aitp_valid_upto: '2027-12-31'
   },
   {
     id: 106,
@@ -2302,7 +2337,14 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     operations_manager: 'Priya Sharma',
     last_service_date: '2026-10-18',
     last_service_km: 240000,
-    driver_name: 'Rajesh Kumar'
+    driver_name: 'Rajesh Kumar',
+    registration_date: '2023-06-01',
+    fitness_expiry: '2027-06-01',
+    tax_valid_upto: '2027-06-30',
+    insurance_expiry: '2027-06-01',
+    puc_expiry: '2027-09-10',
+    permit_expiry: '2027-12-31',
+    aitp_valid_upto: '2027-12-31'
   },
   {
     id: 1,
@@ -2317,7 +2359,14 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     operations_manager: 'Priya Sharma',
     last_service_date: null,
     last_service_km: 42000,
-    driver_name: 'akhil'
+    driver_name: 'akhil',
+    registration_date: '2023-05-20',
+    fitness_expiry: '2027-05-20',
+    tax_valid_upto: '2027-06-30',
+    insurance_expiry: '2027-05-20',
+    puc_expiry: '2027-08-15',
+    permit_expiry: '2027-12-31',
+    aitp_valid_upto: '2027-12-31'
   },
   {
     id: 2,
@@ -2332,7 +2381,14 @@ export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
     operations_manager: 'Priya Sharma',
     last_service_date: null,
     last_service_km: 30000,
-    driver_name: 'Suresh'
+    driver_name: 'Suresh',
+    registration_date: '2023-07-15',
+    fitness_expiry: '2027-07-15',
+    tax_valid_upto: '2027-09-30',
+    insurance_expiry: '2027-07-15',
+    puc_expiry: '2027-10-20',
+    permit_expiry: '2027-12-31',
+    aitp_valid_upto: '2027-12-31'
   }
 ];
 

@@ -2344,7 +2344,8 @@ const FLEET_SERVICE_SPECS = [
   { key: 'battery_service', name: 'Battery Service', intervalType: 'km', interval: 120000, label: 'Every 1,20,000 KM' },
   { key: 'vehicle_deep_cleaning', name: 'Vehicle Deep Cleaning', intervalType: 'date', interval: 30, label: 'Every month one time' },
   { key: 'break_liner', name: 'Break Liner', intervalType: 'km', interval: 30000, label: 'Every 30,000 KM' },
-  { key: 'vehicle_greecing', name: 'Vehicle Greecing', intervalType: 'date', interval: 10, label: 'Every 10 days' }
+  { key: 'vehicle_greecing', name: 'Vehicle Greecing', intervalType: 'date', interval: 10, label: 'Every 10 days' },
+  { key: 'vehicle_documents', name: 'Vehicle Documents', intervalType: 'date', interval: 365, label: 'Statutory Compliance' }
 ];
 
 app.get('/api/fleet-maintenance', (req: Request, res: Response) => {
@@ -2448,7 +2449,57 @@ app.get('/api/fleet-maintenance', (req: Request, res: Response) => {
         let isOverdue = false;
         let isDueSoon = false;
 
-        if (spec.intervalType === 'km') {
+        if (spec.key === 'vehicle_documents') {
+          const docList = [
+            { name: 'Fitness', date: bus.fitness_expiry },
+            { name: 'Tax', date: bus.tax_valid_upto },
+            { name: 'Insurance', date: bus.insurance_expiry },
+            { name: 'PUCC', date: bus.puc_expiry },
+            { name: 'Permit', date: bus.permit_expiry },
+            { name: 'AITP', date: bus.aitp_valid_upto }
+          ].filter((d) => d.date && d.date !== '—' && d.date !== '-');
+
+          let earliestDoc: any = null;
+          let minDays = Infinity;
+          for (const d of docList) {
+            const dt = new Date(d.date);
+            if (!isNaN(dt.getTime())) {
+              const diff = Math.ceil((dt.getTime() - today.getTime()) / (1000 * 3600 * 24));
+              if (diff < minDays) {
+                minDays = diff;
+                earliestDoc = d;
+              }
+            }
+          }
+
+          lastDoneDate = latest?.completion_date || bus.registration_date || bus.last_service_date || today.toISOString().split('T')[0];
+
+          if (earliestDoc) {
+            nextDueDate = earliestDoc.date;
+            if (minDays < 0) {
+              status = 'Overdue';
+              isOverdue = true;
+              statusText = `${earliestDoc.name} Overdue (${Math.abs(minDays)}d)`;
+              progressPercent = 100;
+            } else if (minDays <= 30) {
+              status = 'Due Soon';
+              isDueSoon = true;
+              statusText = `${earliestDoc.name} Due in ${minDays} day${minDays === 1 ? '' : 's'}`;
+              progressPercent = 85;
+            } else {
+              status = 'OK';
+              statusText = 'All Documents Valid';
+              progressPercent = 25;
+            }
+          } else {
+            const nextDateObj = new Date(today);
+            nextDateObj.setDate(nextDateObj.getDate() + 365);
+            nextDueDate = latest?.next_due_date || nextDateObj.toISOString().split('T')[0];
+            status = 'OK';
+            statusText = 'All Documents Valid';
+            progressPercent = 25;
+          }
+        } else if (spec.intervalType === 'km') {
           nextDueKm = lastDoneKm + spec.interval;
           const diffKm = nextDueKm - busKm;
           const runKm = Math.max(0, busKm - lastDoneKm);
@@ -2614,7 +2665,25 @@ app.post('/api/fleet-maintenance/complete', (req: Request, res: Response) => {
     let nextDueKm = 0;
     let nextDueDate = '';
 
-    if (spec?.intervalType === 'km') {
+    if (spec?.key === 'vehicle_documents' || (service_type || '').toLowerCase() === 'vehicle documents') {
+      const expiries = [
+        req.body.fitness_expiry,
+        req.body.tax_valid_upto,
+        req.body.insurance_expiry,
+        req.body.puc_expiry,
+        req.body.permit_expiry,
+        req.body.aitp_valid_upto
+      ].filter((d) => d && d !== '—' && d !== '-');
+
+      if (expiries.length > 0) {
+        expiries.sort();
+        nextDueDate = expiries[0];
+      } else {
+        const d = new Date(compDate);
+        d.setFullYear(d.getFullYear() + 1);
+        nextDueDate = d.toISOString().split('T')[0];
+      }
+    } else if (spec?.intervalType === 'km') {
       nextDueKm = compKm + (spec.interval || 10000);
     } else {
       const d = new Date(compDate);
@@ -2657,6 +2726,38 @@ app.post('/api/fleet-maintenance/complete', (req: Request, res: Response) => {
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(compDate, compKm, bus.id);
+
+    if (
+      req.body.registration_date ||
+      req.body.fitness_expiry ||
+      req.body.tax_valid_upto ||
+      req.body.insurance_expiry ||
+      req.body.puc_expiry ||
+      req.body.permit_expiry ||
+      req.body.aitp_valid_upto
+    ) {
+      db.prepare(`
+        UPDATE buses SET
+          registration_date = COALESCE(?, registration_date),
+          fitness_expiry = COALESCE(?, fitness_expiry),
+          tax_valid_upto = COALESCE(?, tax_valid_upto),
+          insurance_expiry = COALESCE(?, insurance_expiry),
+          puc_expiry = COALESCE(?, puc_expiry),
+          permit_expiry = COALESCE(?, permit_expiry),
+          aitp_valid_upto = COALESCE(?, aitp_valid_upto),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).run(
+        req.body.registration_date || null,
+        req.body.fitness_expiry || null,
+        req.body.tax_valid_upto || null,
+        req.body.insurance_expiry || null,
+        req.body.puc_expiry || null,
+        req.body.permit_expiry || null,
+        req.body.aitp_valid_upto || null,
+        bus.id
+      );
+    }
 
     logAudit('FLEET_MAINTENANCE_COMPLETE', 'Vehicle Maintenance', info.lastInsertRowid, `Completed ${spec?.name || service_type} for ${bus.bus_number} at ${compKm} KM`);
 
