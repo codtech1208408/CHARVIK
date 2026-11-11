@@ -37,17 +37,17 @@ export const StatCard: React.FC<StatCardProps> = ({
       }`}
     >
       <div className="flex-1">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{title}</p>
-        <h3 className="text-2xl lg:text-3xl font-extrabold text-[#172B4D] mt-1 tracking-tight group-hover:text-blue-600 transition-colors">
+        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
+        <h3 className="text-xl lg:text-2xl font-extrabold text-[#172B4D] mt-0.5 tracking-tight group-hover:text-blue-600 transition-colors">
           {value}
         </h3>
         {subtitle && (
-          <p className="text-xs text-slate-500 mt-1 font-medium">{subtitle}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5 font-medium">{subtitle}</p>
         )}
       </div>
 
-      <div className={`w-12 h-12 rounded-xl ${iconBgColor} flex items-center justify-center shrink-0 ml-4 shadow-sm group-hover:scale-105 transition-transform`}>
-        <Icon className={`w-6 h-6 ${iconColor}`} />
+      <div className={`w-10 h-10 rounded-xl ${iconBgColor} flex items-center justify-center shrink-0 ml-3 shadow-sm group-hover:scale-105 transition-transform`}>
+        <Icon className={`w-5 h-5 ${iconColor}`} />
       </div>
     </div>
   );

@@ -24,6 +24,14 @@ export const AdminLayout: React.FC = () => {
     });
   }, []);
 
+  // Set global admin compact text scaling class on root html
+  useEffect(() => {
+    document.documentElement.classList.add('admin-active-view');
+    return () => {
+      document.documentElement.classList.remove('admin-active-view');
+    };
+  }, []);
+
   useEffect(() => {
     AOS.refresh();
   }, [location.pathname]);
@@ -301,7 +309,7 @@ export const AdminLayout: React.FC = () => {
     location.pathname === '/operator/';
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col admin-portal-scope text-[13px]">
       {/* Sidebar - Pinned on desktop */}
       <Sidebar
         isCollapsed={isCollapsed}
