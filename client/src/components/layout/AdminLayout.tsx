@@ -314,7 +314,7 @@ export const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          isSidebarVisible ? 'lg:pl-[88px]' : 'lg:pl-0'
+          isSidebarVisible ? 'lg:pl-64' : 'lg:pl-0'
         }`}
       >
         <Navbar

@@ -79,14 +79,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Floating flyout menu state (Shows to the right of clicked tab, matching reference video!)
-  const [activeFlyout, setActiveFlyout] = useState<{
-    route: string;
-    item: NavItemLeaf;
-    top: number;
-    left: number;
-  } | null>(null);
-
   const DEFAULT_OPERATOR_CATEGORIES = ['Route Management', 'Task Management', 'AC Maintenance'];
   const [operatorCategories, setOperatorCategories] = useState<string[]>(DEFAULT_OPERATOR_CATEGORIES);
 
@@ -115,30 +107,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       isMounted = false;
     };
   }, [location.pathname]);
-
-  // Close flyout on global click or Escape key
-  useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('[data-flyout-container]') && !target.closest('[data-nav-item]')) {
-        setActiveFlyout(null);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setActiveFlyout(null);
-    };
-    window.addEventListener('mousedown', handleGlobalClick);
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('mousedown', handleGlobalClick);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
-  // Close flyout on route change
-  useEffect(() => {
-    setActiveFlyout(null);
-  }, [location.pathname, location.search]);
 
   const isCaptain = location.pathname.startsWith('/captain');
   const isOperator = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
@@ -459,12 +427,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return location.pathname === pureRoute;
   };
 
-  // Click handler: opens subtabs flyout panel (NO inline pushing down!)
+  // Track inline expanded state of tabs with sub-modules (ZERO popup box!)
+  const [expandedTabs, setExpandedTabs] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    return initial;
+  });
+
+  // Auto-expand on navigation
+  useEffect(() => {
+    navItems.forEach((item) => {
+      if (item.subItems && isTabActive(item)) {
+        setExpandedTabs((prev) => ({ ...prev, [item.route]: true }));
+      }
+    });
+  }, [location.pathname, location.search]);
+
+  // Click handler: toggles subtabs inline directly inside the sidebar (ZERO floating popup box!)
   const handleTabClick = (e: React.MouseEvent, item: NavItemLeaf) => {
     const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
     if (!hasSubItems) {
-      setActiveFlyout(null);
-      setIsMobileOpen(false);
+      if (window.innerWidth < 1024) setIsMobileOpen(false);
       navigate(item.route);
       return;
     }
@@ -472,37 +454,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    // Toggle flyout popover menu to the right (exact match to video reference!)
-    if (activeFlyout?.route === item.route) {
-      setActiveFlyout(null);
-    } else {
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const popupHeight = Math.min((item.subItems?.length || 1) * 44 + 65, 520);
-      const calculatedTop = Math.max(12, Math.min(rect.top - 6, window.innerHeight - popupHeight - 16));
-      setActiveFlyout({
-        route: item.route,
-        item,
-        top: calculatedTop,
-        left: 88
-      });
-    }
-  };
-
-  const handleTabHover = (e: React.MouseEvent, item: NavItemLeaf) => {
-    const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
-    if (!hasSubItems) {
-      setActiveFlyout(null);
-      return;
-    }
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const popupHeight = Math.min((item.subItems?.length || 1) * 44 + 65, 520);
-    const calculatedTop = Math.max(12, Math.min(rect.top - 6, window.innerHeight - popupHeight - 16));
-    setActiveFlyout({
-      route: item.route,
-      item,
-      top: calculatedTop,
-      left: 88
-    });
+    // Toggle inline subtabs under the clicked tab
+    setExpandedTabs((prev) => ({
+      ...prev,
+      [item.route]: !prev[item.route]
+    }));
   };
 
   return (
@@ -515,14 +471,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {/* Sidebar Drawer - Always w-[88px] compact vertical rail */}
+      {/* Sidebar Drawer - Full sidebar matching Image 3 / Image 4 */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl w-[88px] ${isMobileOpen
-          ? 'translate-x-0'
-          : isVisible
-            ? '-translate-x-full lg:translate-x-0'
-            : '-translate-x-full'
-          }`}
+        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-xl w-64 ${
+          isMobileOpen
+            ? 'translate-x-0'
+            : isVisible
+              ? 'translate-x-0'
+              : '-translate-x-full'
+        }`}
       >
         {/* Mobile Close Button (shown only on mobile drawer) */}
         {isMobileOpen && (
@@ -538,7 +495,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Top Header - Three Lines (Hamburger Toggle Button) directly above Dashboard */}
-        <div className="h-[128px] flex items-center justify-center border-b border-slate-100 shrink-0 px-2">
+        <div className="h-[128px] flex items-center justify-between px-5 border-b border-slate-100 shrink-0">
           <button
             onClick={() => {
               if (window.innerWidth < 1024) {
@@ -553,114 +510,163 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Menu className="w-5 h-5 text-[#142B4A]" />
           </button>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Navigation
+          </span>
         </div>
 
-        {/* Navigation Items List (Always Compact icon-strip format matching Image 3) */}
-        <div className="flex-1 overflow-y-auto py-2.5 px-2 space-y-2 scrollbar-none">
+        {/* Navigation Items List (Matching Image 4: horizontal icon + title + right chevron / LIVE badge) */}
+        <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1.5 scrollbar-thin">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isTabActive(item);
             const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
-            const isFlyoutOpen = activeFlyout?.route === item.route;
+            const isExpanded = Boolean(hasSubItems && expandedTabs[item.route]);
 
             return (
-              <div
-                key={item.route}
-                data-nav-item
-                onClick={(e) => handleTabClick(e, item)}
-                onMouseEnter={(e) => handleTabHover(e, item)}
-                className={`w-full flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all cursor-pointer group relative ${active || isFlyoutOpen
-                  ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
-                  : 'text-slate-600 hover:bg-blue-50/80 hover:text-[#142B4A]'
+              <div key={item.route} className="space-y-1">
+                {/* Main Item Row */}
+                <div
+                  onClick={(e) => handleTabClick(e, item)}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group cursor-pointer ${
+                    active
+                      ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
+                      : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
                   }`}
-              >
-                <Icon
-                  className={`w-5 h-5 mb-1 transition-transform group-hover:scale-110 ${active || isFlyoutOpen ? 'text-white' : 'text-[#2563EB]'
-                    }`}
-                />
-                <span className="text-[10px] font-bold text-center leading-tight line-clamp-2 max-w-[76px]">
-                  {item.label}
-                </span>
-                {hasSubItems && (
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full mt-1 ${active || isFlyoutOpen ? 'bg-sky-300' : 'bg-blue-500'
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <Icon
+                      className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
+                        active ? 'text-white' : 'text-[#2563EB]'
                       }`}
-                  />
+                    />
+                    <span className="truncate tracking-tight">{item.label}</span>
+                  </div>
+
+                  {/* Badges / Chevrons */}
+                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                    {item.hasLiveBadge && (
+                      <span
+                        className={`px-2 py-0.5 text-[10px] font-black uppercase rounded-full tracking-wider ${
+                          active
+                            ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
+                            : item.label === 'Audit Log'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-blue-50 text-blue-700 border border-blue-200'
+                        }`}
+                      >
+                        LIVE
+                      </span>
+                    )}
+
+                    {hasSubItems && (
+                      <ChevronRight
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          isExpanded
+                            ? 'rotate-90 ' + (active ? 'text-white' : 'text-[#2563EB]')
+                            : active
+                              ? 'text-white'
+                              : 'text-slate-400'
+                        }`}
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Inline Subtabs List (NO floating popup/box!) */}
+                {hasSubItems && isExpanded && (
+                  <div className="mt-1 ml-4 pl-3 py-1 space-y-1 border-l-2 border-blue-400/70 animate-fadeIn">
+                    {item.subItems?.map((sub) => {
+                      const SubIcon = sub.icon;
+                      const subActive = isSubActive(sub);
+
+                      return (
+                        <NavLink
+                          key={sub.route}
+                          to={sub.route}
+                          onClick={() => {
+                            if (window.innerWidth < 1024) setIsMobileOpen(false);
+                          }}
+                          className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                            subActive
+                              ? 'bg-blue-600 text-white font-bold shadow-xs'
+                              : 'text-slate-600 hover:text-[#142B4A] hover:bg-blue-50/80'
+                          }`}
+                        >
+                          <SubIcon
+                            className={`w-4 h-4 shrink-0 ${
+                              subActive ? 'text-white' : 'text-[#2563EB]'
+                            }`}
+                          />
+                          <span className="truncate">{sub.label}</span>
+                          {subActive && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-white ml-auto shrink-0" />
+                          )}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             );
           })}
         </div>
 
-        {/* Footer Area: Actions (Always Compact) */}
-        <div className="p-2 border-t border-slate-100 bg-slate-50/60 shrink-0 flex flex-col items-center space-y-2">
+        {/* Footer Area: Actions */}
+        <div className="p-3 border-t border-slate-100 bg-slate-50/60 shrink-0 space-y-2">
           {/* Admin shortcut: View Operator Dashboard vs Return to Admin Dashboard */}
           {isAdmin && (
             isOperatorPortal ? (
               <Link
                 to="/admin/dashboard"
-                className="w-full flex flex-col items-center justify-center p-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all cursor-pointer"
-                title="Return to Admin Dashboard"
+                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all text-xs font-bold group cursor-pointer"
+                title="Return to the Main Admin Dashboard"
               >
-                <ArrowLeft className="w-4 h-4 text-white" />
+                <div className="flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4 text-white" />
+                  <span className="truncate">Admin Dashboard</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-white/80" />
               </Link>
             ) : (
               <Link
                 to="/operator/dashboard"
-                className="w-full flex flex-col items-center justify-center p-2 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100 text-blue-900 cursor-pointer shadow-xs"
+                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100 text-xs font-bold text-blue-900 group cursor-pointer shadow-xs"
                 title="Open Operator Dashboard"
               >
-                <ShieldCheck className="w-4 h-4 text-[#2563EB]" />
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#2563EB]" />
+                  <span className="truncate">Operator Portal</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-blue-500" />
               </Link>
             )
+          )}
+
+          {/* User Profile info if available */}
+          {activeUser && (
+            <div className="px-3 py-2 bg-white rounded-xl flex items-center space-x-2.5 border border-slate-200 shadow-xs">
+              <div className="w-7 h-7 rounded-full bg-[#142B4A] text-white flex items-center justify-center font-bold text-xs uppercase shadow-xs">
+                {(activeUser.name || 'Admin').slice(0, 2)}
+              </div>
+              <div className="truncate flex-1">
+                <p className="text-xs font-bold text-slate-800 truncate">{activeUser.name}</p>
+                <p className="text-[10px] text-slate-500 font-medium truncate">{activeUser.role}</p>
+              </div>
+            </div>
           )}
 
           {/* Sign Out */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center p-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+            className="w-full flex items-center px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
             title="Sign Out"
           >
-            <LogOut className="w-4 h-4 shrink-0" />
+            <LogOut className="w-4 h-4 shrink-0 mr-2.5" />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
-
-      {/* Subtabs Menu - Clean borderless list matching reference video, NO box container */}
-      {activeFlyout && (
-        <div
-          data-flyout-container
-          style={{ top: `${activeFlyout.top}px`, left: '88px' }}
-          className="fixed z-[9999] bg-white/95 backdrop-blur-md py-1.5 px-1 min-w-[200px] max-w-[270px] animate-fadeIn"
-        >
-          {/* Subtabs List - Seamless list of navigation links */}
-          <div className="flex flex-col space-y-0.5">
-            {activeFlyout.item.subItems?.map((sub) => {
-              const SubIcon = sub.icon;
-              const subActive = isSubActive(sub);
-
-              return (
-                <NavLink
-                  key={sub.route}
-                  to={sub.route}
-                  onClick={() => {
-                    setActiveFlyout(null);
-                    setIsMobileOpen(false);
-                  }}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 text-xs transition-colors ${
-                    subActive
-                      ? 'text-blue-600 font-bold'
-                      : 'text-slate-800 hover:text-blue-600 font-medium'
-                  }`}
-                >
-                  <SubIcon className={`w-4 h-4 shrink-0 ${subActive ? 'text-blue-600' : 'text-slate-500'}`} />
-                  <span className="truncate">{sub.label}</span>
-                </NavLink>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Mobile Fixed Bottom Navigation Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-lg px-2 py-1.5 flex justify-around items-center">
