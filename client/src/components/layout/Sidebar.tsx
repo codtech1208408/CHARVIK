@@ -281,7 +281,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Vyshnavi Travels',
       route: '/admin/vyshnavi-travels',
       icon: Bus,
-      imageSrc: '/vyshnavi-tab-logo.jpg',
       activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi']
     },
     {
@@ -556,7 +555,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Top Header - Three Lines (Hamburger Toggle Button) directly above Dashboard */}
-        <div className="h-[128px] flex items-center justify-center border-b border-slate-100 shrink-0 px-2">
+        <div className="h-[96px] flex items-center justify-center border-b border-slate-100 shrink-0 px-2">
           <button
             onClick={() => {
               if (window.innerWidth < 1024) {
@@ -697,11 +696,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActiveFlyout(null);
                     setIsMobileOpen(false);
                   }}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 text-xs transition-colors ${
-                    subActive
+                  className={`flex items-center gap-2.5 px-3 py-1.5 text-xs transition-colors ${subActive
                       ? 'text-blue-600 font-bold'
                       : 'text-slate-800 hover:text-blue-600 font-medium'
-                  }`}
+                    }`}
                 >
                   <SubIcon className={`w-4 h-4 shrink-0 ${subActive ? 'text-blue-600' : 'text-slate-500'}`} />
                   <span className="truncate">{sub.label}</span>

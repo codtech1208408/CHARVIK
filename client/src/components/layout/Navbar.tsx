@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   return (
-    <header className="min-h-[128px] py-2 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
+    <header className="min-h-[96px] py-2 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
       {/* Left: Menu Drawer Toggle (Mobile) & Brand Logo when collapsed & Page Title */}
       <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         <button
@@ -145,16 +145,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               onToggleSidebar();
             }
           }}
-          className={`p-2 sm:p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center shrink-0 border border-slate-200/80 shadow-xs ${
-            isSidebarVisible ? 'lg:hidden' : 'flex'
-          }`}
+          className={`p-2 sm:p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center shrink-0 border border-slate-200/80 shadow-xs ${isSidebarVisible ? 'lg:hidden' : 'flex'
+            }`}
           title={isSidebarVisible ? 'Hide Navigation Sidebar' : 'Show Navigation Sidebar'}
           aria-label="Toggle Navigation Sidebar"
         >
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
 
-        {/* Charvik brand logo on desktop - Significantly enlarged */}
+        {/* Charvik brand logo on desktop */}
         <Link
           to={`${basePrefix}/dashboard`}
           className="flex items-center justify-center py-1 mr-4 shrink-0 transition-opacity hover:opacity-95 cursor-pointer"
@@ -163,7 +162,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <img
             src="/logo-compact.png"
             alt="Charvik Staffing Consultancy"
-            className="h-[105px] sm:h-[120px] lg:h-[142px] max-h-[150px] w-auto max-w-[320px] sm:max-w-[440px] lg:max-w-[540px] object-contain transition-transform hover:scale-105"
+            className="h-[75px] sm:h-[84px] lg:h-[90px] max-h-[92px] w-auto max-w-[280px] sm:max-w-[360px] lg:max-w-[420px] object-contain transition-transform hover:scale-105"
           />
         </Link>
 

@@ -281,6 +281,9 @@ export const RouteManagement: React.FC = () => {
   const avgDistance = routes.length
     ? Math.round(routes.reduce((acc, r) => acc + (r.destination_km || 0), 0) / routes.length)
     : 0;
+  const avgTripAmount = routes.length
+    ? Math.round(routes.reduce((acc, r) => acc + (Number(r.trip_amount) || 0), 0) / routes.length)
+    : 0;
 
   return (
     <div className="space-y-6">
