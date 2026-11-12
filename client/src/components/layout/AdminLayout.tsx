@@ -11,7 +11,7 @@ import { ALL_CATEGORY_NAMES } from '../../constants/moduleCategories';
 export const AdminLayout: React.FC = () => {
   // 1. ALL HOOKS CALLED UNCONDITIONALLY AT THE VERY TOP
   const { user, isAuthenticated, loading, setUser } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
   const prevPathRef = useRef<string>(location.pathname);
@@ -314,7 +314,7 @@ export const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          isCollapsed ? 'lg:pl-20' : 'lg:pl-72'
+          isCollapsed ? 'lg:pl-[88px]' : 'lg:pl-64'
         }`}
       >
         <Navbar

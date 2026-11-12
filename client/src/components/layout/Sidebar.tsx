@@ -16,7 +16,6 @@ import {
   Bell,
   ExternalLink,
   ChevronRight,
-  ChevronDown,
   LogOut,
   ChevronLeft,
   X,
@@ -31,12 +30,10 @@ import {
   IndianRupee,
   Snowflake,
   ClipboardCheck,
-  RotateCw,
   History,
   FileText,
   CalendarCheck,
-  Gauge,
-  Settings
+  Gauge
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
@@ -77,8 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Track expanded/collapsed state of sidebar items with sub-menus
-  const [subMenusOpen, setSubMenusOpen] = useState<Record<string, boolean>>({});
+  // Floating flyout menu state (Shows to the right of clicked tab, matching reference video!)
   const [activeFlyout, setActiveFlyout] = useState<{
     route: string;
     item: NavItemLeaf;
@@ -150,10 +146,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   // =========================================================================
-  // SUB-ITEMS DEFINITIONS
+  // SUBTABS SPECIFICATIONS (Exact 1-to-1 match with all system pages)
   // =========================================================================
 
-  // Admin: Vehicle Management Subtabs (All 8 modules)
+  // Admin Vehicle Management Subtabs (8 modules)
   const adminVehicleManagementSubItems: NavSubItem[] = [
     { label: 'Route Management', route: '/admin/routes', icon: Navigation, activeRoutes: ['/admin/routes'] },
     { label: 'Task Management', route: '/admin/tasks', icon: ClipboardList, activeRoutes: ['/admin/tasks'] },
@@ -165,7 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Captain Audit Record', route: '/admin/captain-audit', icon: ShieldCheck, activeRoutes: ['/admin/captain-audit', '/captain/audit-record'] },
   ];
 
-  // Admin: Vehicle Maintenance Subtabs (All 13 modules)
+  // Admin Vehicle Maintenance Subtabs (13 modules)
   const adminVehicleMaintenanceSubItems: NavSubItem[] = [
     { label: 'Fleet Maintenance Overview', route: '/admin/vehicle-maintenance', icon: Gauge, activeRoutes: ['/admin/vehicle-maintenance'] },
     { label: 'Vehicle Registration', route: '/admin/vehicles', icon: Bus, activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management'] },
@@ -182,7 +178,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Repairs & Work Orders', route: '/admin/repairs', icon: Wrench, activeRoutes: ['/admin/repairs'] },
   ];
 
-  // Admin: Vyshnavi Travels Subtabs
+  // Admin Vyshnavi Travels Subtabs
   const adminVyshnaviTravelsSubItems: NavSubItem[] = [
     { label: 'Travels Statement & Billing', route: '/admin/vyshnavi-travels', icon: FileText, activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi'] },
     { label: 'Service Records', route: '/admin/vyshnavi-travels?tab=records', icon: ClipboardList, activeRoutes: ['/admin/vyshnavi-travels?tab=records'] },
@@ -228,7 +224,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   // =========================================================================
-  // MAIN NAV ITEMS (Clean, consistent format across all portals)
+  // MAIN NAVIGATION TABS (Settings removed per user request!)
   // =========================================================================
 
   const adminNavItems: NavItemLeaf[] = [
@@ -317,33 +313,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
       route: '/admin/income-expense',
       icon: IndianRupee,
       activeRoutes: ['/admin/income-expense', '/admin/income-and-expense']
-    },
-    {
-      label: 'Settings',
-      route: '/admin/settings',
-      icon: Settings,
-      activeRoutes: ['/admin/settings']
     }
   ];
 
   const captainNavItems: NavItemLeaf[] = [
     { label: 'Dashboard', route: '/captain/dashboard', icon: LayoutGrid, hasLiveBadge: true, activeRoutes: ['/captain/dashboard'] },
     {
-      label: 'Captain Audit Record',
+      label: 'Audit Record',
       route: '/captain/audit-record',
       icon: ShieldCheck,
       activeRoutes: ['/captain/audit-record', '/captain/captain-audit'],
       subItems: captainAuditSubItems
     },
     {
-      label: 'Vehicle Operations',
+      label: 'Vehicle Ops',
       route: '/captain/daily-kilometers',
       icon: Truck,
       activeRoutes: ['/captain/daily-kilometers', '/captain/bus-condition', '/captain/buses'],
       subItems: captainFleetSubItems
     },
     {
-      label: 'Maintenance & Checks',
+      label: 'Maintenance',
       route: '/captain/tyre-maintenance',
       icon: Wrench,
       activeRoutes: ['/captain/tyre-maintenance', '/captain/battery-maintenance', '/captain/maintenance-schedule', '/captain/complaints'],
@@ -352,7 +342,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const supporterNavItems: NavItemLeaf[] = [
-    { label: 'Operator Dashboard', route: '/operator/dashboard', icon: ShieldCheck, hasLiveBadge: true, activeRoutes: ['/operator/dashboard', '/supporter/dashboard'] },
+    { label: 'Dashboard', route: '/operator/dashboard', icon: ShieldCheck, hasLiveBadge: true, activeRoutes: ['/operator/dashboard', '/supporter/dashboard'] },
     {
       label: 'Duty & Tasks',
       route: '/operator/tasks',
@@ -361,7 +351,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       subItems: operatorDutySubItems
     },
     {
-      label: 'Fleet & Maintenance',
+      label: 'Maintenance',
       route: '/operator/bus-condition',
       icon: Truck,
       activeRoutes: ['/operator/bus-condition', '/operator/daily-kilometers', '/operator/maintenance-schedule', '/operator/complaints', '/operator/repairs', '/operator/buses'],
@@ -482,7 +472,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return location.pathname === pureRoute;
   };
 
-  // Click handler: opens subtabs flyout and toggles accordion
+  // Click handler: opens subtabs flyout panel (NO inline pushing down!)
   const handleTabClick = (e: React.MouseEvent, item: NavItemLeaf) => {
     const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
     if (!hasSubItems) {
@@ -495,24 +485,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    // Toggle inline accordion in expanded mode
-    setSubMenusOpen((prev) => ({
-      ...prev,
-      [item.route]: prev[item.route] === undefined ? !isTabActive(item) : !prev[item.route]
-    }));
-
-    // Toggle flyout popover menu (matching reference video interaction!)
+    // Toggle flyout popover menu to the right (exact match to video reference!)
     if (activeFlyout?.route === item.route) {
       setActiveFlyout(null);
     } else {
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const popupHeight = Math.min((item.subItems?.length || 1) * 44 + 60, 480);
-      const calculatedTop = Math.max(12, Math.min(rect.top - 8, window.innerHeight - popupHeight - 16));
+      const popupHeight = Math.min((item.subItems?.length || 1) * 44 + 65, 520);
+      const calculatedTop = Math.max(12, Math.min(rect.top - 6, window.innerHeight - popupHeight - 16));
       setActiveFlyout({
         route: item.route,
         item,
         top: calculatedTop,
-        left: isCollapsed ? 84 : 292
+        left: isCollapsed ? 92 : 260
       });
     }
   };
@@ -525,13 +509,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       return;
     }
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const popupHeight = Math.min((item.subItems?.length || 1) * 44 + 60, 480);
-    const calculatedTop = Math.max(12, Math.min(rect.top - 8, window.innerHeight - popupHeight - 16));
+    const popupHeight = Math.min((item.subItems?.length || 1) * 44 + 65, 520);
+    const calculatedTop = Math.max(12, Math.min(rect.top - 6, window.innerHeight - popupHeight - 16));
     setActiveFlyout({
       route: item.route,
       item,
       top: calculatedTop,
-      left: 84
+      left: 92
     });
   };
 
@@ -548,7 +532,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Sidebar Drawer */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl ${
-          isCollapsed ? 'w-20' : 'w-72'
+          isCollapsed ? 'w-[88px]' : 'w-64'
         } ${isPinned
             ? isMobileOpen
               ? 'translate-x-0'
@@ -559,10 +543,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }`}
       >
         {/* Header / Brand Area */}
-        <div className="p-3.5 border-b border-slate-100 flex flex-col items-center justify-between">
-          <div className="w-full flex items-center justify-between mb-1.5">
+        <div className="p-3 border-b border-slate-100 flex flex-col items-center justify-between">
+          <div className="w-full flex items-center justify-between mb-1">
             {!isCollapsed && (
-              <span className="text-[11px] font-black tracking-widest text-slate-400 uppercase">
+              <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                 MANAGEMENT
               </span>
             )}
@@ -590,27 +574,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Logo */}
-          {!isCollapsed ? (
-            <div className="w-full flex items-center justify-center py-1 px-1">
-              <img
-                src="/logo-compact.png"
-                alt="Charvik Staffing Consultancy"
-                className="w-full h-auto max-h-[140px] object-contain transition-all duration-200"
-              />
-            </div>
-          ) : (
-            <div className="w-full flex items-center justify-center py-1">
-              <img
-                src="/logo-compact.png"
-                alt="Charvik"
-                className="w-12 h-12 object-contain"
-              />
-            </div>
-          )}
+          <div className="w-full flex items-center justify-center py-1">
+            <img
+              src="/logo-compact.png"
+              alt="Charvik"
+              className={isCollapsed ? "w-11 h-11 object-contain" : "w-full max-h-[110px] object-contain"}
+            />
+          </div>
 
           {!isCollapsed && (
-            <div className="w-full mt-2 flex items-center justify-center">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shadow-xs tracking-wide ${
+            <div className="w-full mt-1.5 flex items-center justify-center">
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-xs tracking-wide ${
                 isCaptain
                   ? 'bg-amber-50 text-amber-700 border-amber-200'
                   : isOperator
@@ -622,22 +596,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ) : isOperatorPortal ? (
                   <>⚙️ <span>Operator Portal</span></>
                 ) : (
-                  <>🛡️ <span>Super Admin Portal</span></>
+                  <>🛡️ <span>Super Admin</span></>
                 )}
               </span>
             </div>
           )}
         </div>
 
-        {/* Navigation Items List */}
-        <div className="flex-1 overflow-y-auto py-3 px-2 sm:px-3 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200">
+        {/* Navigation Items List (Compact icon-strip format matching reference video!) */}
+        <div className="flex-1 overflow-y-auto py-2.5 px-2 space-y-2 scrollbar-none">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isTabActive(item);
             const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
-            const isAccordionOpen = subMenusOpen[item.route] !== undefined ? subMenusOpen[item.route] : active;
+            const isFlyoutOpen = activeFlyout?.route === item.route;
 
-            // Collapsed Mode (Compact vertical strip with icon stacked above label, matching reference video!)
+            // Compact Mode (Default: stacked icon on top, text label below, exactly matching reference video at 00:03!)
             if (isCollapsed) {
               return (
                 <div
@@ -646,7 +620,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={(e) => handleTabClick(e, item)}
                   onMouseEnter={(e) => handleTabHover(e, item)}
                   className={`w-full flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all cursor-pointer group relative ${
-                    active
+                    active || isFlyoutOpen
                       ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
                       : 'text-slate-600 hover:bg-blue-50/80 hover:text-[#142B4A]'
                   }`}
@@ -654,16 +628,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <Icon
                     className={`w-5 h-5 mb-1 transition-transform group-hover:scale-110 ${
-                      active ? 'text-white' : 'text-[#2563EB]'
+                      active || isFlyoutOpen ? 'text-white' : 'text-[#2563EB]'
                     }`}
                   />
-                  <span className="text-[10px] font-bold text-center leading-tight line-clamp-2 max-w-[68px]">
+                  <span className="text-[10px] font-bold text-center leading-tight line-clamp-2 max-w-[76px]">
                     {item.label}
                   </span>
                   {hasSubItems && (
                     <span
                       className={`w-1.5 h-1.5 rounded-full mt-1 ${
-                        active ? 'bg-sky-300' : 'bg-blue-500'
+                        active || isFlyoutOpen ? 'bg-sky-300' : 'bg-blue-500'
                       }`}
                     />
                   )}
@@ -671,111 +645,80 @@ export const Sidebar: React.FC<SidebarProps> = ({
               );
             }
 
-            // Expanded Mode: Full width with icon, label, live badge, chevron, and expandable accordion
+            // Expanded Mode: Clean horizontal item, clicking opens flyout to the right (NO inline pushing down!)
             return (
-              <div key={item.route} className="space-y-1">
-                <div
-                  data-nav-item
-                  onClick={(e) => handleTabClick(e, item)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[13px] font-bold transition-all duration-150 group cursor-pointer ${
-                    active
-                      ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
-                      : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <Icon
-                      className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
-                        active ? 'text-white' : 'text-[#2563EB]'
-                      }`}
-                    />
-                    <span className="truncate tracking-tight">{item.label}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                    {item.hasLiveBadge && (
-                      <span
-                        className={`px-2 py-0.5 text-[10px] font-black uppercase rounded-full tracking-wider ${
-                          active
-                            ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
-                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        }`}
-                      >
-                        LIVE
-                      </span>
-                    )}
-
-                    {hasSubItems && (
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform duration-200 ${
-                          isAccordionOpen ? 'rotate-180 text-white' : active ? 'text-white' : 'text-slate-400'
-                        }`}
-                      />
-                    )}
-                  </div>
+              <div
+                key={item.route}
+                data-nav-item
+                onClick={(e) => handleTabClick(e, item)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-[12px] font-bold transition-all duration-150 group cursor-pointer ${
+                  active || isFlyoutOpen
+                    ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
+                    : 'text-slate-700 hover:bg-blue-50/70 hover:text-[#142B4A]'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <Icon
+                    className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
+                      active || isFlyoutOpen ? 'text-white' : 'text-[#2563EB]'
+                    }`}
+                  />
+                  <span className="truncate tracking-tight">{item.label}</span>
                 </div>
 
-                {/* Inline Accordion Sub-items */}
-                {hasSubItems && isAccordionOpen && (
-                  <div className="mt-1 ml-4 pl-3 pr-2 py-1.5 border-l-2 border-blue-400/80 bg-blue-50/40 rounded-r-2xl space-y-1 animate-fadeIn">
-                    {item.subItems!.map((sub) => {
-                      const SubIcon = sub.icon;
-                      const subActive = isSubActive(sub);
+                <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
+                  {item.hasLiveBadge && (
+                    <span
+                      className={`px-1.5 py-0.5 text-[9px] font-black uppercase rounded-full tracking-wider ${
+                        active || isFlyoutOpen
+                          ? 'bg-blue-500/30 text-blue-100 border border-blue-400/40'
+                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }`}
+                    >
+                      LIVE
+                    </span>
+                  )}
 
-                      return (
-                        <NavLink
-                          key={sub.route}
-                          to={sub.route}
-                          onClick={() => {
-                            setIsMobileOpen(false);
-                            setActiveFlyout(null);
-                          }}
-                          className={`flex items-center px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                            subActive
-                              ? 'bg-[#142B4A] text-white shadow-xs font-extrabold'
-                              : 'text-slate-700 hover:text-[#142B4A] hover:bg-white/90'
-                          }`}
-                        >
-                          <SubIcon className={`w-3.5 h-3.5 mr-2.5 shrink-0 ${subActive ? 'text-white' : 'text-blue-600'}`} />
-                          <span className="truncate flex-1">{sub.label}</span>
-                          {subActive && <span className="w-1.5 h-1.5 rounded-full bg-white ml-1.5 shrink-0" />}
-                        </NavLink>
-                      );
-                    })}
-                  </div>
-                )}
+                  {hasSubItems && (
+                    <ChevronRight
+                      className={`w-4 h-4 transition-transform ${
+                        isFlyoutOpen ? 'text-white translate-x-0.5' : active ? 'text-white' : 'text-slate-400'
+                      }`}
+                    />
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
 
-        {/* Footer Area: View Public Website & User Actions */}
-        <div className="p-3 border-t border-slate-100 bg-slate-50/60 shrink-0 space-y-2">
+        {/* Footer Area: Actions */}
+        <div className="p-2.5 border-t border-slate-100 bg-slate-50/60 shrink-0 space-y-1.5">
           {/* Admin shortcut: View Operator Dashboard vs Return to Admin Dashboard */}
           {isAdmin && !isCollapsed && (
             isOperatorPortal ? (
               <Link
                 to="/admin/dashboard"
-                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all text-xs font-bold group cursor-pointer"
+                className="w-full flex items-center justify-between p-2 rounded-xl border border-blue-600 bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all text-xs font-bold group cursor-pointer"
                 title="Return to the Main Admin Dashboard"
               >
-                <div className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4 text-white group-hover:-translate-x-0.5 transition-transform" />
-                  <span>Return to Admin Dashboard</span>
+                <div className="flex items-center gap-1.5">
+                  <ArrowLeft className="w-3.5 h-3.5 text-white" />
+                  <span className="truncate">Admin Dashboard</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-white/80" />
+                <ChevronRight className="w-3.5 h-3.5 text-white/80" />
               </Link>
             ) : (
               <Link
                 to="/operator/dashboard"
-                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-blue-200 bg-blue-50/60 hover:border-blue-500 hover:bg-blue-100/70 hover:shadow-xs transition-all text-xs font-bold text-blue-900 group cursor-pointer"
-                title="Open Operator Dashboard to inspect real-time staff operations"
+                className="w-full flex items-center justify-between p-2 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100 text-xs font-bold text-blue-900 group cursor-pointer"
+                title="Open Operator Dashboard"
               >
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#2563EB] group-hover:scale-110 transition-transform" />
-                  <span>View Operator Dashboard</span>
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" />
+                  <span className="truncate">Operator Portal</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-blue-500 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight className="w-3.5 h-3.5 text-blue-500" />
               </Link>
             )
           )}
@@ -785,49 +728,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
               to="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-white hover:border-blue-500 hover:bg-blue-50/30 hover:shadow-xs transition-all text-xs font-bold text-slate-800 group"
+              className="w-full flex items-center justify-between p-2 rounded-xl border border-slate-200 bg-white hover:bg-blue-50/30 text-xs font-bold text-slate-800 group"
             >
-              <div className="flex items-center gap-2">
-                <ExternalLink className="w-4 h-4 text-[#2563EB] group-hover:scale-110 transition-transform" />
-                <span>View Public Website</span>
+              <div className="flex items-center gap-1.5">
+                <ExternalLink className="w-3.5 h-3.5 text-[#2563EB]" />
+                <span className="truncate">Public Website</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </Link>
-          )}
-
-          {/* User Profile info if available */}
-          {!isCollapsed && activeUser && (
-            <div className="px-3 py-2 bg-white rounded-xl flex items-center space-x-2.5 border border-slate-200 shadow-xs">
-              <div className="w-7 h-7 rounded-full bg-[#142B4A] text-white flex items-center justify-center font-bold text-xs uppercase shadow-xs">
-                {(activeUser.name || 'Admin').slice(0, 2)}
-              </div>
-              <div className="truncate flex-1">
-                <p className="text-xs font-bold text-slate-800 truncate">{activeUser.name}</p>
-                <p className="text-[10px] text-slate-500 font-medium truncate">{activeUser.role}</p>
-              </div>
-            </div>
           )}
 
           {/* Sign Out */}
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer ${
+            className={`w-full flex items-center px-2.5 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer ${
               isCollapsed ? 'justify-center' : ''
             }`}
             title="Sign Out"
           >
-            <LogOut className={`w-4 h-4 shrink-0 ${isCollapsed ? '' : 'mr-2.5'}`} />
+            <LogOut className={`w-4 h-4 shrink-0 ${isCollapsed ? '' : 'mr-2'}`} />
             {!isCollapsed && <span>Sign Out</span>}
           </button>
         </div>
       </aside>
 
-      {/* Floating Subtabs Flyout Menu (Matching Video Reference) */}
+      {/* Floating Subtabs Flyout Menu (Opens to the right of the tab, EXACTLY like the reference video at 00:10!) */}
       {activeFlyout && (
         <div
           data-flyout-container
           style={{ top: `${activeFlyout.top}px`, left: `${activeFlyout.left}px` }}
-          className="fixed z-[9999] bg-white rounded-2xl border-2 border-slate-200/90 shadow-2xl shadow-slate-900/20 p-2.5 min-w-[270px] max-w-[340px] max-h-[85vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 animate-fadeIn"
+          className="fixed z-[9999] bg-white rounded-2xl border-2 border-slate-200/90 shadow-2xl shadow-slate-900/25 p-2.5 min-w-[260px] max-w-[320px] max-h-[85vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 animate-fadeIn"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 mb-2">
@@ -844,7 +774,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </div>
 
-          {/* Subtabs List */}
+          {/* Subtabs List (Clean click-to-navigate items matching Video Reference) */}
           <div className="space-y-1">
             {activeFlyout.item.subItems?.map((sub) => {
               const SubIcon = sub.icon;
