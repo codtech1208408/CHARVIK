@@ -626,15 +626,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* Subtabs Flyout Menu - Attached directly to sidebar without floating box appearance */}
+      {/* Subtabs Menu - Clean borderless list matching reference video, NO box container */}
       {activeFlyout && (
         <div
           data-flyout-container
           style={{ top: `${activeFlyout.top}px`, left: '88px' }}
-          className="fixed z-[9999] bg-white border-y border-r border-slate-200/90 shadow-lg shadow-slate-900/10 rounded-r-xl py-1 min-w-[210px] max-w-[280px] max-h-[85vh] overflow-y-auto scrollbar-none animate-fadeIn"
+          className="fixed z-[9999] bg-white/95 backdrop-blur-md py-1.5 px-1 min-w-[200px] max-w-[270px] animate-fadeIn"
         >
           {/* Subtabs List - Seamless list of navigation links */}
-          <div className="py-0.5">
+          <div className="flex flex-col space-y-0.5">
             {activeFlyout.item.subItems?.map((sub) => {
               const SubIcon = sub.icon;
               const subActive = isSubActive(sub);
@@ -647,10 +647,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActiveFlyout(null);
                     setIsMobileOpen(false);
                   }}
-                  className={`w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold transition-colors ${
+                  className={`flex items-center gap-2.5 px-3 py-1.5 text-xs transition-colors ${
                     subActive
-                      ? 'text-blue-700 bg-blue-50/80 font-bold border-l-2 border-blue-600'
-                      : 'text-slate-700 hover:text-blue-600 hover:bg-slate-50'
+                      ? 'text-blue-600 font-bold'
+                      : 'text-slate-800 hover:text-blue-600 font-medium'
                   }`}
                 >
                   <SubIcon className={`w-4 h-4 shrink-0 ${subActive ? 'text-blue-600' : 'text-slate-500'}`} />
