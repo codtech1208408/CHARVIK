@@ -161,7 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Captain Audit Record', route: '/admin/captain-audit', icon: ShieldCheck, activeRoutes: ['/admin/captain-audit', '/captain/audit-record'] },
   ];
 
-  // Admin Vehicle Maintenance Subtabs (13 modules)
+  // Admin Vehicle Maintenance Subtabs (Exact match to the 6 tabs from before!)
   const adminVehicleMaintenanceSubItems: NavSubItem[] = [
     { label: 'Fleet Maintenance Overview', route: '/admin/vehicle-maintenance', icon: Gauge, activeRoutes: ['/admin/vehicle-maintenance'] },
     { label: 'Vehicle Registration', route: '/admin/vehicles', icon: Bus, activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management'] },
@@ -169,13 +169,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Daily Maintenance', route: '/admin/daily-maintenance', icon: CalendarCheck, activeRoutes: ['/admin/daily-maintenance'] },
     { label: 'New Tyres', route: '/admin/new-tyres', icon: Disc, activeRoutes: ['/admin/new-tyres', '/admin/tyres/new'] },
     { label: 'Product Management', route: '/admin/products', icon: Package, activeRoutes: ['/admin/products', '/admin/product-management'] },
-    { label: 'Maintenance Schedule', route: '/admin/maintenance-schedule', icon: CalendarDays, activeRoutes: ['/admin/maintenance-schedule'] },
-    { label: 'Mileage & Fueling', route: '/admin/daily-kilometers', icon: Fuel, activeRoutes: ['/admin/daily-kilometers', '/admin/mileage-fueling'] },
-    { label: 'AC Maintenance', route: '/admin/ac-maintenance', icon: Snowflake, activeRoutes: ['/admin/ac-maintenance'] },
-    { label: 'Oil & Filter Records', route: '/admin/oil-filter-maintenance', icon: Droplets, activeRoutes: ['/admin/oil-filter-maintenance'] },
-    { label: 'Battery Check', route: '/admin/battery-maintenance', icon: BatteryCharging, activeRoutes: ['/admin/battery-maintenance'] },
-    { label: 'Complaints & Defects', route: '/admin/complaints', icon: AlertTriangle, activeRoutes: ['/admin/complaints'] },
-    { label: 'Repairs & Work Orders', route: '/admin/repairs', icon: Wrench, activeRoutes: ['/admin/repairs'] },
   ];
 
   // Admin Vyshnavi Travels Subtabs
@@ -262,29 +255,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       route: '/admin/vehicle-maintenance',
       icon: Wrench,
       activeRoutes: [
+        '/admin/vehicle-maintenance',
         '/admin/vehicles',
         '/admin/buses',
         '/admin/vehicle-registration',
         '/admin/vehicle-management',
-        '/admin/daily-maintenance',
-        '/admin/new-tyres',
-        '/admin/tyres/new',
-        '/admin/vehicle-maintenance',
         '/admin/daily-vehicle-checkup',
         '/admin/vehicle-checkup',
         '/admin/bus-condition',
-        '/admin/mileage-fueling',
-        '/admin/daily-kilometers',
-        '/admin/tyre-maintenance',
+        '/admin/daily-maintenance',
+        '/admin/new-tyres',
+        '/admin/tyres/new',
         '/admin/products',
-        '/admin/product-management',
-        '/admin/cleaning',
-        '/admin/maintenance-schedule',
-        '/admin/ac-maintenance',
-        '/admin/oil-filter-maintenance',
-        '/admin/battery-maintenance',
-        '/admin/complaints',
-        '/admin/repairs'
+        '/admin/product-management'
       ],
       subItems: adminVehicleMaintenanceSubItems
     },
@@ -292,8 +275,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Vyshnavi Travels',
       route: '/admin/vyshnavi-travels',
       icon: Bus,
-      activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi'],
-      subItems: adminVyshnaviTravelsSubItems
+      activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi']
     },
     {
       label: 'Website Inquiries',
