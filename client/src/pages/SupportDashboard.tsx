@@ -40,7 +40,7 @@ import { ALL_MODULE_CATEGORIES } from '../constants/moduleCategories';
 
 export const SupportDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const activeOperator = (() => {
     if (user && (user.role.toLowerCase().includes('operator') || user.role.toLowerCase().includes('support'))) {
       return user;
@@ -61,6 +61,19 @@ export const SupportDashboard: React.FC = () => {
     };
   })();
   const isAdmin = false;
+
+  const handleReturnToAdmin = () => {
+    const adminUser = {
+      id: 1,
+      name: 'Admin Manager',
+      email: 'admin@charvik.com',
+      role: 'Super Admin'
+    };
+    localStorage.setItem('charvik_user', JSON.stringify(adminUser));
+    localStorage.setItem('charvik_token', 'charvik_cloud_token_admin_session');
+    if (setUser) setUser(adminUser);
+    navigate('/admin/dashboard');
+  };
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
@@ -312,6 +325,14 @@ export const SupportDashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center flex-wrap gap-2.5">
+          <button
+            onClick={handleReturnToAdmin}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all cursor-pointer"
+            title="Return to Main Admin Dashboard"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Return to Admin Dashboard</span>
+          </button>
 
           <button
             onClick={() => navigate('/operator/employee-registration')}

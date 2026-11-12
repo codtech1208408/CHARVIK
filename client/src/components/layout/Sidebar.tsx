@@ -75,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setIsMobileOpen,
   isPinned = true,
 }) => {
-  const { logout, user } = useAuth();
+  const { logout, user, setUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -369,6 +369,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
     categories: ALL_CATEGORY_NAMES
   };
 
+  const handleReturnToAdmin = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_ADMIN));
+    localStorage.setItem('charvik_token', 'charvik_cloud_token_admin_session');
+    if (setUser) setUser(DEFAULT_ADMIN);
+    navigate('/admin/dashboard');
+  };
+
+  const handleOpenOperator = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_OPERATOR));
+    localStorage.setItem('charvik_token', 'charvik_cloud_token_operator_session');
+    if (setUser) setUser(DEFAULT_OPERATOR);
+    navigate('/operator/dashboard');
+  };
+
   const activeUser = (() => {
     if (isOperator) {
       if (user && (user.role.toLowerCase().includes('operator') || user.role.toLowerCase().includes('support'))) {
@@ -592,36 +608,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </div>
 
-        {/* Footer Area: Actions (Always Compact) */}
-        <div className="p-2 border-t border-slate-100 bg-slate-50/60 shrink-0 flex flex-col items-center space-y-2">
-          {/* Admin shortcut: View Operator Dashboard vs Return to Admin Dashboard */}
-          {isAdmin && (
-            isOperatorPortal ? (
-              <Link
-                to="/admin/dashboard"
-                className="w-full flex flex-col items-center justify-center p-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all cursor-pointer"
-                title="Return to Admin Dashboard"
-              >
-                <ArrowLeft className="w-4 h-4 text-white" />
-              </Link>
-            ) : (
-              <Link
-                to="/operator/dashboard"
-                className="w-full flex flex-col items-center justify-center p-2 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-100 text-blue-900 cursor-pointer shadow-xs"
-                title="Open Operator Dashboard"
-              >
-                <ShieldCheck className="w-4 h-4 text-[#2563EB]" />
-              </Link>
-            )
-          )}
+        {/* Footer Area: Actions (Compact Rail Footer) */}
+        <div className="p-1.5 border-t border-slate-100 bg-slate-50/60 shrink-0 flex flex-col items-center space-y-1.5">
+          {/* Operator Mode: Return to Admin Dashboard */}
+          {isOperator ? (
+            <button
+              onClick={handleReturnToAdmin}
+              className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all cursor-pointer group"
+              title="Return to Admin Dashboard"
+            >
+              <ArrowLeft className="w-5 h-5 mb-1 text-white group-hover:-translate-x-0.5 transition-transform" />
+              <span className="text-[10px] font-extrabold text-center leading-tight text-white">
+                Admin Dash
+              </span>
+            </button>
+          ) : !isCaptain ? (
+            /* Admin Mode: View Operator Dashboard */
+            <button
+              onClick={handleOpenOperator}
+              className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-blue-200 bg-blue-50/70 hover:bg-blue-100 hover:border-blue-400 text-blue-900 shadow-xs transition-all cursor-pointer group"
+              title="View Operator Dashboard"
+            >
+              <ShieldCheck className="w-5 h-5 mb-1 text-[#2563EB] group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] font-bold text-center leading-tight text-slate-800">
+                Operator
+              </span>
+            </button>
+          ) : null}
+
+          {/* View Public Website (Always accessible) */}
+          <Link
+            to="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 hover:border-slate-300 text-slate-700 shadow-xs transition-all cursor-pointer group"
+            title="View Public Website"
+          >
+            <ExternalLink className="w-5 h-5 mb-1 text-emerald-600 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-bold text-center leading-tight text-slate-800">
+              Public Site
+            </span>
+          </Link>
 
           {/* Sign Out */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center p-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+            className="w-full flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer group"
             title="Sign Out"
           >
-            <LogOut className="w-4 h-4 shrink-0" />
+            <LogOut className="w-4 h-4 mb-0.5 text-rose-500 group-hover:scale-110 transition-transform" />
+            <span className="text-[9px] font-bold text-center leading-tight">
+              Sign Out
+            </span>
           </button>
         </div>
       </aside>

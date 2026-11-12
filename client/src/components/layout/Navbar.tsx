@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, AlertTriangle, Wrench, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, AlertTriangle, Wrench, ShieldAlert, ArrowLeft, ShieldCheck, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
@@ -20,7 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   isCollapsed,
   isSidebarVisible = true,
 }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isCaptain = location.pathname.startsWith('/captain');
@@ -166,6 +166,29 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="h-[105px] sm:h-[120px] lg:h-[142px] max-h-[150px] w-auto max-w-[320px] sm:max-w-[440px] lg:max-w-[540px] object-contain transition-transform hover:scale-105"
           />
         </Link>
+
+        {/* Operator Mode: Quick Return to Admin Button */}
+        {isOperator && (
+          <button
+            onClick={() => {
+              const adminUser = {
+                id: 1,
+                name: 'Admin Manager',
+                email: 'admin@charvik.com',
+                role: 'Super Admin'
+              };
+              localStorage.setItem('charvik_user', JSON.stringify(adminUser));
+              localStorage.setItem('charvik_token', 'charvik_cloud_token_admin_session');
+              if (setUser) setUser(adminUser);
+              navigate('/admin/dashboard');
+            }}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-xs cursor-pointer ml-1"
+            title="Return to Main Admin Dashboard"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-white" />
+            <span>Back to Admin</span>
+          </button>
+        )}
 
         {/* Page Title beside the logo (hidden when on Dashboard per user request) */}
         {pageTitle && !pageTitle.toLowerCase().includes('dashboard') && (
@@ -370,17 +393,70 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {activeUser?.role || (isOperator ? 'Operator' : 'Admin')}
                 </span>
               </div>
-              {!isCaptain && !isOperator && (
+              {isOperator && (
                 <button
                   onClick={() => {
                     setShowProfileMenu(false);
-                    navigate('/admin/settings');
+                    const adminUser = {
+                      id: 1,
+                      name: 'Admin Manager',
+                      email: 'admin@charvik.com',
+                      role: 'Super Admin'
+                    };
+                    localStorage.setItem('charvik_user', JSON.stringify(adminUser));
+                    localStorage.setItem('charvik_token', 'charvik_cloud_token_admin_session');
+                    if (setUser) setUser(adminUser);
+                    navigate('/admin/dashboard');
                   }}
-                  className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center space-x-2"
+                  className="w-full text-left px-4 py-2 hover:bg-blue-50 text-blue-700 font-bold flex items-center space-x-2 border-b border-slate-100 cursor-pointer"
                 >
-                  <UserIcon className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Account Settings</span>
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Return to Admin Panel</span>
                 </button>
+              )}
+              {!isCaptain && !isOperator && (
+                <>
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      const opUser = {
+                        id: 7,
+                        name: 'NEELAM HARISH',
+                        email: 'harish@charvik.com',
+                        role: 'Operator',
+                        categories: ['Route Management', 'Task Management', 'AC Maintenance']
+                      };
+                      localStorage.setItem('charvik_user', JSON.stringify(opUser));
+                      localStorage.setItem('charvik_token', 'charvik_cloud_token_operator_session');
+                      if (setUser) setUser(opUser);
+                      navigate('/operator/dashboard');
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-blue-50 text-blue-700 font-semibold flex items-center space-x-2 cursor-pointer"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Operator Dashboard</span>
+                  </button>
+                  <a
+                    href="/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setShowProfileMenu(false)}
+                    className="w-full text-left px-4 py-2 hover:bg-slate-50 text-slate-700 font-medium flex items-center space-x-2 cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Public Website</span>
+                  </a>
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      navigate('/admin/settings');
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center space-x-2 cursor-pointer"
+                  >
+                    <UserIcon className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Account Settings</span>
+                  </button>
+                </>
               )}
               <button
                 onClick={() => {
