@@ -965,7 +965,7 @@ export const VehicleMaintenance: React.FC = () => {
   if (selectedVehicle) {
     const v = selectedVehicle;
     return (
-      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      <div className="space-y-6 w-full max-w-full pb-16">
         {/* Top Back Navigation */}
         <div>
           <button
@@ -2121,11 +2121,19 @@ export const VehicleMaintenance: React.FC = () => {
             const isAttention = bus.overdueCount > 0;
             const isDueSoon = bus.dueSoonCount > 0 && bus.overdueCount === 0;
             const busImgUrl = idx % 5 === 0 ? '/assets/fleet1.jpg' : idx % 5 === 1 ? '/assets/fleet2.jpg' : idx % 5 === 2 ? '/assets/fleet3.jpg' : idx % 5 === 3 ? '/assets/fleet4.jpg' : '/assets/fleet5.jpg';
+            const dueServices = (bus.services || []).filter((s) => s.isOverdue || s.isDueSoon);
 
             return (
               <div
                 key={bus.id}
-                className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between"
+                onClick={() => handleSelectVehicle(bus)}
+                className={`bg-white rounded-3xl border-2 ${
+                  isAttention
+                    ? 'border-rose-300 hover:border-rose-500 shadow-rose-500/10'
+                    : isDueSoon
+                    ? 'border-amber-300 hover:border-amber-500 shadow-amber-500/10'
+                    : 'border-slate-200/90 hover:border-slate-300'
+                } p-6 shadow-2xs hover:shadow-lg transition-all flex flex-col justify-between cursor-pointer group`}
               >
                 <div>
                   {/* Top Header: Reg, Badge, Model */}
@@ -2154,7 +2162,7 @@ export const VehicleMaintenance: React.FC = () => {
                   </div>
 
                   {/* Real Bus Photo matching Reference Image 2 */}
-                  <div className="w-full h-40 rounded-2xl overflow-hidden my-3.5 relative shadow-xs border border-slate-100 group">
+                  <div className="w-full h-40 rounded-2xl overflow-hidden my-3.5 relative shadow-xs border border-slate-100">
                     <img
                       src={busImgUrl}
                       alt={bus.registration_number}
@@ -2189,46 +2197,60 @@ export const VehicleMaintenance: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* The 9 Service Checklist Rows (Matching Video Frame 0 & 2 and Image 2) */}
-                  <div className="mt-5 space-y-3 border-t border-slate-100 pt-3.5 text-sm">
-                    {bus.services.map((s) => {
-                      const isOver = s.isOverdue;
-                      const isSoon = s.isDueSoon;
+                  {/* Services Due Section - ONLY shows services that are Overdue or Due Soon (matching Image 1) */}
+                  {dueServices.length > 0 ? (
+                    <div className="mt-4 border-t border-slate-100 pt-3.5 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 px-0.5">
+                        <span>Services Due</span>
+                        <span className="text-[11px] font-semibold text-rose-600">
+                          {bus.overdueCount > 0 ? `${bus.overdueCount} Overdue` : ''}
+                          {bus.overdueCount > 0 && bus.dueSoonCount > 0 ? ' • ' : ''}
+                          {bus.dueSoonCount > 0 ? `${bus.dueSoonCount} Due Soon` : ''}
+                        </span>
+                      </div>
 
-                      return (
-                        <div key={s.key} className="flex items-center justify-between gap-2.5 py-1">
-                          <div className="flex items-center gap-2.5 truncate">
-                            <span
-                              className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                                isOver ? 'bg-rose-500' : isSoon ? 'bg-amber-500' : 'bg-emerald-500'
-                              }`}
-                            />
-                            <span className="font-bold text-slate-800 text-sm truncate">{s.name}</span>
+                      {dueServices.map((s) => {
+                        const isOver = s.isOverdue;
+                        const dotClass = isOver ? 'bg-rose-500' : 'bg-amber-500';
+                        const badgeBg = isOver
+                          ? 'bg-rose-50 text-rose-700 border-rose-200'
+                          : 'bg-amber-50 text-amber-800 border-amber-200';
+                        const nextDueLabel =
+                          s.intervalType === 'km'
+                            ? `${Number(s.nextDueKm || 0).toLocaleString('en-IN')} KM`
+                            : (s.statusText || s.intervalLabel || (isOver ? 'Overdue' : 'Due Soon'));
+
+                        return (
+                          <div
+                            key={s.key}
+                            className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`} />
+                              <span className="text-slate-900 font-bold truncate text-xs" title={s.name}>
+                                {s.name}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0 text-right">
+                              <span className="text-slate-500 text-[11px] font-medium font-mono">
+                                {nextDueLabel}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${badgeBg}`}>
+                                {s.status}
+                              </span>
+                            </div>
                           </div>
-
-                          <div className="flex items-center gap-3 shrink-0">
-                            <span className="font-mono text-slate-500 text-xs">
-                              {s.intervalType === 'km'
-                                ? `${s.nextDueKm.toLocaleString('en-IN')} KM`
-                                : s.intervalLabel || 'Scheduled'}
-                            </span>
-
-                            <span
-                              className={`text-xs font-bold min-w-[58px] text-right ${
-                                isOver
-                                  ? 'text-rose-600'
-                                  : isSoon
-                                  ? 'text-amber-600'
-                                  : 'text-emerald-600'
-                              }`}
-                            >
-                              {s.status}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="mt-4 border-t border-slate-100 pt-3.5">
+                      <div className="py-3 px-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-center gap-2 text-center">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="text-xs font-extrabold text-emerald-800">All 9 Services Healthy &amp; Up to Date</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Footer: Summary count & Open Profile link */}
@@ -2266,7 +2288,10 @@ export const VehicleMaintenance: React.FC = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleSelectVehicle(bus)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectVehicle(bus);
+                      }}
                       className="font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 cursor-pointer transition-colors text-sm ml-1"
                     >
                       <span>Open profile</span>
