@@ -517,13 +517,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar Drawer - Always w-[88px] compact vertical rail */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl w-[88px] ${
-          isMobileOpen
+        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl w-[88px] ${isMobileOpen
             ? 'translate-x-0'
             : isVisible
               ? '-translate-x-full lg:translate-x-0'
               : '-translate-x-full'
-        }`}
+          }`}
       >
         {/* Mobile Close Button (shown only on mobile drawer) */}
         {isMobileOpen && (
@@ -539,7 +538,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Top Header - Three Lines (Hamburger Toggle Button) directly above Dashboard */}
-        <div className="h-[104px] flex items-center justify-center border-b border-slate-100 shrink-0 px-2">
+        <div className="h-[128px] flex items-center justify-center border-b border-slate-100 shrink-0 px-2">
           <button
             onClick={() => {
               if (window.innerWidth < 1024) {
@@ -570,26 +569,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 data-nav-item
                 onClick={(e) => handleTabClick(e, item)}
                 onMouseEnter={(e) => handleTabHover(e, item)}
-                className={`w-full flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all cursor-pointer group relative ${
-                  active || isFlyoutOpen
+                className={`w-full flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all cursor-pointer group relative ${active || isFlyoutOpen
                     ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
                     : 'text-slate-600 hover:bg-blue-50/80 hover:text-[#142B4A]'
-                }`}
+                  }`}
                 title={item.label}
               >
                 <Icon
-                  className={`w-5 h-5 mb-1 transition-transform group-hover:scale-110 ${
-                    active || isFlyoutOpen ? 'text-white' : 'text-[#2563EB]'
-                  }`}
+                  className={`w-5 h-5 mb-1 transition-transform group-hover:scale-110 ${active || isFlyoutOpen ? 'text-white' : 'text-[#2563EB]'
+                    }`}
                 />
                 <span className="text-[10px] font-bold text-center leading-tight line-clamp-2 max-w-[76px]">
                   {item.label}
                 </span>
                 {hasSubItems && (
                   <span
-                    className={`w-1.5 h-1.5 rounded-full mt-1 ${
-                      active || isFlyoutOpen ? 'bg-sky-300' : 'bg-blue-500'
-                    }`}
+                    className={`w-1.5 h-1.5 rounded-full mt-1 ${active || isFlyoutOpen ? 'bg-sky-300' : 'bg-blue-500'
+                      }`}
                   />
                 )}
               </div>
@@ -667,11 +663,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActiveFlyout(null);
                     setIsMobileOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                    subActive
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${subActive
                       ? 'bg-gradient-to-r from-[#142B4A] to-[#0D6EFD] text-white shadow-sm font-extrabold'
                       : 'text-slate-700 hover:text-blue-700 hover:bg-blue-50/80'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-2.5 truncate">
                     <SubIcon className={`w-4 h-4 shrink-0 ${subActive ? 'text-white' : 'text-blue-600'}`} />
@@ -694,10 +689,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavLink
           to={isCaptain ? '/captain/dashboard' : isOperator ? '/operator/dashboard' : '/admin/dashboard'}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-              isActive
-                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                : 'text-slate-500 hover:text-slate-800'
+            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${isActive
+              ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
+              : 'text-slate-500 hover:text-slate-800'
             }`
           }
         >
@@ -708,10 +702,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavLink
           to={isCaptain ? '/captain/buses' : isOperator ? '/operator/employee-registration' : '/admin/employee-registration'}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-              isActive
-                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                : 'text-slate-500 hover:text-slate-800'
+            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${isActive
+              ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
+              : 'text-slate-500 hover:text-slate-800'
             }`
           }
         >
@@ -722,10 +715,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavLink
           to={isCaptain ? '/captain/buses' : isOperator ? '/operator/buses' : '/admin/vehicles'}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-              isActive
-                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                : 'text-slate-500 hover:text-slate-800'
+            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${isActive
+              ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
+              : 'text-slate-500 hover:text-slate-800'
             }`
           }
         >
@@ -736,10 +728,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <NavLink
           to={isCaptain ? '/captain/daily-kilometers' : isOperator ? '/operator/daily-kilometers' : '/admin/mileage-fueling'}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-              isActive
-                ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
-                : 'text-slate-500 hover:text-slate-800'
+            `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${isActive
+              ? 'border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold'
+              : 'text-slate-500 hover:text-slate-800'
             }`
           }
         >
