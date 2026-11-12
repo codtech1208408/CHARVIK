@@ -324,7 +324,7 @@ export const AdminLayout: React.FC = () => {
           isSidebarVisible={isSidebarVisible}
         />
 
-        <main className={`flex-1 p-4 sm:p-6 lg:p-8 w-full ${isDashboard ? 'max-w-7xl' : 'max-w-[1920px] admin-data-page'} mx-auto pb-24 lg:pb-8`}>
+        <main className="flex-1 p-4 sm:p-6 lg:p-6 w-full max-w-full pb-24 lg:pb-8">
           <ErrorBoundary fallbackTitle="Unable to Load Dashboard View">
             <Outlet />
           </ErrorBoundary>

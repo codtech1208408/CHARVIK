@@ -108,7 +108,7 @@ export const RouteManagement: React.FC = () => {
         setRoutes(normalized);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const [formData, setFormData] = useState<{
@@ -132,7 +132,7 @@ export const RouteManagement: React.FC = () => {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(routes));
-    } catch {}
+    } catch { }
   }, [routes]);
 
   const handleOpenAdd = () => {
@@ -316,11 +316,11 @@ export const RouteManagement: React.FC = () => {
       </div>
 
       {/* Route Road & Map Corridor Illustration Banner */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden p-2.5 sm:p-3 flex items-center justify-center">
+      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-3 sm:p-4 flex items-center justify-center bg-slate-50/40">
         <img
           src="/route-map-illustration.jpg"
           alt="Route Corridor & Map Illustration"
-          className="w-full max-h-[280px] sm:max-h-[340px] md:max-h-[380px] object-cover rounded-2xl shadow-xs"
+          className="max-h-[440px] sm:max-h-[480px] w-auto max-w-full object-contain rounded-2xl shadow-xs mx-auto block"
         />
       </div>
 
