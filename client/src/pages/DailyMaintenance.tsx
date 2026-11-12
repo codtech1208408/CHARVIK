@@ -21,7 +21,9 @@ import {
   AlertTriangle,
   RefreshCw,
   Bus,
-  CheckCircle2
+  CheckCircle2,
+  IndianRupee,
+  CalendarCheck
 } from 'lucide-react';
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';

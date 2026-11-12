@@ -23,7 +23,8 @@ import {
   Image as ImageIcon,
   Check,
   Receipt,
-  X
+  X,
+  Disc
 } from 'lucide-react';
 import { api } from '../services/api';
 import { BASE_FLEET_BUSES, BASE_FLEET_MAINTENANCE_BUSES } from '../services/seedData';

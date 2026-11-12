@@ -14,7 +14,9 @@ import {
   X,
   FileText,
   Disc,
-  Gauge
+  Gauge,
+  ClipboardList,
+  AlertCircle
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { BusConditionInspection, Bus as BusType } from '../types';
