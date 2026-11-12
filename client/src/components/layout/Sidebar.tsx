@@ -483,7 +483,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         route: item.route,
         item,
         top: calculatedTop,
-        left: 92
+        left: 88
       });
     }
   };
@@ -501,7 +501,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       route: item.route,
       item,
       top: calculatedTop,
-      left: 92
+      left: 88
     });
   };
 
@@ -626,15 +626,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* Subtabs Flyout Menu - Clean, lightweight list without bulky box structure */}
+      {/* Subtabs Flyout Menu - Attached directly to sidebar without floating box appearance */}
       {activeFlyout && (
         <div
           data-flyout-container
-          style={{ top: `${activeFlyout.top}px`, left: `${activeFlyout.left}px` }}
-          className="fixed z-[9999] bg-white rounded-xl border border-slate-200/80 shadow-xl shadow-slate-900/10 p-1.5 min-w-[230px] max-w-[290px] max-h-[85vh] overflow-y-auto scrollbar-none animate-fadeIn"
+          style={{ top: `${activeFlyout.top}px`, left: '88px' }}
+          className="fixed z-[9999] bg-white border-y border-r border-slate-200/90 shadow-lg shadow-slate-900/10 rounded-r-xl py-1 min-w-[210px] max-w-[280px] max-h-[85vh] overflow-y-auto scrollbar-none animate-fadeIn"
         >
           {/* Subtabs List - Seamless list of navigation links */}
-          <div className="space-y-0.5">
+          <div className="py-0.5">
             {activeFlyout.item.subItems?.map((sub) => {
               const SubIcon = sub.icon;
               const subActive = isSubActive(sub);
@@ -647,20 +647,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActiveFlyout(null);
                     setIsMobileOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${subActive
-                    ? 'bg-[#142B4A] text-white shadow-xs font-bold'
-                    : 'text-slate-700 hover:text-[#142B4A] hover:bg-slate-100/80'
-                    }`}
+                  className={`w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold transition-colors ${
+                    subActive
+                      ? 'text-blue-700 bg-blue-50/80 font-bold border-l-2 border-blue-600'
+                      : 'text-slate-700 hover:text-blue-600 hover:bg-slate-50'
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5 truncate">
-                    <SubIcon className={`w-4 h-4 shrink-0 ${subActive ? 'text-white' : 'text-blue-600'}`} />
-                    <span className="truncate">{sub.label}</span>
-                  </div>
-                  {subActive ? (
-                    <span className="w-1.5 h-1.5 rounded-full bg-white ml-2 shrink-0" />
-                  ) : (
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-300 opacity-60 ml-2 shrink-0" />
-                  )}
+                  <SubIcon className={`w-4 h-4 shrink-0 ${subActive ? 'text-blue-600' : 'text-slate-500'}`} />
+                  <span className="truncate">{sub.label}</span>
                 </NavLink>
               );
             })}
