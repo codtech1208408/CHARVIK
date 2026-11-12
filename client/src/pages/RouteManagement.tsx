@@ -315,6 +315,15 @@ export const RouteManagement: React.FC = () => {
         </div>
       </div>
 
+      {/* Route Road & Map Corridor Illustration Banner */}
+      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden p-2.5 sm:p-3 flex items-center justify-center">
+        <img
+          src="/route-map-illustration.jpg"
+          alt="Route Corridor & Map Illustration"
+          className="w-full max-h-[280px] sm:max-h-[340px] md:max-h-[380px] object-cover rounded-2xl shadow-xs"
+        />
+      </div>
+
       {/* KPI Cards (Glowing Color Palettes) */}
       <div className={`grid grid-cols-1 ${isAdmin ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-4 sm:gap-5`}>
         {/* Card 1: Active Transit Routes (Emerald Gradient) */}

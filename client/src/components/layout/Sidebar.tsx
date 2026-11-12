@@ -167,12 +167,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Captain Audit Record', route: '/admin/captain-audit', icon: ShieldCheck, activeRoutes: ['/admin/captain-audit', '/captain/audit-record'] },
   ];
 
-  // Admin Vehicle Maintenance Subtabs (Exact match to the 6 tabs from before!)
+  // Admin Vehicle Maintenance Subtabs
   const adminVehicleMaintenanceSubItems: NavSubItem[] = [
     { label: 'Fleet Maintenance Overview', route: '/admin/vehicle-maintenance', icon: Gauge, activeRoutes: ['/admin/vehicle-maintenance'] },
     { label: 'Vehicle Registration', route: '/admin/vehicles', icon: Bus, activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management'] },
     { label: 'Daily Vehicle Checkup', route: '/admin/daily-vehicle-checkup', icon: ClipboardCheck, activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition'] },
     { label: 'Daily Maintenance', route: '/admin/daily-maintenance', icon: CalendarCheck, activeRoutes: ['/admin/daily-maintenance'] },
+    { label: 'Mileage & Fueling', route: '/admin/mileage-fueling', icon: Fuel, activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers'] },
     { label: 'New Tyres', route: '/admin/new-tyres', icon: Disc, activeRoutes: ['/admin/new-tyres', '/admin/tyres/new'] },
     { label: 'Product Management', route: '/admin/products', icon: Package, activeRoutes: ['/admin/products', '/admin/product-management'] },
   ];
@@ -270,6 +271,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         '/admin/vehicle-checkup',
         '/admin/bus-condition',
         '/admin/daily-maintenance',
+        '/admin/mileage-fueling',
+        '/admin/daily-kilometers',
         '/admin/new-tyres',
         '/admin/tyres/new',
         '/admin/products',
