@@ -51,6 +51,7 @@ export interface NavItemLeaf {
   label: string;
   route: string;
   icon: any;
+  imageSrc?: string;
   hasLiveBadge?: boolean;
   activeRoutes?: string[];
   subItems?: NavSubItem[];
@@ -234,9 +235,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       activeRoutes: ['/admin/dashboard']
     },
     {
-      label: 'Vehicle Management',
+      label: 'Employee Management',
       route: '/admin/routes',
-      icon: Truck,
+      icon: Users,
       activeRoutes: [
         '/admin/routes',
         '/admin/tasks',
@@ -280,6 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Vyshnavi Travels',
       route: '/admin/vyshnavi-travels',
       icon: Bus,
+      imageSrc: '/vyshnavi-tab-logo.jpg',
       activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi']
     },
     {
@@ -590,10 +592,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   : 'text-slate-600 hover:bg-blue-50/80 hover:text-[#142B4A]'
                   }`}
               >
-                <Icon
-                  className={`w-5 h-5 mb-1 transition-transform group-hover:scale-110 ${active || isFlyoutOpen ? 'text-white' : 'text-[#2563EB]'
-                    }`}
-                />
+                {item.imageSrc ? (
+                  <div className="h-6 max-w-[72px] flex items-center justify-center mb-1">
+                    <img
+                      src={item.imageSrc}
+                      alt={item.label}
+                      className="max-h-6 max-w-[70px] object-contain rounded bg-white/95 px-1 py-0.5 transition-transform group-hover:scale-105 shadow-2xs"
+                    />
+                  </div>
+                ) : (
+                  <Icon
+                    className={`w-5 h-5 mb-1 transition-transform group-hover:scale-110 ${active || isFlyoutOpen ? 'text-white' : 'text-[#2563EB]'
+                      }`}
+                  />
+                )}
                 <span className="text-[10px] font-bold text-center leading-tight line-clamp-2 max-w-[76px]">
                   {item.label}
                 </span>
