@@ -1882,132 +1882,128 @@ export const EmployeePayments: React.FC = () => {
         /* VIEW MODE 2: ALL EMPLOYEES DIRECTORY       */
         /* ========================================== */
         <>
-          {/* Top Header Card */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-              <div>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center font-black shadow-xs border border-blue-100/60">
-                    <Wallet className="w-6 h-6" />
+          {/* Top Header Banner with Bus Image */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] p-6 text-white shadow-lg shadow-blue-500/20">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
+              <div className="flex items-center space-x-4 max-w-xl">
+                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
+                  <Wallet className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
+                      Employee Payments
+                    </h1>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                      Active Payroll
+                    </span>
                   </div>
-                  <div>
-                    <h1 className="text-2xl font-black text-[#142B4A] tracking-tight">Employee Payments</h1>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Track salary accruals, advances paid, and settlement dues across all drivers, helpers, and captains.
-                    </p>
-                  </div>
+                  <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+                    Track salary accruals, advances paid, and settlement dues across all drivers, helpers, and captains.
+                  </p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <div className="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200 shrink-0">
-                  {(["Today", "Week", "Month", "Year", "All"] as const).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => {
-                        setPeriod(p);
-                        setCurrentPage(1);
-                      }}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                        period === p
-                          ? "bg-[#142B4A] text-white shadow-xs font-extrabold"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
+              {/* Real Bus Coach Banner Photo Preview */}
+              <div className="flex items-center gap-3.5 self-start lg:self-auto flex-wrap sm:flex-nowrap">
+                <div className="hidden sm:block relative shrink-0">
+                  <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+                    <img
+                      src="/assets/fleet2.jpg"
+                      alt="Payroll Fleet Coach"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                      <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Payroll Ops</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {/* ₹ RECORD PAYMENT BUTTON */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                  <div className="flex items-center bg-white/15 p-1 rounded-xl border border-white/20 backdrop-blur-md shrink-0">
+                    {(["Today", "Week", "Month", "Year", "All"] as const).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => {
+                          setPeriod(p);
+                          setCurrentPage(1);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                          period === p
+                            ? "bg-white text-blue-900 shadow-xs font-black"
+                            : "text-blue-100 hover:text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+
                   <button
                     type="button"
                     onClick={() => handleOpenRecordPayment(null)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black bg-[#E6F9F0] text-[#065F46] border border-emerald-300 hover:bg-[#D1F5E4] hover:border-emerald-400 transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black bg-white text-blue-900 hover:bg-blue-50 transition-all cursor-pointer shadow-md whitespace-nowrap"
                     title="Record new payment for staff"
                   >
-                    <span className="text-sm font-black text-emerald-600">₹</span>
+                    <span className="text-sm font-black text-blue-700">₹</span>
                     <span>Record Payment</span>
                   </button>
-
-                  <button
-                    onClick={handleExportAllCSV}
-                    className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
-                  >
-                    <Download className="w-3.5 h-3.5 text-slate-500" />
-                    Export CSV
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handlePrintOverallPayments}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-xs whitespace-nowrap"
-                    title="Print Overall Statement for All Paid Employees"
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>Print All Paid Employees</span>
-                  </button>
-                  <PrintButton
-                    title="All Employee Payments Ledger"
-                    subtitle={`Period: ${period} | Total Staff: ${allEmployeeRecords.length}`}
-                    targetId="all-employee-payments-print-wrapper"
-                    label="Print Sheet"
-                    className="px-3.5 py-2 whitespace-nowrap"
-                  />
                 </div>
               </div>
             </div>
+            <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
           </div>
 
           <div id="all-employee-payments-print-wrapper" className="space-y-6">
             {/* Executive KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:shadow-sm transition-all">
+              <div className="bg-gradient-to-br from-[#EEF2FF] via-[#E0E7FF] to-[#C7D2FE] border-2 border-[#818CF8] p-5 rounded-3xl shadow-xs flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Staff</p>
-                  <h3 className="text-3xl font-black text-[#142B4A]">{dirTotals.activeCount}</h3>
-                  <p className="text-xs text-slate-400 font-medium">Of {allEmployeeRecords.length} registered</p>
+                  <p className="text-xs font-black text-indigo-950 uppercase tracking-wider">Active Staff</p>
+                  <h3 className="text-3xl font-black text-indigo-950 font-mono">{dirTotals.activeCount}</h3>
+                  <p className="text-xs text-indigo-800 font-bold">Of {allEmployeeRecords.length} registered</p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0 border border-indigo-100/60">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6366F1] to-[#4F46E5] text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20">
                   <Users className="w-6 h-6" />
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:shadow-sm transition-all">
+              <div className="bg-gradient-to-br from-[#ECFDF5] via-[#D1FAE5] to-[#A7F3D0] border-2 border-[#34D399] p-5 rounded-3xl shadow-xs flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Salaries</p>
-                  <h3 className="text-2xl sm:text-3xl font-black text-[#142B4A] tracking-tight">
+                  <p className="text-xs font-black text-emerald-950 uppercase tracking-wider">Gross Salaries</p>
+                  <h3 className="text-2xl sm:text-3xl font-black text-emerald-950 font-mono">
                     ₹{dirTotals.totalSalary.toLocaleString("en-IN")}
                   </h3>
-                  <p className="text-xs text-slate-400 font-medium">Assigned trip pay</p>
+                  <p className="text-xs text-emerald-800 font-bold">Assigned trip pay</p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100/60">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
                   <IndianRupee className="w-6 h-6" />
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:shadow-sm transition-all">
+              <div className="bg-gradient-to-br from-[#E0F2FE] via-[#BAE6FD] to-[#7DD3FC] border-2 border-[#38BDF8] p-5 rounded-3xl shadow-xs flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Advances Disbursed</p>
-                  <h3 className="text-2xl sm:text-3xl font-black text-blue-700 tracking-tight">
+                  <p className="text-xs font-black text-sky-950 uppercase tracking-wider">Advances Disbursed</p>
+                  <h3 className="text-2xl sm:text-3xl font-black text-sky-950 font-mono">
                     ₹{dirTotals.totalAdvance.toLocaleString("en-IN")}
                   </h3>
-                  <p className="text-xs text-slate-400 font-medium">Pre-paid amounts</p>
+                  <p className="text-xs text-sky-800 font-bold">Pre-paid amounts</p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-700 flex items-center justify-center shrink-0 border border-sky-100/60">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center shrink-0 shadow-md shadow-sky-500/20">
                   <Wallet className="w-6 h-6" />
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:shadow-sm transition-all">
+              <div className="bg-gradient-to-br from-[#FFE4E6] via-[#FECDD3] to-[#FDA4AF] border-2 border-[#FB7185] p-5 rounded-3xl shadow-xs flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Dues</p>
-                  <h3 className="text-2xl sm:text-3xl font-black text-rose-600 tracking-tight">
+                  <p className="text-xs font-black text-rose-950 uppercase tracking-wider">Pending Dues</p>
+                  <h3 className="text-2xl sm:text-3xl font-black text-rose-950 font-mono">
                     ₹{dirTotals.totalDue.toLocaleString("en-IN")}
                   </h3>
-                  <p className="text-xs text-slate-400 font-medium">Balance to settle</p>
+                  <p className="text-xs text-rose-800 font-bold">Balance to settle</p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100/60">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F43F5E] to-[#E11D48] text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20">
                   <Clock className="w-6 h-6" />
                 </div>
               </div>

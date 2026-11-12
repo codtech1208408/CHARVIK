@@ -947,27 +947,54 @@ export const TaskManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header and Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-xl font-bold text-[#142B4A]">Task Management & Multi-Staff Duty</h2>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
-              Trip Dispatch Portal
-            </span>
+      {/* Header and Action with Bus Coach Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] p-6 text-white shadow-lg shadow-blue-500/20 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
+            <ClipboardList className="w-7 h-7 text-white" />
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Trip dispatch, multi-staff duty allocation (Driver 1, Driver 2, Helper, Captain), and fleet operation tracking.
-          </p>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
+                Task Management & Multi-Staff Duty
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                Trip Dispatch Portal
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+              Trip dispatch, multi-staff duty allocation (Driver 1, Driver 2, Helper, Captain), and fleet operation tracking.
+            </p>
+          </div>
         </div>
 
-        <button
-          onClick={() => handleOpenAdd()}
-          className="inline-flex items-center px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow gap-1.5 cursor-pointer self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Log New Task & Duty</span>
-        </button>
+        {/* Real Bus Coach Banner Photo & Button */}
+        <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet5.jpg"
+                alt="Fleet Coach"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Dispatch Coach</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => handleOpenAdd()}
+            className="inline-flex items-center px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-black rounded-xl transition-all shadow-md gap-1.5 cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4 text-blue-800" />
+            <span>+ Log New Task & Duty</span>
+          </button>
+        </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
       {/* Fleet KPI Metrics Overview */}

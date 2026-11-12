@@ -468,52 +468,81 @@ export const EmployeeManagement: React.FC = () => {
 
       {pageView === 'biodata' ? (
         <>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div>
-          <h2 className="text-xl font-bold text-[#142B4A] flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-600" />
-            <span>Employee & Transport Staff Management</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Centralized directory for Drivers, Helpers, and Captains with masked identity and full biodata profile records.
-          </p>
+      {/* Header with Luxury Coach Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] p-6 text-white shadow-lg shadow-blue-500/20 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
+            <Users className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
+                Employee & Transport Staff
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                {employees.length} Crew Members
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+              Centralized directory for Drivers, Helpers, and Captains with verified identity and duty records.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          {isOperatorDashboard && (
-            <button
-              onClick={() => {
-                setPageView('staff-accounts');
-                setNewStaffRole('Captain');
-                setNewStaffCategories([...ALL_CATEGORY_NAMES]);
-                setShowCreateStaffModal(true);
-              }}
-              className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-2 cursor-pointer"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span>Create New Employee</span>
-            </button>
-          )}
-          {isAdmin && (
-            <>
+        {/* Real Bus Coach Banner Photo & Buttons */}
+        <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet3.jpg"
+                alt="Crew Fleet Coach"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Staff Operations</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {isOperatorDashboard && (
               <button
-                onClick={() => navigate('/admin/drivers/new')}
-                className="inline-flex items-center px-3.5 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-1.5 cursor-pointer"
+                onClick={() => {
+                  setPageView('staff-accounts');
+                  setNewStaffRole('Captain');
+                  setNewStaffCategories([...ALL_CATEGORY_NAMES]);
+                  setShowCreateStaffModal(true);
+                }}
+                className="inline-flex items-center px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-black rounded-xl transition-all shadow-md gap-2 cursor-pointer"
               >
-                <UserPlus className="w-4 h-4" />
-                <span>New Driver</span>
+                <UserPlus className="w-4 h-4 text-blue-800" />
+                <span>Create New Employee</span>
               </button>
-              <button
-                onClick={() => navigate('/admin/support-staff/new')}
-                className="inline-flex items-center px-3.5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-1.5 cursor-pointer"
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>New Helper</span>
-              </button>
-            </>
-          )}
+            )}
+            {isAdmin && (
+              <>
+                <button
+                  onClick={() => navigate('/admin/drivers/new')}
+                  className="inline-flex items-center px-3.5 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-black rounded-xl transition-all shadow-md gap-1.5 cursor-pointer"
+                >
+                  <UserPlus className="w-4 h-4 text-blue-800" />
+                  <span>New Driver</span>
+                </button>
+                <button
+                  onClick={() => navigate('/admin/support-staff/new')}
+                  className="inline-flex items-center px-3.5 py-2.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-bold rounded-xl transition-all shadow-xs gap-1.5 cursor-pointer"
+                >
+                  <UserPlus className="w-4 h-4 text-white" />
+                  <span>New Helper</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
       {/* Role Tabs and Search Bar */}

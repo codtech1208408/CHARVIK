@@ -113,41 +113,70 @@ export const Reports: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm no-print">
-        <div>
-          <h2 className="text-xl font-bold text-[#142B4A] flex items-center gap-2">
-            <FileBarChart className="w-5 h-5 text-blue-600" />
-            <span>Fleet & Operational Reports</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Generate verifiable operational, kilometre, repair cost, and safety roadworthiness reports.
-          </p>
+      {/* Header with Bus Coach Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] p-6 text-white shadow-lg shadow-blue-500/20 flex flex-col md:flex-row md:items-center justify-between gap-5 no-print">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
+            <FileBarChart className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
+                Fleet &amp; Operational Reports
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                Official Audits
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+              Generate verifiable operational, kilometre, repair cost, and safety roadworthiness reports.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2 self-start sm:self-auto">
-          <button
-            onClick={exportCSV}
-            className="inline-flex items-center px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors gap-1.5 cursor-pointer shadow-xs"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>CSV</span>
-          </button>
-          <button
-            onClick={exportExcel}
-            className="inline-flex items-center px-3 py-2 rounded-xl text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors gap-1.5 cursor-pointer shadow-xs border border-emerald-200"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Excel</span>
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center px-3 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-colors gap-1.5 cursor-pointer shadow-xs"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Print Report</span>
-          </button>
+        {/* Real Bus Coach Photo Preview & Buttons */}
+        <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet1.jpg"
+                alt="Reports Fleet Coach"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Executive Audit</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={exportCSV}
+              className="inline-flex items-center px-3.5 py-2.5 rounded-xl text-xs font-bold bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-md transition-colors gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
+            >
+              <Download className="w-3.5 h-3.5 text-white" />
+              <span>CSV</span>
+            </button>
+            <button
+              onClick={exportExcel}
+              className="inline-flex items-center px-3.5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors gap-1.5 cursor-pointer shadow-xs border border-emerald-500 whitespace-nowrap"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-white" />
+              <span>Excel</span>
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-black text-blue-900 bg-white hover:bg-blue-50 transition-colors gap-1.5 cursor-pointer shadow-md whitespace-nowrap"
+            >
+              <Printer className="w-3.5 h-3.5 text-blue-800" />
+              <span>Print Report</span>
+            </button>
+          </div>
         </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
       {/* Report Categories Nav Strip */}

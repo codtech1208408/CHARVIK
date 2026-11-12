@@ -445,28 +445,49 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Truck className="w-5 h-5 text-blue-600" />
-            <span>Vehicle Management</span>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 ml-1">
-              {buses.length} Total
-            </span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Fleet vehicle registration records, bus type, operational status, and compliance documents.
-          </p>
-        </div>
+      {/* Page Header with Real Bus Coach Banner matching Reference */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-6 sm:p-7 text-white shadow-lg">
+        <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Vehicle</span>
-        </button>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-bold text-white shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Fleet Registration & Compliance Master</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
+              <span>Vehicle Management</span>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-400 text-slate-950 ml-1">
+                {buses.length} Vehicles
+              </span>
+            </h2>
+            <p className="text-xs sm:text-sm text-blue-100/90 font-medium">
+              Registered fleet vehicles, make & model, seating layout, fitness certificates, and tax compliance.
+            </p>
+            <div className="pt-1">
+              <button
+                onClick={handleOpenAdd}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer"
+              >
+                <Plus className="w-4 h-4 text-blue-700" />
+                <span>+ Add New Vehicle</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Real Bus Coach Banner Photo */}
+          <div className="w-full md:w-64 h-32 rounded-2xl overflow-hidden border-2 border-white/30 shadow-md relative shrink-0">
+            <img
+              src="/assets/fleet1.jpg"
+              alt="Premium Fleet Coach"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <span className="absolute bottom-2 left-2.5 text-[10px] font-black text-white tracking-wider uppercase drop-shadow-sm">
+              PREMIUM FLEET COACH
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -707,6 +728,25 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                   }`}
                 >
                   <div>
+                    {/* Bus Coach Photo Preview */}
+                    <div className="relative h-28 w-full rounded-xl overflow-hidden mb-3 group/img shadow-inner">
+                      <img
+                        src={`/assets/fleet${((Number(b.id) || 1) % 5) + 1}.jpg`}
+                        alt={b.registration_number || 'Fleet Coach'}
+                        className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent flex items-end justify-between p-2.5">
+                        <span className="font-mono font-black text-white text-xs tracking-wider uppercase drop-shadow">
+                          {b.registration_number}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider backdrop-blur-xs shadow-xs ${
+                          isActive ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-200'
+                        }`}>
+                          {isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    </div>
+
                     {/* Card Top: Icon & Big Registration Number */}
                     <div className="flex items-center gap-3 mb-3">
                       <div
@@ -903,16 +943,25 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                 ) : (
                   filteredBuses.map((b, index) => (
                     <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
-                      <td className="py-2 px-3 font-mono font-bold text-[#142B4A] text-sm">
-                        <div>{b.registration_number}</div>
-                        {(b.chassis_number || b.engine_number) && (
-                          <div className="text-[10px] font-mono font-normal text-slate-500 flex items-center gap-1.5 mt-0.5">
-                            {b.chassis_number && <span>Ch: <span className="font-semibold text-slate-700">{b.chassis_number}</span></span>}
-                            {b.chassis_number && b.engine_number && <span>•</span>}
-                            {b.engine_number && <span>Eng: <span className="font-semibold text-slate-700">{b.engine_number}</span></span>}
+                      <td className="py-2.5 px-3 font-bold text-slate-500 text-center">{index + 1}</td>
+                      <td className="py-2.5 px-3">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={`/assets/fleet${((Number(b.id) || 1) % 5) + 1}.jpg`}
+                            alt={b.registration_number || 'Bus'}
+                            className="w-12 h-8 rounded-lg object-cover shadow-2xs border border-slate-200 shrink-0"
+                          />
+                          <div>
+                            <div className="font-mono font-bold text-[#142B4A] text-sm">{b.registration_number}</div>
+                            {(b.chassis_number || b.engine_number) && (
+                              <div className="text-[10px] font-mono font-normal text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                {b.chassis_number && <span>Ch: <span className="font-semibold text-slate-700">{b.chassis_number}</span></span>}
+                                {b.chassis_number && b.engine_number && <span>•</span>}
+                                {b.engine_number && <span>Eng: <span className="font-semibold text-slate-700">{b.engine_number}</span></span>}
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </td>
                       <td className="py-2 px-3 font-medium text-slate-800">{b.bus_type || '—'}</td>
                       <td className="py-2 px-3">

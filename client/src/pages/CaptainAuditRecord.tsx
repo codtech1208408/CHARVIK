@@ -499,36 +499,54 @@ export const CaptainAuditRecord: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header & Main Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 bg-blue-50 text-blue-700 rounded-xl">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+      {/* Header & Main Actions with Real Bus Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] p-6 text-white shadow-lg shadow-blue-500/20 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
+            <ShieldCheck className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
                 Captain Audit Record
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                  {records.length} Total Audits
-                </span>
               </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Onboard bus inspection, amenities verification, and crew photo checklist.
-              </p>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                {records.length} Total Audits
+              </span>
             </div>
+            <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+              Onboard bus inspection, amenities verification, and crew photo checklist.
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        {/* Bus Coach Photo Preview & Action Button */}
+        <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet3.jpg"
+                alt="Captain Audit Coach"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Audit Fleet</span>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={handleOpenNewForm}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 rounded-xl font-black text-xs shadow-md transition-all cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-4 h-4" />
-            <span>Submit Captain Audit Record</span>
+            <Plus className="w-4 h-4 text-blue-800" />
+            <span>+ Submit Audit Record</span>
           </button>
         </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
       {/* Role Notice for Captains */}
@@ -541,58 +559,58 @@ export const CaptainAuditRecord: React.FC = () => {
         </div>
       )}
 
-      {/* KPI Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-xs font-bold tracking-wider font-bold text-slate-500 uppercase tracking-wider block">
-            Total Audits
-          </span>
-          <div className="flex items-baseline justify-between mt-1.5">
-            <span className="text-2xl font-black text-slate-800">{metrics.total}</span>
-            <span className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
-              <ShieldCheck className="w-4 h-4" />
+      {/* KPI Stat Cards (Matching Admin Dashboard Glowing Palette) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-xs font-black text-blue-900 uppercase tracking-wider block">
+              Total Audits
             </span>
+            <span className="text-2xl sm:text-3xl font-black text-blue-950 font-mono block">{metrics.total}</span>
+            <span className="text-xs text-blue-700/80 font-medium block">Inspections logged</span>
           </div>
-          <span className="text-xs font-bold tracking-wider text-slate-400 mt-1 block">Inspections logged</span>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-xs font-bold tracking-wider font-bold text-emerald-600 uppercase tracking-wider block">
-            Passed (All OK)
-          </span>
-          <div className="flex items-baseline justify-between mt-1.5">
-            <span className="text-2xl font-black text-emerald-700">{metrics.passed}</span>
-            <span className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
-              <CheckCircle2 className="w-4 h-4" />
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-xs font-black text-emerald-900 uppercase tracking-wider block">
+              Passed (All OK)
             </span>
+            <span className="text-2xl sm:text-3xl font-black text-emerald-800 font-mono block">{metrics.passed}</span>
+            <span className="text-xs text-emerald-700/80 font-medium block">100% compliant</span>
           </div>
-          <span className="text-xs font-bold tracking-wider text-emerald-600/80 mt-1 block">100% compliant</span>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-xs font-bold tracking-wider font-bold text-rose-600 uppercase tracking-wider block">
-            Needs Attention
-          </span>
-          <div className="flex items-baseline justify-between mt-1.5">
-            <span className="text-2xl font-black text-rose-700">{metrics.flagged}</span>
-            <span className="p-1.5 bg-rose-50 text-rose-600 rounded-lg">
-              <AlertCircle className="w-4 h-4" />
+        <div className="bg-gradient-to-br from-[#FFF1F2] via-[#FFF5F6] to-[#FFE2E5] border-2 border-[#FDA4AF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-xs font-black text-rose-950 uppercase tracking-wider block">
+              Needs Attention
             </span>
+            <span className="text-2xl sm:text-3xl font-black text-rose-800 font-mono block">{metrics.flagged}</span>
+            <span className="text-xs text-rose-700/80 font-medium block">Deficiencies noted</span>
           </div>
-          <span className="text-xs font-bold tracking-wider text-rose-600/80 mt-1 block">Deficiencies noted</span>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F43F5E] to-[#E11D48] text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20">
+            <AlertCircle className="w-6 h-6" />
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-xs font-bold tracking-wider font-bold text-indigo-600 uppercase tracking-wider block">
-            Today's Audits
-          </span>
-          <div className="flex items-baseline justify-between mt-1.5">
-            <span className="text-2xl font-black text-indigo-700">{metrics.todayAudits}</span>
-            <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
-              <Clock className="w-4 h-4" />
+        <div className="bg-gradient-to-br from-[#EEF2FF] via-[#E0E7FF] to-[#C7D2FE] border-2 border-[#818CF8] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-xs font-black text-indigo-950 uppercase tracking-wider block">
+              Today's Audits
             </span>
+            <span className="text-2xl sm:text-3xl font-black text-indigo-950 font-mono block">{metrics.todayAudits}</span>
+            <span className="text-xs text-indigo-800 font-medium block">Active date shifts</span>
           </div>
-          <span className="text-xs font-bold tracking-wider text-indigo-600/80 mt-1 block">Active date shifts</span>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6366F1] to-[#4F46E5] text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20">
+            <Clock className="w-6 h-6" />
+          </div>
         </div>
       </div>
 

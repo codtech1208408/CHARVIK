@@ -381,32 +381,62 @@ export const OrganizerManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-blue-600" />
-            <span>Organization Management</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage partner organizations, GST numbers, contact persons, and communication directories.
-          </p>
+      {/* Page Header with Real Bus Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] p-6 text-white shadow-lg shadow-blue-500/20 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
+            <Building2 className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
+                Organization Management
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                {organizers.length} Partners
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+              Manage partner organizations, GST numbers, contact persons, and communication directories.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <PrintButton
-            title="Registered Organizations & Operator Directory"
-            subtitle={`Total: ${filteredOrganizers.length} Organizations`}
-            targetId="organizers-table-wrap"
-          />
-          <button
-            onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add New Organization</span>
-          </button>
+        {/* Bus Coach Photo Preview & Buttons */}
+        <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet3.jpg"
+                alt="Partner Fleet Coach"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Corporate Fleet</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <PrintButton
+              title="Registered Organizations & Operator Directory"
+              subtitle={`Total: ${filteredOrganizers.length} Organizations`}
+              targetId="organizers-table-wrap"
+              className="px-3.5 py-2.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs"
+            />
+            <button
+              onClick={handleOpenAdd}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-black rounded-xl transition-all shadow-md cursor-pointer whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4 text-blue-800" />
+              <span>+ Add Organization</span>
+            </button>
+          </div>
         </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
       {/* KPI Cards */}

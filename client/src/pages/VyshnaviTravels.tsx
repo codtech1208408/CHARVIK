@@ -755,6 +755,20 @@ export const VyshnaviTravels: React.FC = () => {
           />
         </div>
 
+        {/* Real Bus Coach Banner Photo Preview */}
+        <div className="hidden lg:block relative shrink-0">
+          <div className="w-52 h-20 rounded-2xl overflow-hidden shadow-md border-2 border-slate-200 ring-2 ring-slate-100 group">
+            <img
+              src="/assets/fleet2.jpg"
+              alt="Vyshnavi Luxury Coach"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+              <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Intercity Coach</span>
+            </div>
+          </div>
+        </div>
+
         {/* Tab Switcher & Quick Actions */}
         <div className="flex items-center flex-wrap gap-2">
           <div className="bg-slate-100 p-1 rounded-2xl flex items-center border border-slate-200/60">

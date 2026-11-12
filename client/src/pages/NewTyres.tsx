@@ -500,50 +500,102 @@ export const NewTyres: React.FC = () => {
   }, [newTyres]);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-[#142B4A] flex items-center gap-2.5 tracking-tight">
-            <Package className="w-7 h-7 text-emerald-600" />
-            <span>New Tyres Inventory & Purchases</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Register brand-new tyres, log total odometer KM, vehicle assignment, specifications, and invoices.
-          </p>
+    <div className="space-y-6 w-full max-w-full pb-12">
+      {/* Page Header with Real Bus Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] p-6 text-white shadow-lg shadow-blue-500/20 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
+            <Package className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
+                New Tyres Inventory &amp; Purchases
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                {stats.total} Units Stocked
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+              Register brand-new tyres, log total odometer KM, vehicle assignment, specifications, and invoices.
+            </p>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ Add New Tyre Stock</span>
-        </button>
+        {/* Real Bus Coach Photo Preview & Action Button */}
+        <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet4.jpg"
+                alt="Tyre Inventory Coach"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Wheel Allotment</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleOpenAdd}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-blue-900 hover:bg-blue-50 text-xs font-black shadow-md transition-all cursor-pointer whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4 text-blue-800" />
+            <span>+ Add New Tyre Stock</span>
+          </button>
+        </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Tyres</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{stats.total}</p>
-          <p className="text-xs text-slate-500 mt-1">Registered tyre units</p>
+      {/* Metric Cards (Matching Admin Dashboard Glowing Palette) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-black text-blue-900 uppercase tracking-wider">Total Tyres</p>
+            <p className="text-3xl font-black text-blue-950 mt-1 font-mono">{stats.total}</p>
+            <p className="text-xs text-blue-700/80 font-medium">Registered units</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
+            <Disc className="w-6 h-6" />
+          </div>
         </div>
-        <div className="bg-emerald-50/60 rounded-2xl border border-emerald-200/80 p-5 shadow-2xs">
-          <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Vehicles Covered</p>
-          <p className="text-3xl font-black text-emerald-800 mt-1">{stats.uniqueVehicles}</p>
-          <p className="text-xs text-emerald-600 mt-1">Fleet buses equipped</p>
+
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-black text-emerald-900 uppercase tracking-wider">Vehicles Covered</p>
+            <p className="text-3xl font-black text-emerald-800 mt-1 font-mono">{stats.uniqueVehicles}</p>
+            <p className="text-xs text-emerald-700/80 font-medium">Fleet equipped</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
+            <Bus className="w-6 h-6" />
+          </div>
         </div>
-        <div className="bg-blue-50/60 rounded-2xl border border-blue-200/80 p-5 shadow-2xs">
-          <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">Total Logged KM</p>
-          <p className="text-3xl font-black text-blue-800 mt-1">{stats.totalKm.toLocaleString('en-IN')} KM</p>
-          <p className="text-xs text-blue-600 mt-1">Cumulative mileage</p>
+
+        <div className="bg-gradient-to-br from-[#E0F2FE] via-[#BAE6FD] to-[#7DD3FC] border-2 border-[#38BDF8] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-black text-sky-950 uppercase tracking-wider">Total Logged KM</p>
+            <p className="text-2xl sm:text-3xl font-black text-sky-950 mt-1 font-mono">{stats.totalKm.toLocaleString('en-IN')}</p>
+            <p className="text-xs text-sky-800 font-bold">Cumulative mileage</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center shrink-0 shadow-md shadow-sky-500/20">
+            <Gauge className="w-6 h-6" />
+          </div>
         </div>
-        <div className="bg-slate-50/80 rounded-2xl border border-slate-200/80 p-5 shadow-2xs">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tyre Brands</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{stats.brandsCount}</p>
-          <p className="text-xs text-slate-500 mt-1">Active manufacturers</p>
+
+        <div className="bg-gradient-to-br from-[#F6F0FE] via-[#FAF5FF] to-[#E9DBFC] border-2 border-[#D8B4FE] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-black text-purple-950 uppercase tracking-wider">Tyre Brands</p>
+            <p className="text-3xl font-black text-purple-900 mt-1 font-mono">{stats.brandsCount}</p>
+            <p className="text-xs text-purple-700/80 font-medium">Active manufacturers</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#8B5CF6] to-[#6D28D9] text-white flex items-center justify-center shrink-0 shadow-md shadow-purple-500/20">
+            <Package className="w-6 h-6" />
+          </div>
         </div>
       </div>
 

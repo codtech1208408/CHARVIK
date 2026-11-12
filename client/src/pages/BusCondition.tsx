@@ -814,51 +814,93 @@ export const BusCondition: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div>
-          <h2 className="text-xl font-bold text-[#142B4A] flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-indigo-600" />
-            <span>Daily Vehicle Checkup</span>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200 ml-1">
-              {inspections.length} Reports
-            </span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Daily pre-trip inspection checklist — complete before starting the trip.
-          </p>
+      {/* Page Header with Real Bus Coach Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] p-6 text-white shadow-lg shadow-blue-500/20 flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
+            <ShieldCheck className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
+                Daily Vehicle Checkup
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                {inspections.length} Reports
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+              Daily pre-trip inspection checklist — complete before starting the transport corridor.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+        {/* Real Bus Coach Photo Preview & Buttons */}
+        <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet2.jpg"
+                alt="Inspection Fleet Coach"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Pre-Trip Check</span>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={handleOpenAdd}
-            className="inline-flex items-center px-4 py-2.5 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm hover:shadow gap-1.5 cursor-pointer"
+            className="inline-flex items-center px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-black rounded-xl transition-all shadow-md gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-4 h-4" />
-            <span>Log Vehicle Checkup</span>
+            <Plus className="w-4 h-4 text-blue-800" />
+            <span>+ Log Vehicle Checkup</span>
           </button>
         </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards (Matching Admin Dashboard Glowing Palette) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <p className="text-3xl font-black text-slate-900 tracking-tight">{inspections.length}</p>
-          <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">Total Reports Recorded</p>
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-black text-blue-900 uppercase tracking-wider">Total Reports Recorded</p>
+            <p className="text-3xl font-black text-blue-950 tracking-tight mt-1 font-mono">{inspections.length}</p>
+            <p className="text-[11px] font-semibold text-blue-700/80 mt-0.5">Pre-trip logs</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+            <ClipboardList className="w-6 h-6" />
+          </div>
         </div>
 
-        <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-200 shadow-xs">
-          <p className="text-3xl font-black text-emerald-600 tracking-tight">
-            {inspections.filter((i) => i.roadworthiness_status === 'Fit for Service').length}
-          </p>
-          <p className="text-xs font-bold text-emerald-700 mt-1 uppercase tracking-wider">Fit for Service</p>
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-black text-[#059669] uppercase tracking-wider">Fit for Service</p>
+            <p className="text-3xl font-black text-[#047857] tracking-tight mt-1 font-mono">
+              {inspections.filter((i) => i.roadworthiness_status === 'Fit for Service').length}
+            </p>
+            <p className="text-[11px] font-semibold text-emerald-700/80 mt-0.5">Passed full checklist</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
         </div>
 
-        <div className="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 shadow-xs">
-          <p className="text-3xl font-black text-rose-600 tracking-tight">
-            {inspections.filter((i) => i.roadworthiness_status !== 'Fit for Service').length}
-          </p>
-          <p className="text-xs font-bold text-rose-700 mt-1 uppercase tracking-wider">Defects & Attention Required</p>
+        <div className="bg-gradient-to-br from-[#FFF1F2] via-[#FFF5F6] to-[#FFE2E5] border-2 border-[#FDA4AF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-black text-[#E11D48] uppercase tracking-wider">Defects &amp; Attention</p>
+            <p className="text-3xl font-black text-[#BE123C] tracking-tight mt-1 font-mono">
+              {inspections.filter((i) => i.roadworthiness_status !== 'Fit for Service').length}
+            </p>
+            <p className="text-[11px] font-semibold text-rose-700/80 mt-0.5">Deficiencies noted</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F43F5E] to-[#E11D48] text-white flex items-center justify-center shadow-md shadow-rose-500/20 shrink-0">
+            <AlertCircle className="w-6 h-6" />
+          </div>
         </div>
       </div>
 

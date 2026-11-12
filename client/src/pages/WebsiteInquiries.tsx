@@ -101,31 +101,53 @@ export const WebsiteInquiries: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Hero Banner (Matching Image 3) */}
-      <div className="bg-gradient-to-r from-[#0052cc] via-[#1a73e8] to-[#0d47a1] rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
-        <div className="flex items-center space-x-4 relative z-10">
+      {/* Page Hero Banner with Bus Coach */}
+      <div className="bg-gradient-to-r from-[#0052cc] via-[#1a73e8] to-[#0d47a1] rounded-3xl p-6 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
           <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs border border-white/30 flex items-center justify-center text-white shrink-0 shadow-inner">
             <Bell className="w-7 h-7 text-sky-200" />
           </div>
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Website Inquiries & Customer Leads
-            </h2>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                Website Inquiries &amp; Customer Leads
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                Public Lead Portal
+              </span>
+            </div>
             <p className="text-xs text-white/90 font-medium mt-1">
               Incoming quote requests, client contact messages, and staffing consultations from the public portal.
             </p>
           </div>
         </div>
 
-        <a
-          href="/contact"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-blue-700 bg-white hover:bg-blue-50 transition-all shadow-md shrink-0 relative z-10 cursor-pointer"
-        >
-          <span>View Public Contact Form</span>
-          <ExternalLink className="w-4 h-4 text-blue-700" />
-        </a>
+        {/* Real Bus Coach Photo Preview & Action Button */}
+        <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet2.jpg"
+                alt="Customer Inquiries Coach"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Charter Bookings</span>
+              </div>
+            </div>
+          </div>
+
+          <a
+            href="/contact"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-blue-700 bg-white hover:bg-blue-50 transition-all shadow-md shrink-0 cursor-pointer whitespace-nowrap"
+          >
+            <span>View Public Form</span>
+            <ExternalLink className="w-4 h-4 text-blue-700" />
+          </a>
+        </div>
 
         {/* Decorative soft glow */}
         <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />

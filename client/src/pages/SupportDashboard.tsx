@@ -301,76 +301,140 @@ export const SupportDashboard: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* =========================================================================
-          HEADER: Welcome Banner with Role & Status Indicator
+          HEADER: Welcome Banner with Role & Real Bus Coach matching Admin Panel
          ========================================================================= */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center space-x-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-md shrink-0">
-            <ShieldCheck className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-black text-[#142B4A] tracking-tight">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-6 sm:p-8 text-white shadow-lg">
+        {/* Background glow effects */}
+        <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="absolute right-40 -bottom-10 w-48 h-48 bg-sky-400/20 rounded-full blur-xl pointer-events-none"></div>
+
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-bold text-white shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Operator Fleet Operations Live</span>
+            </div>
+
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                 Operator Operational Panel
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Operator Access
-              </span>
+              <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+                Logged in as <strong className="text-white font-bold">{activeOperator.name}</strong> • Authorized Fleet Operations & Dispatch Management
+              </p>
             </div>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              <span>Logged in as <strong className="text-slate-800">{activeOperator.name}</strong> • Fleet Operations & Employee Management</span>
-            </p>
+
+            <div className="flex items-center flex-wrap gap-2.5 pt-1">
+              <button
+                onClick={handleReturnToAdmin}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-900 bg-white hover:bg-blue-50 shadow-sm transition-all cursor-pointer"
+                title="Return to Main Admin Dashboard"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-blue-700" />
+                <span>Return to Admin Dashboard</span>
+              </button>
+
+              <button
+                onClick={() => navigate('/operator/employee-registration')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all cursor-pointer"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Employee Registration</span>
+              </button>
+
+              {(hasTaskManagement || hasRouteManagement) && (
+                <button
+                  onClick={() => navigate('/operator/tasks')}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/25 shadow-sm transition-all cursor-pointer"
+                >
+                  <ClipboardList className="w-3.5 h-3.5" />
+                  <span>Trip Tasks & Schedule</span>
+                </button>
+              )}
+
+              {hasCheckup && (
+                <button
+                  onClick={() => setIsConditionModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-teal-500/80 hover:bg-teal-500 backdrop-blur-md border border-white/25 shadow-sm transition-all cursor-pointer"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>New Bus Inspection</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Real Bus Coach Image inside Banner matching Admin Panel */}
+          <div className="w-full lg:w-72 h-36 rounded-2xl overflow-hidden border-2 border-white/30 shadow-md relative group shrink-0">
+            <img
+              src="/assets/fleet2.jpg"
+              alt="Premium Fleet Coach"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <span className="absolute bottom-2 left-3 text-[10px] font-black text-white tracking-wider uppercase drop-shadow-sm">
+              PREMIUM FLEET COACH
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Colourful KPI Cards matching Admin Panel */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Active Fleet Buses (Emerald Gradient) */}
+        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-3xl shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+          <div className="flex-1">
+            <p className="text-xs font-black text-emerald-900 uppercase tracking-wider">Active Fleet Buses</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-emerald-800 mt-1 font-mono">
+              {buses.filter((b) => b.operational_status === 'Active').length} / {buses.length || 0}
+            </h3>
+            <p className="text-xs text-emerald-700/90 font-medium mt-1">Operational in-transit coaches</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 ml-3 shadow-md shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+            <Bus className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="flex items-center flex-wrap gap-2.5">
-          <button
-            onClick={handleReturnToAdmin}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all cursor-pointer"
-            title="Return to Main Admin Dashboard"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to Admin Dashboard</span>
-          </button>
+        {/* Card 2: Permitted Modules (Sky Blue Gradient) */}
+        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-3xl shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+          <div className="flex-1">
+            <p className="text-xs font-black text-blue-900 uppercase tracking-wider">Active Categories</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-blue-950 mt-1 font-mono">
+              {permittedModules.length} Modules
+            </h3>
+            <p className="text-xs text-blue-700/90 font-medium mt-1">Authorized operator access</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 ml-3 shadow-md shadow-blue-500/30 group-hover:scale-110 transition-transform">
+            <Layers className="w-6 h-6" />
+          </div>
+        </div>
 
-          <button
-            onClick={() => navigate('/operator/employee-registration')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all cursor-pointer"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>Employee Registration</span>
-          </button>
+        {/* Card 3: Maintenance & Tasks (Amber Gradient) */}
+        <div className="bg-gradient-to-br from-[#FEF5ED] via-[#FFF9F4] to-[#FDE8D7] border-2 border-[#FCD2B3] p-5 rounded-3xl shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+          <div className="flex-1">
+            <p className="text-xs font-black text-amber-950 uppercase tracking-wider">Schedules & Services</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-amber-900 mt-1 font-mono">
+              {schedules.length || 0} Scheduled
+            </h3>
+            <p className="text-xs text-amber-700/90 font-medium mt-1">Active service intervals</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F59E0B] to-[#D97706] text-white flex items-center justify-center shrink-0 ml-3 shadow-md shadow-amber-500/30 group-hover:scale-110 transition-transform">
+            <CalendarDays className="w-6 h-6" />
+          </div>
+        </div>
 
-          {(hasTaskManagement || hasRouteManagement) && (
-            <button
-              onClick={() => navigate('/operator/tasks')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] shadow-sm transition-all cursor-pointer"
-            >
-              <ClipboardList className="w-3.5 h-3.5" />
-              <span>Trip Tasks & Schedule</span>
-            </button>
-          )}
-
-          {hasCheckup && (
-            <button
-              onClick={() => setIsConditionModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition-all"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>New Bus Inspection</span>
-            </button>
-          )}
-
-          {hasDailyKm && (
-            <button
-              onClick={() => setActiveTab('daily-km')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-[#142B4A] bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all"
-            >
-              <Gauge className="w-3.5 h-3.5 text-blue-600" />
-              <span>Log Daily KM</span>
-            </button>
-          )}
+        {/* Card 4: Open Defects (Rose / Purple Gradient) */}
+        <div className="bg-gradient-to-br from-[#FFF0F2] via-[#FFF6F7] to-[#FEDEE2] border-2 border-[#FDB8C2] p-5 rounded-3xl shadow-xs hover:shadow-md transition-all flex items-center justify-between group">
+          <div className="flex-1">
+            <p className="text-xs font-black text-rose-950 uppercase tracking-wider">Complaints & Defects</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-rose-900 mt-1 font-mono">
+              {complaints.length} Open
+            </h3>
+            <p className="text-xs text-rose-700/90 font-medium mt-1">Pending maintenance issues</p>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#E11D48] to-[#BE123C] text-white flex items-center justify-center shrink-0 ml-3 shadow-md shadow-rose-500/30 group-hover:scale-110 transition-transform">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
         </div>
       </div>
 
@@ -904,44 +968,72 @@ export const SupportDashboard: React.FC = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {buses.slice(0, 6).map((b) => (
-                <div key={b.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-sm text-[#142B4A]">{b.bus_number}</span>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          b.operational_status === 'Active'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {b.operational_status}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {buses.slice(0, 6).map((b, idx) => {
+                const busImgUrl = (idx % 5 === 0) ? '/assets/fleet1.jpg' : (idx % 5 === 1) ? '/assets/fleet2.jpg' : (idx % 5 === 2) ? '/assets/fleet3.jpg' : (idx % 5 === 3) ? '/assets/fleet4.jpg' : '/assets/fleet5.jpg';
+                return (
+                  <div key={b.id || idx} className="p-4 rounded-3xl border-2 border-slate-200/90 bg-white shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <span className="font-black text-base text-[#142B4A]">{b.registration_number || b.bus_number}</span>
+                          <p className="text-[11px] text-slate-500 font-semibold">{b.make} {b.model || 'Scania Metrolink'}</p>
+                        </div>
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                            b.operational_status === 'Active'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}
+                        >
+                          {b.operational_status}
+                        </span>
+                      </div>
+
+                      {/* Real Bus Coach Image matching Admin Panel */}
+                      <div className="w-full h-36 rounded-2xl overflow-hidden my-2.5 relative shadow-xs border border-slate-100">
+                        <img
+                          src={busImgUrl}
+                          alt={b.registration_number || b.bus_number}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <span className="absolute bottom-2 left-2.5 text-[10px] font-black text-white tracking-wider uppercase drop-shadow-sm">
+                          {b.bus_type || 'Express Fleet Coach'}
+                        </span>
+                      </div>
+
+                      {/* Odometer Ribbon matching Admin Panel */}
+                      <div className="my-2 py-2 px-3 rounded-xl bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-sky-50/80 border border-blue-200/80 flex items-center justify-center gap-2">
+                        <Gauge className="w-4 h-4 text-blue-600" />
+                        <span className="text-lg font-black text-slate-900 font-mono">
+                          {Number(b.current_odometer_km || 0).toLocaleString()}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">KM</span>
+                      </div>
+
+                      <div className="mt-2 text-xs text-slate-600 space-y-1">
+                        <p className="flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Driver: <strong className="text-slate-800">{b.driver_name || 'Assigned Route Captain'}</strong></span>
+                        </p>
+                        <p className="flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                          <span>Corridor: <strong className="text-slate-800">{b.make ? `${b.make} Express Corridor` : 'State Transit Route'}</strong></span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                      <span className="flex items-center gap-1.5 text-emerald-600 font-bold">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        GPS Telemetry Live
                       </span>
-                    </div>
-                    <p className="text-xs text-slate-600 font-medium">{b.make} {b.model} • {b.seating_capacity} Seats</p>
-                    <div className="mt-2.5 pt-2 border-t border-slate-200/60 text-xs text-slate-600 space-y-1">
-                      <p className="flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Driver: <strong>{b.driver_name || 'Assigned Route Driver'}</strong></span>
-                      </p>
-                      <p className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                        <span>Route: <strong>{b.make ? `${b.make} Assigned Route` : 'Transit Route'}</strong></span>
-                      </p>
-                      <p className="flex items-center gap-1.5">
-                        <Gauge className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Odometer: <strong>{Number(b.current_odometer_km || 0).toLocaleString()} KM</strong></span>
-                      </p>
+                      <span className="font-semibold text-slate-700">{b.seating_capacity || 42} Seater AC</span>
                     </div>
                   </div>
-                  <div className="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
-                    <span>GPS Telemetry: {b.operational_status === 'Active' ? 'Active' : 'Offline'}</span>
-                    <span className="text-emerald-700 font-semibold">{b.operational_status === 'Active' ? 'Status: In-Transit' : 'Status: Stationary'}</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

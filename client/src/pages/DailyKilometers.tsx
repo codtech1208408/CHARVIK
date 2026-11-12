@@ -422,47 +422,71 @@ export const DailyKilometers: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* =========================================================================
-          1. HEADER: Title, Subtitle & Action Buttons (Exact Video Match)
+          1. HEADER: Title, Subtitle & Action Buttons with Real Bus Banner
          ========================================================================= */}
       <div
         data-aos="fade-down"
-        className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        className="bg-gradient-to-r from-[#0747A6] via-[#0D6EFD] to-[#0099FF] rounded-3xl p-6 text-white shadow-lg shadow-blue-500/20 flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden"
       >
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-black text-[#142B4A] tracking-tight">
-              Mileage & Fueling
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-50 text-amber-800 border border-amber-200">
-              {filteredEntries.length} Records
-            </span>
+        <div className="flex items-center space-x-4 relative z-10 max-w-xl">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-inner shrink-0">
+            <Fuel className="w-7 h-7 text-white" />
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            Track vehicle fueling, odometer readings, and fuel costs.
-          </p>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
+                Mileage & Fueling
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                {filteredEntries.length} Records
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
+              Track vehicle fueling, odometer readings, and fuel costs across all fleet corridors.
+            </p>
+          </div>
         </div>
 
-        {/* Top-Right Action Buttons: Export Excel & + Log Fueling */}
-        <div className="flex items-center gap-2.5 self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={handleExportExcel}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 hover:text-slate-900 border border-slate-200 hover:bg-slate-50 shadow-2xs transition-all cursor-pointer"
-            title="Download Excel / CSV containing filtered vehicle data"
-          >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-            <span>Export Excel</span>
-          </button>
+        {/* Bus image & Action Buttons */}
+        <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
+          <div className="hidden sm:block relative shrink-0">
+            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
+              <img
+                src="/assets/fleet4.jpg"
+                alt="Fleet Coach"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Diesel Fleet</span>
+              </div>
+            </div>
+          </div>
 
-          <button
-            type="button"
-            onClick={handleOpenAdd}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold bg-[#F59E0B] hover:bg-amber-600 text-slate-950 shadow-sm transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-slate-950" />
-            <span>+ Log Fueling</span>
-          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-md shadow-xs transition-all cursor-pointer"
+              title="Download Excel / CSV containing filtered vehicle data"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
+              <span>Export Excel</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOpenAdd}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-black bg-white text-blue-900 hover:bg-blue-50 shadow-md transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-blue-800" />
+              <span>+ Log Fueling</span>
+            </button>
+          </div>
         </div>
+
+        {/* Decorative soft glow */}
+        <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
       {/* =========================================================================
@@ -628,11 +652,18 @@ export const DailyKilometers: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Vehicle No. in styled badge */}
-                    <td className="py-3 px-3.5 whitespace-nowrap border-r border-slate-100">
-                      <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 text-xs">
-                        {e.vehicle_number}
-                      </span>
+                    {/* Vehicle No. in styled badge with Coach Thumbnail */}
+                    <td className="py-2.5 px-3.5 whitespace-nowrap border-r border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={`/assets/fleet${((Number(e.id) || 1) % 5) + 1}.jpg`}
+                          alt={e.vehicle_number}
+                          className="w-10 h-7 rounded-md object-cover shadow-2xs border border-slate-200 shrink-0"
+                        />
+                        <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 text-xs">
+                          {e.vehicle_number}
+                        </span>
+                      </div>
                     </td>
 
                     {/* Round Trip (Origin & Destination) */}

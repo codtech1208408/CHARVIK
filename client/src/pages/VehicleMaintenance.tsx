@@ -1881,7 +1881,7 @@ export const VehicleMaintenance: React.FC = () => {
   // VIEW: FLEET MAINTENANCE OVERVIEW (Matching Frame 0 & 2)
   // =========================================================================
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+    <div className="space-y-6 w-full max-w-full pb-16">
       {/* Header Hero Banner (Matching Image 2) */}
       <div className="bg-gradient-to-r from-[#0356C4] via-[#0D6EFD] to-[#0284C7] rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
         <div className="flex items-center space-x-4 relative z-10 max-w-xl">
