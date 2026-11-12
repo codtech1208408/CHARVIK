@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
+  Menu,
   LayoutGrid,
   ArrowLeft,
   Truck,
@@ -536,6 +537,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
         )}
+
+        {/* Top Header - Three Lines (Hamburger Toggle Button) directly above Dashboard */}
+        <div
+          className={`h-[88px] flex items-center border-b border-slate-100 shrink-0 ${
+            isCollapsed ? 'justify-center px-2' : 'justify-between px-5'
+          }`}
+        >
+          <button
+            onClick={() => {
+              if (window.innerWidth < 1024) {
+                setIsMobileOpen(false);
+              } else {
+                setIsCollapsed(!isCollapsed);
+              }
+            }}
+            className="p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center border border-slate-200/80 shadow-xs"
+            title={isCollapsed ? 'Expand Navigation Sidebar' : 'Collapse Navigation Sidebar'}
+            aria-label="Toggle Navigation Sidebar"
+          >
+            <Menu className="w-5 h-5 text-[#142B4A]" />
+          </button>
+          {!isCollapsed && (
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Navigation
+            </span>
+          )}
+        </div>
 
         {/* Navigation Items List (Compact icon-strip format matching reference video!) */}
         <div className="flex-1 overflow-y-auto py-2.5 px-2 space-y-2 scrollbar-none">

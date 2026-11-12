@@ -138,27 +138,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, onToggleSidebar,
               onToggleSidebar();
             }
           }}
-          className="p-2 sm:p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center shrink-0 border border-slate-200/80 shadow-xs"
+          className="p-2 sm:p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center shrink-0 border border-slate-200/80 shadow-xs lg:hidden"
           title={isCollapsed ? 'Expand Navigation Sidebar' : 'Collapse Navigation Sidebar'}
           aria-label="Toggle Navigation Sidebar"
         >
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
 
-        {/* When sidebar is collapsed on desktop, Charvik brand logo with increased size */}
-        {isCollapsed && (
-          <Link
-            to={`${basePrefix}/dashboard`}
-            className="hidden lg:flex items-center justify-center py-1 mr-4 shrink-0 transition-opacity hover:opacity-90 cursor-pointer"
-            title="Charvik Staffing Consultancy"
-          >
-            <img
-              src="/logo-compact.png"
-              alt="Charvik Staffing Consultancy"
-              className="h-[74px] sm:h-[80px] max-h-[84px] w-auto max-w-[280px] object-contain transition-transform hover:scale-105"
-            />
-          </Link>
-        )}
+        {/* Charvik brand logo on desktop */}
+        <Link
+          to={`${basePrefix}/dashboard`}
+          className="hidden lg:flex items-center justify-center py-1 mr-4 shrink-0 transition-opacity hover:opacity-90 cursor-pointer"
+          title="Charvik Staffing Consultancy"
+        >
+          <img
+            src="/logo-compact.png"
+            alt="Charvik Staffing Consultancy"
+            className="h-[74px] sm:h-[80px] max-h-[84px] w-auto max-w-[280px] object-contain transition-transform hover:scale-105"
+          />
+        </Link>
 
         {/* Page Title beside the logo (hidden when on Dashboard per user request) */}
         {pageTitle && !pageTitle.toLowerCase().includes('dashboard') && (
