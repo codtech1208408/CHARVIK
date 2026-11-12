@@ -539,7 +539,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Top Header - Three Lines (Hamburger Toggle Button) directly above Dashboard */}
-        <div className="h-[88px] flex items-center justify-center border-b border-slate-100 shrink-0 px-2">
+        <div className="h-[104px] flex items-center justify-center border-b border-slate-100 shrink-0 px-2">
           <button
             onClick={() => {
               if (window.innerWidth < 1024) {

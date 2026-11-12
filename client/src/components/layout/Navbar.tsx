@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   return (
-    <header className="min-h-[88px] py-1.5 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
+    <header className="min-h-[104px] py-2 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
       {/* Left: Menu Drawer Toggle (Mobile) & Brand Logo when collapsed & Page Title */}
       <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         <button
@@ -154,16 +154,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>
 
-        {/* Charvik brand logo on desktop */}
+        {/* Charvik brand logo on desktop - Significantly enlarged matching previous left sidebar size */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="hidden lg:flex items-center justify-center py-1 mr-4 shrink-0 transition-opacity hover:opacity-90 cursor-pointer"
+          className="flex items-center justify-center py-1 mr-4 shrink-0 transition-opacity hover:opacity-95 cursor-pointer"
           title="Charvik Staffing Consultancy"
         >
           <img
             src="/logo-compact.png"
             alt="Charvik Staffing Consultancy"
-            className="h-[74px] sm:h-[80px] max-h-[84px] w-auto max-w-[280px] object-contain transition-transform hover:scale-105"
+            className="h-[84px] sm:h-[96px] lg:h-[112px] max-h-[120px] w-auto max-w-[280px] sm:max-w-[380px] lg:max-w-[460px] object-contain transition-transform hover:scale-105"
           />
         </Link>
 
