@@ -100,7 +100,7 @@ export const VehicleMaintenance: React.FC = () => {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | 'Needs Attention' | 'Due Soon' | 'Healthy'>('All');
+  const [statusFilter, setStatusFilter] = useState<'All Alerts' | 'Needs Attention' | 'Due Soon'>('All Alerts');
   const [depotFilter, setDepotFilter] = useState('All');
 
   // Modals
@@ -778,10 +778,14 @@ export const VehicleMaintenance: React.FC = () => {
     }
   };
 
-  // Filtered vehicles for overview
+  // Filtered vehicles for overview - ONLY vehicles with maintenance alerts (due soon or overdue)
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((v) => {
-      const q = searchQuery.toLowerCase();
+      // ONLY alert vehicles should show
+      const hasAlerts = (v.overdueCount || 0) > 0 || (v.dueSoonCount || 0) > 0;
+      if (!hasAlerts) return false;
+
+      const q = searchQuery.toLowerCase().trim();
       const matchSearch =
         !q ||
         v.registration_number.toLowerCase().includes(q) ||
@@ -790,13 +794,11 @@ export const VehicleMaintenance: React.FC = () => {
         (v.driver_name || '').toLowerCase().includes(q);
 
       const matchStatus =
-        statusFilter === 'All'
+        statusFilter === 'All Alerts'
           ? true
           : statusFilter === 'Needs Attention'
-          ? v.overdueCount > 0
-          : statusFilter === 'Due Soon'
-          ? v.dueSoonCount > 0 && v.overdueCount === 0
-          : v.overdueCount === 0 && v.dueSoonCount === 0;
+          ? (v.overdueCount || 0) > 0
+          : (v.dueSoonCount || 0) > 0 && (v.overdueCount || 0) === 0;
 
       const matchDepot = depotFilter === 'All' || (v.parking_location || '').includes(depotFilter);
 
@@ -2019,9 +2021,9 @@ export const VehicleMaintenance: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap w-full sm:w-auto">
-          {(['All', 'Needs Attention', 'Due Soon', 'Healthy'] as const).map((filter) => {
+          {(['All Alerts', 'Needs Attention', 'Due Soon'] as const).map((filter) => {
             const isSelected = statusFilter === filter;
-            if (filter === 'All') {
+            if (filter === 'All Alerts') {
               return (
                 <button
                   key={filter}
@@ -2033,7 +2035,7 @@ export const VehicleMaintenance: React.FC = () => {
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  All
+                  All Alerts
                 </button>
               );
             }
@@ -2054,23 +2056,6 @@ export const VehicleMaintenance: React.FC = () => {
                 </button>
               );
             }
-            if (filter === 'Due Soon') {
-              return (
-                <button
-                  key={filter}
-                  type="button"
-                  onClick={() => setStatusFilter(filter)}
-                  className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    isSelected
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                      : 'bg-blue-50 text-blue-700 border-2 border-blue-300 hover:bg-blue-100'
-                  }`}
-                >
-                  <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-                  <span>Due Soon</span>
-                </button>
-              );
-            }
             return (
               <button
                 key={filter}
@@ -2078,12 +2063,12 @@ export const VehicleMaintenance: React.FC = () => {
                 onClick={() => setStatusFilter(filter)}
                 className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                    : 'bg-emerald-50 text-emerald-700 border-2 border-emerald-300 hover:bg-emerald-100'
+                    ? 'bg-amber-600 text-white shadow-md shadow-amber-500/20'
+                    : 'bg-amber-50 text-amber-800 border-2 border-amber-300 hover:bg-amber-100'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                <span>Healthy</span>
+                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                <span>Due Soon</span>
               </button>
             );
           })}
@@ -2111,9 +2096,9 @@ export const VehicleMaintenance: React.FC = () => {
         </div>
       ) : filteredVehicles.length === 0 ? (
         <div className="py-20 text-center text-slate-400 bg-white rounded-3xl border border-slate-200">
-          <Bus className="w-10 h-10 mx-auto mb-2 opacity-40" />
-          <p className="font-bold text-sm text-slate-700">No vehicles found matching filters</p>
-          <p className="text-xs text-slate-400 mt-1">Try resetting the search or status filter</p>
+          <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
+          <p className="font-bold text-base text-slate-800">No Fleet Maintenance Alerts</p>
+          <p className="text-xs text-slate-500 mt-1">All vehicles are healthy and up to date.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2198,7 +2183,7 @@ export const VehicleMaintenance: React.FC = () => {
                   </div>
 
                   {/* Services Due Section - ONLY shows services that are Overdue or Due Soon (matching Image 1) */}
-                  {dueServices.length > 0 ? (
+                  {dueServices.length > 0 && (
                     <div className="mt-4 border-t border-slate-100 pt-3.5 space-y-2">
                       <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 px-0.5">
                         <span>Services Due</span>
@@ -2242,13 +2227,6 @@ export const VehicleMaintenance: React.FC = () => {
                           </div>
                         );
                       })}
-                    </div>
-                  ) : (
-                    <div className="mt-4 border-t border-slate-100 pt-3.5">
-                      <div className="py-3 px-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-center gap-2 text-center">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span className="text-xs font-extrabold text-emerald-800">All 9 Services Healthy &amp; Up to Date</span>
-                      </div>
                     </div>
                   )}
                 </div>
