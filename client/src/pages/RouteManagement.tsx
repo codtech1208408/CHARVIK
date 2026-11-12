@@ -318,7 +318,7 @@ export const RouteManagement: React.FC = () => {
       {/* Route Road & Map Corridor Illustration Banner */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-3 sm:p-4 flex items-center justify-center bg-slate-50/40">
         <img
-          src="/route-map-illustration.jpg"
+          src="/route-map-illustration.jpg?v=2"
           alt="Route Corridor & Map Illustration"
           className="max-h-[440px] sm:max-h-[480px] w-auto max-w-full object-contain rounded-2xl shadow-xs mx-auto block"
         />
