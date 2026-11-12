@@ -518,10 +518,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Sidebar Drawer - Always w-[88px] compact vertical rail */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl w-[88px] ${isMobileOpen
-            ? 'translate-x-0'
-            : isVisible
-              ? '-translate-x-full lg:translate-x-0'
-              : '-translate-x-full'
+          ? 'translate-x-0'
+          : isVisible
+            ? '-translate-x-full lg:translate-x-0'
+            : '-translate-x-full'
           }`}
       >
         {/* Mobile Close Button (shown only on mobile drawer) */}
@@ -570,10 +570,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={(e) => handleTabClick(e, item)}
                 onMouseEnter={(e) => handleTabHover(e, item)}
                 className={`w-full flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all cursor-pointer group relative ${active || isFlyoutOpen
-                    ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
-                    : 'text-slate-600 hover:bg-blue-50/80 hover:text-[#142B4A]'
+                  ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
+                  : 'text-slate-600 hover:bg-blue-50/80 hover:text-[#142B4A]'
                   }`}
-                title={item.label}
               >
                 <Icon
                   className={`w-5 h-5 mb-1 transition-transform group-hover:scale-110 ${active || isFlyoutOpen ? 'text-white' : 'text-[#2563EB]'
@@ -627,30 +626,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* Floating Subtabs Flyout Menu (Opens to the right of the tab, EXACTLY like the reference video at 00:10!) */}
+      {/* Subtabs Flyout Menu - Clean, lightweight list without bulky box structure */}
       {activeFlyout && (
         <div
           data-flyout-container
           style={{ top: `${activeFlyout.top}px`, left: `${activeFlyout.left}px` }}
-          className="fixed z-[9999] bg-white rounded-2xl border-2 border-slate-200/90 shadow-2xl shadow-slate-900/25 p-2.5 min-w-[260px] max-w-[320px] max-h-[85vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 animate-fadeIn"
+          className="fixed z-[9999] bg-white rounded-xl border border-slate-200/80 shadow-xl shadow-slate-900/10 p-1.5 min-w-[230px] max-w-[290px] max-h-[85vh] overflow-y-auto scrollbar-none animate-fadeIn"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 mb-2">
-            <div className="flex items-center gap-2 min-w-0">
-              {React.createElement(activeFlyout.item.icon, {
-                className: 'w-4 h-4 text-[#2563EB] shrink-0'
-              })}
-              <span className="text-xs font-black text-slate-900 uppercase tracking-wider truncate">
-                {activeFlyout.item.label}
-              </span>
-            </div>
-            <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-black border border-blue-200 shrink-0">
-              {activeFlyout.item.subItems?.length || 0} Subtabs
-            </span>
-          </div>
-
-          {/* Subtabs List (Clean click-to-navigate items matching Video Reference) */}
-          <div className="space-y-1">
+          {/* Subtabs List - Seamless list of navigation links */}
+          <div className="space-y-0.5">
             {activeFlyout.item.subItems?.map((sub) => {
               const SubIcon = sub.icon;
               const subActive = isSubActive(sub);
@@ -663,9 +647,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActiveFlyout(null);
                     setIsMobileOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${subActive
-                      ? 'bg-gradient-to-r from-[#142B4A] to-[#0D6EFD] text-white shadow-sm font-extrabold'
-                      : 'text-slate-700 hover:text-blue-700 hover:bg-blue-50/80'
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${subActive
+                    ? 'bg-[#142B4A] text-white shadow-xs font-bold'
+                    : 'text-slate-700 hover:text-[#142B4A] hover:bg-slate-100/80'
                     }`}
                 >
                   <div className="flex items-center gap-2.5 truncate">
