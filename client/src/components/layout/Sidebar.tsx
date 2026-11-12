@@ -524,66 +524,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
               : '-translate-x-full'
         }`}
       >
-        {/* Header / Brand Area */}
-        <div className="p-3 border-b border-slate-100 flex flex-col items-center justify-between">
-          <div className="w-full flex items-center justify-between mb-1">
-            {!isCollapsed && (
-              <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                MANAGEMENT
-              </span>
-            )}
-            <div className="flex items-center gap-1 ml-auto">
-              {/* Close Button on Mobile */}
-              <button
-                onClick={() => setIsMobileOpen(false)}
-                className={`${isPinned ? 'lg:hidden' : 'flex'} p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer`}
-                title="Close Menu"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              {/* Desktop Collapse / Expand Button */}
-              {isPinned && (
-                <button
-                  onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="hidden lg:flex p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                  title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                >
-                  {isCollapsed ? <ChevronRight className="w-4 h-4 text-[#142B4A]" /> : <ChevronLeft className="w-4 h-4 text-[#142B4A]" />}
-                </button>
-              )}
-            </div>
+        {/* Mobile Close Button (shown only on mobile drawer) */}
+        {isMobileOpen && (
+          <div className="lg:hidden p-2.5 border-b border-slate-100 flex items-center justify-end">
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Close Menu"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-
-          {/* Logo */}
-          <div className="w-full flex items-center justify-center py-1">
-            <img
-              src="/logo-compact.png"
-              alt="Charvik"
-              className={isCollapsed ? "w-11 h-11 object-contain" : "w-full max-h-[110px] object-contain"}
-            />
-          </div>
-
-          {!isCollapsed && (
-            <div className="w-full mt-1.5 flex items-center justify-center">
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-xs tracking-wide ${
-                isCaptain
-                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                  : isOperator
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : 'bg-blue-50 text-blue-700 border-blue-200'
-              }`}>
-                {isCaptain ? (
-                  <>⚓ <span>Captain Portal</span></>
-                ) : isOperatorPortal ? (
-                  <>⚙️ <span>Operator Portal</span></>
-                ) : (
-                  <>🛡️ <span>Super Admin</span></>
-                )}
-              </span>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Navigation Items List (Compact icon-strip format matching reference video!) */}
         <div className="flex-1 overflow-y-auto py-2.5 px-2 space-y-2 scrollbar-none">
