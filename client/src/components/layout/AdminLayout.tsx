@@ -11,7 +11,7 @@ import { ALL_CATEGORY_NAMES } from '../../constants/moduleCategories';
 export const AdminLayout: React.FC = () => {
   // 1. ALL HOOKS CALLED UNCONDITIONALLY AT THE VERY TOP
   const { user, isAuthenticated, loading, setUser } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
   const prevPathRef = useRef<string>(location.pathname);
@@ -304,8 +304,8 @@ export const AdminLayout: React.FC = () => {
     <div className="min-h-screen bg-[#F0F4F9] flex flex-col">
       {/* Sidebar - Pinned on desktop */}
       <Sidebar
-        isCollapsed={isCollapsed}
-        setIsCollapsed={setIsCollapsed}
+        isVisible={isSidebarVisible}
+        onToggleVisibility={() => setIsSidebarVisible(!isSidebarVisible)}
         isMobileOpen={isMobileOpen}
         setIsMobileOpen={setIsMobileOpen}
         isPinned={true}
@@ -314,14 +314,14 @@ export const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          isCollapsed ? 'lg:pl-[88px]' : 'lg:pl-64'
+          isSidebarVisible ? 'lg:pl-[88px]' : 'lg:pl-0'
         }`}
       >
         <Navbar
           onMobileToggle={() => setIsMobileOpen(true)}
-          onToggleSidebar={() => setIsCollapsed(!isCollapsed)}
+          onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
           pageTitle={getPageTitle()}
-          isCollapsed={isCollapsed}
+          isSidebarVisible={isSidebarVisible}
         />
 
         <main className={`flex-1 p-4 sm:p-6 lg:p-8 w-full ${isDashboard ? 'max-w-7xl' : 'max-w-[1920px] admin-data-page'} mx-auto pb-24 lg:pb-8`}>

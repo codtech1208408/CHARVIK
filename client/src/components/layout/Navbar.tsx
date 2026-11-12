@@ -10,9 +10,16 @@ interface NavbarProps {
   onToggleSidebar?: () => void;
   pageTitle: string;
   isCollapsed?: boolean;
+  isSidebarVisible?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, onToggleSidebar, pageTitle, isCollapsed }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  onMobileToggle,
+  onToggleSidebar,
+  pageTitle,
+  isCollapsed,
+  isSidebarVisible = true,
+}) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -138,8 +145,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, onToggleSidebar,
               onToggleSidebar();
             }
           }}
-          className="p-2 sm:p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center shrink-0 border border-slate-200/80 shadow-xs lg:hidden"
-          title={isCollapsed ? 'Expand Navigation Sidebar' : 'Collapse Navigation Sidebar'}
+          className={`p-2 sm:p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center shrink-0 border border-slate-200/80 shadow-xs ${
+            isSidebarVisible ? 'lg:hidden' : 'flex'
+          }`}
+          title={isSidebarVisible ? 'Hide Navigation Sidebar' : 'Show Navigation Sidebar'}
           aria-label="Toggle Navigation Sidebar"
         >
           <Menu className="w-5 h-5 text-[#142B4A]" />
