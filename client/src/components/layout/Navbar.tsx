@@ -7,11 +7,12 @@ import { NavbarCalendar } from './NavbarCalendar';
 
 interface NavbarProps {
   onMobileToggle: () => void;
+  onToggleSidebar?: () => void;
   pageTitle: string;
   isCollapsed?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCollapsed }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, onToggleSidebar, pageTitle, isCollapsed }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -130,9 +131,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onMobileToggle, pageTitle, isCol
       {/* Left: Menu Drawer Toggle (Mobile) & Brand Logo when collapsed & Page Title */}
       <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         <button
-          onClick={onMobileToggle}
-          className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
-          title="Open Navigation Menu"
+          onClick={() => {
+            if (window.innerWidth < 1024) {
+              onMobileToggle();
+            } else if (onToggleSidebar) {
+              onToggleSidebar();
+            }
+          }}
+          className="p-2 sm:p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center shrink-0 border border-slate-200/80 shadow-xs"
+          title={isCollapsed ? 'Expand Navigation Sidebar' : 'Collapse Navigation Sidebar'}
+          aria-label="Toggle Navigation Sidebar"
         >
           <Menu className="w-5 h-5 text-[#142B4A]" />
         </button>

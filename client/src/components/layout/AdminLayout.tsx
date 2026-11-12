@@ -319,6 +319,7 @@ export const AdminLayout: React.FC = () => {
       >
         <Navbar
           onMobileToggle={() => setIsMobileOpen(true)}
+          onToggleSidebar={() => setIsCollapsed(!isCollapsed)}
           pageTitle={getPageTitle()}
           isCollapsed={isCollapsed}
         />
