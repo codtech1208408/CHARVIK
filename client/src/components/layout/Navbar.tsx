@@ -423,7 +423,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         name: 'NEELAM HARISH',
                         email: 'harish@charvik.com',
                         role: 'Operator',
-                        categories: ['Route Management', 'Task Management', 'AC Maintenance']
+                        categories: ['Route Management', 'Trip Management', 'AC Maintenance']
                       };
                       localStorage.setItem('charvik_user', JSON.stringify(opUser));
                       localStorage.setItem('charvik_token', 'charvik_cloud_token_operator_session');

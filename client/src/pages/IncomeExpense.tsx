@@ -25,7 +25,9 @@ import {
   TrendingUp,
   TrendingDown,
   Bus,
-  FileCheck
+  FileCheck,
+  Check,
+  Tag
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
@@ -104,6 +106,120 @@ export const IncomeExpense: React.FC = () => {
     vehicle_number: '',
     description: ''
   });
+
+  // Category management (Matching Daily Vehicle Checkup with Add More, Edit & Delete)
+  const [incomeCategories, setIncomeCategories] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('charvik_custom_income_categories');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INCOME_SUGGESTIONS;
+  });
+
+  const [expenseCategories, setExpenseCategories] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('charvik_custom_expense_categories');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return EXPENSE_SUGGESTIONS;
+  });
+
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
+  const [isStandaloneCatModalOpen, setIsStandaloneCatModalOpen] = useState(false);
+  const [standaloneCatType, setStandaloneCatType] = useState<'Income' | 'Expense'>('Income');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingCategoryOldName, setEditingCategoryOldName] = useState<string | null>(null);
+  const [editingCategoryNewName, setEditingCategoryNewName] = useState('');
+
+  const activeCategories = formData.transaction_type === 'Income' ? incomeCategories : expenseCategories;
+
+  const handleAddCategory = (targetType?: 'Income' | 'Expense') => {
+    const isIncome = (targetType || formData.transaction_type) === 'Income';
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    const targetList = isIncome ? incomeCategories : expenseCategories;
+
+    if (targetList.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      error(`Category "${trimmed}" already exists.`);
+      return;
+    }
+
+    const updated = [...targetList, trimmed];
+    if (isIncome) {
+      setIncomeCategories(updated);
+      localStorage.setItem('charvik_custom_income_categories', JSON.stringify(updated));
+    } else {
+      setExpenseCategories(updated);
+      localStorage.setItem('charvik_custom_expense_categories', JSON.stringify(updated));
+    }
+
+    setFormData((prev) => ({ ...prev, category: trimmed }));
+    setNewCategoryName('');
+    success(`Category "${trimmed}" added!`);
+  };
+
+  const handleStartEditCategory = (catName: string) => {
+    setEditingCategoryOldName(catName);
+    setEditingCategoryNewName(catName);
+  };
+
+  const handleSaveEditCategory = (oldName: string, targetType?: 'Income' | 'Expense') => {
+    const isIncome = (targetType || formData.transaction_type) === 'Income';
+    const trimmed = editingCategoryNewName.trim();
+    if (!trimmed || trimmed === oldName) {
+      setEditingCategoryOldName(null);
+      setEditingCategoryNewName('');
+      return;
+    }
+
+    const targetList = isIncome ? incomeCategories : expenseCategories;
+
+    if (targetList.some((c) => c.toLowerCase() === trimmed.toLowerCase() && c.toLowerCase() !== oldName.toLowerCase())) {
+      error(`Category "${trimmed}" already exists.`);
+      return;
+    }
+
+    const updated = targetList.map((c) => (c === oldName ? trimmed : c));
+    if (isIncome) {
+      setIncomeCategories(updated);
+      localStorage.setItem('charvik_custom_income_categories', JSON.stringify(updated));
+    } else {
+      setExpenseCategories(updated);
+      localStorage.setItem('charvik_custom_expense_categories', JSON.stringify(updated));
+    }
+
+    if (formData.category === oldName) {
+      setFormData((prev) => ({ ...prev, category: trimmed }));
+    }
+
+    setEditingCategoryOldName(null);
+    setEditingCategoryNewName('');
+    success(`Category renamed to "${trimmed}"!`);
+  };
+
+  const handleDeleteCategory = (catName: string, targetType?: 'Income' | 'Expense') => {
+    const isIncome = (targetType || formData.transaction_type) === 'Income';
+    const targetList = isIncome ? incomeCategories : expenseCategories;
+    if (targetList.length <= 1) {
+      error('At least one category is required.');
+      return;
+    }
+
+    const updated = targetList.filter((c) => c !== catName);
+    if (isIncome) {
+      setIncomeCategories(updated);
+      localStorage.setItem('charvik_custom_income_categories', JSON.stringify(updated));
+    } else {
+      setExpenseCategories(updated);
+      localStorage.setItem('charvik_custom_expense_categories', JSON.stringify(updated));
+    }
+
+    if (formData.category === catName) {
+      setFormData((prev) => ({ ...prev, category: updated[0] || '' }));
+    }
+
+    success(`Category "${catName}" deleted.`);
+  };
 
   // Load Transactions & Vehicles
   const loadData = async () => {
@@ -216,10 +332,11 @@ export const IncomeExpense: React.FC = () => {
   // Open Modal for Add
   const handleOpenAdd = (defaultType: 'Income' | 'Expense' = 'Income') => {
     setEditingItem(null);
+    setIsCategoryManagerOpen(false);
     setFormData({
       transaction_type: defaultType,
       date: new Date().toISOString().split('T')[0],
-      category: defaultType === 'Income' ? 'Trip Advance / Booking' : 'Diesel / Fuel',
+      category: defaultType === 'Income' ? (incomeCategories[0] || 'Trip Advance / Booking') : (expenseCategories[0] || 'Diesel / Fuel'),
       amount: '',
       payment_mode: 'UPI',
       proof_url: '',
@@ -508,6 +625,18 @@ export const IncomeExpense: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => {
+                setStandaloneCatType('Income');
+                setIsStandaloneCatModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-md text-xs font-bold shadow-xs transition-all cursor-pointer whitespace-nowrap"
+            >
+              <Tag className="w-4 h-4 text-white" />
+              <span>Categories</span>
+            </button>
+
             <button
               type="button"
               onClick={handleExportCSV}
@@ -852,7 +981,7 @@ export const IncomeExpense: React.FC = () => {
                   setFormData((prev) => ({
                     ...prev,
                     transaction_type: 'Income',
-                    category: prev.category === 'Diesel / Fuel' ? 'Trip Advance / Booking' : prev.category
+                    category: incomeCategories.includes(prev.category) ? prev.category : (incomeCategories[0] || 'Trip Advance / Booking')
                   }));
                 }}
                 className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
@@ -871,7 +1000,7 @@ export const IncomeExpense: React.FC = () => {
                   setFormData((prev) => ({
                     ...prev,
                     transaction_type: 'Expense',
-                    category: prev.category === 'Trip Advance / Booking' ? 'Diesel / Fuel' : prev.category
+                    category: expenseCategories.includes(prev.category) ? prev.category : (expenseCategories[0] || 'Diesel / Fuel')
                   }));
                 }}
                 className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
@@ -917,23 +1046,166 @@ export const IncomeExpense: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Category (Manual entry with datalist suggestions) */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Category *</label>
-              <input
-                type="text"
-                list="category-suggestions"
+            {/* Category with Add More, Edit, and Delete options */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700">Category *</label>
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryManagerOpen(!isCategoryManagerOpen)}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isCategoryManagerOpen ? 'Hide Category List' : '+ Add More / Edit'}</span>
+                </button>
+              </div>
+
+              <select
                 required
-                placeholder="Type or select category..."
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 bg-white font-medium"
-              />
-              <datalist id="category-suggestions">
-                {(formData.transaction_type === 'Income' ? INCOME_SUGGESTIONS : EXPENSE_SUGGESTIONS).map((c) => (
-                  <option key={c} value={c} />
+                onChange={(e) => {
+                  if (e.target.value === '__add_more__') {
+                    setIsCategoryManagerOpen(true);
+                  } else {
+                    setFormData({ ...formData, category: e.target.value });
+                  }
+                }}
+                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 bg-white font-semibold text-slate-800 cursor-pointer"
+              >
+                <option value="">Select Category...</option>
+                {activeCategories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
                 ))}
-              </datalist>
+                <option value="__add_more__" className="text-blue-600 font-bold bg-blue-50">
+                  + Add More Category...
+                </option>
+              </select>
+
+              {/* Category Manager (Matching Daily Vehicle Checkup design) */}
+              {isCategoryManagerOpen && (
+                <div className="mt-2.5 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                    <span className="flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Manage {formData.transaction_type} Categories</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsCategoryManagerOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Add New Category Row */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder={`New ${formData.transaction_type.toLowerCase()} category...`}
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCategory();
+                        }
+                      }}
+                      className="flex-1 text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500 font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddCategory()}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#142B4A] hover:bg-[#1E3A5F] text-white transition-colors cursor-pointer shrink-0"
+                    >
+                      + Add
+                    </button>
+                  </div>
+
+                  {/* Existing Categories List with Edit and Delete options */}
+                  <div className="max-h-48 overflow-y-auto divide-y divide-slate-100 bg-white rounded-xl border border-slate-200 p-1">
+                    {activeCategories.map((cat) => {
+                      const isEditing = editingCategoryOldName === cat;
+
+                      return (
+                        <div key={cat} className="flex items-center justify-between gap-2 p-1.5 text-xs hover:bg-slate-50 rounded-lg group">
+                          {isEditing ? (
+                            <div className="flex items-center gap-1.5 flex-1">
+                              <input
+                                type="text"
+                                value={editingCategoryNewName}
+                                onChange={(e) => setEditingCategoryNewName(e.target.value)}
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleSaveEditCategory(cat);
+                                  } else if (e.key === 'Escape') {
+                                    setEditingCategoryOldName(null);
+                                  }
+                                }}
+                                className="flex-1 text-xs px-2 py-1 rounded-lg border border-blue-400 bg-white outline-none font-medium"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEditCategory(cat)}
+                                className="p-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors cursor-pointer shrink-0"
+                                title="Save Category"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingCategoryOldName(null)}
+                                className="p-1 rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors cursor-pointer shrink-0"
+                                title="Cancel"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormData((prev) => ({ ...prev, category: cat }));
+                                  setIsCategoryManagerOpen(false);
+                                }}
+                                className={`text-left font-semibold truncate hover:text-blue-600 cursor-pointer flex-1 ${
+                                  formData.category === cat ? 'text-blue-700 font-bold' : 'text-slate-800'
+                                }`}
+                              >
+                                {cat}
+                                {formData.category === cat && (
+                                  <span className="ml-1.5 text-[10px] text-blue-600 font-bold">(Selected)</span>
+                                )}
+                              </button>
+                              <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEditCategory(cat)}
+                                  className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                  title="Edit category"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCategory(cat)}
+                                  className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Delete category"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Payment Mode */}
@@ -1246,6 +1518,148 @@ export const IncomeExpense: React.FC = () => {
               >
                 <Printer className="w-4 h-4" />
                 <span>Print Voucher</span>
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Standalone Category Management Modal (Matching Daily Vehicle Checkup) */}
+      {isStandaloneCatModalOpen && (
+        <Modal
+          isOpen={isStandaloneCatModalOpen}
+          onClose={() => setIsStandaloneCatModalOpen(false)}
+          title="Manage Transaction Categories"
+          subtitle="Add, edit, or delete categories for Income and Expense transactions."
+          maxWidth="max-w-lg"
+        >
+          <div className="space-y-4">
+            {/* Tab switch between Income and Expense */}
+            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200/80">
+              <button
+                type="button"
+                onClick={() => setStandaloneCatType('Income')}
+                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  standaloneCatType === 'Income'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>Income Categories ({incomeCategories.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setStandaloneCatType('Expense')}
+                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  standaloneCatType === 'Expense'
+                    ? 'bg-rose-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>Expense Categories ({expenseCategories.length})</span>
+              </button>
+            </div>
+
+            {/* Add New Category Row */}
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder={`New ${standaloneCatType.toLowerCase()} category name...`}
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCategory(standaloneCatType);
+                  }
+                }}
+                className="flex-1 text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500 font-medium"
+              />
+              <button
+                type="button"
+                onClick={() => handleAddCategory(standaloneCatType)}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#142B4A] hover:bg-[#1E3A5F] text-white transition-colors cursor-pointer shrink-0"
+              >
+                + Add Category
+              </button>
+            </div>
+
+            {/* Existing Categories List with Edit and Delete options */}
+            <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 bg-white rounded-2xl border border-slate-200 p-1">
+              {(standaloneCatType === 'Income' ? incomeCategories : expenseCategories).map((cat) => {
+                const isEditing = editingCategoryOldName === cat;
+
+                return (
+                  <div key={cat} className="flex items-center justify-between gap-2 p-2 text-xs hover:bg-slate-50 rounded-xl group">
+                    {isEditing ? (
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <input
+                          type="text"
+                          value={editingCategoryNewName}
+                          onChange={(e) => setEditingCategoryNewName(e.target.value)}
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleSaveEditCategory(cat, standaloneCatType);
+                            } else if (e.key === 'Escape') {
+                              setEditingCategoryOldName(null);
+                            }
+                          }}
+                          className="flex-1 text-xs px-2.5 py-1 rounded-lg border border-blue-400 bg-white outline-none font-medium"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEditCategory(cat, standaloneCatType)}
+                          className="p-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors cursor-pointer shrink-0"
+                          title="Save Category"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingCategoryOldName(null)}
+                          className="p-1.5 rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors cursor-pointer shrink-0"
+                          title="Cancel"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="font-semibold text-slate-800 flex-1 truncate">{cat}</span>
+                        <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditCategory(cat)}
+                            className="p-1.5 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                            title="Edit category"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(cat, standaloneCatType)}
+                            className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Delete category"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsStandaloneCatModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+              >
+                Done
               </button>
             </div>
           </div>

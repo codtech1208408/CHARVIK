@@ -693,34 +693,34 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Tier 2: Task Members & Salary Breakdown */}
+        {/* Tier 2: Trip Members & Salary Breakdown */}
         <div className="space-y-2.5 pt-1">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-4 bg-purple-500 rounded-full inline-block"></span>
               <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                Crew Tasks & Salary Status
+                Crew Trips & Salary Status
               </h2>
             </div>
             <button
               type="button"
-              onClick={() => navigate('/admin/task-management')}
+              onClick={() => navigate('/admin/tasks')}
               className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
             >
-              <span>View All Tasks</span>
+              <span>View All Trips</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
-            {/* 4. MEMBERS WITH TASK (Vibrant Royal Purple Theme) */}
+            {/* 4. MEMBERS WITH TRIP (Vibrant Royal Purple Theme) */}
             <div
               onClick={() => setShowMembersModal(true)}
               className="bg-gradient-to-br from-[#F3E8FF] via-[#E9D5FF] to-[#D8B4FE] rounded-3xl border-2 border-[#A855F7] p-5 sm:p-6 shadow-md shadow-purple-500/15 hover:shadow-xl hover:border-purple-600 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
               <div className="relative z-10 flex-1">
                 <p className="text-xs font-black text-[#3B0764] uppercase tracking-wider">
-                  MEMBERS WITH TASK
+                  MEMBERS WITH TRIP
                 </p>
                 <h3 className="text-2xl sm:text-3xl font-black text-[#2e0854] mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left">
                   {taskStats.membersCount} Members
@@ -753,7 +753,7 @@ export const Dashboard: React.FC = () => {
                   ₹{taskStats.salaryPaid.toLocaleString('en-IN')}
                 </h3>
                 <p className="text-xs text-[#065F46] font-bold mt-1.5">
-                  Disbursed salary to task staff
+                  Disbursed salary to trip staff
                 </p>
               </div>
               <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
@@ -869,13 +869,13 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Members With Task Modal */}
+      {/* Members With Trip Modal */}
       {showMembersModal && (
         <Modal
           isOpen={showMembersModal}
           onClose={() => setShowMembersModal(false)}
-          title={`Members With Assigned Tasks (${taskStats.membersCount})`}
-          subtitle="Active drivers, helpers and captains assigned to fleet tasks & trips"
+          title={`Members With Assigned Trips (${taskStats.membersCount})`}
+          subtitle="Active drivers, helpers and captains assigned to fleet trips"
           maxWidth="max-w-xl"
         >
           <div className="space-y-4">
@@ -913,11 +913,11 @@ export const Dashboard: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setShowMembersModal(false);
-                  navigate('/admin/task-management');
+                  navigate('/admin/tasks');
                 }}
                 className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
               >
-                <span>Go to Task Management</span>
+                <span>Go to Trip Management</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>

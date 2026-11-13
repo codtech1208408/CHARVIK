@@ -91,7 +91,12 @@ export function App() {
               <Route path="cleaning" element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="routes" element={<RouteManagement />} />
               <Route path="organizers" element={<OrganizerManagement />} />
+              <Route path="operators" element={<OrganizerManagement />} />
+              <Route path="operator-management" element={<Navigate to="/admin/operators" replace />} />
               <Route path="tasks" element={<TaskManagement />} />
+              <Route path="trips" element={<TaskManagement />} />
+              <Route path="trip-management" element={<Navigate to="/admin/trips" replace />} />
+              <Route path="task-management" element={<Navigate to="/admin/trips" replace />} />
               <Route path="employee-registration" element={<EmployeeRegistration />} />
               <Route path="employees" element={<EmployeeRegistration />} />
               <Route path="earnings" element={<Earnings />} />

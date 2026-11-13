@@ -47,7 +47,7 @@ export const AdminLayout: React.FC = () => {
     email: 'neelam.harish@charvik.com',
     email_or_username: 'neelam.harish@charvik.com',
     role: 'Operator',
-    categories: ['Route Management', 'Task Management', 'AC Maintenance']
+    categories: ['Route Management', 'Trip Management', 'AC Maintenance']
   };
 
   const DEFAULT_CAPTAIN = {
@@ -130,8 +130,8 @@ export const AdminLayout: React.FC = () => {
     if (p.includes('/products')) return 'Product Management';
     if (p.includes('/cleaning')) return 'Cleaning Management';
     if (p.includes('/routes')) return 'Route Management';
-    if (p.includes('/organizers')) return 'Organizer Management';
-    if (p.includes('/tasks')) return isOperatorPortal ? 'Trip Tasks & Crew Schedule' : 'Task Management';
+    if (p.includes('/organizers') || p.includes('/operators')) return 'Operator Management';
+    if (p.includes('/tasks') || p.includes('/trips')) return isOperatorPortal ? 'Trip Duties & Crew Schedule' : 'Trip Management';
     if (p.includes('/employee-registration') || p.includes('/employees') || p.includes('/drivers/new') || p.includes('/support-staff/new')) return 'Employee Registration';
     if (p.includes('/employee-payments')) return 'Employee Payments';
     if (p.includes('/earnings')) return 'Earnings';
@@ -231,8 +231,8 @@ export const AdminLayout: React.FC = () => {
   const getCategoryForPath = (path: string): string | null => {
     if (path.startsWith('/admin/vehicles') || path.startsWith('/admin/buses') || path.startsWith('/admin/vehicle-registration')) return 'Vehicle Registration';
     if (path.startsWith('/admin/routes')) return 'Route Management';
-    if (path.startsWith('/admin/tasks')) return 'Task Management';
-    if (path.startsWith('/admin/organizers')) return 'Organizer Management';
+    if (path.startsWith('/admin/tasks') || path.startsWith('/admin/trips')) return 'Trip Management';
+    if (path.startsWith('/admin/organizers') || path.startsWith('/admin/operators')) return 'Operator Management';
     if (path.startsWith('/admin/daily-vehicle-checkup') || path.startsWith('/admin/vehicle-checkup') || path.startsWith('/admin/bus-condition')) return 'Daily Vehicle Checkup';
     if (path.startsWith('/admin/daily-maintenance')) return 'Daily Maintenance';
     if (path.startsWith('/admin/new-tyres') || path.startsWith('/admin/tyres/new')) return 'New Tyres';

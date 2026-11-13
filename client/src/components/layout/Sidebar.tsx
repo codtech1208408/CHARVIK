@@ -88,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     left: number;
   } | null>(null);
 
-  const DEFAULT_OPERATOR_CATEGORIES = ['Route Management', 'Task Management', 'AC Maintenance'];
+  const DEFAULT_OPERATOR_CATEGORIES = ['Route Management', 'Trip Management', 'AC Maintenance'];
   const [operatorCategories, setOperatorCategories] = useState<string[]>(DEFAULT_OPERATOR_CATEGORIES);
 
   useEffect(() => {
@@ -158,8 +158,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Admin Vehicle Management Subtabs (8 modules)
   const adminVehicleManagementSubItems: NavSubItem[] = [
     { label: 'Route Management', route: '/admin/routes', icon: Navigation, activeRoutes: ['/admin/routes'] },
-    { label: 'Task Management', route: '/admin/tasks', icon: ClipboardList, activeRoutes: ['/admin/tasks'] },
-    { label: 'Organizer Management', route: '/admin/organizers', icon: Building2, activeRoutes: ['/admin/organizers'] },
+    { label: 'Trip Management', route: '/admin/tasks', icon: ClipboardList, activeRoutes: ['/admin/tasks', '/admin/trips'] },
+    { label: 'Operator Management', route: '/admin/organizers', icon: Building2, activeRoutes: ['/admin/organizers', '/admin/operators'] },
     { label: 'Employee Registration', route: '/admin/employee-registration', icon: UserPlus, activeRoutes: ['/admin/employee-registration', '/admin/employees', '/admin/drivers', '/admin/support-staff'] },
     { label: 'Employee Payments', route: '/admin/employee-payments', icon: IndianRupee, activeRoutes: ['/admin/employee-payments'] },
     { label: 'Earnings', route: '/admin/earnings', icon: TrendingUp, activeRoutes: ['/admin/earnings'] },
@@ -187,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Operator Subtabs
   const operatorDutySubItems: NavSubItem[] = [
-    { label: 'Task Management', route: '/operator/tasks', icon: ClipboardList, activeRoutes: ['/operator/tasks', '/admin/tasks'] },
+    { label: 'Trip Management', route: '/operator/tasks', icon: ClipboardList, activeRoutes: ['/operator/tasks', '/admin/tasks', '/admin/trips'] },
     { label: 'Route Operations', route: '/admin/routes', icon: Navigation, activeRoutes: ['/admin/routes'] },
   ];
 

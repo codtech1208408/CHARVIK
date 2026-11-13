@@ -878,13 +878,13 @@ export const TaskManagement: React.FC = () => {
       const vehLabel = isFilteredByVeh ? search.trim().toUpperCase() : 'All Vehicles';
 
       const csvLines: string[] = [];
-      csvLines.push(`"CHARVIK STAFFING CONSULTANCY - TASK MANAGEMENT FLEET DUTY REPORT"`);
+      csvLines.push(`"CHARVIK STAFFING CONSULTANCY - TRIP MANAGEMENT FLEET DUTY REPORT"`);
       csvLines.push(`"Vehicle / Search Filter","${vehLabel}"`);
       csvLines.push(`"Staff Category","${staffCategoryFilter}"`);
       csvLines.push(`"Payment Status","${paymentStatusFilter}"`);
       csvLines.push(`"Origin / Destination","${routeOriginFilter} -> ${destinationFilter}"`);
       csvLines.push(`"Date Range","${fromDateFilter || selectedDate} to ${toDateFilter || selectedDate}"`);
-      csvLines.push(`"Total Matching Tasks Found","${filteredDateTrips.length}"`);
+      csvLines.push(`"Total Matching Trips Found","${filteredDateTrips.length}"`);
       csvLines.push(`"Exported At","${new Date().toLocaleString()}"`);
       csvLines.push('');
 
@@ -935,11 +935,11 @@ export const TaskManagement: React.FC = () => {
       const link = document.createElement('a');
       const safeVeh = isFilteredByVeh ? search.trim().replace(/[^a-zA-Z0-9]/g, '_') : 'All';
       link.setAttribute('href', url);
-      link.setAttribute('download', `Tasks_Duties_${safeVeh}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `Trips_Duties_${safeVeh}_${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      success(`Exported ${filteredDateTrips.length} task record(s) for ${vehLabel} to Excel!`);
+      success(`Exported ${filteredDateTrips.length} trip record(s) for ${vehLabel} to Excel!`);
     } catch {
       error('Failed to export Excel report.');
     }
@@ -956,7 +956,7 @@ export const TaskManagement: React.FC = () => {
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
-                Task Management & Multi-Staff Duty
+                Trip Management & Multi-Staff Duty
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
@@ -989,7 +989,7 @@ export const TaskManagement: React.FC = () => {
             className="inline-flex items-center px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-black rounded-xl transition-all shadow-md gap-1.5 cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4 text-blue-800" />
-            <span>+ Log New Task & Duty</span>
+            <span>+ Log New Trip & Duty</span>
           </button>
         </div>
 
@@ -1099,12 +1099,12 @@ export const TaskManagement: React.FC = () => {
 
       {/* Comprehensive Filter Toolbar (Exact Match to User Screenshot) */}
       <div className="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center gap-2">
-        {/* 1. Search task #, vehicle... (amber-focused border matching screenshot) */}
+        {/* 1. Search trip #, vehicle... (amber-focused border matching screenshot) */}
         <div className="relative min-w-[170px] sm:min-w-[190px]">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search task #, vehicle..."
+            placeholder="Search trip #, vehicle..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-8 pr-6 py-1.5 text-xs rounded-xl border border-amber-400 focus:ring-1 focus:ring-amber-500 bg-white font-medium outline-none text-slate-800"
@@ -1213,12 +1213,12 @@ export const TaskManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Helper Notification when vehicle search is active in Task Management */}
+      {/* Helper Notification when vehicle search is active in Trip Management */}
       {search.trim() && (
         <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-center justify-between">
           <span>
             Filtering exclusively for: <strong>{search.toUpperCase()}</strong>. Found{' '}
-            <strong>{filteredDateTrips.length} task duty record(s)</strong>.
+            <strong>{filteredDateTrips.length} trip duty record(s)</strong>.
           </span>
           <button
             onClick={handleExportTasksExcel}
@@ -1294,13 +1294,13 @@ export const TaskManagement: React.FC = () => {
                         <Bus className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                         <p className="font-semibold text-slate-600">
                           {isDateRangeActive
-                            ? `No trip tasks found for ${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}.`
-                            : `No trip tasks found for ${currentMonthLabel}.`}
+                            ? `No trips found for ${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}.`
+                            : `No trips found for ${currentMonthLabel}.`}
                         </p>
                         <p className="text-xs text-slate-400 mt-1">
                           {isDateRangeActive
                             ? 'Adjust date range filters above or clear filters.'
-                            : 'Fresh month started. Click "Log New Task & Duty" above to assign duties.'}
+                            : 'Fresh month started. Click "Log New Trip & Duty" above to assign duties.'}
                         </p>
                       </td>
                     </tr>
@@ -1453,7 +1453,7 @@ export const TaskManagement: React.FC = () => {
                         <p className="text-xs text-slate-400 mt-1">
                           {isDateRangeActive
                             ? 'Adjust date range filters above or clear filters.'
-                            : 'Fresh month started. Click "Log New Task & Duty" above or choose from Pending Buses below.'}
+                            : 'Fresh month started. Click "Log New Trip & Duty" above or choose from Pending Buses below.'}
                         </p>
                       </td>
                     </tr>
@@ -1655,11 +1655,11 @@ export const TaskManagement: React.FC = () => {
 
 
 
-      {/* Log New Task / Trip Duty Modal (Matching Reference Image) */}
+      {/* Log New Trip Duty Modal (Matching Reference Image) */}
       <Modal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        title={editingTrip ? 'Edit Task & Multi-Staff Duty' : 'Log New Task & Multi-Staff Duty'}
+        title={editingTrip ? 'Edit Trip & Multi-Staff Duty' : 'Log New Trip & Multi-Staff Duty'}
         subtitle="Assign up to 4 crew members (Driver 1, Driver 2, Helper, Captain) and fleet operation tracking."
         maxWidth="max-w-4xl"
       >
@@ -2186,7 +2186,7 @@ export const TaskManagement: React.FC = () => {
                 type="submit"
                 className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-colors shadow-sm cursor-pointer"
               >
-                {editingTrip ? 'Update Task Record' : 'Save Task Record'}
+                {editingTrip ? 'Update Trip Record' : 'Save Trip Record'}
               </button>
             </div>
           </div>

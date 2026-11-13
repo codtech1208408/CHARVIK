@@ -390,7 +390,7 @@ export const OrganizerManagement: React.FC = () => {
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-xs">
-                Organization Management
+                Operator Management
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-400/25 text-emerald-100 border border-emerald-300/40 shadow-xs flex items-center gap-1.5 backdrop-blur-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
@@ -398,7 +398,7 @@ export const OrganizerManagement: React.FC = () => {
               </span>
             </div>
             <p className="text-xs sm:text-sm text-blue-100/90 font-medium mt-1">
-              Manage partner organizations, GST numbers, contact persons, and communication directories.
+              Manage partner operators, GST numbers, contact persons, and communication directories.
             </p>
           </div>
         </div>
@@ -420,8 +420,8 @@ export const OrganizerManagement: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <PrintButton
-              title="Registered Organizations & Operator Directory"
-              subtitle={`Total: ${filteredOrganizers.length} Organizations`}
+              title="Registered Operators Directory"
+              subtitle={`Total: ${filteredOrganizers.length} Operators`}
               targetId="organizers-table-wrap"
               className="px-3.5 py-2.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs"
             />
@@ -430,7 +430,7 @@ export const OrganizerManagement: React.FC = () => {
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-black rounded-xl transition-all shadow-md cursor-pointer whitespace-nowrap"
             >
               <Plus className="w-4 h-4 text-blue-800" />
-              <span>+ Add Organization</span>
+              <span>+ Add Operator</span>
             </button>
           </div>
         </div>
@@ -443,11 +443,11 @@ export const OrganizerManagement: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-2xl shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-black text-[#0D6EFD] uppercase tracking-wider">Total Organizations</p>
+            <p className="text-xs font-black text-[#0D6EFD] uppercase tracking-wider">Total Operators</p>
             <h3 className="text-2xl font-black text-slate-900 mt-1">
-              {organizers.length} Organizations
+              {organizers.length} Operators
             </h3>
-            <p className="text-[11px] font-semibold text-slate-500 mt-0.5">Registered partner institutions</p>
+            <p className="text-[11px] font-semibold text-slate-500 mt-0.5">Registered partner operators</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0D6EFD] to-[#0052CC] text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
             <Building2 className="w-6 h-6" />
@@ -483,7 +483,7 @@ export const OrganizerManagement: React.FC = () => {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by organization name, GST number, contact person, or phone..."
+            placeholder="Search by operator name, GST number, contact person, or phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
@@ -498,7 +498,7 @@ export const OrganizerManagement: React.FC = () => {
             <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
               <tr>
                 <th className="py-2.5 px-3 w-12 text-center">S.NO</th>
-                <th className="py-2.5 px-3 min-w-[200px]">Organization Name</th>
+                <th className="py-2.5 px-3 min-w-[200px]">Operator / Organization Name</th>
                 <th className="py-2.5 px-3 w-44">GST Number</th>
                 <th className="py-2.5 px-3 w-40">Contact Person</th>
                 <th className="py-2.5 px-3 w-36">Phone Number</th>
@@ -514,9 +514,9 @@ export const OrganizerManagement: React.FC = () => {
                       <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                         <Building2 className="w-6 h-6" />
                       </div>
-                      <p className="font-bold text-sm text-slate-700">No organizations found</p>
+                      <p className="font-bold text-sm text-slate-700">No operators found</p>
                       <p className="text-xs text-slate-400 max-w-sm">
-                        No organizations configured yet. Use the &quot;+ Add New Organization&quot; button above to create one.
+                        No operators configured yet. Use the &quot;+ Add Operator&quot; button above to create one.
                       </p>
                     </div>
                   </td>
@@ -581,14 +581,14 @@ export const OrganizerManagement: React.FC = () => {
                         <button
                           onClick={() => handleOpenEdit(o)}
                           className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                          title="Edit Organization"
+                          title="Edit Operator"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(o.id)}
                           className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                          title="Delete Organization"
+                          title="Delete Operator"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -606,14 +606,14 @@ export const OrganizerManagement: React.FC = () => {
       <Modal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        title={editingOrg ? 'Edit Organization' : 'Add New Organization'}
-        subtitle="Manage partner organization details, GST number, and contact points"
+        title={editingOrg ? 'Edit Operator' : 'Add New Operator'}
+        subtitle="Manage partner operator details, GST number, and contact points"
         maxWidth="max-w-lg"
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              Organization Name *
+              Operator / Organization Name *
             </label>
             <input
               type="text"

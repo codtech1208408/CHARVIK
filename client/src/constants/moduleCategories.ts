@@ -42,18 +42,18 @@ export const ALL_MODULE_CATEGORIES: ModuleCategoryItem[] = [
   },
   {
     id: 'task_management',
-    name: 'Task Management',
+    name: 'Trip Management',
     route: '/admin/tasks',
     icon: ClipboardList,
-    activeRoutes: ['/admin/tasks'],
+    activeRoutes: ['/admin/tasks', '/admin/trips'],
     description: 'Trip duty assignments and crew allocations'
   },
   {
     id: 'organizer_management',
-    name: 'Organizer Management',
+    name: 'Operator Management',
     route: '/admin/organizers',
     icon: Building2,
-    activeRoutes: ['/admin/organizers'],
+    activeRoutes: ['/admin/organizers', '/admin/operators'],
     description: 'Partner operators and organizers'
   },
   {
