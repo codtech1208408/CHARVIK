@@ -77,7 +77,7 @@ export const OrganizerManagement: React.FC = () => {
     try {
       const saved = localStorage.getItem('charvik_organizer_payments_data');
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return [];
   });
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
@@ -100,14 +100,14 @@ export const OrganizerManagement: React.FC = () => {
         setOrganizers(remote);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
       }
-    }).catch(() => {});
+    }).catch(() => { });
 
     api.getOrganizerPayments().then((data) => {
       if (Array.isArray(data) && data.length > 0) {
         setOrganizerPayments(data);
         localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(data));
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const [formData, setFormData] = useState<Partial<OrganizerItem>>({
@@ -122,7 +122,7 @@ export const OrganizerManagement: React.FC = () => {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(organizers));
-    } catch {}
+    } catch { }
   }, [organizers]);
 
   const handleOpenAdd = () => {
@@ -254,7 +254,7 @@ export const OrganizerManagement: React.FC = () => {
     setOrganizerPayments(updated);
     try {
       localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(updated));
-    } catch {}
+    } catch { }
     success('Payment record removed.');
   };
 
@@ -299,7 +299,7 @@ export const OrganizerManagement: React.FC = () => {
       setOrganizerPayments(updated);
       try {
         localStorage.setItem('charvik_organizer_payments_data', JSON.stringify(updated));
-      } catch {}
+      } catch { }
 
       success(`Recorded payment of ₹${amt.toLocaleString('en-IN')} for ${targetOrg.organization_name}!`);
       setPaymentForm((prev) => ({

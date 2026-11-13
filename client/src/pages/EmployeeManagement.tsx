@@ -639,9 +639,11 @@ export const EmployeeManagement: React.FC = () => {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold w-fit ${
                           e.employment_type === 'Temporary'
                             ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                            : e.employment_type === 'Salary Based'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
                             : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}>
-                          {e.employment_type === 'Temporary' ? 'Temporary' : 'Permanent'}
+                          {e.employment_type === 'Temporary' ? 'Temporary' : e.employment_type === 'Salary Based' ? 'Salary Based' : 'Permanent'}
                         </span>
                         <span className="font-bold text-slate-900 text-xs">
                           {e.salary ? `₹${Number(e.salary).toLocaleString('en-IN')}` : '₹0'}
@@ -1613,9 +1615,11 @@ export const EmployeeManagement: React.FC = () => {
                         <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
                           viewingProfile.employee.employment_type === 'Temporary'
                             ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                            : viewingProfile.employee.employment_type === 'Salary Based'
+                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
                             : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                         }`}>
-                          {viewingProfile.employee.employment_type === 'Temporary' ? 'Temporary Worker' : 'Permanent Worker'}
+                          {viewingProfile.employee.employment_type === 'Temporary' ? 'Temporary Worker' : viewingProfile.employee.employment_type === 'Salary Based' ? 'Salary Based' : 'Permanent Worker'}
                         </span>
                       </td>
                     </tr>
@@ -1624,9 +1628,13 @@ export const EmployeeManagement: React.FC = () => {
                         {viewingProfile.employee.role === 'Captain'
                           ? viewingProfile.employee.employment_type === 'Temporary'
                             ? 'Temporary Monthly Salary'
+                            : viewingProfile.employee.employment_type === 'Salary Based'
+                            ? 'Salary Based Monthly Salary'
                             : 'Permanent Monthly Salary'
                           : viewingProfile.employee.employment_type === 'Temporary'
                             ? 'Temporary Worker (Per Day Salary)'
+                            : viewingProfile.employee.employment_type === 'Salary Based'
+                            ? 'Salary Based Worker (Monthly Salary)'
                             : 'Permanent Worker (Per Day Salary)'}
                       </td>
                       <td className="p-2.5 font-bold text-slate-900">
@@ -1878,9 +1886,11 @@ export const EmployeeManagement: React.FC = () => {
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
                           viewingProfile.employee.employment_type === 'Temporary'
                             ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                            : viewingProfile.employee.employment_type === 'Salary Based'
+                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
                             : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                         }`}>
-                          {viewingProfile.employee.employment_type === 'Temporary' ? 'Temporary Worker' : 'Permanent Worker'}
+                          {viewingProfile.employee.employment_type === 'Temporary' ? 'Temporary Worker' : viewingProfile.employee.employment_type === 'Salary Based' ? 'Salary Based' : 'Permanent Worker'}
                         </span>
                       </div>
                       <div>
@@ -2507,6 +2517,7 @@ export const EmployeeManagement: React.FC = () => {
                     >
                       <option value="Permanent">Permanent Worker</option>
                       <option value="Temporary">Temporary Worker</option>
+                      <option value="Salary Based">Salary Based</option>
                     </select>
                   </div>
                   <div>
@@ -2514,9 +2525,13 @@ export const EmployeeManagement: React.FC = () => {
                       {editingEmployee?.role === 'Captain'
                         ? editFormData.employment_type === 'Temporary'
                           ? 'Temporary Monthly Salary (₹) *'
+                          : editFormData.employment_type === 'Salary Based'
+                          ? 'Salary Based Monthly Salary (₹) *'
                           : 'Permanent Monthly Salary (₹) *'
                         : editFormData.employment_type === 'Temporary'
                           ? 'Temporary Worker (Per Day Salary) (₹) *'
+                          : editFormData.employment_type === 'Salary Based'
+                          ? 'Salary Based Worker (Monthly Salary) (₹) *'
                           : 'Permanent Worker (Per Day Salary) (₹) *'}
                     </label>
                     <div className="relative">
@@ -2528,7 +2543,7 @@ export const EmployeeManagement: React.FC = () => {
                         value={editFormData.salary !== undefined ? editFormData.salary : ''}
                         onChange={(e) => setEditFormData({ ...editFormData, salary: e.target.value })}
                         placeholder={
-                          editingEmployee?.role === 'Captain'
+                          editingEmployee?.role === 'Captain' || editFormData.employment_type === 'Salary Based'
                             ? 'Enter monthly salary amount (₹)'
                             : 'Enter per day salary amount (₹)'
                         }

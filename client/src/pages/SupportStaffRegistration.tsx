@@ -806,9 +806,10 @@ export const SupportStaffRegistration: React.FC = () => {
                   >
                     <option value="Permanent">Permanent Worker</option>
                     <option value="Temporary">Temporary Worker</option>
+                    <option value="Salary Based">Salary Based</option>
                   </select>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Select whether the {formData.role} is a Permanent worker or Temporary staff.
+                    Select whether the {formData.role} is a Permanent worker, Temporary staff, or Salary Based.
                   </p>
                 </div>
 
@@ -817,9 +818,13 @@ export const SupportStaffRegistration: React.FC = () => {
                     {formData.role === 'Captain'
                       ? formData.employment_type === 'Temporary'
                         ? 'Temporary Monthly Salary (₹) *'
+                        : formData.employment_type === 'Salary Based'
+                        ? 'Salary Based Monthly Salary (₹) *'
                         : 'Permanent Monthly Salary (₹) *'
                       : formData.employment_type === 'Temporary'
                         ? 'Temporary Worker (Per Day Salary) (₹) *'
+                        : formData.employment_type === 'Salary Based'
+                        ? 'Salary Based Worker (Monthly Salary) (₹) *'
                         : 'Permanent Worker (Per Day Salary) (₹) *'}
                   </label>
                   <div className="relative">
@@ -831,7 +836,7 @@ export const SupportStaffRegistration: React.FC = () => {
                       value={formData.salary || ''}
                       onChange={(e) => handleInputChange('salary', e.target.value)}
                       placeholder={
-                        formData.role === 'Captain'
+                        formData.role === 'Captain' || formData.employment_type === 'Salary Based'
                           ? 'Enter monthly salary amount (₹)'
                           : 'Enter per day salary amount (₹)'
                       }
@@ -1141,9 +1146,11 @@ export const SupportStaffRegistration: React.FC = () => {
                     <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
                       formData.employment_type === 'Temporary'
                         ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : formData.employment_type === 'Salary Based'
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
                         : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                     }`}>
-                      {formData.employment_type === 'Temporary' ? 'Temporary Worker' : 'Permanent Worker'}
+                      {formData.employment_type === 'Temporary' ? 'Temporary Worker' : formData.employment_type === 'Salary Based' ? 'Salary Based' : 'Permanent Worker'}
                     </span>
                   </td>
                 </tr>
@@ -1152,9 +1159,13 @@ export const SupportStaffRegistration: React.FC = () => {
                     {formData.role === 'Captain'
                       ? formData.employment_type === 'Temporary'
                         ? 'Temporary Monthly Salary'
+                        : formData.employment_type === 'Salary Based'
+                        ? 'Salary Based Monthly Salary'
                         : 'Permanent Monthly Salary'
                       : formData.employment_type === 'Temporary'
                         ? 'Temporary Worker (Per Day Salary)'
+                        : formData.employment_type === 'Salary Based'
+                        ? 'Salary Based Worker (Monthly Salary)'
                         : 'Permanent Worker (Per Day Salary)'}
                   </td>
                   <td className="p-2.5 font-bold text-slate-900">

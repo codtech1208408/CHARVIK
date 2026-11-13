@@ -943,15 +943,20 @@ export const DriverRegistration: React.FC = () => {
                   >
                     <option value="Permanent">Permanent Worker</option>
                     <option value="Temporary">Temporary Worker</option>
+                    <option value="Salary Based">Salary Based</option>
                   </select>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Select whether the driver is a Permanent employee or Temporary staff.
+                    Select whether the driver is a Permanent employee, Temporary staff, or Salary Based worker.
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    {formData.employment_type === 'Temporary' ? 'Temporary Worker (Per Day Salary) (₹) *' : 'Permanent Worker (Per Day Salary) (₹) *'}
+                    {formData.employment_type === 'Temporary'
+                      ? 'Temporary Worker (Per Day Salary) (₹) *'
+                      : formData.employment_type === 'Salary Based'
+                      ? 'Salary Based Worker (Monthly Salary) (₹) *'
+                      : 'Permanent Worker (Per Day Salary) (₹) *'}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
@@ -961,7 +966,11 @@ export const DriverRegistration: React.FC = () => {
                       step="any"
                       value={formData.salary || ''}
                       onChange={(e) => handleInputChange('salary', e.target.value)}
-                      placeholder="Enter per day salary amount (₹)"
+                      placeholder={
+                        formData.employment_type === 'Salary Based'
+                          ? 'Enter monthly salary amount (₹)'
+                          : 'Enter per day salary amount (₹)'
+                      }
                       className="w-full text-xs pl-7 pr-3 p-2.5 rounded-xl border border-blue-300 bg-white font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   </div>
@@ -1308,9 +1317,11 @@ export const DriverRegistration: React.FC = () => {
                   <td className="p-2.5">
                     <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${formData.employment_type === 'Temporary'
                         ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : formData.employment_type === 'Salary Based'
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
                         : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                       }`}>
-                      {formData.employment_type === 'Temporary' ? 'Temporary Worker' : 'Permanent Worker'}
+                      {formData.employment_type === 'Temporary' ? 'Temporary Worker' : formData.employment_type === 'Salary Based' ? 'Salary Based' : 'Permanent Worker'}
                     </span>
                   </td>
                 </tr>
@@ -1318,6 +1329,8 @@ export const DriverRegistration: React.FC = () => {
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">
                     {formData.employment_type === 'Temporary'
                       ? 'Temporary Worker (Per Day Salary)'
+                      : formData.employment_type === 'Salary Based'
+                      ? 'Salary Based Worker (Monthly Salary)'
                       : 'Permanent Worker (Per Day Salary)'}
                   </td>
                   <td className="p-2.5 font-bold text-slate-900">
