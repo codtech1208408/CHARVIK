@@ -23,7 +23,11 @@ import {
   BASE_DAILY_MAINTENANCE_RECORDS,
   BASE_VYSHNAVI_RECORDS,
   BASE_VYSHNAVI_TRANSACTIONS,
-  type DailyMaintenanceRecord
+  BASE_VEHICLE_MAINTENANCE_JOB_CARDS,
+  type DailyMaintenanceRecord,
+  type VehicleMaintenanceJobCardRecord,
+  type VehicleComplaintItem,
+  type ConsumablePartItem
 } from './seedData';
 import type { VyshnaviRecord, VyshnaviTransaction } from '../types';
 
@@ -3599,5 +3603,113 @@ export const api = {
       size: compressedUrl.length,
       mimeType: file.type || 'image/jpeg'
     };
+  },
+
+  // Vehicle Maintenance Job Cards
+  getJobCards: async (params?: { vehicle_number?: string; search?: string }) => {
+    let list: VehicleMaintenanceJobCardRecord[] = [];
+    try {
+      const cached = localStorage.getItem('charvik_vehicle_job_cards_cache');
+      if (cached) {
+        list = JSON.parse(cached);
+      } else {
+        list = [...BASE_VEHICLE_MAINTENANCE_JOB_CARDS];
+        localStorage.setItem('charvik_vehicle_job_cards_cache', JSON.stringify(list));
+      }
+    } catch {
+      list = [...BASE_VEHICLE_MAINTENANCE_JOB_CARDS];
+    }
+
+    if (params?.vehicle_number && params.vehicle_number !== 'All') {
+      const v = params.vehicle_number.toLowerCase().trim();
+      list = list.filter(r => (r.vehicle_number || '').toLowerCase().includes(v));
+    }
+    if (params?.search) {
+      const q = params.search.toLowerCase().trim();
+      list = list.filter(r =>
+        (r.job_card_no || '').toLowerCase().includes(q) ||
+        (r.vehicle_number || '').toLowerCase().includes(q) ||
+        (r.fleet_owner || '').toLowerCase().includes(q) ||
+        (r.mechanic_name || '').toLowerCase().includes(q) ||
+        (r.workshop_name || '').toLowerCase().includes(q)
+      );
+    }
+    return list;
+  },
+
+  createJobCard: async (data: Partial<VehicleMaintenanceJobCardRecord>) => {
+    try {
+      const cached = localStorage.getItem('charvik_vehicle_job_cards_cache');
+      let list: VehicleMaintenanceJobCardRecord[] = cached ? JSON.parse(cached) : [...BASE_VEHICLE_MAINTENANCE_JOB_CARDS];
+      const newId = Date.now();
+      const card: VehicleMaintenanceJobCardRecord = {
+        id: newId,
+        job_card_no: data.job_card_no || `CSC/VM/2026/${String(list.length + 1).padStart(3, '0')}`,
+        date_of_request: data.date_of_request || new Date().toISOString().split('T')[0],
+        km_reading: data.km_reading || 0,
+        fleet_owner: data.fleet_owner || '',
+        vehicle_number: data.vehicle_number || '',
+        complaints: data.complaints || [],
+        parts: data.parts || [],
+        total_parts_amount: (data.parts || []).reduce((acc, p) => acc + (Number(p.amount) || 0), 0),
+        mechanic_name: data.mechanic_name || '',
+        mechanic_number: data.mechanic_number || '',
+        workshop_name: data.workshop_name || '',
+        work_location: data.work_location || '',
+        status: data.status || 'Completed',
+        created_at: new Date().toISOString()
+      };
+      list = [card, ...list];
+      localStorage.setItem('charvik_vehicle_job_cards_cache', JSON.stringify(list));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('charvik_job_cards_updated'));
+      }
+      return card;
+    } catch (e) {
+      console.error('Failed to create job card', e);
+      throw e;
+    }
+  },
+
+  updateJobCard: async (id: number | string, data: Partial<VehicleMaintenanceJobCardRecord>) => {
+    try {
+      const cached = localStorage.getItem('charvik_vehicle_job_cards_cache');
+      let list: VehicleMaintenanceJobCardRecord[] = cached ? JSON.parse(cached) : [...BASE_VEHICLE_MAINTENANCE_JOB_CARDS];
+      const idx = list.findIndex(r => String(r.id) === String(id));
+      if (idx !== -1) {
+        const parts = data.parts !== undefined ? data.parts : list[idx].parts;
+        const total = (parts || []).reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+        list[idx] = {
+          ...list[idx],
+          ...data,
+          total_parts_amount: total
+        };
+        localStorage.setItem('charvik_vehicle_job_cards_cache', JSON.stringify(list));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('charvik_job_cards_updated'));
+        }
+        return list[idx];
+      }
+      throw new Error('Job card not found');
+    } catch (e) {
+      console.error('Failed to update job card', e);
+      throw e;
+    }
+  },
+
+  deleteJobCard: async (id: number | string) => {
+    try {
+      const cached = localStorage.getItem('charvik_vehicle_job_cards_cache');
+      let list: VehicleMaintenanceJobCardRecord[] = cached ? JSON.parse(cached) : [...BASE_VEHICLE_MAINTENANCE_JOB_CARDS];
+      list = list.filter(r => String(r.id) !== String(id));
+      localStorage.setItem('charvik_vehicle_job_cards_cache', JSON.stringify(list));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('charvik_job_cards_updated'));
+      }
+      return { success: true };
+    } catch (e) {
+      console.error('Failed to delete job card', e);
+      throw e;
+    }
   }
 };

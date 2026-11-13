@@ -170,6 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Admin Vehicle Maintenance Subtabs
   const adminVehicleMaintenanceSubItems: NavSubItem[] = [
     { label: 'Fleet Maintenance Overview', route: '/admin/vehicle-maintenance', icon: Gauge, activeRoutes: ['/admin/vehicle-maintenance'] },
+    { label: 'Vehicle Maintenance', route: '/admin/vehicle-maintenance-card', icon: Wrench, activeRoutes: ['/admin/vehicle-maintenance-card', '/admin/job-card'] },
     { label: 'Vehicle Registration', route: '/admin/vehicles', icon: Bus, activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management'] },
     { label: 'Daily Vehicle Checkup', route: '/admin/daily-vehicle-checkup', icon: ClipboardCheck, activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition'] },
     { label: 'Daily Maintenance', route: '/admin/daily-maintenance', icon: CalendarCheck, activeRoutes: ['/admin/daily-maintenance'] },
@@ -263,6 +264,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Wrench,
       activeRoutes: [
         '/admin/vehicle-maintenance',
+        '/admin/vehicle-maintenance-card',
+        '/admin/job-card',
         '/admin/vehicles',
         '/admin/buses',
         '/admin/vehicle-registration',

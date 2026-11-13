@@ -2711,3 +2711,85 @@ export const BASE_VYSHNAVI_TRANSACTIONS: any[] = [
   }
 ];
 
+export interface VehicleComplaintItem {
+  id?: string;
+  complaint: string;
+  remarks: string;
+}
+
+export interface ConsumablePartItem {
+  id?: string;
+  part_name: string;
+  part_number_details: string;
+  quantity: number | string;
+  amount: number | string;
+}
+
+export interface VehicleMaintenanceJobCardRecord {
+  id: number | string;
+  job_card_no: string;
+  date_of_request: string;
+  km_reading: number | string;
+  fleet_owner: string;
+  vehicle_number: string;
+  complaints: VehicleComplaintItem[];
+  parts: ConsumablePartItem[];
+  total_parts_amount: number;
+  mechanic_name: string;
+  mechanic_number: string;
+  workshop_name: string;
+  work_location: string;
+  status?: string;
+  created_at?: string;
+}
+
+export const BASE_VEHICLE_MAINTENANCE_JOB_CARDS: VehicleMaintenanceJobCardRecord[] = [
+  {
+    id: 1,
+    job_card_no: 'CSC/VM/2026/001',
+    date_of_request: '2026-11-09',
+    km_reading: 312000,
+    fleet_owner: 'Sri Krishna Travels',
+    vehicle_number: 'DL01A1024',
+    complaints: [
+      { id: 'c1', complaint: 'Front brake pad noise & high speed steering vibration', remarks: 'Replaced liners' },
+      { id: 'c2', complaint: 'Air conditioning cooling reduced in cabin', remarks: 'Gas top-up required' }
+    ],
+    parts: [
+      { id: 'p1', part_name: 'Brake Pad Liners Front', part_number_details: 'BP-1024 / Bosch', quantity: 2, amount: 4500 },
+      { id: 'p2', part_name: 'AC Refrigerant R134a', part_number_details: 'R134a 1KG Can', quantity: 1, amount: 1850 }
+    ],
+    total_parts_amount: 6350,
+    mechanic_name: 'Ramesh Kumar',
+    mechanic_number: '9848011223',
+    workshop_name: 'Sri Sai Auto Garage & Works',
+    work_location: 'Shamshabad, Hyderabad',
+    status: 'Completed',
+    created_at: '2026-11-09T10:30:00.000Z'
+  },
+  {
+    id: 2,
+    job_card_no: 'CSC/VM/2026/002',
+    date_of_request: '2026-11-12',
+    km_reading: 184500,
+    fleet_owner: 'Vyshnavi Travels',
+    vehicle_number: 'AP16TC4567',
+    complaints: [
+      { id: 'c1', complaint: 'Engine oil filter replacement & general maintenance check', remarks: 'Done' },
+      { id: 'c2', complaint: 'Clutch pedal hard engagement', remarks: 'Cable adjusted & greased' }
+    ],
+    parts: [
+      { id: 'p1', part_name: '15W40 Engine Oil (15L)', part_number_details: 'Castrol CRB Turbomax', quantity: 1, amount: 5200 },
+      { id: 'p2', part_name: 'Oil Filter Element', part_number_details: 'OF-8821 Fleetguard', quantity: 1, amount: 950 }
+    ],
+    total_parts_amount: 6150,
+    mechanic_name: 'Mohammad Rafiq',
+    mechanic_number: '9700445511',
+    workshop_name: 'National Highway Diesel Garage',
+    work_location: 'Medchal Checkpost, Hyderabad',
+    status: 'Completed',
+    created_at: '2026-11-12T14:15:00.000Z'
+  }
+];
+
+
