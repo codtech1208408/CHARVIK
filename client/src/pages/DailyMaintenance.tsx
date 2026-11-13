@@ -28,10 +28,13 @@ import {
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { useAuth } from '../context/AuthContext';
+import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 import type { Bus as BusType } from '../types';
 import type { DailyMaintenanceRecord } from '../services/seedData';
 
 export const DailyMaintenance: React.FC = () => {
+  const { user } = useAuth();
   const { success, error } = useToast();
 
   const [records, setRecords] = useState<DailyMaintenanceRecord[]>([]);
@@ -387,6 +390,50 @@ export const DailyMaintenance: React.FC = () => {
     return Array.from(set).sort();
   }, [buses, records]);
 
+  // Searchable bus options for Add / Edit Modal
+  const busSearchOptions: SearchOption[] = useMemo(() => {
+    const seen = new Set<string>();
+    const options: SearchOption[] = [];
+
+    buses.forEach((b) => {
+      const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+      if (reg && !seen.has(reg)) {
+        seen.add(reg);
+        const sub = [b.bus_type, b.seating_capacity ? `${b.seating_capacity} seats` : ''].filter(Boolean).join(' • ');
+        options.push({
+          value: reg,
+          label: reg,
+          sublabel: sub || undefined,
+          badge: b.depot_location || undefined
+        });
+      }
+    });
+
+    records.forEach((r) => {
+      const reg = (r.vehicle_number || '').split('(')[0].trim();
+      if (reg && !seen.has(reg)) {
+        seen.add(reg);
+        options.push({
+          value: reg,
+          label: reg
+        });
+      }
+    });
+
+    if (formData.vehicle_number) {
+      const cur = (formData.vehicle_number || '').split('(')[0].trim();
+      if (cur && !seen.has(cur)) {
+        seen.add(cur);
+        options.push({
+          value: cur,
+          label: cur
+        });
+      }
+    }
+
+    return options;
+  }, [buses, records, formData.vehicle_number]);
+
   return (
     <div className="space-y-6 w-full max-w-full pb-16">
       {/* Header Bar with Real Bus Coach Banner */}
@@ -710,33 +757,18 @@ export const DailyMaintenance: React.FC = () => {
               />
             </div>
 
-            {/* 2. Vehicle Number */}
+            {/* 2. Vehicle Number (Searchable Dropdown) */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Vehicle Number <span className="text-rose-500">*</span>
-              </label>
-              <select
+              <SearchableSelect
+                label="Vehicle Number"
                 required
-                value={formData.vehicle_number}
-                onChange={(e) => handleVehicleChange(e.target.value)}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-900 focus:outline-none focus:border-[#142B4A]"
-              >
-                <option value="">-- Select Vehicle --</option>
-                {buses.map((b) => {
-                  const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
-                  return (
-                    <option key={b.id} value={reg}>
-                      {reg}
-                    </option>
-                  );
-                })}
-                {formData.vehicle_number &&
-                  !buses.some((b) => (b.registration_number || b.bus_number || '').split('(')[0].trim() === (formData.vehicle_number || '').split('(')[0].trim()) && (
-                    <option value={(formData.vehicle_number || '').split('(')[0].trim()}>
-                      {(formData.vehicle_number || '').split('(')[0].trim()}
-                    </option>
-                  )}
-              </select>
+                placeholder="-- Select or Search Vehicle --"
+                searchPlaceholder="Search vehicle (e.g. DL01, HR55, AP16)..."
+                options={busSearchOptions}
+                value={(formData.vehicle_number || '').split('(')[0].trim()}
+                onChange={(val) => handleVehicleChange(val)}
+                allowCustom={true}
+              />
             </div>
           </div>
 
