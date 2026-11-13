@@ -739,29 +739,33 @@ export const DailyMaintenance: React.FC = () => {
         onClose={() => setIsAddEditOpen(false)}
         title={editingRecord ? `Edit Maintenance Record #${editingRecord.id}` : 'Add Daily Vehicle Maintenance'}
         subtitle="Log workshop visits, defects/complaints, showroom bills, and upload 2 to 3 invoice receipts."
+        icon={<Wrench className="w-5 h-5 text-white" />}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSaveRecord} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {/* 1. Date */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Date <span className="text-rose-500">*</span>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                <span>Date <span className="text-rose-500">*</span></span>
               </label>
               <input
                 type="date"
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-[#142B4A]"
+                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
               />
             </div>
 
             {/* 2. Vehicle Number (Searchable Dropdown) */}
             <div>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                <Bus className="w-3.5 h-3.5 text-blue-600" />
+                <span>Vehicle Number <span className="text-rose-500">*</span></span>
+              </label>
               <SearchableSelect
-                label="Vehicle Number"
-                required
                 placeholder="-- Select or Search Vehicle --"
                 searchPlaceholder="Search vehicle (e.g. DL01, HR55, AP16)..."
                 options={busSearchOptions}
@@ -775,8 +779,9 @@ export const DailyMaintenance: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {/* 3. KM */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Odometer KM <span className="text-rose-500">*</span>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                <Gauge className="w-3.5 h-3.5 text-blue-600" />
+                <span>Odometer KM <span className="text-rose-500">*</span></span>
               </label>
               <div className="relative">
                 <input
@@ -785,90 +790,95 @@ export const DailyMaintenance: React.FC = () => {
                   placeholder="e.g. 312000"
                   value={formData.km}
                   onChange={(e) => setFormData({ ...formData, km: e.target.value })}
-                  className="w-full text-xs font-mono font-bold px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-[#142B4A]"
+                  className="w-full text-xs font-mono font-bold px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="absolute right-3 top-2 text-[10px] font-bold text-slate-400">
+                <span className="absolute right-3 top-2.5 text-[10px] font-black text-slate-400">
                   KM
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">
+              <p className="text-[10px] text-slate-500 mt-0.5">
                 Auto-synced with vehicle checkup odometer.
               </p>
             </div>
 
             {/* 4. Showroom Name */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Showroom / Workshop Name
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                <span>Showroom / Workshop Name</span>
               </label>
               <input
                 type="text"
                 placeholder="e.g. Scania Authorized Service / Tata Hub"
                 value={formData.showroom_name}
                 onChange={(e) => setFormData({ ...formData, showroom_name: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-[#142B4A]"
+                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
               />
             </div>
           </div>
 
           {/* 5. Complaints */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Complaints & Defect Details
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+              <Wrench className="w-3.5 h-3.5 text-blue-600" />
+              <span>Complaints &amp; Defect Details</span>
             </label>
             <textarea
               rows={2}
               placeholder="e.g. Front brake pad noise, steering vibration at high speed, AC low cooling..."
               value={formData.complaints}
               onChange={(e) => setFormData({ ...formData, complaints: e.target.value })}
-              className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-[#142B4A]"
+              className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {/* 6. Other */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Other Details / Parts Replaced
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                <span>Other Details / Parts Replaced</span>
               </label>
               <textarea
                 rows={2}
                 placeholder="e.g. Replaced 2 brake shoe liners, tightened brass couplings, refilled coolant..."
                 value={formData.other}
                 onChange={(e) => setFormData({ ...formData, other: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-[#142B4A]"
+                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
               />
             </div>
 
             {/* 7. Amount */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Amount Paid (₹) <span className="text-rose-500">*</span>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Amount Paid (₹) <span className="text-rose-500">*</span></span>
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">₹</span>
+                <span className="absolute left-3 top-2.5 text-xs font-bold text-slate-400">₹</span>
                 <input
                   type="number"
                   required
                   placeholder="e.g. 8500"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  className="w-full text-xs font-bold pl-7 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-[#142B4A]"
+                  className="w-full text-xs font-bold pl-7 pr-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-emerald-800"
                 />
               </div>
-              <p className="text-[10px] text-slate-400 mt-0.5">
+              <p className="text-[10px] text-slate-500 mt-0.5">
                 Total repair / service invoice amount.
               </p>
             </div>
           </div>
 
           {/* 8. Invoice Image Upload Option (2-3 Images Upload) */}
-          <div className="pt-2 border-t border-slate-100">
+          <div className="pt-2 border-t border-slate-200">
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-bold text-slate-700">
-                Invoice Images Upload
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                <Receipt className="w-3.5 h-3.5 text-blue-600" />
+                <span>Invoice Images Upload</span>
               </label>
-              <span className="text-[10px] font-bold text-slate-500">
+              <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
                 {formData.photos.length} / 3 photos selected
               </span>
             </div>
@@ -877,9 +887,9 @@ export const DailyMaintenance: React.FC = () => {
             </p>
 
             {formData.photos.length < 3 && (
-              <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 hover:border-[#142B4A] rounded-2xl cursor-pointer bg-slate-50/60 hover:bg-slate-100/60 transition-all">
-                <Upload className="w-5 h-5 text-slate-400 mb-1" />
-                <span className="text-xs font-bold text-slate-700">Click to choose invoice images</span>
+              <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl cursor-pointer bg-slate-50/70 hover:bg-blue-50/40 transition-all">
+                <Upload className="w-6 h-6 text-blue-600 mb-1" />
+                <span className="text-xs font-bold text-slate-800">Click to choose invoice images</span>
                 <span className="text-[10px] text-slate-400 mt-0.5">Up to 3 images can be attached</span>
                 <input
                   type="file"
@@ -894,7 +904,7 @@ export const DailyMaintenance: React.FC = () => {
             {formData.photos.length > 0 && (
               <div className="grid grid-cols-3 gap-2.5 mt-3">
                 {formData.photos.map((pUrl, pIdx) => (
-                  <div key={pIdx} className="relative group rounded-xl overflow-hidden border border-slate-200 h-20 bg-slate-100">
+                  <div key={pIdx} className="relative group rounded-xl overflow-hidden border border-slate-300 h-20 bg-slate-100 shadow-xs">
                     <img src={pUrl} alt="Invoice preview" className="w-full h-full object-cover" />
                     <button
                       type="button"
@@ -904,7 +914,7 @@ export const DailyMaintenance: React.FC = () => {
                     >
                       <X className="w-3 h-3" />
                     </button>
-                    <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+                    <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
                       Invoice #{pIdx + 1}
                     </span>
                   </div>
@@ -913,17 +923,18 @@ export const DailyMaintenance: React.FC = () => {
             )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setIsAddEditOpen(false)}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              Cancel
+              <X className="w-4 h-4 text-slate-500" />
+              <span>Cancel</span>
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-6 py-2.5 rounded-xl bg-[#0E52A5] hover:bg-[#072B56] text-white text-xs font-black shadow-md transition-all cursor-pointer flex items-center gap-2"
             >
               <Check className="w-4 h-4 text-white" />
               <span>{editingRecord ? 'Update Record' : 'Save Maintenance Record'}</span>

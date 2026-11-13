@@ -11,7 +11,12 @@ import {
   IndianRupee,
   Activity,
   RotateCcw,
-  Printer
+  Printer,
+  Coins,
+  Milestone,
+  Check,
+  X,
+  BarChart2
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { Badge } from '../components/common/Badge';
@@ -665,17 +670,20 @@ export const RouteManagement: React.FC = () => {
       </div>
 
       {/* Add / Edit Modal */}
+      {/* Modal - Styled Colorfully Matching Image 1 */}
       <Modal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         title={editingRoute ? 'Edit Transit Route' : 'Configure New Transit Route'}
         subtitle="Define service number, starting and ending city, destination KM, and status"
+        icon={<Navigation className="w-5 h-5 text-white" />}
         maxWidth="max-w-lg"
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Service Number *
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+              <Bus className="w-3.5 h-3.5 text-blue-600" />
+              <span>Service Number <span className="text-rose-500">*</span></span>
             </label>
             <input
               type="text"
@@ -683,14 +691,15 @@ export const RouteManagement: React.FC = () => {
               value={formData.service_number || ''}
               onChange={(e) => setFormData({ ...formData, service_number: e.target.value })}
               placeholder="e.g. SRV-791"
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-semibold"
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold text-[#0E52A5]"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Starting City (From) *
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Starting City (From) <span className="text-rose-500">*</span></span>
               </label>
               <input
                 type="text"
@@ -698,13 +707,14 @@ export const RouteManagement: React.FC = () => {
                 value={formData.starting_city || ''}
                 onChange={(e) => setFormData({ ...formData, starting_city: e.target.value })}
                 placeholder="e.g. Hyderabad"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-slate-800"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Ending City (To) *
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                <MapPin className="w-3.5 h-3.5 text-rose-600" />
+                <span>Ending City (To) <span className="text-rose-500">*</span></span>
               </label>
               <input
                 type="text"
@@ -712,14 +722,15 @@ export const RouteManagement: React.FC = () => {
                 value={formData.ending_city || ''}
                 onChange={(e) => setFormData({ ...formData, ending_city: e.target.value })}
                 placeholder="e.g. Bangalore"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                className="w-full text-xs p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-slate-800"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Destination KM *
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+              <Milestone className="w-3.5 h-3.5 text-blue-600" />
+              <span>Destination KM <span className="text-rose-500">*</span></span>
             </label>
             <input
               type="number"
@@ -728,20 +739,26 @@ export const RouteManagement: React.FC = () => {
               value={formData.destination_km ?? ''}
               onChange={(e) => setFormData({ ...formData, destination_km: e.target.value })}
               placeholder="e.g. 570 or 0"
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+              className="w-full text-xs p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold"
             />
           </div>
 
-          <StatusToggle
-            value={formData.status || 'Active'}
-            onChange={(val) => setFormData({ ...formData, status: val })}
-          />
+          <div>
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+              <BarChart2 className="w-3.5 h-3.5 text-blue-600" />
+              <span>Status</span>
+            </label>
+            <StatusToggle
+              value={formData.status || 'Active'}
+              onChange={(val) => setFormData({ ...formData, status: val })}
+            />
+          </div>
 
           {/* Admin Only: Fixed Trip Amount & Operator Commission */}
           {isAdmin && (
-            <div className="pt-2 border-t border-slate-100">
+            <div className="pt-2 border-t border-slate-200">
               {editingRoute ? (
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-300 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
                       🔒 Fixed Financial Parameters
@@ -767,8 +784,9 @@ export const RouteManagement: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Trip Amount (₹)
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                      <Coins className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Trip Amount (₹)</span>
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
@@ -784,14 +802,15 @@ export const RouteManagement: React.FC = () => {
                           })
                         }
                         placeholder="e.g. 25000"
-                        className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+                        className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Operator Commission (₹)
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                      <Coins className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Operator Commission (₹)</span>
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
@@ -807,7 +826,7 @@ export const RouteManagement: React.FC = () => {
                           })
                         }
                         placeholder="e.g. 3500"
-                        className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+                        className="w-full text-xs pl-7 pr-3 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold"
                       />
                     </div>
                   </div>
@@ -816,19 +835,21 @@ export const RouteManagement: React.FC = () => {
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setIsAddOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              Cancel
+              <X className="w-4 h-4 text-slate-500" />
+              <span>Cancel</span>
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-colors shadow-sm cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-[#0E52A5] hover:bg-[#072B56] text-white text-xs font-black shadow-md transition-all cursor-pointer flex items-center gap-2"
             >
-              {editingRoute ? 'Update Route' : 'Create Route'}
+              <Check className="w-4 h-4 text-white" />
+              <span>{editingRoute ? 'Update Route' : 'Create Route'}</span>
             </button>
           </div>
         </form>

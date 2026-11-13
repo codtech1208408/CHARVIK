@@ -24,7 +24,11 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  RotateCw
+  RotateCw,
+  Calendar,
+  Tag,
+  FileText,
+  Minus
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
@@ -1256,18 +1260,17 @@ export const ProductManagement: React.FC = () => {
           isOpen={true}
           onClose={() => setIsReceiveModalOpen(false)}
           title="Receive Product"
+          subtitle="Add stock and product details into inventory"
+          icon={<Package className="w-5 h-5 text-white" />}
           size="md"
         >
           <form onSubmit={handleSaveReceiveProduct} className="space-y-4">
-            <p className="text-xs text-slate-500 -mt-2">
-              Add stock and product details. Received products are permanently saved into inventory.
-            </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Product Name */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Product Name <span className="text-rose-600">*</span>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <Package className="w-3.5 h-3.5 text-blue-600" /> Product Name <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -1281,8 +1284,8 @@ export const ProductManagement: React.FC = () => {
 
               {/* Part Number */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Part Number
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <Tag className="w-3.5 h-3.5 text-amber-500" /> Part Number
                 </label>
                 <input
                   type="text"
@@ -1295,8 +1298,8 @@ export const ProductManagement: React.FC = () => {
 
               {/* Category */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Category <span className="text-rose-600">*</span>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <Layers className="w-3.5 h-3.5 text-purple-600" /> Category <span className="text-rose-600">*</span>
                 </label>
                 <select
                   value={receiveForm.category}
@@ -1313,8 +1316,8 @@ export const ProductManagement: React.FC = () => {
 
               {/* Brand */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Brand
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Brand
                 </label>
                 <input
                   type="text"
@@ -1327,8 +1330,8 @@ export const ProductManagement: React.FC = () => {
 
               {/* Received Date */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Received Date <span className="text-rose-600">*</span>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-blue-500" /> Received Date <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="date"
@@ -1341,29 +1344,39 @@ export const ProductManagement: React.FC = () => {
 
               {/* Quantity Received */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Quantity Received <span className="text-rose-600">*</span>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <Boxes className="w-3.5 h-3.5 text-indigo-600" /> Quantity Received <span className="text-rose-600">*</span>
                 </label>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  placeholder="e.g. 10"
-                  value={receiveForm.quantity_received}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value) || 0;
-                    setReceiveForm((prev) => ({
-                      ...prev,
-                      quantity_received: val,
-                      reused_quantity: prev.is_reused ? Math.min(prev.reused_quantity || val, val) : 0
-                    }));
-                  }}
-                  className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-black text-[#142B4A] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setReceiveForm(prev => ({ ...prev, quantity_received: Math.max(1, (prev.quantity_received || 1) - 1) }))}
+                    className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 flex items-center justify-center font-black border border-slate-200 transition-all">
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    placeholder="e.g. 10"
+                    value={receiveForm.quantity_received}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 0;
+                      setReceiveForm((prev) => ({
+                        ...prev,
+                        quantity_received: val,
+                        reused_quantity: prev.is_reused ? Math.min(prev.reused_quantity || val, val) : 0
+                      }));
+                    }}
+                    className="flex-1 text-center text-sm px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-black text-[#142B4A] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button type="button" onClick={() => setReceiveForm(prev => ({ ...prev, quantity_received: (prev.quantity_received || 0) + 1 }))}
+                    className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-700 flex items-center justify-center font-black border border-slate-200 transition-all">
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Reused Product Section */}
-              <div className="sm:col-span-2 p-3.5 rounded-xl border border-purple-200 bg-purple-50/50 space-y-3">
+              <div className="sm:col-span-2 p-3.5 rounded-xl border-2 border-purple-300 bg-gradient-to-br from-purple-50 to-violet-50 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-purple-900 uppercase tracking-wide flex items-center gap-1.5">
                     <RotateCw className="w-3.5 h-3.5 text-purple-600" />
@@ -1379,8 +1392,8 @@ export const ProductManagement: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Reused Product Name (Manually Typed) */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Reused Product Name
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-purple-800 mb-1">
+                      <RotateCw className="w-3 h-3 text-purple-500" /> Reused Product Name
                     </label>
                     <input
                       type="text"
@@ -1395,39 +1408,51 @@ export const ProductManagement: React.FC = () => {
                           reused_quantity: prev.reused_quantity > 0 ? prev.reused_quantity : (val.trim() ? 1 : 0)
                         }));
                       }}
-                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-purple-300 bg-white font-bold text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
+                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-purple-300 bg-white font-bold text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder:text-slate-400 placeholder:font-normal"
                     />
                   </div>
 
-                  {/* No of Reused Products */}
+                  {/* No of Reused Products - with +/- */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      No of Reused Products
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-purple-800 mb-1">
+                      <Boxes className="w-3 h-3 text-purple-500" /> No of Reused Products
                     </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max={receiveForm.quantity_received || undefined}
-                      placeholder="0"
-                      value={receiveForm.reused_quantity > 0 ? receiveForm.reused_quantity : ''}
-                      onChange={(e) => {
-                        const val = Math.max(0, parseInt(e.target.value) || 0);
-                        setReceiveForm((prev) => ({
-                          ...prev,
-                          reused_quantity: val,
-                          is_reused: val > 0 || Boolean(prev.reused_product_name.trim())
-                        }));
-                      }}
-                      className="w-full text-xs px-3 py-2.5 rounded-xl border border-purple-300 bg-white font-bold text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
-                    />
+                    <div className="flex items-center gap-1.5">
+                      <button type="button"
+                        onClick={() => { const v = Math.max(0, (receiveForm.reused_quantity||0)-1); setReceiveForm(p=>({...p, reused_quantity:v, is_reused: v>0||Boolean(p.reused_product_name.trim())})); }}
+                        className="w-8 h-8 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 flex items-center justify-center font-black border border-purple-200 transition-all text-sm">
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="0"
+                        max={receiveForm.quantity_received || undefined}
+                        placeholder="0"
+                        value={receiveForm.reused_quantity > 0 ? receiveForm.reused_quantity : ''}
+                        onChange={(e) => {
+                          const val = Math.max(0, parseInt(e.target.value) || 0);
+                          setReceiveForm((prev) => ({
+                            ...prev,
+                            reused_quantity: val,
+                            is_reused: val > 0 || Boolean(prev.reused_product_name.trim())
+                          }));
+                        }}
+                        className="flex-1 text-center text-xs px-3 py-2 rounded-xl border border-purple-300 bg-white font-bold text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <button type="button"
+                        onClick={() => { const v = (receiveForm.reused_quantity||0)+1; setReceiveForm(p=>({...p, reused_quantity:v, is_reused:true})); }}
+                        className="w-8 h-8 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 flex items-center justify-center font-black border border-purple-200 transition-all text-sm">
+                        +
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Product Photo Upload (Option per user request) */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Product / Spare Part Photo
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-pink-500" /> Product / Spare Part Photo
                 </label>
                 <input
                   type="file"
@@ -1471,7 +1496,7 @@ export const ProductManagement: React.FC = () => {
                     type="button"
                     disabled={uploadingReceivePhoto}
                     onClick={() => receiveFileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50/60 hover:bg-blue-50/30 rounded-xl p-3.5 text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1"
+                    className="w-full border-2 border-dashed border-blue-200 hover:border-blue-500 bg-blue-50/40 hover:bg-blue-50/70 rounded-xl p-4 text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5"
                   >
                     <Upload className="w-5 h-5 text-blue-600" />
                     <span className="text-xs font-bold text-slate-700">
@@ -1484,8 +1509,8 @@ export const ProductManagement: React.FC = () => {
 
               {/* Notes */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Notes
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <FileText className="w-3.5 h-3.5 text-slate-500" /> Notes
                 </label>
                 <textarea
                   rows={2}
@@ -1502,15 +1527,15 @@ export const ProductManagement: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsReceiveModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-1.5"
               >
-                Cancel
+                <X className="w-3.5 h-3.5" /> Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#142B4A] hover:bg-blue-900 text-white text-xs font-extrabold cursor-pointer transition-all shadow-sm flex items-center gap-1.5"
+                className="px-5 py-2 rounded-xl bg-[#0E52A5] hover:bg-[#072B56] text-white text-xs font-extrabold cursor-pointer transition-all shadow-sm flex items-center gap-1.5"
               >
-                <Check className="w-4 h-4 text-emerald-400" />
+                <Check className="w-4 h-4 text-emerald-300" />
                 <span>Save Product</span>
               </button>
             </div>
@@ -1526,18 +1551,17 @@ export const ProductManagement: React.FC = () => {
           isOpen={true}
           onClose={() => setIsUsageModalOpen(false)}
           title="Record Vehicle Usage"
+          subtitle="Deduct spare parts from inventory for a vehicle"
+          icon={<Wrench className="w-5 h-5 text-white" />}
           size="md"
         >
           <form onSubmit={handleSaveUsage} className="space-y-4">
-            <p className="text-xs text-slate-500 -mt-2">
-              Deduct spare parts from inventory for a vehicle.
-            </p>
 
             <div className="space-y-3.5">
               {/* Product Selection */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Product <span className="text-rose-600">*</span>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <Package className="w-3.5 h-3.5 text-blue-600" /> Product <span className="text-rose-600">*</span>
                 </label>
                 <select
                   required
@@ -1558,8 +1582,8 @@ export const ProductManagement: React.FC = () => {
               {/* Vehicle Selection & Usage Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Vehicle <span className="text-rose-600">*</span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Bus className="w-3.5 h-3.5 text-blue-600" /> Vehicle <span className="text-rose-600">*</span>
                   </label>
                   <select
                     required
@@ -1585,8 +1609,8 @@ export const ProductManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Usage Date <span className="text-rose-600">*</span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-blue-500" /> Usage Date <span className="text-rose-600">*</span>
                   </label>
                   <input
                     type="date"
@@ -1601,8 +1625,8 @@ export const ProductManagement: React.FC = () => {
               {/* Quantity Used & Odometer */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Quantity Used <span className="text-rose-600">*</span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Boxes className="w-3.5 h-3.5 text-rose-500" /> Quantity Used <span className="text-rose-600">*</span>
                   </label>
                   <input
                     type="number"
@@ -1615,8 +1639,8 @@ export const ProductManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Odometer (km)
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Odometer (km)
                   </label>
                   <input
                     type="number"
@@ -1630,8 +1654,8 @@ export const ProductManagement: React.FC = () => {
 
               {/* Remarks */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Remarks
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <FileText className="w-3.5 h-3.5 text-slate-500" /> Remarks
                 </label>
                 <textarea
                   rows={2}
@@ -1644,8 +1668,8 @@ export const ProductManagement: React.FC = () => {
 
               {/* Used Photo Upload (Option per user request) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Used / Installed Photo Proof
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-pink-500" /> Used / Installed Photo Proof
                 </label>
                 <input
                   type="file"
@@ -1706,15 +1730,15 @@ export const ProductManagement: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsUsageModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer flex items-center gap-1.5"
               >
-                Cancel
+                <X className="w-3.5 h-3.5" /> Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#142B4A] hover:bg-blue-900 text-white text-xs font-extrabold cursor-pointer transition-all shadow-sm flex items-center gap-1.5"
+                className="px-5 py-2 rounded-xl bg-[#0E52A5] hover:bg-[#072B56] text-white text-xs font-extrabold cursor-pointer transition-all shadow-sm flex items-center gap-1.5"
               >
-                <Check className="w-4 h-4 text-emerald-400" />
+                <Check className="w-4 h-4 text-emerald-300" />
                 <span>Save Usage</span>
               </button>
             </div>

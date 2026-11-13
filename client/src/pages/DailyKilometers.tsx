@@ -16,7 +16,9 @@ import {
   X,
   Check,
   RotateCcw,
-  Printer
+  Printer,
+  Gauge,
+  Flag
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
@@ -938,20 +940,20 @@ export const DailyKilometers: React.FC = () => {
           isOpen={true}
           onClose={() => setIsModalOpen(false)}
           title={editingEntry ? 'Edit Fueling Record' : 'Log New Fueling'}
-          size="md"
+          subtitle="Record mileage and fuel cost details."
+          icon={<Fuel className="w-5 h-5 text-white" />}
+          maxWidth="max-w-2xl"
         >
           <form onSubmit={handleSaveRecord} className="space-y-4">
-            <p className="text-xs text-slate-500 -mt-2">
-              Record mileage and fuel cost details.
-            </p>
-
             <div className="space-y-3.5">
               {/* Vehicle Selection & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Bus className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Vehicle <span className="text-rose-600">*</span></span>
+                  </label>
                   <SearchableSelect
-                    label="Vehicle"
-                    required
                     placeholder="Select Vehicle"
                     searchPlaceholder="Search vehicle (e.g. DL01, AP16, AR11)..."
                     options={busSearchOptions}
@@ -970,29 +972,31 @@ export const DailyKilometers: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Date <span className="text-rose-600">*</span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Date <span className="text-rose-600">*</span></span>
                   </label>
                   <input
                     type="date"
                     required
                     value={formData.date}
                     onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
 
               {/* Route */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Route <span className="text-rose-600">*</span>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Route <span className="text-rose-600">*</span></span>
                 </label>
                 <select
                   required
                   value={formData.route}
                   onChange={(e) => setFormData((prev) => ({ ...prev, route: e.target.value }))}
-                  className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                  className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                 >
                   <option value="">Select route</option>
                   {routes.length > 0 ? (
@@ -1018,8 +1022,9 @@ export const DailyKilometers: React.FC = () => {
               {/* Last Fuel KM & End Trip KM */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Last Fuel KM <span className="text-rose-600">*</span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Gauge className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Last Fuel KM <span className="text-rose-600">*</span></span>
                   </label>
                   <input
                     type="number"
@@ -1027,13 +1032,14 @@ export const DailyKilometers: React.FC = () => {
                     placeholder="e.g. 10000"
                     value={formData.last_fuel_km}
                     onChange={(e) => setFormData((prev) => ({ ...prev, last_fuel_km: e.target.value }))}
-                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 bg-white font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    End Trip KM <span className="text-rose-600">*</span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Flag className="w-3.5 h-3.5 text-blue-600" />
+                    <span>End Trip KM <span className="text-rose-600">*</span></span>
                   </label>
                   <input
                     type="number"
@@ -1041,7 +1047,7 @@ export const DailyKilometers: React.FC = () => {
                     placeholder="e.g. 20000"
                     value={formData.end_trip_km}
                     onChange={(e) => setFormData((prev) => ({ ...prev, end_trip_km: e.target.value }))}
-                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 bg-white font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -1049,8 +1055,9 @@ export const DailyKilometers: React.FC = () => {
               {/* Fuel Quantity (Liters) & Calculated Mileage Box */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-center">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Fuel Quantity (Liters) <span className="text-rose-600">*</span>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Fuel className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Fuel Quantity (Liters) <span className="text-rose-600">*</span></span>
                   </label>
                   <input
                     type="number"
@@ -1060,15 +1067,16 @@ export const DailyKilometers: React.FC = () => {
                     placeholder="e.g. 500"
                     value={formData.fuel_liters}
                     onChange={(e) => setFormData((prev) => ({ ...prev, fuel_liters: e.target.value }))}
-                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-black text-[#142B4A] focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 bg-white font-black text-[#142B4A] focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">
+                <div className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-xl shadow-2xs">
+                  <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block flex items-center gap-1.5">
+                    <Gauge className="w-3.5 h-3.5 text-emerald-600" />
                     CALCULATED MILEAGE
                   </span>
-                  <p className="text-xl font-black text-emerald-700 mt-0.5">
+                  <p className="text-2xl font-black text-emerald-700 mt-0.5 font-mono">
                     {calculatedMileage.toFixed(2)}{' '}
                     <span className="text-xs font-bold text-emerald-800">KM/L</span>
                   </p>
@@ -1076,11 +1084,12 @@ export const DailyKilometers: React.FC = () => {
               </div>
 
               {/* Total KM Auto-Calculated Banner */}
-              <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-xl flex items-center justify-between">
-                <span className="text-xs font-black text-amber-900">
-                  Total KM: {calculatedTotalKm.toLocaleString('en-IN')} KM
+              <div className="p-3 bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-between shadow-2xs">
+                <span className="text-xs font-black text-amber-900 flex items-center gap-2">
+                  <span>🛣️</span>
+                  <span>Total KM: {calculatedTotalKm.toLocaleString('en-IN')} KM</span>
                 </span>
-                <span className="text-[11px] font-semibold text-amber-700">
+                <span className="text-[11px] font-bold text-amber-800">
                   {calculatedTotalKm > 0 ? '✓ Auto-tallied' : 'Enter KM readings'}
                 </span>
               </div>
@@ -1088,48 +1097,51 @@ export const DailyKilometers: React.FC = () => {
               {/* Optional Fuel Cost & Station */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Fuel Cost (₹)
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <IndianRupee className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Fuel Cost (₹)</span>
                   </label>
                   <input
                     type="number"
                     placeholder="e.g. 16500"
                     value={formData.fuel_cost}
                     onChange={(e) => setFormData((prev) => ({ ...prev, fuel_cost: e.target.value }))}
-                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Fuel Station / Remarks
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                    <Fuel className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Fuel Station / Remarks</span>
                   </label>
                   <input
                     type="text"
                     placeholder="e.g. HP Highway Depot"
                     value={formData.station}
                     onChange={(e) => setFormData((prev) => ({ ...prev, station: e.target.value }))}
-                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
             </div>
 
             {/* Modal Actions */}
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                Cancel
+                <X className="w-4 h-4 text-slate-500" />
+                <span>Cancel</span>
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#F59E0B] hover:bg-amber-600 text-slate-950 text-xs font-extrabold cursor-pointer transition-all shadow-sm flex items-center gap-1.5"
+                className="px-6 py-2.5 rounded-xl bg-[#0E52A5] hover:bg-[#072B56] text-white text-xs font-black shadow-md transition-all cursor-pointer flex items-center gap-2"
               >
-                <Check className="w-4 h-4 text-slate-950" />
-                <span>Save Record</span>
+                <Check className="w-4 h-4 text-white" />
+                <span>{editingEntry ? 'Update Record' : 'Save Record'}</span>
               </button>
             </div>
           </form>
