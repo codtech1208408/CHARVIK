@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   UserCheck,
   User,
@@ -24,9 +24,12 @@ import { StatusToggle } from '../components/common/StatusToggle';
 import { useToast } from '../components/common/Toast';
 import { getNextEmployeeCode } from '../utils/employeeCode';
 import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
+import { useAuth } from '../context/AuthContext';
 
 export const SupportStaffRegistration: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const { success, error } = useToast();
 
   const [buses, setBuses] = useState<BusType[]>([]);
