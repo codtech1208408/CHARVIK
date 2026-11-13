@@ -16,9 +16,9 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
     defaultRole ||
     (urlRole === 'captain'
       ? 'Captain'
-      : urlRole === 'operator' || urlRole === 'supporter'
-      ? 'Operator'
-      : 'Admin');
+      : urlRole === 'admin'
+      ? 'Admin'
+      : 'Operator');
 
   const [selectedRole, setSelectedRole] = useState<'Admin' | 'Captain' | 'Operator'>(initialRole);
   const [emailOrUser, setEmailOrUser] = useState('');
@@ -177,26 +177,8 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
 
         {/* Card */}
         <div className="mt-5 bg-white py-8 px-6 sm:px-10 shadow-xl rounded-2xl border border-slate-200/80">
-          {/* Individual Login Role Tabs */}
-          <div className="grid grid-cols-3 gap-1.5 p-1.5 bg-slate-100 rounded-xl mb-6 border border-slate-200/80">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedRole('Admin');
-                setErrorMessage('');
-                setEmailOrUser('');
-                setPassword('');
-              }}
-              className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                selectedRole === 'Admin'
-                  ? 'bg-white text-blue-700 shadow-sm border border-blue-200'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-              <span>Admin</span>
-            </button>
-
+          {/* Individual Login Role Tabs — Operator & Captain only (Admin logs in via /admin/login) */}
+          <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-slate-100 rounded-xl mb-6 border border-slate-200/80">
             <button
               type="button"
               onClick={() => {
@@ -205,7 +187,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                 setEmailOrUser('');
                 setPassword('');
               }}
-              className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-black transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 selectedRole === 'Operator'
                   ? 'bg-white text-emerald-800 shadow-sm border border-emerald-200'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -223,7 +205,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                 setEmailOrUser('');
                 setPassword('');
               }}
-              className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-black transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 selectedRole === 'Captain'
                   ? 'bg-white text-amber-900 shadow-sm border border-amber-300'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
