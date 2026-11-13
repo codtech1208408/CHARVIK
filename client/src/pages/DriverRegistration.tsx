@@ -188,31 +188,11 @@ export const DriverRegistration: React.FC = () => {
   };
 
   const handleNext = () => {
-    const err = validateStep(currentStep);
-    if (err) {
-      setStepError(err);
-      error(err);
-      return;
-    }
     setStepError(null);
     setCurrentStep((prev) => Math.min(prev + 1, 7));
   };
 
   const handleStepClick = (targetStep: number) => {
-    if (targetStep <= currentStep) {
-      setStepError(null);
-      setCurrentStep(targetStep);
-      return;
-    }
-    for (let s = currentStep; s < targetStep; s++) {
-      const err = validateStep(s);
-      if (err) {
-        setStepError(err);
-        error(`Step ${s} is incomplete: ${err}`);
-        setCurrentStep(s);
-        return;
-      }
-    }
     setStepError(null);
     setCurrentStep(targetStep);
   };
@@ -224,14 +204,10 @@ export const DriverRegistration: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    for (let s = 1; s <= 7; s++) {
-      const err = validateStep(s);
-      if (err) {
-        setStepError(err);
-        error(`Step ${s} is incomplete: ${err}`);
-        setCurrentStep(s);
-        return;
-      }
+    if (!formData.full_name?.trim()) {
+      error('Please enter at least Name as per Aadhaar');
+      setCurrentStep(1);
+      return;
     }
 
     setIsSubmitting(true);
