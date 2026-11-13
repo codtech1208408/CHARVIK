@@ -10,7 +10,8 @@ import {
   ArrowRight,
   IndianRupee,
   Activity,
-  RotateCcw
+  RotateCcw,
+  Printer
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { Badge } from '../components/common/Badge';
@@ -265,6 +266,120 @@ export const RouteManagement: React.FC = () => {
       error(err.message || 'Failed to delete service from database');
     });
     success(`Service ${targetName} deleted successfully.`);
+  };
+
+  const handlePrintRoute = (r: RouteItem) => {
+    const printContent = `
+      <html>
+      <head>
+        <title>Route Details - ${r.service_number}</title>
+        <style>
+          @page { margin: 18mm 15mm; size: A4 portrait; }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 13px; }
+          .letterhead { display: flex; align-items: center; justify-content: space-between; padding: 0 0 14px 0; border-bottom: 3px solid #0E52A5; margin-bottom: 18px; }
+          .letterhead img { height: 70px; width: auto; object-fit: contain; }
+          .company-info { text-align: right; }
+          .company-info h2 { font-size: 20px; font-weight: 900; color: #0B3A79; letter-spacing: 1px; }
+          .company-info p { font-size: 10px; color: #555; margin-top: 2px; }
+          .doc-title { text-align: center; margin-bottom: 18px; }
+          .doc-title h3 { font-size: 16px; font-weight: 800; color: #0B3A79; text-transform: uppercase; letter-spacing: 1px; }
+          .doc-title p { font-size: 11px; color: #666; margin-top: 3px; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+          .info-box { background: #f4f8ff; border: 1px solid #c8daf5; border-radius: 8px; padding: 12px 14px; }
+          .info-box label { font-size: 10px; font-weight: 700; color: #0E52A5; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+          .info-box span { font-size: 14px; font-weight: 800; color: #1a1a2e; }
+          .info-box.highlight { background: #e8f0fe; border-color: #0B3A79; }
+          .route-banner { background: linear-gradient(135deg, #0B3A79, #1E70EB); color: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+          .route-banner .city { font-size: 20px; font-weight: 900; }
+          .route-banner .arrow { font-size: 24px; color: #90caf9; }
+          .route-banner .km { font-size: 12px; color: #b3d4ff; margin-top: 2px; }
+          .financials { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+          .fin-box { border: 2px solid #c8daf5; border-radius: 8px; padding: 12px 14px; text-align: center; }
+          .fin-box label { font-size: 10px; font-weight: 700; color: #0E52A5; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+          .fin-box .amount { font-size: 22px; font-weight: 900; color: #0B3A79; }
+          .footer { border-top: 1.5px solid #c8daf5; margin-top: 24px; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: #888; }
+          .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+          .status-active { background: #d1fae5; color: #065f46; }
+          .status-inactive { background: #fee2e2; color: #991b1b; }
+        </style>
+      </head>
+      <body>
+        <div class="letterhead">
+          <img src="/logo-compact.png" alt="Charvik Logo" />
+          <div class="company-info">
+            <h2>CHARVIK</h2>
+            <p>Staffing Consultancy</p>
+            <p>contact@charvikstaffing.com | +91 98765 43210</p>
+          </div>
+        </div>
+
+        <div class="doc-title">
+          <h3>Route Details</h3>
+          <p>Service Number: <strong>${r.service_number}</strong> &nbsp;|&nbsp; Printed on: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+        </div>
+
+        <div class="route-banner">
+          <div>
+            <div class="city">${r.starting_city}</div>
+            <div class="km">Departure</div>
+          </div>
+          <div class="arrow">&#8594;</div>
+          <div style="text-align:center;">
+            <div style="font-size:13px; color:#b3d4ff;">${r.destination_km} KM</div>
+            <div class="km">${r.vehicle_type || 'N/A'}</div>
+          </div>
+          <div class="arrow">&#8594;</div>
+          <div style="text-align:right;">
+            <div class="city">${r.ending_city}</div>
+            <div class="km">Destination</div>
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-box">
+            <label>Service Number</label>
+            <span>${r.service_number}</span>
+          </div>
+          <div class="info-box">
+            <label>Vehicle Type</label>
+            <span>${r.vehicle_type || 'N/A'}</span>
+          </div>
+          <div class="info-box">
+            <label>Distance</label>
+            <span>${r.destination_km} KM</span>
+          </div>
+          <div class="info-box highlight">
+            <label>Status</label>
+            <span class="status-badge ${r.status === 'Active' ? 'status-active' : 'status-inactive'}">${r.status}</span>
+          </div>
+        </div>
+
+        <div class="financials">
+          <div class="fin-box">
+            <label>Trip Amount</label>
+            <div class="amount">&#8377; ${(r.trip_amount ?? 0).toLocaleString('en-IN')}</div>
+          </div>
+          <div class="fin-box">
+            <label>Operator Commission</label>
+            <div class="amount">&#8377; ${(r.operator_commission ?? 0).toLocaleString('en-IN')}</div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>Generated by Charvik Fleet Management System</span>
+          <span>Route ID: #${r.id} &nbsp;|&nbsp; ${new Date().toLocaleString('en-IN')}</span>
+        </div>
+      </body>
+      </html>
+    `;
+    const win = window.open('', '_blank', 'width=800,height=700');
+    if (win) {
+      win.document.write(printContent);
+      win.document.close();
+      win.focus();
+      setTimeout(() => { win.print(); win.close(); }, 400);
+    }
   };
 
   const filteredRoutes = routes.filter((r) => {
@@ -524,6 +639,13 @@ export const RouteManagement: React.FC = () => {
                           title="Edit Route"
                         >
                           <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handlePrintRoute(r)}
+                          className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                          title="Print Route"
+                        >
+                          <Printer className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(r.id)}
