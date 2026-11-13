@@ -478,11 +478,9 @@ export const NewTyres: React.FC = () => {
       const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
       if (reg && !seen.has(reg)) {
         seen.add(reg);
-        const sub = [b.make_model, b.bus_type].filter(Boolean).join(' • ');
         options.push({
           value: reg,
           label: reg,
-          sublabel: sub || undefined,
           badge: b.depot_location || undefined
         });
       }
