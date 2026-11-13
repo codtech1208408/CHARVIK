@@ -88,7 +88,7 @@ export const AdminLayout: React.FC = () => {
         }
         return parsed;
       }
-    } catch {}
+    } catch { }
 
     // Default to the dedicated account corresponding to the URL
     if (isOperatorPortal) {
@@ -258,14 +258,14 @@ export const AdminLayout: React.FC = () => {
         const rawActiveCats = Array.isArray(activeUser?.categories)
           ? activeUser.categories
           : typeof activeUser?.categories === 'string'
-          ? (function () {
+            ? (function () {
               try {
                 return JSON.parse(activeUser.categories);
               } catch {
                 return [];
               }
             })()
-          : [];
+            : [];
         const userCats: string[] = rawActiveCats.length > 0
           ? rawActiveCats.map((c: any) => String(c || '').trim()).filter(Boolean)
           : ALL_CATEGORY_NAMES;
@@ -313,9 +313,8 @@ export const AdminLayout: React.FC = () => {
 
       {/* Main Content Area */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          isSidebarVisible ? 'lg:pl-[88px]' : 'lg:pl-0'
-        }`}
+        className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarVisible ? 'lg:pl-[88px]' : 'lg:pl-0'
+          }`}
       >
         <Navbar
           onMobileToggle={() => setIsMobileOpen(true)}
