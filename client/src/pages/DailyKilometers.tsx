@@ -21,6 +21,7 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { auditLogger } from '../services/auditLogger';
+import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 
 export interface FuelingEntry {
   id: string;
@@ -164,6 +165,56 @@ export const DailyKilometers: React.FC = () => {
       return true;
     });
   }, [entries, searchVehicle, fromDate, toDate]);
+
+  // Searchable bus options for Log / Edit Fueling Modal
+  const busSearchOptions: SearchOption[] = useMemo(() => {
+    const seen = new Set<string>();
+    const options: SearchOption[] = [];
+
+    buses.forEach((b: any) => {
+      const reg = (b.bus_number || b.registration_number || '').split('(')[0].trim();
+      if (reg && !seen.has(reg)) {
+        seen.add(reg);
+        const sub = [b.make_model, b.bus_type].filter(Boolean).join(' • ');
+        options.push({
+          value: reg,
+          label: reg,
+          sublabel: sub || undefined,
+          badge: b.depot_location || undefined
+        });
+      }
+    });
+
+    entries.forEach((e) => {
+      const reg = (e.vehicle_number || '').split('(')[0].trim();
+      if (reg && !seen.has(reg)) {
+        seen.add(reg);
+        options.push({
+          value: reg,
+          label: reg
+        });
+      }
+    });
+
+    if (formData.vehicle_number) {
+      const cur = (formData.vehicle_number || '').split('(')[0].trim();
+      if (cur && !seen.has(cur)) {
+        seen.add(cur);
+        options.push({
+          value: cur,
+          label: cur
+        });
+      }
+    }
+
+    if (options.length === 0) {
+      ['AR11CD0808', 'AP16TV1234', 'AP16TV5678', 'TS09UB4545'].forEach((reg) => {
+        options.push({ value: reg, label: reg });
+      });
+    }
+
+    return options;
+  }, [buses, entries, formData.vehicle_number]);
 
   // KPI Calculations
   const totalFuelCost = useMemo(() => {
@@ -762,15 +813,15 @@ export const DailyKilometers: React.FC = () => {
               {/* Vehicle Selection & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Vehicle <span className="text-rose-600">*</span>
-                  </label>
-                  <select
+                  <SearchableSelect
+                    label="Vehicle"
                     required
-                    value={formData.vehicle_number}
-                    onChange={(e) => {
-                      const veh = e.target.value;
-                      const matched = buses.find((b) => (b.bus_number && b.bus_number === veh) || (b.registration_number && b.registration_number === veh));
+                    placeholder="Select Vehicle"
+                    searchPlaceholder="Search vehicle (e.g. DL01, AP16, AR11)..."
+                    options={busSearchOptions}
+                    value={(formData.vehicle_number || '').split('(')[0].trim()}
+                    onChange={(veh) => {
+                      const matched = buses.find((b: any) => (b.bus_number && b.bus_number === veh) || (b.registration_number && b.registration_number === veh));
                       const km = matched?.current_odometer_km || '';
                       setFormData((prev) => ({
                         ...prev,
@@ -778,24 +829,8 @@ export const DailyKilometers: React.FC = () => {
                         last_fuel_km: (!prev.last_fuel_km || prev.last_fuel_km === '' || prev.last_fuel_km === 0) ? km : prev.last_fuel_km
                       }));
                     }}
-                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
-                  >
-                    <option value="">Select Vehicle</option>
-                    {buses.length > 0 ? (
-                      buses.map((b) => (
-                        <option key={b.id} value={b.bus_number || b.registration_number}>
-                          {b.bus_number || b.registration_number} {b.make_model ? `(${b.make_model})` : ''}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="AR11CD0808">AR11CD0808</option>
-                        <option value="AP16TV1234">AP16TV1234</option>
-                        <option value="AP16TV5678">AP16TV5678</option>
-                        <option value="TS09UB4545">TS09UB4545</option>
-                      </>
-                    )}
-                  </select>
+                    allowCustom={true}
+                  />
                 </div>
 
                 <div>
