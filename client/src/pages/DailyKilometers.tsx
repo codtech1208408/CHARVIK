@@ -15,12 +15,14 @@ import {
   TrendingUp,
   X,
   Check,
-  RotateCcw
+  RotateCcw,
+  Printer
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { auditLogger } from '../services/auditLogger';
+import { PrintButton } from '../components/common/PrintButton';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 
 export interface FuelingEntry {
@@ -391,6 +393,125 @@ export const DailyKilometers: React.FC = () => {
     }
   };
 
+  // Print Individual Fueling Slip with Official Charvik Letterhead
+  const handlePrintFuelingEntry = (e: FuelingEntry) => {
+    const printContent = `
+      <html>
+      <head>
+        <title>Fueling Receipt - ${e.vehicle_number} (${e.date})</title>
+        <style>
+          @page { margin: 18mm 15mm; size: A4 portrait; }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 13px; }
+          .letterhead { display: flex; align-items: center; justify-content: space-between; padding: 0 0 14px 0; border-bottom: 3px solid #0E52A5; margin-bottom: 18px; }
+          .letterhead img { height: 70px; width: auto; object-fit: contain; }
+          .company-info { text-align: right; }
+          .company-info h2 { font-size: 20px; font-weight: 900; color: #0B3A79; letter-spacing: 1px; }
+          .company-info p { font-size: 10px; color: #555; margin-top: 2px; }
+          .doc-title { text-align: center; margin-bottom: 18px; }
+          .doc-title h3 { font-size: 16px; font-weight: 800; color: #0B3A79; text-transform: uppercase; letter-spacing: 1px; }
+          .doc-title p { font-size: 11px; color: #666; margin-top: 3px; }
+          .vehicle-banner { background: linear-gradient(135deg, #0B3A79, #1E70EB); color: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+          .vehicle-banner .reg { font-size: 22px; font-weight: 900; font-family: monospace; letter-spacing: 1px; }
+          .vehicle-banner .route { font-size: 13px; color: #dbeafe; margin-top: 3px; font-weight: 600; }
+          .vehicle-banner .date { font-size: 13px; text-align: right; color: #b3d4ff; font-weight: 700; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+          .info-box { background: #f4f8ff; border: 1px solid #c8daf5; border-radius: 8px; padding: 12px 14px; }
+          .info-box label { font-size: 10px; font-weight: 700; color: #0E52A5; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+          .info-box span { font-size: 14px; font-weight: 800; color: #1a1a2e; }
+          .financials { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+          .fin-box { border: 2px solid #c8daf5; border-radius: 8px; padding: 12px 14px; text-align: center; }
+          .fin-box.highlight { background: #ecfdf5; border-color: #059669; }
+          .fin-box label { font-size: 10px; font-weight: 700; color: #0E52A5; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+          .fin-box .amount { font-size: 20px; font-weight: 900; color: #0B3A79; }
+          .fin-box.highlight .amount { color: #059669; }
+          .notes-box { background: #fff; border: 1px dashed #94a3b8; border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; font-size: 12px; }
+          .notes-box strong { color: #0B3A79; }
+          .footer { border-top: 1.5px solid #c8daf5; margin-top: 24px; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: #888; }
+        </style>
+      </head>
+      <body>
+        <div class="letterhead">
+          <img src="/logo-compact.png" alt="Charvik Logo" />
+          <div class="company-info">
+            <h2>CHARVIK</h2>
+            <p>Staffing Consultancy &amp; Fleet Operations</p>
+            <p>contact@charvikstaffing.com | +91 98765 43210</p>
+          </div>
+        </div>
+
+        <div class="doc-title">
+          <h3>Mileage &amp; Fueling Receipt</h3>
+          <p>Record ID: <strong>#${e.id}</strong> &nbsp;|&nbsp; Printed on: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+        </div>
+
+        <div class="vehicle-banner">
+          <div>
+            <div class="reg">${e.vehicle_number}</div>
+            <div class="route">${e.route || 'General Fleet Corridor'}</div>
+          </div>
+          <div class="date">
+            <div>Date of Fueling</div>
+            <div style="font-size:15px; color:#fff; margin-top:2px;">${e.date}</div>
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-box">
+            <label>Last Fuel KM (Start)</label>
+            <span>${Number(e.last_fuel_km).toLocaleString('en-IN')} KM</span>
+          </div>
+          <div class="info-box">
+            <label>End Trip KM</label>
+            <span>${Number(e.end_trip_km).toLocaleString('en-IN')} KM</span>
+          </div>
+          <div class="info-box">
+            <label>Total Distance Run</label>
+            <span>${Number(e.total_km).toLocaleString('en-IN')} KM</span>
+          </div>
+          <div class="info-box">
+            <label>Fuel Station</label>
+            <span>${e.station || 'Highway Fuel Depot'}</span>
+          </div>
+        </div>
+
+        <div class="financials">
+          <div class="fin-box">
+            <label>Fuel Consumed</label>
+            <div class="amount">${e.fuel_liters} L</div>
+          </div>
+          <div class="fin-box">
+            <label>Fuel Cost</label>
+            <div class="amount">&#8377; ${Number(e.fuel_cost).toLocaleString('en-IN')}</div>
+          </div>
+          <div class="fin-box highlight">
+            <label>Calculated Mileage</label>
+            <div class="amount">${e.mileage_km_l.toFixed(2)} KM/L</div>
+          </div>
+        </div>
+
+        ${e.remarks ? `
+          <div class="notes-box">
+            <strong>Remarks / Notes:</strong> ${e.remarks}
+          </div>
+        ` : ''}
+
+        <div class="footer">
+          <span>Generated by Charvik Fleet Management System</span>
+          <span>${new Date().toLocaleString('en-IN')}</span>
+        </div>
+      </body>
+      </html>
+    `;
+    const win = window.open('', '_blank', 'width=800,height=700');
+    if (win) {
+      win.document.write(printContent);
+      win.document.close();
+      win.focus();
+      setTimeout(() => { win.print(); win.close(); }, 400);
+    }
+  };
+
   // Export to Excel / CSV with vehicle-specific filtering and summary count
   const handleExportExcel = () => {
     try {
@@ -524,6 +645,13 @@ export const DailyKilometers: React.FC = () => {
               <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
               <span>Export Excel</span>
             </button>
+
+            <PrintButton
+              title="Mileage & Fueling Report"
+              subtitle={`Total Records: ${filteredEntries.length} • Total Fuel Cost: ₹${totalFuelCost.toLocaleString('en-IN')}`}
+              targetId="mileage-fueling-table-wrap"
+              label="Print Sheet"
+            />
 
             <button
               type="button"
@@ -670,7 +798,7 @@ export const DailyKilometers: React.FC = () => {
       {/* =========================================================================
           4. MAIN TABLE (Exact Video Match)
          ========================================================================= */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div id="mileage-fueling-table-wrap" className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white font-bold border-b border-blue-900/30">
@@ -751,9 +879,9 @@ export const DailyKilometers: React.FC = () => {
                       <span className="text-[10px] font-bold text-emerald-700 ml-1">KM/L</span>
                     </td>
 
-                    {/* Actions: Edit & Delete */}
+                    {/* Actions: Edit, Print & Delete */}
                     <td className="py-3 px-3.5 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => handleOpenEdit(e)}
@@ -761,6 +889,14 @@ export const DailyKilometers: React.FC = () => {
                           title="Edit fueling entry"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handlePrintFuelingEntry(e)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                          title="Print fueling receipt"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
