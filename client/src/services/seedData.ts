@@ -11,8 +11,8 @@ export const BASE_FLEET_BUSES: any[] = [
     "bus_type": "Seating/Sleeper",
     "manufacturing_year": 2021,
     "purchase_date": null,
-    "chassis_number": null,
-    "engine_number": null,
+    "chassis_number": "",
+    "engine_number": "",
     "fuel_type": "Diesel",
     "seating_capacity": 36,
     "insurance_expiry": null,
@@ -23,14 +23,18 @@ export const BASE_FLEET_BUSES: any[] = [
     "operational_status": "Under Maintenance",
     "assigned_driver_id": 4,
     "assigned_helper_id": 2,
-    "notes": null,
+    "notes": "",
     "is_archived": 0,
     "created_at": "2026-10-27 05:17:09",
     "updated_at": "2026-11-10 17:42:28",
     "assigned_captain_id": 3,
     "registration_date": null,
     "tax_valid_upto": null,
-    "aitp_valid_upto": null
+    "aitp_valid_upto": null,
+    "parking_location": "Delhi Depot - Bay 1",
+    "operations_manager": "Operations Manager",
+    "last_service_date": null,
+    "last_service_km": 0
   },
   {
     "id": 2,
@@ -41,8 +45,8 @@ export const BASE_FLEET_BUSES: any[] = [
     "bus_type": "Full Sleeper",
     "manufacturing_year": 2021,
     "purchase_date": null,
-    "chassis_number": null,
-    "engine_number": null,
+    "chassis_number": "",
+    "engine_number": "",
     "fuel_type": "Diesel",
     "seating_capacity": 30,
     "insurance_expiry": null,
@@ -53,14 +57,18 @@ export const BASE_FLEET_BUSES: any[] = [
     "operational_status": "Active",
     "assigned_driver_id": null,
     "assigned_helper_id": null,
-    "notes": null,
+    "notes": "",
     "is_archived": 0,
     "created_at": "2026-10-27 05:17:09",
     "updated_at": "2026-11-10 18:36:01",
     "assigned_captain_id": null,
     "registration_date": null,
     "tax_valid_upto": null,
-    "aitp_valid_upto": null
+    "aitp_valid_upto": null,
+    "parking_location": "Delhi Depot - Bay 1",
+    "operations_manager": "Operations Manager",
+    "last_service_date": "2026-11-10",
+    "last_service_km": 2500
   },
   {
     "id": 3,
@@ -69,7 +77,7 @@ export const BASE_FLEET_BUSES: any[] = [
     "make": "Scania",
     "model": "Scania Metrolink HD",
     "bus_type": "School Bus",
-    "manufacturing_year": 2022,
+    "manufacturing_year": null,
     "purchase_date": null,
     "chassis_number": "YS2S4X2000551024",
     "engine_number": "DC091209451",
@@ -90,7 +98,11 @@ export const BASE_FLEET_BUSES: any[] = [
     "assigned_captain_id": null,
     "registration_date": null,
     "tax_valid_upto": null,
-    "aitp_valid_upto": null
+    "aitp_valid_upto": null,
+    "parking_location": "Delhi Depot – Bay 1",
+    "operations_manager": "Priya Sharma",
+    "last_service_date": "2026-11-10",
+    "last_service_km": 312000000
   },
   {
     "id": 4,
@@ -99,7 +111,7 @@ export const BASE_FLEET_BUSES: any[] = [
     "make": "Tata",
     "model": "Tata LPO 1618 Luxury",
     "bus_type": "School Bus",
-    "manufacturing_year": 2022,
+    "manufacturing_year": 2021,
     "purchase_date": null,
     "chassis_number": "MAT447803P22X1200",
     "engine_number": "CUM57013ISBE",
@@ -109,18 +121,22 @@ export const BASE_FLEET_BUSES: any[] = [
     "fitness_expiry": null,
     "permit_expiry": null,
     "puc_expiry": null,
-    "current_odometer_km": 65300,
+    "current_odometer_km": 150000,
     "operational_status": "Active",
     "assigned_driver_id": null,
     "assigned_helper_id": null,
-    "notes": null,
+    "notes": "",
     "is_archived": 0,
     "created_at": "2026-11-08 07:04:40",
-    "updated_at": "2026-11-10 13:28:49",
+    "updated_at": "2026-11-10 19:51:08",
     "assigned_captain_id": null,
     "registration_date": null,
     "tax_valid_upto": null,
-    "aitp_valid_upto": null
+    "aitp_valid_upto": null,
+    "parking_location": "Gurugram Hub – Bay 1",
+    "operations_manager": "Priya Sharma",
+    "last_service_date": "2026-11-10",
+    "last_service_km": 150000
   },
   {
     "id": 5,
@@ -129,7 +145,7 @@ export const BASE_FLEET_BUSES: any[] = [
     "make": "Tata",
     "model": "Tata LPO 1618 Luxury",
     "bus_type": "School Bus",
-    "manufacturing_year": 2022,
+    "manufacturing_year": null,
     "purchase_date": null,
     "chassis_number": "MAT447802P12G8811",
     "engine_number": "CUM56882ISBE",
@@ -150,7 +166,11 @@ export const BASE_FLEET_BUSES: any[] = [
     "assigned_captain_id": null,
     "registration_date": null,
     "tax_valid_upto": null,
-    "aitp_valid_upto": null
+    "aitp_valid_upto": null,
+    "parking_location": "Pune Station – Bay 3",
+    "operations_manager": "Priya Sharma",
+    "last_service_date": "2026-10-28",
+    "last_service_km": 85000
   },
   {
     "id": 6,
@@ -159,7 +179,7 @@ export const BASE_FLEET_BUSES: any[] = [
     "make": "BharatBenz",
     "model": "BharatBenz 1624 Sleeper",
     "bus_type": "School Bus",
-    "manufacturing_year": 2022,
+    "manufacturing_year": null,
     "purchase_date": null,
     "chassis_number": "WDB162491MK669988",
     "engine_number": "OM926LA91002",
@@ -180,7 +200,11 @@ export const BASE_FLEET_BUSES: any[] = [
     "assigned_captain_id": null,
     "registration_date": null,
     "tax_valid_upto": null,
-    "aitp_valid_upto": null
+    "aitp_valid_upto": null,
+    "parking_location": "Lucknow Yard – Bay 1",
+    "operations_manager": "Priya Sharma",
+    "last_service_date": "2026-10-08",
+    "last_service_km": 270000
   },
   {
     "id": 7,
@@ -189,7 +213,7 @@ export const BASE_FLEET_BUSES: any[] = [
     "make": "BharatBenz",
     "model": "BharatBenz 1624 Sleeper",
     "bus_type": "School Bus",
-    "manufacturing_year": 2022,
+    "manufacturing_year": null,
     "purchase_date": null,
     "chassis_number": "WDB162490LK445921",
     "engine_number": "OM926LA88214",
@@ -210,7 +234,11 @@ export const BASE_FLEET_BUSES: any[] = [
     "assigned_captain_id": null,
     "registration_date": null,
     "tax_valid_upto": null,
-    "aitp_valid_upto": null
+    "aitp_valid_upto": null,
+    "parking_location": "Bengaluru Hub – Gate 2",
+    "operations_manager": "Priya Sharma",
+    "last_service_date": "2026-10-26",
+    "last_service_km": 125000
   },
   {
     "id": 8,
@@ -219,7 +247,7 @@ export const BASE_FLEET_BUSES: any[] = [
     "make": "Volvo",
     "model": "Volvo 9600 Multi-Axle",
     "bus_type": "School Bus",
-    "manufacturing_year": 2023,
+    "manufacturing_year": null,
     "purchase_date": null,
     "chassis_number": "YV4VS5GL2HA123456",
     "engine_number": "D11C4401937",
@@ -240,7 +268,11 @@ export const BASE_FLEET_BUSES: any[] = [
     "assigned_captain_id": null,
     "registration_date": null,
     "tax_valid_upto": null,
-    "aitp_valid_upto": null
+    "aitp_valid_upto": null,
+    "parking_location": "Delhi Depot – Bay 4",
+    "operations_manager": "Priya Sharma",
+    "last_service_date": "2026-10-18",
+    "last_service_km": 240000
   }
 ];
 
@@ -593,6 +625,25 @@ export const BASE_FLEET_ORGANIZERS: any[] = [
 
 export const BASE_FLEET_TASKS: any[] = [
   {
+    "id": 3,
+    "trip_start_date": "2026-10-27",
+    "vehicle_number": "AP16TV1234",
+    "vehicle_status": "RUN",
+    "route_corridor": "Hyderabad → Bangalore",
+    "operator_organizer": "sri krishna",
+    "driver1": {},
+    "driver2": {},
+    "helper": null,
+    "captain": null,
+    "trip_remarks": "",
+    "duty_status": "Scheduled",
+    "created_at": "2026-11-08T12:24:34.251192+00:00",
+    "updated_at": "2026-11-08T12:24:34.251192+00:00",
+    "service_number": "",
+    "payment_status": "Pending",
+    "vehicle_type": ""
+  },
+  {
     "id": 1793080778699,
     "trip_start_date": "2026-10-27",
     "vehicle_number": "AP16TV1234",
@@ -600,42 +651,42 @@ export const BASE_FLEET_TASKS: any[] = [
     "route_corridor": "Hyderabad → Bangalore",
     "operator_organizer": "sri krishna",
     "driver1": {
+      "role": "Driver",
+      "balance_due": 1200,
       "employee_id": 1,
       "employee_name": "akhil",
-      "role": "Driver",
       "salary_amount": 1200,
-      "advance_amount": 0,
-      "balance_due": 1200
+      "advance_amount": 0
     },
     "driver2": {
+      "role": "Driver",
+      "balance_due": 900,
       "employee_id": 4,
       "employee_name": "kittu",
-      "role": "Driver",
       "salary_amount": 900,
-      "advance_amount": 0,
-      "balance_due": 900
+      "advance_amount": 0
     },
     "helper": {
+      "role": "Helper",
+      "balance_due": 0,
       "employee_id": 2,
       "employee_name": "santhu",
-      "role": "Helper",
       "salary_amount": 0,
-      "advance_amount": 0,
-      "balance_due": 0
+      "advance_amount": 0
     },
     "captain": {
-      "employee_id": 3,
-      "employee_name": "hari",
       "role": "Captain",
-      "salary_amount": 0,
-      "advance_amount": 0,
       "balance_due": 0,
-      "work_remarks": "Supervise route stops, passenger comfort & safety"
+      "employee_id": 3,
+      "work_remarks": "Supervise route stops, passenger comfort & safety",
+      "employee_name": "hari",
+      "salary_amount": 0,
+      "advance_amount": 0
     },
     "trip_remarks": "zvh,nmnbvxz",
     "duty_status": "In Progress",
     "created_at": "2026-10-27T05:59:38.699Z",
-    "updated_at": "2026-10-27 17:21:23",
+    "updated_at": "2026-10-27T17:21:23+00:00",
     "service_number": "",
     "payment_status": "Pending",
     "vehicle_type": ""
@@ -648,42 +699,42 @@ export const BASE_FLEET_TASKS: any[] = [
     "route_corridor": "Hyderabad → Bangalore",
     "operator_organizer": "sri krishna",
     "driver1": {
+      "role": "Driver",
+      "balance_due": 900,
       "employee_id": 4,
       "employee_name": "kittu",
-      "role": "Driver",
       "salary_amount": 900,
-      "advance_amount": 0,
-      "balance_due": 900
+      "advance_amount": 0
     },
     "driver2": {
+      "role": "Driver",
+      "balance_due": 1200,
       "employee_id": 1,
       "employee_name": "akhil",
-      "role": "Driver",
       "salary_amount": 1200,
-      "advance_amount": 0,
-      "balance_due": 1200
+      "advance_amount": 0
     },
     "helper": {
+      "role": "Helper",
+      "balance_due": 15000,
       "employee_id": 2,
       "employee_name": "santhu",
-      "role": "Helper",
       "salary_amount": 15000,
-      "advance_amount": 0,
-      "balance_due": 15000
+      "advance_amount": 0
     },
     "captain": {
-      "employee_id": 3,
-      "employee_name": "hari",
       "role": "Captain",
-      "salary_amount": 0,
-      "advance_amount": 0,
       "balance_due": 0,
-      "work_remarks": "Supervise route stops, passenger comfort & safety"
+      "employee_id": 3,
+      "work_remarks": "Supervise route stops, passenger comfort & safety",
+      "employee_name": "hari",
+      "salary_amount": 0,
+      "advance_amount": 0
     },
     "trip_remarks": "sdfghuiop;ohgfd",
     "duty_status": "Scheduled",
     "created_at": "2026-10-29 05:12:56",
-    "updated_at": "2026-10-29 05:12:56",
+    "updated_at": "2026-10-29T05:12:56+00:00",
     "service_number": "SRV-101",
     "payment_status": "Pending",
     "vehicle_type": ""
@@ -696,42 +747,42 @@ export const BASE_FLEET_TASKS: any[] = [
     "route_corridor": "Hyderabad → Bangalore",
     "operator_organizer": "sri krishna",
     "driver1": {
+      "role": "Driver",
+      "balance_due": 1200,
       "employee_id": 1,
       "employee_name": "akhil",
-      "role": "Driver",
       "salary_amount": 1200,
-      "advance_amount": 0,
-      "balance_due": 1200
+      "advance_amount": 0
     },
     "driver2": {
+      "role": "Driver",
+      "balance_due": 900,
       "employee_id": 4,
       "employee_name": "kittu",
-      "role": "Driver",
       "salary_amount": 900,
-      "advance_amount": 0,
-      "balance_due": 900
+      "advance_amount": 0
     },
     "helper": {
+      "role": "Helper",
+      "balance_due": 15000,
       "employee_id": 2,
       "employee_name": "santhu",
-      "role": "Helper",
       "salary_amount": 15000,
-      "advance_amount": 0,
-      "balance_due": 15000
+      "advance_amount": 0
     },
     "captain": {
-      "employee_id": 3,
-      "employee_name": "hari",
       "role": "Captain",
-      "salary_amount": 0,
-      "advance_amount": 0,
       "balance_due": 0,
-      "work_remarks": "Supervise route stops, passenger comfort & safety"
+      "employee_id": 3,
+      "work_remarks": "Supervise route stops, passenger comfort & safety",
+      "employee_name": "hari",
+      "salary_amount": 0,
+      "advance_amount": 0
     },
     "trip_remarks": "azwedrtfg8h9j0k-",
     "duty_status": "Scheduled",
     "created_at": "2026-10-30 02:35:16",
-    "updated_at": "2026-10-30 02:35:16",
+    "updated_at": "2026-10-30T02:35:16+00:00",
     "service_number": "SRV-101",
     "payment_status": "Pending",
     "vehicle_type": ""
@@ -744,42 +795,42 @@ export const BASE_FLEET_TASKS: any[] = [
     "route_corridor": "Hyderabad → Bangalore",
     "operator_organizer": "charvik",
     "driver1": {
+      "role": "Driver",
+      "balance_due": 1200,
       "employee_id": 1,
       "employee_name": "akhil",
-      "role": "Driver",
       "salary_amount": 1200,
-      "advance_amount": 0,
-      "balance_due": 1200
+      "advance_amount": 0
     },
     "driver2": {
+      "role": "Driver",
+      "balance_due": 900,
       "employee_id": 4,
       "employee_name": "kittu",
-      "role": "Driver",
       "salary_amount": 900,
-      "advance_amount": 0,
-      "balance_due": 900
+      "advance_amount": 0
     },
     "helper": {
+      "role": "Helper",
+      "balance_due": 15000,
       "employee_id": 2,
       "employee_name": "santhu",
-      "role": "Helper",
       "salary_amount": 15000,
-      "advance_amount": 0,
-      "balance_due": 15000
+      "advance_amount": 0
     },
     "captain": {
-      "employee_id": 3,
-      "employee_name": "hari",
       "role": "Captain",
-      "salary_amount": 0,
-      "advance_amount": 0,
       "balance_due": 0,
-      "work_remarks": "Supervise route stops, passenger comfort & safety"
+      "employee_id": 3,
+      "work_remarks": "Supervise route stops, passenger comfort & safety",
+      "employee_name": "hari",
+      "salary_amount": 0,
+      "advance_amount": 0
     },
     "trip_remarks": "",
     "duty_status": "Scheduled",
     "created_at": "2026-10-31 03:48:09",
-    "updated_at": "2026-10-31 03:48:09",
+    "updated_at": "2026-10-31T03:48:09+00:00",
     "service_number": "SRV-101",
     "payment_status": "Pending",
     "vehicle_type": ""
@@ -792,45 +843,43 @@ export const BASE_FLEET_TASKS: any[] = [
     "route_corridor": "Hyderabad → Bangalore",
     "operator_organizer": "charvik",
     "driver1": {
-      "employee_id": 1,
-      "employee_name": "akhil",
       "role": "Driver",
+      "balance_due": 500,
+      "employee_name": "akhil",
       "salary_amount": 500,
-      "advance_amount": 0,
-      "balance_due": 500
+      "advance_amount": 0
     },
     "driver2": {
-      "employee_id": 4,
-      "employee_name": "kittu",
       "role": "Driver",
+      "balance_due": 500,
+      "employee_name": "kittu",
       "salary_amount": 500,
-      "advance_amount": 0,
-      "balance_due": 500
+      "advance_amount": 0
     },
     "helper": {
+      "role": "Helper",
+      "balance_due": 15000,
       "employee_id": 2,
       "employee_name": "santhu",
-      "role": "Helper",
       "salary_amount": 15000,
-      "advance_amount": 0,
-      "balance_due": 15000
+      "advance_amount": 0
     },
     "captain": {
-      "employee_id": 3,
-      "employee_name": "hari",
       "role": "Captain",
-      "salary_amount": 0,
-      "advance_amount": 0,
       "balance_due": 0,
-      "work_remarks": "Supervise route stops, passenger comfort & safety"
+      "employee_id": 3,
+      "work_remarks": "Supervise route stops, passenger comfort & safety",
+      "employee_name": "hari",
+      "salary_amount": 0,
+      "advance_amount": 0
     },
     "trip_remarks": "",
     "duty_status": "Scheduled",
     "created_at": "2026-11-06 14:17:23",
-    "updated_at": "2026-11-06 14:17:23",
+    "updated_at": "2026-11-08T13:24:18+00:00",
     "service_number": "SRV-101",
     "payment_status": "Pending",
-    "vehicle_type": "Sleeper/Seating"
+    "vehicle_type": ""
   }
 ];
 
@@ -856,7 +905,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 17:42:28"
   },
   {
     "id": 2,
@@ -879,7 +928,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 17:42:28"
   },
   {
     "id": 3,
@@ -902,7 +951,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 17:42:28"
   },
   {
     "id": 4,
@@ -925,7 +974,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 17:42:28"
   },
   {
     "id": 5,
@@ -948,7 +997,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 17:42:28"
   },
   {
     "id": 6,
@@ -971,7 +1020,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 17:42:28"
   },
   {
     "id": 7,
@@ -994,7 +1043,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 18:30:46"
   },
   {
     "id": 8,
@@ -1017,7 +1066,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 18:30:46"
   },
   {
     "id": 9,
@@ -1040,7 +1089,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 18:30:46"
   },
   {
     "id": 10,
@@ -1063,7 +1112,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:52:18",
-    "updated_at": "2026-10-30 06:52:18"
+    "updated_at": "2026-11-10 18:30:46"
   },
   {
     "id": 11,
@@ -1086,7 +1135,7 @@ export const BASE_TYRE_RECORDS: any[] = [
     "remarks": null,
     "is_active": 1,
     "created_at": "2026-10-30 06:48:49",
-    "updated_at": "2026-10-30 06:48:49"
+    "updated_at": "2026-11-10 18:30:46"
   }
 ];
 
@@ -1262,22 +1311,26 @@ export const BASE_NEW_TYRES: any[] = [
     "tyre_serial_number": "MRF-NEW-901",
     "brand": "MRF",
     "size": "295/80 R22.5",
-    "model": "Steel Muscle-S3C4",
+    "model": "",
     "supplier": "MRF Commercial Tyre Hub",
     "invoice_number": "INV-2026-MRF-881",
     "purchase_cost": 24500,
-    "status": "In Stock",
-    "allocated_bus_id": null,
-    "allocated_wheel_position": null,
+    "status": "Allocated",
+    "allocated_bus_id": 1,
+    "allocated_wheel_position": "",
     "notes": "Spare brand new radial tyre for long corridor routes",
     "created_at": "2026-10-30 09:19:48",
-    "updated_at": "2026-10-30 09:19:48",
+    "updated_at": "2026-11-10 17:42:28",
     "quantity": 1,
-    "km": 0,
-    "present_km": 0,
-    "running_km": 0,
-    "tyre_photo_url": null,
-    "invoice_photo_url": null
+    "km": 55000,
+    "present_km": 10000,
+    "running_km": 10000,
+    "tyre_photo_url": "",
+    "invoice_photo_url": "",
+    "starting_km": 0,
+    "total_km": 10000,
+    "vehicle_number": "AP16TV1234",
+    "allocated_bus_number": "AP16TV1234"
   },
   {
     "id": 2,
@@ -1300,7 +1353,11 @@ export const BASE_NEW_TYRES: any[] = [
     "present_km": 0,
     "running_km": 0,
     "tyre_photo_url": null,
-    "invoice_photo_url": null
+    "invoice_photo_url": null,
+    "starting_km": 0,
+    "total_km": 0,
+    "vehicle_number": null,
+    "allocated_bus_number": null
   },
   {
     "id": 3,
@@ -1323,7 +1380,11 @@ export const BASE_NEW_TYRES: any[] = [
     "present_km": 0,
     "running_km": 0,
     "tyre_photo_url": null,
-    "invoice_photo_url": null
+    "invoice_photo_url": null,
+    "starting_km": 0,
+    "total_km": 0,
+    "vehicle_number": null,
+    "allocated_bus_number": null
   },
   {
     "id": 4,
@@ -1346,7 +1407,11 @@ export const BASE_NEW_TYRES: any[] = [
     "present_km": 0,
     "running_km": 0,
     "tyre_photo_url": null,
-    "invoice_photo_url": null
+    "invoice_photo_url": null,
+    "starting_km": 0,
+    "total_km": 0,
+    "vehicle_number": null,
+    "allocated_bus_number": null
   },
   {
     "id": 5,
@@ -1363,13 +1428,17 @@ export const BASE_NEW_TYRES: any[] = [
     "allocated_wheel_position": "Front Left",
     "notes": "Mounted on Bus AP16TV1234",
     "created_at": "2026-10-30 09:19:48",
-    "updated_at": "2026-10-30 09:19:48",
+    "updated_at": "2026-11-10 17:42:28",
     "quantity": 1,
-    "km": 0,
-    "present_km": 45000,
-    "running_km": 45000,
-    "tyre_photo_url": null,
-    "invoice_photo_url": null
+    "km": 10000,
+    "present_km": 10000,
+    "running_km": 0,
+    "tyre_photo_url": "",
+    "invoice_photo_url": "",
+    "starting_km": 0,
+    "total_km": 10000,
+    "vehicle_number": "AP16TV1234",
+    "allocated_bus_number": "AP16TV1234"
   },
   {
     "id": 6,
@@ -1386,13 +1455,125 @@ export const BASE_NEW_TYRES: any[] = [
     "allocated_wheel_position": "Front Right",
     "notes": "Mounted on Bus AP16TV1234",
     "created_at": "2026-10-30 09:19:48",
-    "updated_at": "2026-10-30 09:19:48",
+    "updated_at": "2026-11-10 17:42:28",
+    "quantity": 1,
+    "km": 10000,
+    "present_km": 10000,
+    "running_km": 0,
+    "tyre_photo_url": "",
+    "invoice_photo_url": "",
+    "starting_km": 0,
+    "total_km": 10000,
+    "vehicle_number": "AP16TV1234",
+    "allocated_bus_number": "AP16TV1234"
+  },
+  {
+    "id": 7,
+    "purchase_date": "2026-10-30",
+    "tyre_serial_number": "JKT-2026-201",
+    "brand": "JK Tyre",
+    "size": "295/80 R22.5",
+    "model": "",
+    "supplier": "JK Tyre Direct Depot",
+    "invoice_number": "",
+    "purchase_cost": 22500,
+    "status": "Allocated",
+    "allocated_bus_id": 2,
+    "allocated_wheel_position": "",
+    "notes": "",
+    "created_at": "2026-11-10 17:51:56",
+    "updated_at": "2026-11-10 18:30:46",
     "quantity": 1,
     "km": 0,
-    "present_km": 45000,
-    "running_km": 45000,
-    "tyre_photo_url": null,
-    "invoice_photo_url": null
+    "present_km": 5000,
+    "running_km": 5000,
+    "tyre_photo_url": "",
+    "invoice_photo_url": "",
+    "starting_km": 0,
+    "total_km": 5000,
+    "vehicle_number": "AP16TC4567",
+    "allocated_bus_number": "AP16TC4567"
+  },
+  {
+    "id": 8,
+    "purchase_date": "2026-10-30",
+    "tyre_serial_number": "JKT-2026-202",
+    "brand": "JK Tyre",
+    "size": "295/80 R22.5",
+    "model": "",
+    "supplier": "JK Tyre Direct Depot",
+    "invoice_number": "",
+    "purchase_cost": 22500,
+    "status": "Allocated",
+    "allocated_bus_id": 2,
+    "allocated_wheel_position": "",
+    "notes": "",
+    "created_at": "2026-11-10 17:51:56",
+    "updated_at": "2026-11-10 18:30:46",
+    "quantity": 1,
+    "km": 0,
+    "present_km": 5000,
+    "running_km": 5000,
+    "tyre_photo_url": "",
+    "invoice_photo_url": "",
+    "starting_km": 0,
+    "total_km": 5000,
+    "vehicle_number": "AP16TC4567",
+    "allocated_bus_number": "AP16TC4567"
+  },
+  {
+    "id": 9,
+    "purchase_date": "2026-11-10",
+    "tyre_serial_number": "4725638",
+    "brand": "MRF",
+    "size": "295/80 R22.5",
+    "model": "",
+    "supplier": "",
+    "invoice_number": "",
+    "purchase_cost": 0,
+    "status": "Allocated",
+    "allocated_bus_id": 1,
+    "allocated_wheel_position": "",
+    "notes": "",
+    "created_at": "2026-11-10 19:39:06",
+    "updated_at": "2026-11-10 19:39:06",
+    "quantity": 1,
+    "km": 500,
+    "present_km": 10000,
+    "running_km": 9500,
+    "tyre_photo_url": "",
+    "invoice_photo_url": "",
+    "starting_km": 500,
+    "total_km": 10500,
+    "vehicle_number": "AP16TV1234",
+    "allocated_bus_number": "AP16TV1234"
+  },
+  {
+    "id": 10,
+    "purchase_date": "2026-11-10",
+    "tyre_serial_number": "TYRE-920569",
+    "brand": "MRF",
+    "size": "295/80 R22.5",
+    "model": "",
+    "supplier": "",
+    "invoice_number": "",
+    "purchase_cost": 0,
+    "status": "Allocated",
+    "allocated_bus_id": 2,
+    "allocated_wheel_position": "",
+    "notes": "",
+    "created_at": "2026-11-10 19:45:18",
+    "updated_at": "2026-11-10 19:45:18",
+    "quantity": 1,
+    "km": 0,
+    "present_km": 5000,
+    "running_km": 5000,
+    "tyre_photo_url": "",
+    "invoice_photo_url": "",
+    "starting_km": 0,
+    "total_km": 5000,
+    "vehicle_number": "AP16TC4567",
+    "allocated_bus_number": "AP16TC4567"
   }
 ];
 
@@ -1650,6 +1831,613 @@ export const BASE_BUS_CONDITION_INSPECTIONS: any[] = [
     "closing_km": 0,
     "route_trip": "Hyderabad → Bangalore",
     "reporting_time": "10:06",
+    "mechanic_supervisor": "Supervisor",
+    "checklist_data": [
+      {
+        "no": 1,
+        "name": "Engine oil level",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 2,
+        "name": "Coolant / radiator level and leaks",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 3,
+        "name": "Brake system and parking brake",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 4,
+        "name": "Clutch and gear operation",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 5,
+        "name": "Steering operation",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 6,
+        "name": "Tyres: pressure, cuts, tread and wheel nuts",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 7,
+        "name": "Headlights, indicators, tail lamps and brake lights",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 8,
+        "name": "Horn",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 9,
+        "name": "Wipers and washer",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 10,
+        "name": "Mirrors, windscreen and windows",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 11,
+        "name": "Battery and electrical connections",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 12,
+        "name": "Fuel level and fuel leaks",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 13,
+        "name": "Air pressure / air brake warning (if fitted)",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 14,
+        "name": "Doors, emergency exits and seat belts",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 15,
+        "name": "First-aid kit, fire extinguisher and safety equipment",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 16,
+        "name": "Tools, jack, spare wheel and documents",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 17,
+        "name": "Body, underbody and visible fluid leaks",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 18,
+        "name": "Cleanliness and passenger area",
+        "status": "OK",
+        "remarks": ""
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "inspection_ref": "DVC-2026-003",
+    "bus_id": 1,
+    "inspection_date": "2026-11-10",
+    "inspection_time": "10:00",
+    "odometer_km": 45000,
+    "inspector_name": "Inspector",
+    "exterior_body": "Good",
+    "tyre_condition": "Good",
+    "brake_condition": "Good",
+    "engine_condition": "Good",
+    "battery_condition": "Good",
+    "ac_condition": "Good",
+    "lights_condition": "Good",
+    "mirrors_condition": "Good",
+    "windshield_condition": "Good",
+    "wiper_condition": "Good",
+    "doors_emergency_exits": "Good",
+    "seat_condition": "Good",
+    "safety_equipment": "Good",
+    "fluid_levels": "Good",
+    "visible_leaks": "Good",
+    "roadworthiness_status": "Fit for Service",
+    "defects_found": "",
+    "corrective_action_required": "",
+    "linked_complaint_id": null,
+    "photo_attachments": null,
+    "inspector_remarks": "",
+    "created_at": "2026-11-10 17:12:09",
+    "updated_at": "2026-11-10 17:12:09",
+    "driver_name": "",
+    "vehicle_model": "",
+    "starting_km": 45000,
+    "closing_km": 0,
+    "route_trip": "",
+    "reporting_time": "",
+    "mechanic_supervisor": "Inspector",
+    "checklist_data": []
+  },
+  {
+    "id": 4,
+    "inspection_ref": "DVC-2026-004",
+    "bus_id": 1,
+    "inspection_date": "2026-11-10",
+    "inspection_time": "10:00",
+    "odometer_km": 45000,
+    "inspector_name": "Driver",
+    "exterior_body": "Good",
+    "tyre_condition": "Good",
+    "brake_condition": "Good",
+    "engine_condition": "Good",
+    "battery_condition": "Good",
+    "ac_condition": "Good",
+    "lights_condition": "Good",
+    "mirrors_condition": "Good",
+    "windshield_condition": "Good",
+    "wiper_condition": "Good",
+    "doors_emergency_exits": "Good",
+    "seat_condition": "Good",
+    "safety_equipment": "Good",
+    "fluid_levels": "Good",
+    "visible_leaks": "Good",
+    "roadworthiness_status": "Fit for Service",
+    "defects_found": "",
+    "corrective_action_required": "",
+    "linked_complaint_id": null,
+    "photo_attachments": null,
+    "inspector_remarks": "",
+    "created_at": "2026-11-10 17:24:00",
+    "updated_at": "2026-11-10 17:24:00",
+    "driver_name": "Driver",
+    "vehicle_model": "",
+    "starting_km": 45000,
+    "closing_km": 0,
+    "route_trip": "",
+    "reporting_time": "",
+    "mechanic_supervisor": "Supervisor",
+    "checklist_data": []
+  },
+  {
+    "id": 5,
+    "inspection_ref": "DVC-2026-005",
+    "bus_id": 1,
+    "inspection_date": "2026-11-10",
+    "inspection_time": "10:00",
+    "odometer_km": 5000,
+    "inspector_name": "Driver",
+    "exterior_body": "Good",
+    "tyre_condition": "Good",
+    "brake_condition": "Good",
+    "engine_condition": "Good",
+    "battery_condition": "Good",
+    "ac_condition": "Good",
+    "lights_condition": "Good",
+    "mirrors_condition": "Good",
+    "windshield_condition": "Good",
+    "wiper_condition": "Good",
+    "doors_emergency_exits": "Good",
+    "seat_condition": "Good",
+    "safety_equipment": "Good",
+    "fluid_levels": "Good",
+    "visible_leaks": "Good",
+    "roadworthiness_status": "Fit for Service",
+    "defects_found": "",
+    "corrective_action_required": "",
+    "linked_complaint_id": null,
+    "photo_attachments": null,
+    "inspector_remarks": "",
+    "created_at": "2026-11-10 17:28:03",
+    "updated_at": "2026-11-10 17:28:03",
+    "driver_name": "Driver",
+    "vehicle_model": "Tata Starbus",
+    "starting_km": 5000,
+    "closing_km": 0,
+    "route_trip": "Hyderabad → Bangalore",
+    "reporting_time": "",
+    "mechanic_supervisor": "Supervisor",
+    "checklist_data": [
+      {
+        "no": 1,
+        "name": "Engine oil level",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 2,
+        "name": "Coolant / radiator level and leaks",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 3,
+        "name": "Brake system and parking brake",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 4,
+        "name": "Clutch and gear operation",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 5,
+        "name": "Steering operation",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 6,
+        "name": "Tyres: pressure, cuts, tread and wheel nuts",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 7,
+        "name": "Headlights, indicators, tail lamps and brake lights",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 8,
+        "name": "Horn",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 9,
+        "name": "Wipers and washer",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 10,
+        "name": "Mirrors, windscreen and windows",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 11,
+        "name": "Battery and electrical connections",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 12,
+        "name": "Fuel level and fuel leaks",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 13,
+        "name": "Air pressure / air brake warning (if fitted)",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 14,
+        "name": "Doors, emergency exits and seat belts",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 15,
+        "name": "First-aid kit, fire extinguisher and safety equipment",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 16,
+        "name": "Tools, jack, spare wheel and documents",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 17,
+        "name": "Body, underbody and visible fluid leaks",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 18,
+        "name": "Cleanliness and passenger area",
+        "status": "OK",
+        "remarks": ""
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "inspection_ref": "DVC-2026-006",
+    "bus_id": 2,
+    "inspection_date": "2026-11-10",
+    "inspection_time": "10:00",
+    "odometer_km": 2000,
+    "inspector_name": "Driver",
+    "exterior_body": "Good",
+    "tyre_condition": "Good",
+    "brake_condition": "Good",
+    "engine_condition": "Good",
+    "battery_condition": "Good",
+    "ac_condition": "Good",
+    "lights_condition": "Good",
+    "mirrors_condition": "Good",
+    "windshield_condition": "Good",
+    "wiper_condition": "Good",
+    "doors_emergency_exits": "Good",
+    "seat_condition": "Good",
+    "safety_equipment": "Good",
+    "fluid_levels": "Good",
+    "visible_leaks": "Good",
+    "roadworthiness_status": "Fit for Service",
+    "defects_found": "",
+    "corrective_action_required": "",
+    "linked_complaint_id": null,
+    "photo_attachments": null,
+    "inspector_remarks": "",
+    "created_at": "2026-11-10 17:28:47",
+    "updated_at": "2026-11-10 17:28:47",
+    "driver_name": "Driver",
+    "vehicle_model": "Ashok Leyland Viking",
+    "starting_km": 2000,
+    "closing_km": 0,
+    "route_trip": "Hyderabad → Visakhapatnam",
+    "reporting_time": "",
+    "mechanic_supervisor": "Supervisor",
+    "checklist_data": [
+      {
+        "no": 1,
+        "name": "Engine oil level",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 2,
+        "name": "Coolant / radiator level and leaks",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 3,
+        "name": "Brake system and parking brake",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 4,
+        "name": "Clutch and gear operation",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 5,
+        "name": "Steering operation",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 6,
+        "name": "Tyres: pressure, cuts, tread and wheel nuts",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 7,
+        "name": "Headlights, indicators, tail lamps and brake lights",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 8,
+        "name": "Horn",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 9,
+        "name": "Wipers and washer",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 10,
+        "name": "Mirrors, windscreen and windows",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 11,
+        "name": "Battery and electrical connections",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 12,
+        "name": "Fuel level and fuel leaks",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 13,
+        "name": "Air pressure / air brake warning (if fitted)",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 14,
+        "name": "Doors, emergency exits and seat belts",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 15,
+        "name": "First-aid kit, fire extinguisher and safety equipment",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 16,
+        "name": "Tools, jack, spare wheel and documents",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 17,
+        "name": "Body, underbody and visible fluid leaks",
+        "status": "OK",
+        "remarks": ""
+      },
+      {
+        "no": 18,
+        "name": "Cleanliness and passenger area",
+        "status": "OK",
+        "remarks": ""
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "inspection_ref": "DVC-2026-007",
+    "bus_id": 1,
+    "inspection_date": "2026-11-10",
+    "inspection_time": "10:00",
+    "odometer_km": 10000,
+    "inspector_name": "Odometer Sync",
+    "exterior_body": "Good",
+    "tyre_condition": "Good",
+    "brake_condition": "Good",
+    "engine_condition": "Good",
+    "battery_condition": "Good",
+    "ac_condition": "Good",
+    "lights_condition": "Good",
+    "mirrors_condition": "Good",
+    "windshield_condition": "Good",
+    "wiper_condition": "Good",
+    "doors_emergency_exits": "Good",
+    "seat_condition": "Good",
+    "safety_equipment": "Good",
+    "fluid_levels": "Good",
+    "visible_leaks": "Good",
+    "roadworthiness_status": "Fit for Service",
+    "defects_found": "",
+    "corrective_action_required": "",
+    "linked_complaint_id": null,
+    "photo_attachments": null,
+    "inspector_remarks": "",
+    "created_at": "2026-11-10 17:42:28",
+    "updated_at": "2026-11-10 17:42:28",
+    "driver_name": "kittu",
+    "vehicle_model": "Starbus",
+    "starting_km": 10000,
+    "closing_km": 0,
+    "route_trip": "",
+    "reporting_time": "",
+    "mechanic_supervisor": "Odometer Sync",
+    "checklist_data": []
+  },
+  {
+    "id": 8,
+    "inspection_ref": "DVC-2026-008",
+    "bus_id": 2,
+    "inspection_date": "2026-11-10",
+    "inspection_time": "10:00",
+    "odometer_km": 2500,
+    "inspector_name": "Driver",
+    "exterior_body": "Good",
+    "tyre_condition": "Good",
+    "brake_condition": "Good",
+    "engine_condition": "Good",
+    "battery_condition": "Good",
+    "ac_condition": "Good",
+    "lights_condition": "Good",
+    "mirrors_condition": "Good",
+    "windshield_condition": "Good",
+    "wiper_condition": "Good",
+    "doors_emergency_exits": "Good",
+    "seat_condition": "Good",
+    "safety_equipment": "Good",
+    "fluid_levels": "Good",
+    "visible_leaks": "Good",
+    "roadworthiness_status": "Fit for Service",
+    "defects_found": "",
+    "corrective_action_required": "",
+    "linked_complaint_id": null,
+    "photo_attachments": null,
+    "inspector_remarks": "",
+    "created_at": "2026-11-10 17:58:53",
+    "updated_at": "2026-11-10 18:01:46",
+    "driver_name": "Driver",
+    "vehicle_model": "",
+    "starting_km": 2500,
+    "closing_km": 0,
+    "route_trip": "",
+    "reporting_time": "",
+    "mechanic_supervisor": "Driver",
+    "checklist_data": []
+  },
+  {
+    "id": 10,
+    "inspection_ref": "DVC-2026-009",
+    "bus_id": 2,
+    "inspection_date": "2026-11-10",
+    "inspection_time": "10:00",
+    "odometer_km": 5000,
+    "inspector_name": "Driver",
+    "exterior_body": "Good",
+    "tyre_condition": "Good",
+    "brake_condition": "Good",
+    "engine_condition": "Good",
+    "battery_condition": "Good",
+    "ac_condition": "Good",
+    "lights_condition": "Good",
+    "mirrors_condition": "Good",
+    "windshield_condition": "Good",
+    "wiper_condition": "Good",
+    "doors_emergency_exits": "Good",
+    "seat_condition": "Good",
+    "safety_equipment": "Good",
+    "fluid_levels": "Good",
+    "visible_leaks": "Good",
+    "roadworthiness_status": "Fit for Service",
+    "defects_found": "",
+    "corrective_action_required": "",
+    "linked_complaint_id": null,
+    "photo_attachments": null,
+    "inspector_remarks": "",
+    "created_at": "2026-11-10 18:30:46",
+    "updated_at": "2026-11-10 18:30:46",
+    "driver_name": "Driver",
+    "vehicle_model": "Ashok Leyland Viking",
+    "starting_km": 5000,
+    "closing_km": 0,
+    "route_trip": "Hyderabad → Bangalore",
+    "reporting_time": "",
     "mechanic_supervisor": "Supervisor",
     "checklist_data": [
       {
@@ -2213,434 +3001,32 @@ export const BASE_APP_SETTINGS: any = [
   }
 ];
 
-export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [
-  {
-    id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    make: 'Scania',
-    model: 'Scania Metrolink HD',
-    chassis_number: 'YS2S4X2000551024',
-    engine_number: 'DC091209451',
-    current_odometer_km: 312000,
-    parking_location: 'Delhi Depot – Bay 1',
-    operations_manager: 'Priya Sharma',
-    last_service_date: '2026-10-13',
-    last_service_km: 305000,
-    driver_name: 'Sunil Yadav',
-    registration_date: '2023-01-10',
-    fitness_expiry: '2027-01-10',
-    tax_valid_upto: '2027-03-31',
-    insurance_expiry: '2027-02-15',
-    puc_expiry: '2027-04-10',
-    permit_expiry: '2027-12-31',
-    aitp_valid_upto: '2027-12-31'
-  },
-  {
-    id: 102,
-    bus_number: 'HR55X1200',
-    registration_number: 'HR55X1200',
-    make: 'Tata',
-    model: 'Tata LPO 1618 Luxury',
-    chassis_number: 'MAT447803P22X1200',
-    engine_number: 'CUM57013ISBE',
-    current_odometer_km: 65300,
-    parking_location: 'Gurugram Hub – Bay 1',
-    operations_manager: 'Priya Sharma',
-    last_service_date: '2026-10-30',
-    last_service_km: 61000,
-    driver_name: 'Rahul Chauhan',
-    registration_date: '2023-03-15',
-    fitness_expiry: '2027-03-15',
-    tax_valid_upto: '2027-03-31',
-    insurance_expiry: '2027-03-15',
-    puc_expiry: '2027-05-20',
-    permit_expiry: '2027-12-31',
-    aitp_valid_upto: '2027-12-31'
-  },
-  {
-    id: 103,
-    bus_number: 'MH12Q8811',
-    registration_number: 'MH12Q8811',
-    make: 'Tata',
-    model: 'Tata LPO 1618 Luxury',
-    chassis_number: 'MAT447802P12G8811',
-    engine_number: 'CUM56882ISBE',
-    current_odometer_km: 87500,
-    parking_location: 'Pune Station – Bay 3',
-    operations_manager: 'Priya Sharma',
-    last_service_date: '2026-10-28',
-    last_service_km: 85000,
-    driver_name: 'Vikram Patil',
-    registration_date: '2023-02-18',
-    fitness_expiry: '2027-02-18',
-    tax_valid_upto: '2027-03-31',
-    insurance_expiry: '2027-02-18',
-    puc_expiry: '2027-06-15',
-    permit_expiry: '2027-12-31',
-    aitp_valid_upto: '2027-12-31'
-  },
-  {
-    id: 104,
-    bus_number: 'UP16T9988',
-    registration_number: 'UP16T9988',
-    make: 'BharatBenz',
-    model: 'BharatBenz 1624 Sleeper',
-    chassis_number: 'WDB162491MK669988',
-    engine_number: 'OM926LA91002',
-    current_odometer_km: 276400,
-    parking_location: 'Lucknow Yard – Bay 1',
-    operations_manager: 'Priya Sharma',
-    last_service_date: '2026-10-08',
-    last_service_km: 270000,
-    driver_name: 'Amit Singh',
-    registration_date: '2022-11-20',
-    fitness_expiry: '2026-12-05',
-    tax_valid_upto: '2027-03-31',
-    insurance_expiry: '2026-11-20',
-    puc_expiry: '2026-11-28',
-    permit_expiry: '2027-10-15',
-    aitp_valid_upto: '2027-10-15'
-  },
-  {
-    id: 105,
-    bus_number: 'KA01F4492',
-    registration_number: 'KA01F4492',
-    make: 'BharatBenz',
-    model: 'BharatBenz 1624 Sleeper',
-    chassis_number: 'WDB162490LK445921',
-    engine_number: 'OM926LA88214',
-    current_odometer_km: 128600,
-    parking_location: 'Bengaluru Hub – Gate 2',
-    operations_manager: 'Priya Sharma',
-    last_service_date: '2026-10-26',
-    last_service_km: 125000,
-    driver_name: 'Manoj Reddy',
-    registration_date: '2023-04-12',
-    fitness_expiry: '2027-04-12',
-    tax_valid_upto: '2027-03-31',
-    insurance_expiry: '2027-04-12',
-    puc_expiry: '2027-07-22',
-    permit_expiry: '2027-12-31',
-    aitp_valid_upto: '2027-12-31'
-  },
-  {
-    id: 106,
-    bus_number: 'NL01B3309',
-    registration_number: 'NL01B3309',
-    make: 'Volvo',
-    model: 'Volvo 9600 Multi-Axle',
-    chassis_number: 'YV4VS5GL2HA123456',
-    engine_number: 'D11C4401937',
-    current_odometer_km: 245000,
-    parking_location: 'Delhi Depot – Bay 4',
-    operations_manager: 'Priya Sharma',
-    last_service_date: '2026-10-18',
-    last_service_km: 240000,
-    driver_name: 'Rajesh Kumar',
-    registration_date: '2023-06-01',
-    fitness_expiry: '2027-06-01',
-    tax_valid_upto: '2027-06-30',
-    insurance_expiry: '2027-06-01',
-    puc_expiry: '2027-09-10',
-    permit_expiry: '2027-12-31',
-    aitp_valid_upto: '2027-12-31'
-  },
-  {
-    id: 1,
-    bus_number: 'AP16TV1234',
-    registration_number: 'AP16TV1234',
-    make: 'Tata',
-    model: 'Tata Starbus',
-    chassis_number: 'YS2S4X201LH123444',
-    engine_number: 'DC091198874',
-    current_odometer_km: 45000,
-    parking_location: 'Hyderabad Depot – Bay 2',
-    operations_manager: 'Priya Sharma',
-    last_service_date: null,
-    last_service_km: 42000,
-    driver_name: 'akhil',
-    registration_date: '2023-05-20',
-    fitness_expiry: '2027-05-20',
-    tax_valid_upto: '2027-06-30',
-    insurance_expiry: '2027-05-20',
-    puc_expiry: '2027-08-15',
-    permit_expiry: '2027-12-31',
-    aitp_valid_upto: '2027-12-31'
-  },
-  {
-    id: 2,
-    bus_number: 'AP16TC4567',
-    registration_number: 'AP16TC4567',
-    make: 'Ashok Leyland',
-    model: 'Ashok Leyland Viking',
-    chassis_number: 'YV4VS5GL3JB778202',
-    engine_number: 'D11C4412088',
-    current_odometer_km: 32000,
-    parking_location: 'Vijayawada Hub – Bay 1',
-    operations_manager: 'Priya Sharma',
-    last_service_date: null,
-    last_service_km: 30000,
-    driver_name: 'Suresh',
-    registration_date: '2023-07-15',
-    fitness_expiry: '2027-07-15',
-    tax_valid_upto: '2027-09-30',
-    insurance_expiry: '2027-07-15',
-    puc_expiry: '2027-10-20',
-    permit_expiry: '2027-12-31',
-    aitp_valid_upto: '2027-12-31'
-  }
-];
-
-export const BASE_FLEET_MAINTENANCE_HISTORY: any[] = [
-  {
-    id: 1,
-    bus_id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    service_type: 'AC Filter Cleaning',
-    completion_date: '2026-11-01',
-    odometer_km: 312000,
-    cost: 750,
-    workshop: 'Charvik Central Workshop',
-    mechanic_name: 'B. Singh',
-    remarks: 'Weekly wash.',
-    next_due_date: '2026-11-08',
-    photos_json: '[]'
-  },
-  {
-    id: 2,
-    bus_id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    service_type: 'Wheel Alignment',
-    completion_date: '2026-10-08',
-    odometer_km: 305000,
-    cost: 2600,
-    workshop: 'Patel Auto Works',
-    mechanic_name: 'V. Patel',
-    remarks: 'Alignment done.',
-    next_due_km: 315000,
-    photos_json: '[]'
-  },
-  {
-    id: 3,
-    bus_id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    service_type: 'Tyre Rotation',
-    completion_date: '2026-10-06',
-    odometer_km: 304000,
-    cost: 1700,
-    workshop: 'Patel Auto Works',
-    mechanic_name: 'V. Patel',
-    remarks: 'Rotation done.',
-    next_due_km: 314000,
-    photos_json: '[]'
-  },
-  {
-    id: 4,
-    bus_id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    service_type: 'AdBlue Filter Replacement',
-    completion_date: '2026-08-04',
-    odometer_km: 285000,
-    cost: 5400,
-    workshop: 'Sharma Diesel Services',
-    mechanic_name: 'M. Sharma',
-    remarks: 'Filter replaced.',
-    next_due_km: 315000,
-    photos_json: '[]'
-  },
-  {
-    id: 5,
-    bus_id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    service_type: 'Diesel Filter Replacement',
-    completion_date: '2026-06-20',
-    odometer_km: 270000,
-    cost: 4100,
-    workshop: 'Sharma Diesel Services',
-    mechanic_name: 'M. Sharma',
-    remarks: 'Replaced during line check.',
-    next_due_km: 300000,
-    photos_json: '[]'
-  },
-  {
-    id: 6,
-    bus_id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    service_type: 'DPF Filter Cleaning',
-    completion_date: '2026-02-20',
-    odometer_km: 232000,
-    cost: 9200,
-    workshop: 'Metro Bus Service Centre',
-    mechanic_name: 'T. Verma',
-    remarks: 'Regeneration completed.',
-    next_due_km: 332000,
-    photos_json: '[]'
-  },
-  {
-    id: 7,
-    bus_id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    service_type: 'General Bus Service',
-    completion_date: '2025-09-13',
-    odometer_km: 190000,
-    cost: 21000,
-    workshop: 'Charvik Central Workshop',
-    mechanic_name: 'S. Ramesh',
-    remarks: 'Major service — next cycle now overdue.',
-    next_due_km: 310000,
-    photos_json: '[]'
-  },
-  {
-    id: 8,
-    bus_id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    service_type: 'Radiator Cleaning',
-    completion_date: '2026-01-15',
-    odometer_km: 220000,
-    cost: 3500,
-    workshop: 'Charvik Central Workshop',
-    mechanic_name: 'S. Ramesh',
-    remarks: 'Radiator flush and fin cleaning done.',
-    next_due_km: 320000,
-    photos_json: '[]'
-  },
-  {
-    id: 9,
-    bus_id: 101,
-    bus_number: 'DL01A1024',
-    registration_number: 'DL01A1024',
-    service_type: 'AC General Service',
-    completion_date: '2026-10-10',
-    odometer_km: 310000,
-    cost: 4500,
-    workshop: 'CoolAir Systems',
-    mechanic_name: 'R. Verma',
-    remarks: 'Full gas charge and blower checkup.',
-    next_due_date: '2026-11-09',
-    photos_json: '[]'
-  }
-];
+export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [];
+export const BASE_FLEET_MAINTENANCE_HISTORY: any[] = [];
+export const BASE_DAILY_MAINTENANCE_RECORDS: any[] = [];
 
 export interface DailyMaintenanceRecord {
-  id: number;
-  bus_id?: number;
+  id?: number | string;
+  entry_date: string;
   vehicle_number: string;
-  date: string;
-  km: number;
-  complaints: string;
-  showroom_name: string;
-  other: string;
-  amount: number;
-  photos_json?: string;
-  photos?: string[];
+  driver_name?: string;
+  driver_phone?: string;
+  starting_km?: number | string;
+  route_corridor?: string;
+  defects_notes?: string;
+  checklist?: Record<string, boolean>;
+  checklist_items?: Array<{ id: number; name: string; is_ok: boolean; remarks?: string }>;
   created_at?: string;
-  updated_at?: string;
 }
-
-export const BASE_DAILY_MAINTENANCE_RECORDS: DailyMaintenanceRecord[] = [
-  {
-    id: 1,
-    bus_id: 3,
-    vehicle_number: 'DL01A1024',
-    date: '2026-11-06',
-    km: 312000,
-    complaints: 'Front brake pad noise & minor air leakage near compressor',
-    showroom_name: 'Scania Commercial Center, Okhla',
-    other: 'Replaced front brake shoe liners, tightened brass air coupling and greased kingpins',
-    amount: 8500,
-    photos_json: '[]'
-  },
-  {
-    id: 2,
-    bus_id: 4,
-    vehicle_number: 'HR55X1200',
-    date: '2026-11-05',
-    km: 65300,
-    complaints: 'Driver cabin AC cooling drop & wiper blade chatter',
-    showroom_name: 'Tata Motors Authorized Hub, Gurugram',
-    other: 'R134a refrigerant gas recharge (450g) and pair of heavy-duty wiper blades replaced',
-    amount: 3200,
-    photos_json: '[]'
-  },
-  {
-    id: 3,
-    bus_id: 5,
-    vehicle_number: 'MH12Q8811',
-    date: '2026-11-04',
-    km: 87500,
-    complaints: 'High beam headlight bulb fused & diesel tank cap lock loose',
-    showroom_name: 'Pune Fleet Auto Spares & Garage',
-    other: '24V H7 halogen bulb replacement and new locking fuel cap with key',
-    amount: 1450,
-    photos_json: '[]'
-  },
-  {
-    id: 4,
-    bus_id: 6,
-    vehicle_number: 'UP16T9988',
-    date: '2026-11-02',
-    km: 276400,
-    complaints: 'Clutch pedal hard & gearbox mount rubber cracked',
-    showroom_name: 'Lucknow Volvo & Heavy Commercial Works',
-    other: 'Clutch booster overhaul kit installed and rear transmission mount bush replaced',
-    amount: 11200,
-    photos_json: '[]'
-  }
-];
 
 export const BASE_VYSHNAVI_RECORDS: any[] = [
   {
     id: 1,
-    record_number: 'VT-REC-2026-001',
-    record_date: '2026-11-08',
-    period_month: 'Oct 2026',
-    payment_status: 'Pending',
-    bill_to_name: 'Sri Krishna Travels',
-    bill_to_phone: '8519821491',
-    bill_to_address: 'Miyapur Main Road, Hyderabad, Telangana - 500049',
-    bill_to_pan: '3GRRHHT8791K',
-    items: [
-      {
-        sr_no: 1,
-        description: "Driver's monthly salary for AP16TV1234 route",
-        category: 'Driver',
-        staff_count: 2,
-        salary_paid: 32000
-      },
-      {
-        sr_no: 2,
-        description: 'Bus cleaner / helper duty allowance',
-        category: 'Helper',
-        staff_count: 1,
-        salary_paid: 14000
-      }
-    ],
-    items_json: JSON.stringify([
-      {
-        sr_no: 1,
-        description: "Driver's monthly salary for AP16TV1234 route",
-        category: 'Driver',
-        staff_count: 2,
-        salary_paid: 32000
-      },
-      {
-        sr_no: 2,
-        description: 'Bus cleaner / helper duty allowance',
-        category: 'Helper',
-        staff_count: 1,
-        salary_paid: 14000
-      }
-    ]),
-    total_staff_count: 3,
+    invoice_no: 'VT/2026/10-01',
+    period_month: 'October',
+    period_year: '2026',
+    operator_name: 'Charvik Staffing & Logistics',
+    gst_number: '36GGGGG0000WG6G',
     total_amount: 46000,
     amount_in_words: 'Forty Six Thousand Rupees Only',
     received_amount: 20000,
@@ -2791,5 +3177,4 @@ export const BASE_VEHICLE_MAINTENANCE_JOB_CARDS: VehicleMaintenanceJobCardRecord
     created_at: '2026-11-12T14:15:00.000Z'
   }
 ];
-
 

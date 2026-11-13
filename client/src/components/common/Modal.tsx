@@ -65,17 +65,21 @@ export const Modal: React.FC<ModalProps> = ({
         >
           {/* ── HEADER: Exact replica of the user reference images ── */}
           <div
-            className="relative shrink-0 no-print overflow-hidden rounded-t-3xl min-h-[96px] sm:min-h-[110px] flex items-center"
+            className="relative shrink-0 no-print overflow-hidden rounded-t-3xl min-h-[96px] sm:min-h-[105px] flex items-center"
             style={{
               background: 'linear-gradient(90deg, #00367A 0%, #004B9E 45%, #0056B3 100%)',
-              borderBottom: '3px solid #F59E0B',
+              borderBottom: '3.5px solid #F59E0B',
             }}
           >
             {/* The EXACT Luxury Coach Bus Image on the right side */}
             <img
               src={luxuryCoachHeader}
               alt="Luxury Coach Fleet"
-              className="absolute right-0 bottom-0 h-full w-auto max-w-[50%] sm:max-w-[48%] object-cover object-left-bottom pointer-events-none select-none hidden sm:block"
+              className="absolute right-0 bottom-0 h-full w-auto max-w-[65%] sm:max-w-[50%] md:max-w-[45%] object-cover object-right-bottom pointer-events-none select-none"
+              style={{
+                maskImage: 'linear-gradient(to right, transparent 0%, black 25%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 25%)',
+              }}
             />
 
             {/* Header Content: Icon Badge + Title + Subtitle */}

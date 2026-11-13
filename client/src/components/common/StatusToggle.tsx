@@ -44,15 +44,15 @@ export const StatusToggle: React.FC<StatusToggleProps> = ({
         >
           {/* Radio circle */}
           <span
-            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
               isActive
-                ? 'border-emerald-600 bg-emerald-600'
-                : 'border-slate-400 bg-white'
+                ? 'border-emerald-600 bg-white'
+                : 'border-slate-500 bg-white'
             }`}
           >
-            {isActive && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+            {isActive && <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />}
           </span>
-          <span className="text-sm font-bold">{activeLabel}</span>
+          <span className="text-base font-black tracking-tight">{activeLabel}</span>
         </button>
 
         {/* Inactive Option */}
@@ -61,21 +61,21 @@ export const StatusToggle: React.FC<StatusToggleProps> = ({
           onClick={() => onChange('Inactive')}
           className={`flex items-center justify-center gap-2.5 py-3 px-5 rounded-2xl transition-all cursor-pointer ${
             isInactive
-              ? 'border-2 border-slate-700 bg-slate-100 text-slate-900 font-extrabold shadow-sm'
-              : 'border border-slate-300 bg-white text-slate-600 hover:border-slate-400 font-bold'
+              ? 'border-2 border-slate-700 bg-slate-50 text-slate-900 font-black shadow-sm'
+              : 'border-2 border-slate-200 bg-white text-slate-700 hover:border-slate-300 font-black'
           }`}
         >
           {/* Radio circle */}
           <span
-            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
               isInactive
-                ? 'border-slate-700 bg-slate-700'
-                : 'border-slate-400 bg-white'
+                ? 'border-slate-800 bg-white'
+                : 'border-slate-700 bg-white'
             }`}
           >
-            {isInactive && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+            {isInactive && <span className="w-2.5 h-2.5 rounded-full bg-slate-800" />}
           </span>
-          <span className="text-sm font-bold">{inactiveLabel}</span>
+          <span className="text-base font-black tracking-tight">{inactiveLabel}</span>
         </button>
       </div>
       {helpText && <p className="text-[11px] text-slate-500 mt-1">{helpText}</p>}

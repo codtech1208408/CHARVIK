@@ -274,6 +274,184 @@ export const BASE_CAPTAIN_AUDITS: any[] = ${JSON.stringify(captainAudits, null, 
 export const BASE_STAFF_CREDENTIALS: any[] = ${JSON.stringify(administrators, null, 2)};
 
 export const BASE_APP_SETTINGS: any = ${JSON.stringify(settings, null, 2)};
+
+export const BASE_FLEET_MAINTENANCE_BUSES: any[] = [];
+export const BASE_FLEET_MAINTENANCE_HISTORY: any[] = [];
+export const BASE_DAILY_MAINTENANCE_RECORDS: any[] = [];
+
+export interface DailyMaintenanceRecord {
+  id?: number | string;
+  entry_date: string;
+  vehicle_number: string;
+  driver_name?: string;
+  driver_phone?: string;
+  starting_km?: number | string;
+  route_corridor?: string;
+  defects_notes?: string;
+  checklist?: Record<string, boolean>;
+  checklist_items?: Array<{ id: number; name: string; is_ok: boolean; remarks?: string }>;
+  created_at?: string;
+}
+
+export const BASE_VYSHNAVI_RECORDS: any[] = [
+  {
+    id: 1,
+    invoice_no: 'VT/2026/10-01',
+    period_month: 'October',
+    period_year: '2026',
+    operator_name: 'Charvik Staffing & Logistics',
+    gst_number: '36GGGGG0000WG6G',
+    total_amount: 46000,
+    amount_in_words: 'Forty Six Thousand Rupees Only',
+    received_amount: 20000,
+    balance_amount: 26000,
+    bank_name: 'Kotak Mahindra Bank',
+    bank_account_name: 'Vyshnavi Travels',
+    bank_account_no: '2848153146',
+    bank_ifsc: 'KKBK0007460',
+    bank_branch: 'VANAS',
+    upi_id: '9000202241@ybl',
+    qr_code_url: 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=9000202241@ybl%26pn=Vyshnavi%20Travels%26am=26000%26cu=INR',
+    remarks: 'October 2026 driver & helper crew settlement'
+  }
+];
+
+export const BASE_VYSHNAVI_TRANSACTIONS: any[] = [
+  {
+    id: 1,
+    transaction_type: 'Income',
+    transaction_date: '2026-11-07',
+    category: 'Trip Advance / Booking',
+    vehicle_number: 'AP16TV1234',
+    amount: 35000,
+    payment_mode: 'Bank Transfer',
+    party_name: 'Sri Krishna Travels',
+    description: 'Advance payment for Hyderabad - Tirupati charter trip',
+    reference_no: 'TXN-998124',
+    receipt_url: ''
+  },
+  {
+    id: 2,
+    transaction_type: 'Expense',
+    transaction_date: '2026-11-06',
+    category: 'Diesel / Fuel',
+    vehicle_number: 'AP16TC4567',
+    amount: 14800,
+    payment_mode: 'UPI',
+    party_name: 'Indian Oil Highway Station',
+    description: 'Diesel top-up 160 Litres for Vijayawada route',
+    reference_no: 'UPI-431289',
+    receipt_url: ''
+  },
+  {
+    id: 3,
+    transaction_type: 'Income',
+    transaction_date: '2026-11-05',
+    category: 'Client Settlement',
+    vehicle_number: 'AP16TV1234',
+    amount: 20000,
+    payment_mode: 'UPI',
+    party_name: 'YoloBus Logistics',
+    description: 'Weekly settlement against service record VT-REC-2026-001',
+    reference_no: 'YBL-77123',
+    receipt_url: ''
+  },
+  {
+    id: 4,
+    transaction_type: 'Expense',
+    transaction_date: '2026-11-03',
+    category: 'Toll & Taxes',
+    vehicle_number: 'AP16TC4567',
+    amount: 3200,
+    payment_mode: 'Fastag',
+    party_name: 'NHAI FASTag Recharge',
+    description: 'Monthly highway FASTag pass balance recharge',
+    reference_no: 'FTG-89410',
+    receipt_url: ''
+  }
+];
+
+export interface VehicleComplaintItem {
+  id?: string;
+  complaint: string;
+  remarks: string;
+}
+
+export interface ConsumablePartItem {
+  id?: string;
+  part_name: string;
+  part_number_details: string;
+  quantity: number | string;
+  amount: number | string;
+}
+
+export interface VehicleMaintenanceJobCardRecord {
+  id: number | string;
+  job_card_no: string;
+  date_of_request: string;
+  km_reading: number | string;
+  fleet_owner: string;
+  vehicle_number: string;
+  complaints: VehicleComplaintItem[];
+  parts: ConsumablePartItem[];
+  total_parts_amount: number;
+  mechanic_name: string;
+  mechanic_number: string;
+  workshop_name: string;
+  work_location: string;
+  status?: string;
+  created_at?: string;
+}
+
+export const BASE_VEHICLE_MAINTENANCE_JOB_CARDS: VehicleMaintenanceJobCardRecord[] = [
+  {
+    id: 1,
+    job_card_no: 'CSC/VM/2026/001',
+    date_of_request: '2026-11-09',
+    km_reading: 312000,
+    fleet_owner: 'Sri Krishna Travels',
+    vehicle_number: 'DL01A1024',
+    complaints: [
+      { id: 'c1', complaint: 'Front brake pad noise & high speed steering vibration', remarks: 'Replaced liners' },
+      { id: 'c2', complaint: 'Air conditioning cooling reduced in cabin', remarks: 'Gas top-up required' }
+    ],
+    parts: [
+      { id: 'p1', part_name: 'Brake Pad Liners Front', part_number_details: 'BP-1024 / Bosch', quantity: 2, amount: 4500 },
+      { id: 'p2', part_name: 'AC Refrigerant R134a', part_number_details: 'R134a 1KG Can', quantity: 1, amount: 1850 }
+    ],
+    total_parts_amount: 6350,
+    mechanic_name: 'Ramesh Kumar',
+    mechanic_number: '9848011223',
+    workshop_name: 'Sri Sai Auto Garage & Works',
+    work_location: 'Shamshabad, Hyderabad',
+    status: 'Completed',
+    created_at: '2026-11-09T10:30:00.000Z'
+  },
+  {
+    id: 2,
+    job_card_no: 'CSC/VM/2026/002',
+    date_of_request: '2026-11-12',
+    km_reading: 184500,
+    fleet_owner: 'Vyshnavi Travels',
+    vehicle_number: 'AP16TC4567',
+    complaints: [
+      { id: 'c1', complaint: 'Engine oil filter replacement & general maintenance check', remarks: 'Done' },
+      { id: 'c2', complaint: 'Clutch pedal hard engagement', remarks: 'Cable adjusted & greased' }
+    ],
+    parts: [
+      { id: 'p1', part_name: '15W40 Engine Oil (15L)', part_number_details: 'Castrol CRB Turbomax', quantity: 1, amount: 5200 },
+      { id: 'p2', part_name: 'Oil Filter Element', part_number_details: 'OF-8821 Fleetguard', quantity: 1, amount: 950 }
+    ],
+    total_parts_amount: 6150,
+    mechanic_name: 'Mohammad Rafiq',
+    mechanic_number: '9700445511',
+    workshop_name: 'National Highway Diesel Garage',
+    work_location: 'Medchal Checkpost, Hyderabad',
+    status: 'Completed',
+    created_at: '2026-11-12T14:15:00.000Z'
+  }
+];
+
 `;
 
 fs.writeFileSync(path.resolve('./client/src/services/seedData.ts'), content, 'utf-8');
