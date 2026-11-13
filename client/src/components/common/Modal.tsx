@@ -28,10 +28,10 @@ export const Modal: React.FC<ModalProps> = ({
     (size === 'sm'
       ? 'max-w-md'
       : size === 'lg'
-      ? 'max-w-4xl'
-      : size === 'xl'
-      ? 'max-w-5xl'
-      : 'max-w-2xl');
+        ? 'max-w-4xl'
+        : size === 'xl'
+          ? 'max-w-5xl'
+          : 'max-w-2xl');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -75,15 +75,11 @@ export const Modal: React.FC<ModalProps> = ({
             <img
               src={luxuryCoachHeader}
               alt="Luxury Coach Fleet"
-              className="absolute right-0 bottom-0 h-full w-auto max-w-[65%] sm:max-w-[50%] md:max-w-[45%] object-cover object-right-bottom pointer-events-none select-none"
-              style={{
-                maskImage: 'linear-gradient(to right, transparent 0%, black 25%)',
-                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 25%)',
-              }}
+              className="absolute right-0 bottom-0 h-full w-auto max-w-[38%] sm:max-w-[36%] md:max-w-[33%] object-contain object-right-bottom pointer-events-none select-none z-0"
             />
 
-            {/* Header Content: Icon Badge + Title + Subtitle */}
-            <div className="relative z-10 flex items-center justify-between w-full px-5 sm:px-6 py-4 pr-14 sm:pr-[280px]">
+            {/* Header Content: Icon Badge + Title + Subtitle (Constrained to left 62% so it never overlaps bus) */}
+            <div className="relative z-10 flex items-center px-5 sm:px-6 py-4 max-w-[62%] sm:max-w-[65%]">
               <div className="flex items-center gap-3.5">
                 {icon && (
                   <div
@@ -102,22 +98,22 @@ export const Modal: React.FC<ModalProps> = ({
                     {title}
                   </h3>
                   {subtitle && (
-                    <p className="text-xs text-blue-100 font-medium mt-1 leading-snug max-w-sm sm:max-w-md opacity-95">
+                    <p className="text-xs text-blue-100 font-medium mt-1 leading-snug opacity-95">
                       {subtitle}
                     </p>
                   )}
                 </div>
               </div>
-
-              {/* Close Button at top-right */}
-              <button
-                onClick={onClose}
-                className="absolute right-4 top-4 z-20 p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/20 transition-all cursor-pointer shrink-0"
-                title="Close dialog"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
+
+            {/* Close Button pinned to absolute top-right of the modal header */}
+            <button
+              onClick={onClose}
+              className="absolute right-3.5 top-3.5 z-20 p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/20 transition-all cursor-pointer shrink-0"
+              title="Close dialog"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Modal Body */}

@@ -613,7 +613,7 @@ export const OrganizerManagement: React.FC = () => {
         title={editingOrg ? 'Edit Operator' : 'Add New Operator'}
         subtitle="Manage partner operator details, GST number, and contact points."
         icon={<Building2 className="w-5 h-5 text-white" />}
-        maxWidth="max-w-lg"
+        maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSave} className="space-y-4 pt-1">
           <div>
