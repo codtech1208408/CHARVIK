@@ -610,8 +610,8 @@ export const OrganizerManagement: React.FC = () => {
       <Modal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        title={editingOrg ? 'Edit Operator' : 'Add New Organization'}
-        subtitle="Manage partner organization details, GST number, and contact points."
+        title={editingOrg ? 'Edit Operator' : 'Add New Operator'}
+        subtitle="Manage partner operator details, GST number, and contact points."
         icon={<Building2 className="w-5 h-5 text-white" />}
         maxWidth="max-w-lg"
       >
@@ -619,14 +619,14 @@ export const OrganizerManagement: React.FC = () => {
           <div>
             <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
               <Building2 className="w-3.5 h-3.5 text-blue-600" />
-              <span>Organization Name <span className="text-rose-500">*</span></span>
+              <span>Operator Name <span className="text-rose-500">*</span></span>
             </label>
             <input
               type="text"
               required
               value={formData.organization_name || ''}
               onChange={(e) => setFormData({ ...formData, organization_name: e.target.value })}
-              placeholder="e.g. Oakridge International School or Infosys Hyderabad"
+              placeholder="e.g. Sri Krishna Travels or Hyderabad Logistics"
               className="w-full text-xs p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800"
             />
           </div>
@@ -720,7 +720,7 @@ export const OrganizerManagement: React.FC = () => {
               className="px-6 py-2.5 rounded-xl bg-[#0E52A5] hover:bg-[#072B56] text-white text-xs font-black shadow-md transition-all cursor-pointer flex items-center gap-2"
             >
               <Save className="w-4 h-4 text-white" />
-              <span>{editingOrg ? 'Update Organization' : 'Save Organization'}</span>
+              <span>{editingOrg ? 'Update Operator' : 'Save Operator'}</span>
             </button>
           </div>
         </form>
