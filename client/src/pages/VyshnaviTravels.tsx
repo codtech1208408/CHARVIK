@@ -2532,17 +2532,37 @@ export const VyshnaviTravels: React.FC = () => {
               >
                 {/* 1. Official Letterhead Header */}
                 <div>
-                  <div className="w-full">
+                  {/* Logo + Contact Info row */}
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'2px solid #1d4ed8', paddingBottom:'10px', marginBottom:'4px' }}>
                     <img
                       src="/vyshnavi-letterhead-header-clean.png"
-                      alt="Vyshnavi Travels Official Letterhead Header"
-                      className="w-full h-auto block rounded-t"
-                      style={{ width: '100%', height: 'auto', display: 'block' }}
+                      alt="Vyshnavi Travels"
+                      style={{ height:'90px', width:'auto', display:'block', objectFit:'contain' }}
                     />
+                    <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'6px', textAlign:'right' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                        <span>+91 9000202241</span>
+                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+                        </span>
+                      </div>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                        <span>vyshnavitravels@yahoo.com</span>
+                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        </span>
+                      </div>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                        <span>Hyderabad, Telangana</span>
+                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Document Title Banner */}
-                  <div className="mt-4 text-center border-b-2 border-slate-800 pb-2">
+                  <div className="mt-3 text-center border-b-2 border-slate-800 pb-2">
                     <h2 className="text-base font-black tracking-wider text-slate-900 uppercase">
                       SERVICE BILLING & STAFF STATEMENT
                     </h2>
@@ -3002,17 +3022,37 @@ export const VyshnaviTravels: React.FC = () => {
                 style={{ width: '100%', maxWidth: '980px', minHeight: '900px' }}
               >
                 <div>
-                  <div className="w-full">
+                  {/* Logo + Contact Info row */}
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'2px solid #1d4ed8', paddingBottom:'10px', marginBottom:'4px' }}>
                     <img
                       src="/vyshnavi-letterhead-header-clean.png"
-                      alt="Vyshnavi Travels Official Letterhead Header"
-                      className="w-full h-auto block rounded-t"
-                      style={{ width: '100%', height: 'auto', display: 'block' }}
+                      alt="Vyshnavi Travels"
+                      style={{ height:'90px', width:'auto', display:'block', objectFit:'contain' }}
                     />
+                    <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'6px', textAlign:'right' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                        <span>+91 9000202241</span>
+                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+                        </span>
+                      </div>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                        <span>vyshnavitravels@yahoo.com</span>
+                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        </span>
+                      </div>
+                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                        <span>Hyderabad, Telangana</span>
+                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Document Title Banner */}
-                  <div className="mt-4 text-center border-b-2 border-slate-800 pb-2">
+                  <div className="mt-3 text-center border-b-2 border-slate-800 pb-2">
                     <h2 className="text-base font-black tracking-wider text-slate-900 uppercase">
                       {reportPrintType === 'records'
                         ? 'OFFICIAL BILLING & SERVICE RECORDS STATEMENT'
