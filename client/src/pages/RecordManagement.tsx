@@ -44,6 +44,7 @@ export interface ServiceRecord {
   bill_to_address: string;
   bill_to_phone: string;
   bill_to_pan: string;
+  operator_name: string;
   items: RecordItem[];
   total_staff_count: number;
   total_amount: number;
@@ -98,6 +99,7 @@ export const RecordManagement: React.FC = () => {
     bill_to_address: '',
     bill_to_phone: '',
     bill_to_pan: '',
+    operator_name: '',
     items: [],
     received_amount: 0,
     payment_status: 'Pending',
@@ -193,6 +195,7 @@ export const RecordManagement: React.FC = () => {
       bill_to_address: '',
       bill_to_phone: '',
       bill_to_pan: '',
+      operator_name: '',
       items: [
         {
           id: String(Date.now()),
@@ -955,7 +958,7 @@ export const RecordManagement: React.FC = () => {
             <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
               <div className="flex items-center gap-2 font-bold text-slate-900 uppercase text-[11px]">
                 <Building2 className="w-4 h-4 text-emerald-600" />
-                <span>2. Bill To (Client / Organization Details)</span>
+                <span>2. Bill To (Client/Operator Details)</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -982,8 +985,19 @@ export const RecordManagement: React.FC = () => {
                   />
                 </div>
 
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator Name</label>
+                  <input
+                    type="text"
+                    value={formData.operator_name || ''}
+                    onChange={(e) => setFormData({ ...formData, operator_name: e.target.value })}
+                    placeholder="e.g. Ravi Kumar / Sri Krishna Travels Operator"
+                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
+                  />
+                </div>
+
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Client Address</label>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator Address</label>
                   <input
                     type="text"
                     value={formData.bill_to_address || ''}
@@ -994,7 +1008,7 @@ export const RecordManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Client PAN / GST Number</label>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator PAN/GST Number</label>
                   <input
                     type="text"
                     value={formData.bill_to_pan || ''}
@@ -1346,19 +1360,24 @@ export const RecordManagement: React.FC = () => {
                   <p className="font-black text-sm text-[#142B4A] uppercase tracking-wide break-words">
                     {printingRecord.bill_to_name}
                   </p>
-                  {printingRecord.bill_to_address && (
-                    <p className="text-slate-600 text-[11px] break-words">
-                      <strong>Address:</strong> {printingRecord.bill_to_address}
-                    </p>
-                  )}
                   {printingRecord.bill_to_phone && (
                     <p className="text-slate-600 text-[11px]">
                       <strong>Mobile:</strong> {printingRecord.bill_to_phone}
                     </p>
                   )}
+                  {(printingRecord as any).operator_name && (
+                    <p className="text-slate-600 text-[11px]">
+                      <strong>Operator Name:</strong> {(printingRecord as any).operator_name}
+                    </p>
+                  )}
+                  {printingRecord.bill_to_address && (
+                    <p className="text-slate-600 text-[11px] break-words">
+                      <strong>Operator Address:</strong> {printingRecord.bill_to_address}
+                    </p>
+                  )}
                   {printingRecord.bill_to_pan && (
                     <p className="text-slate-600 text-[11px]">
-                      <strong>PAN / GST:</strong> {printingRecord.bill_to_pan}
+                      <strong>Operator PAN/GST:</strong> {printingRecord.bill_to_pan}
                     </p>
                   )}
                 </div>
