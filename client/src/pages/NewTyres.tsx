@@ -30,6 +30,7 @@ import { api } from '../services/api';
 import { BASE_FLEET_BUSES, BASE_FLEET_MAINTENANCE_BUSES } from '../services/seedData';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 import type { Bus as BusType } from '../types';
 
 const normalizeVeh = (str?: string) => (str || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
@@ -468,6 +469,50 @@ export const NewTyres: React.FC = () => {
     return Array.from(set).sort();
   }, [buses, newTyres]);
 
+  // Searchable bus options for Add / Edit Tyre Modal
+  const busSearchOptions: SearchOption[] = useMemo(() => {
+    const seen = new Set<string>();
+    const options: SearchOption[] = [];
+
+    buses.forEach((b: any) => {
+      const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+      if (reg && !seen.has(reg)) {
+        seen.add(reg);
+        const sub = [b.make_model, b.bus_type].filter(Boolean).join(' • ');
+        options.push({
+          value: reg,
+          label: reg,
+          sublabel: sub || undefined,
+          badge: b.depot_location || undefined
+        });
+      }
+    });
+
+    newTyres.forEach((t: any) => {
+      const reg = (t.vehicle_number || t.allocated_bus_number || '').split('(')[0].trim();
+      if (reg && !seen.has(reg)) {
+        seen.add(reg);
+        options.push({
+          value: reg,
+          label: reg
+        });
+      }
+    });
+
+    if (formData.vehicle_number) {
+      const cur = (formData.vehicle_number || '').split('(')[0].trim();
+      if (cur && !seen.has(cur)) {
+        seen.add(cur);
+        options.push({
+          value: cur,
+          label: cur
+        });
+      }
+    }
+
+    return options;
+  }, [buses, newTyres, formData.vehicle_number]);
+
   const filteredTyres = useMemo(() => {
     return newTyres.filter((t) => {
       const q = searchQuery.toLowerCase();
@@ -808,23 +853,16 @@ export const NewTyres: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Vehicle Number *</label>
-              <select
+              <SearchableSelect
+                label="Vehicle Number"
                 required
-                value={formData.vehicle_number}
-                onChange={(e) => handleVehicleChange(e.target.value)}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-bold text-slate-800"
-              >
-                <option value="">-- Select Vehicle Number --</option>
-                {buses.map((b) => {
-                  const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
-                  return (
-                    <option key={b.id || reg} value={reg}>
-                      {reg}
-                    </option>
-                  );
-                })}
-              </select>
+                placeholder="-- Select Vehicle Number --"
+                searchPlaceholder="Search vehicle number (e.g. AP16, DL01, HR55)..."
+                options={busSearchOptions}
+                value={(formData.vehicle_number || '').split('(')[0].trim()}
+                onChange={(val) => handleVehicleChange(val)}
+                allowCustom={true}
+              />
             </div>
 
             <div>
