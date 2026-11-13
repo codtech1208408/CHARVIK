@@ -510,14 +510,14 @@ export const EmployeePayments: React.FC = () => {
     // If user clicked "Confirm & Print Receipt"
     if (shouldPrint) {
       printSheet({
-        title: "CHARVIK FLEET MANAGEMENT - PAYMENT RECEIPT",
+        title: "CHARVIK STAFFING CONSULTANCY - PAYMENT RECEIPT",
         subtitle: `Receipt No: ${receiptNo} | Staff: ${targetStaff.full_name} (${targetStaff.employee_code})`,
         orientation: "portrait",
         htmlContent: `
-          <div style="font-family: sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px;">
-            <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 16px; margin-bottom: 20px;">
-              <h2 style="margin: 0; color: #142B4A; font-size: 22px;">CHARVIK FLEET MANAGEMENT</h2>
-              <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Official Staff Payment & Advance Receipt</p>
+          <div style="font-family: sans-serif; padding: 20px; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
+            <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 14px; margin-bottom: 18px;">
+              <h2 style="margin: 0; color: #142B4A; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">STAFF PAYMENT RECEIPT</h2>
+              <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Staff Remuneration & Advance Payment Record</p>
             </div>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
               <tr>
@@ -957,14 +957,14 @@ export const EmployeePayments: React.FC = () => {
   // 1. Print Individual Payment Receipt
   const handlePrintReceipt = (payment: RecordedPayment) => {
     printSheet({
-      title: "CHARVIK FLEET MANAGEMENT - PAYMENT RECEIPT",
+      title: "CHARVIK STAFFING CONSULTANCY - PAYMENT RECEIPT",
       subtitle: `Receipt No: ${payment.id} | Staff: ${payment.employee_name} (${payment.employee_code})`,
       orientation: "portrait",
       htmlContent: `
-        <div style="font-family: sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px;">
-          <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 16px; margin-bottom: 20px;">
-            <h2 style="margin: 0; color: #142B4A; font-size: 22px;">CHARVIK FLEET MANAGEMENT</h2>
-            <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Official Staff Payment & Advance Receipt</p>
+        <div style="font-family: sans-serif; padding: 20px; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
+          <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 14px; margin-bottom: 18px;">
+            <h2 style="margin: 0; color: #142B4A; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">STAFF PAYMENT RECEIPT</h2>
+            <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Staff Remuneration & Advance Payment Record</p>
           </div>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
             <tr>
@@ -1018,15 +1018,15 @@ export const EmployeePayments: React.FC = () => {
   const handlePrintTripSlip = (trip: TripEntry) => {
     if (!r) return;
     printSheet({
-      title: "CHARVIK FLEET MANAGEMENT - TRIP DUTY & SALARY SLIP",
+      title: "CHARVIK STAFFING CONSULTANCY - TRIP DUTY & SALARY SLIP",
       subtitle: `Trip ID: #${trip.id} | Staff: ${r.full_name} (${formatEmployeeId(r.employee_code, r.role)})`,
       orientation: "portrait",
       htmlContent: `
-        <div style="font-family: Arial, sans-serif; padding: 24px; max-width: 650px; margin: 0 auto; border: 1.5px solid #cbd5e1; border-radius: 14px;">
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 650px; margin: 0 auto; border: 1.5px solid #cbd5e1; border-radius: 14px; background: #ffffff;">
           <div style="border-bottom: 2.5px solid #142B4A; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
-              <h2 style="margin: 0; color: #142B4A; font-size: 20px; font-weight: 900;">CHARVIK STAFFING CONSULTANCY</h2>
-              <p style="margin: 3px 0 0; color: #64748b; font-size: 12px;">Official Trip Duty Voucher & Staff Remuneration Record</p>
+              <h2 style="margin: 0; color: #142B4A; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">TRIP DUTY &amp; REMUNERATION SLIP</h2>
+              <p style="margin: 3px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Trip Duty Voucher & Staff Remuneration Record</p>
             </div>
             <div style="text-align: right;">
               <span style="background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: bold; border: 1px solid #bfdbfe;">

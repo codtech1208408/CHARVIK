@@ -250,18 +250,22 @@ export const Reports: React.FC = () => {
 
       {/* Printable Report Canvas */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
-        {/* Formal Report Header with Charvik Logo */}
-        <div className="flex items-center justify-between border-b pb-4 border-slate-200">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-white p-1 border border-slate-200 flex items-center justify-center shrink-0">
-              <img src="/logo.jpg" alt="Charvik Logo" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-black text-[#142B4A] uppercase tracking-wide">
-                CHARVIK STAFFING CONSULTANCY
-              </h3>
-              <p className="text-xs font-bold text-blue-700">{currentReportMeta?.label}</p>
-            </div>
+        {/* Official Charvik Letterhead Header */}
+        <div className="w-full">
+          <img
+            src="/charvik-letterhead-header.png"
+            alt="CHARVIK STAFFING CONSULTANCY"
+            className="w-full h-auto block"
+          />
+        </div>
+
+        {/* Formal Report Header Strip */}
+        <div className="flex items-center justify-between border-b pb-3 border-slate-200">
+          <div>
+            <h3 className="text-base sm:text-lg font-black text-[#142B4A] uppercase tracking-wide">
+              {currentReportMeta?.label || 'OFFICIAL REPORT'}
+            </h3>
+            <p className="text-xs font-bold text-slate-500">Charvik Fleet Operations &amp; Staffing Management System</p>
           </div>
 
           <div className="text-right text-[11px] text-slate-500">
@@ -335,6 +339,15 @@ export const Reports: React.FC = () => {
               </tbody>
             </table>
           )}
+        </div>
+
+        {/* Official Charvik Letterhead Footer */}
+        <div className="w-full pt-4 border-t border-slate-200">
+          <img
+            src="/charvik-letterhead-footer.png"
+            alt="Charvik Footer"
+            className="w-full h-auto block"
+          />
         </div>
       </div>
     </div>

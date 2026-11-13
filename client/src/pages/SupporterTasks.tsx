@@ -978,6 +978,15 @@ export const SupporterTasks: React.FC = () => {
 
             {/* Exact Reference Image Spreadsheet Layout */}
             <div id="print-sheet-area" className="bg-white p-4 border border-black rounded-lg overflow-x-auto text-black">
+              {/* Official Charvik Letterhead Header */}
+              <div className="w-full mb-3">
+                <img
+                  src="/charvik-letterhead-header.png"
+                  alt="CHARVIK STAFFING CONSULTANCY"
+                  className="w-full h-auto block"
+                />
+              </div>
+
               <div className="text-center mb-3">
                 <h2 className="text-base font-black tracking-wider uppercase text-black">
                   CHARVIK FLEET OPERATIONAL TRIP DUTY TASKS & CREW ROSTER
@@ -1075,6 +1084,15 @@ export const SupporterTasks: React.FC = () => {
                   <span className="font-bold">Authorized Signature: </span>
                   <span className="border-b border-black w-48 inline-block pb-0.5">&nbsp;</span>
                 </div>
+              </div>
+
+              {/* Official Charvik Letterhead Footer */}
+              <div className="w-full pt-4 mt-2">
+                <img
+                  src="/charvik-letterhead-footer.png"
+                  alt="Charvik Footer"
+                  className="w-full h-auto block"
+                />
               </div>
             </div>
           </div>

@@ -30,6 +30,7 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { auditLogger } from '../services/auditLogger';
+import { printSheet } from '../utils/printSheet';
 
 export interface ProductItem {
   id: string;
@@ -700,7 +701,12 @@ export const ProductManagement: React.FC = () => {
 
   // Print Report
   const handlePrint = () => {
-    window.print();
+    printSheet({
+      title: activeTab === 'inventory' ? 'SPARE PARTS & PRODUCT INVENTORY' : 'SPARE PARTS USAGE LOG',
+      subtitle: `Total Items: ${activeTab === 'inventory' ? filteredProducts.length : filteredLogs.length}`,
+      elementId: activeTab === 'inventory' ? 'product-inventory-table-container' : 'spare-usage-table-container',
+      orientation: 'landscape'
+    });
   };
 
   return (
@@ -926,7 +932,7 @@ export const ProductManagement: React.FC = () => {
         </div>
 
         {/* Inventory Records Table */}
-        <div className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
+        <div id="product-inventory-table-container" className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#DCE6F1] text-black font-bold border-b border-slate-300">
               <tr>
@@ -1138,7 +1144,7 @@ export const ProductManagement: React.FC = () => {
         </div>
 
         {/* Vehicle Usage History Table */}
-        <div className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
+        <div id="spare-usage-table-container" className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#DCE6F1] text-black font-bold border-b border-slate-300">
               <tr>

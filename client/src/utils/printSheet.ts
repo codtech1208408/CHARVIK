@@ -69,7 +69,7 @@ export function printSheet(options: PrintOptions): void {
       <style>
         @page {
           size: ${orientation === 'landscape' ? 'A4 landscape' : 'A4 portrait'};
-          margin: 10mm 10mm;
+          margin: 6mm 8mm;
         }
         * {
           margin: 0;
@@ -82,48 +82,57 @@ export function printSheet(options: PrintOptions): void {
           font-size: 11px;
           line-height: 1.4;
           background: #ffffff;
-          padding: 12px;
+          padding: 6px 12px;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
-        .print-header {
+        .charvik-letterhead-header {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+        .charvik-letterhead-header img {
+          width: 100%;
+          height: auto;
+          display: block;
+        }
+        .print-meta-strip {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 2.5px solid #142B4A;
-          padding-bottom: 10px;
-          margin-bottom: 14px;
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
+          border-left: 4px solid #142B4A;
+          padding: 6px 12px;
+          border-radius: 4px;
+          margin-bottom: 12px;
         }
-        .print-header-left h1 {
-          font-size: 18px;
+        .print-meta-left {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+        }
+        .report-title {
+          font-size: 13px;
           font-weight: 900;
           color: #142B4A;
-          letter-spacing: 1px;
           text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
-        .print-header-left p {
-          font-size: 11px;
+        .report-subtitle {
+          font-size: 10.5px;
           color: #475569;
           font-weight: 600;
-          margin-top: 2px;
         }
-        .print-header-right {
-          text-align: right;
-        }
-        .print-header-right .report-title {
-          font-size: 14px;
-          font-weight: 800;
-          color: #142B4A;
-          text-transform: uppercase;
-        }
-        .print-header-right .report-date {
+        .report-date {
           font-size: 10px;
-          color: #64748b;
-          margin-top: 3px;
+          color: #475569;
+          font-weight: 700;
         }
         table {
           width: 100% !important;
           border-collapse: collapse !important;
           font-size: 10.5px !important;
-          margin-top: 8px;
+          margin-top: 6px;
           page-break-inside: auto;
         }
         thead {
@@ -173,24 +182,32 @@ export function printSheet(options: PrintOptions): void {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
-        .print-footer {
-          margin-top: 25px;
-          padding-top: 12px;
-          border-top: 1.5px solid #cbd5e1;
+        .print-footer-container {
+          margin-top: 24px;
+          page-break-inside: avoid;
+        }
+        .print-footer-info {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
+          padding-bottom: 8px;
           font-size: 10px;
           color: #64748b;
         }
-        .print-footer .signature-line {
-          border-top: 1px solid #0f172a;
-          width: 200px;
+        .signature-line {
+          border-top: 1.5px solid #0f172a;
+          width: 190px;
           text-align: center;
           padding-top: 5px;
           font-size: 10px;
-          font-weight: 700;
+          font-weight: 800;
           color: #0f172a;
+          text-transform: uppercase;
+        }
+        .charvik-letterhead-footer img {
+          width: 100%;
+          height: auto;
+          display: block;
         }
         @media print {
           body {
@@ -205,28 +222,54 @@ export function printSheet(options: PrintOptions): void {
       </style>
     </head>
     <body>
-      <div class="print-header">
-        <div class="print-header-left">
-          <h1>${companyName}</h1>
-          <p>${subtitle || 'Fleet Operations & Personnel Management'}</p>
+      <!-- Official Charvik Letterhead Header (Image from Template) -->
+      <div class="charvik-letterhead-header">
+        <img 
+          src="/charvik-letterhead-header.png" 
+          alt="CHARVIK STAFFING CONSULTANCY" 
+          onerror="this.src='/logo-compact-wide.png'"
+        />
+      </div>
+
+      <!-- Report Metadata Strip -->
+      <div class="print-meta-strip">
+        <div class="print-meta-left">
+          <span class="report-title">${title}</span>
+          ${subtitle ? `<span class="report-subtitle">• ${subtitle}</span>` : ''}
         </div>
-        <div class="print-header-right">
-          <div class="report-title">${title}</div>
-          <div class="report-date">Date: ${dateLabel} | Generated: ${new Date().toLocaleTimeString('en-IN')}</div>
+        <div class="report-date">
+          <span>Date: ${dateLabel}</span>
+          <span style="margin: 0 6px; color: #94a3b8;">|</span>
+          <span>Time: ${new Date().toLocaleTimeString('en-IN')}</span>
         </div>
       </div>
 
-      <div class="print-body">
-        ${bodyContent}
+      <!-- Printable Body Content with Translucent Watermark -->
+      <div class="print-body" style="position: relative; min-height: 400px;">
+        <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 340px; opacity: 0.04; pointer-events: none; z-index: 0;">
+          <img src="/logo.png" style="width: 100%; display: block;" alt="Watermark" />
+        </div>
+        <div style="position: relative; z-index: 1;">
+          ${bodyContent}
+        </div>
       </div>
 
-      <div class="print-footer">
-        <div>
-          <p><strong>${companyName}</strong> &bull; Official Record</p>
-          <p>System Generated Report</p>
+      <!-- Official Charvik Letterhead Footer (Curved Swooshes) -->
+      <div class="print-footer-container">
+        <div class="print-footer-info">
+          <div>
+            <p style="font-weight: 800; color: #142B4A; text-transform: uppercase;">CHARVIK STAFFING CONSULTANCY</p>
+            <p>Official Fleet Operations & Staffing Record &bull; Computer Generated</p>
+          </div>
+          <div class="signature-line">
+            Authorized Signatory / Seal
+          </div>
         </div>
-        <div class="signature-line">
-          Authorized Signatory & Stamp
+        <div class="charvik-letterhead-footer">
+          <img 
+            src="/charvik-letterhead-footer.png" 
+            alt="Charvik Footer" 
+          />
         </div>
       </div>
     </body>
@@ -254,14 +297,38 @@ export function printSheet(options: PrintOptions): void {
       doc.write(htmlDoc);
       doc.close();
 
-      setTimeout(() => {
+      const triggerPrint = () => {
         try {
           iframe.contentWindow?.focus();
           iframe.contentWindow?.print();
         } catch {
           window.print();
         }
-      }, 350);
+      };
+
+      const imgs = doc.getElementsByTagName('img');
+      let loadedCount = 0;
+      const totalImgs = imgs.length;
+
+      if (totalImgs === 0) {
+        setTimeout(triggerPrint, 250);
+      } else {
+        for (let i = 0; i < totalImgs; i++) {
+          if (imgs[i].complete) {
+            loadedCount++;
+            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+          } else {
+            imgs[i].onload = () => {
+              loadedCount++;
+              if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+            };
+            imgs[i].onerror = () => {
+              loadedCount++;
+              if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+            };
+          }
+        }
+      }
       return;
     }
   } catch (e) {

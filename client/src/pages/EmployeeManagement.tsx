@@ -1397,20 +1397,24 @@ export const EmployeeManagement: React.FC = () => {
             {/* MODE 1: Official Yellow-Header Table matching image.png */}
             {viewTab === 'sheet' && (
               <div className="border-2 border-black overflow-hidden font-sans text-xs bg-white printable-sheet">
-                {/* Company Print Header */}
-                <div className="p-3 bg-white border-b-2 border-black flex items-center justify-between">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#142B4A] text-white flex items-center justify-center font-black text-sm">
-                      C
-                    </div>
+                {/* Official Charvik Letterhead Header */}
+                <div className="bg-white border-b-2 border-black">
+                  <img
+                    src="/charvik-letterhead-header.png"
+                    alt="CHARVIK STAFFING CONSULTANCY"
+                    className="w-full h-auto block"
+                  />
+                  <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-700 font-bold">
                     <div>
-                      <h3 className="text-sm font-black text-slate-900 tracking-tight uppercase">CHARVIK STAFFING CONSULTANCY</h3>
-                      <p className="text-[10px] text-slate-600 font-semibold">Driver & Crew Fleet Staffing Verification Record</p>
+                      {viewingProfile.employee.role === 'Driver'
+                        ? 'DRIVER FLEET STAFFING VERIFICATION RECORD'
+                        : 'CREW & STAFF FLEET VERIFICATION RECORD'}
                     </div>
-                  </div>
-                  <div className="text-right text-[10px] text-slate-600">
-                    <p><strong className="text-slate-900">Employee ID:</strong> <span className="font-mono font-bold text-blue-700">{formatEmployeeId(viewingProfile.employee.employee_code, viewingProfile.employee.role)}</span></p>
-                    <p><strong className="text-slate-900">Role:</strong> <span className="font-bold">{viewingProfile.employee.role}</span></p>
+                    <div className="text-right text-[10px]">
+                      <span>Employee ID: <strong className="font-mono text-blue-700">{formatEmployeeId(viewingProfile.employee.employee_code, viewingProfile.employee.role)}</strong></span>
+                      <span className="mx-1.5 text-slate-400">|</span>
+                      <span>Role: <strong>{viewingProfile.employee.role}</strong></span>
+                    </div>
                   </div>
                 </div>
 
@@ -1677,6 +1681,15 @@ export const EmployeeManagement: React.FC = () => {
                       <span>Date: ____________</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Official Charvik Letterhead Footer */}
+                <div className="w-full border-t-2 border-black bg-white">
+                  <img
+                    src="/charvik-letterhead-footer.png"
+                    alt="Charvik Footer"
+                    className="w-full h-auto block"
+                  />
                 </div>
               </div>
             )}

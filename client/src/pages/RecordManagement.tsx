@@ -1316,41 +1316,14 @@ export const RecordManagement: React.FC = () => {
               className="bg-white p-6 sm:p-8 rounded-xl border border-slate-300 shadow-sm text-slate-900 max-w-[800px] mx-auto print:border-0 print:p-0 print:shadow-none print:max-w-none"
               style={{ fontFamily: 'Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
             >
-              {/* Top Letterhead Header */}
-              <div className="border-b-2 border-[#0099B8] pb-4 mb-4">
-                <div className="flex items-center justify-between gap-4">
-                  {/* Left: Official Charvik Logo */}
-                  <div className="flex items-center gap-3">
-                    <img
-                      src="/logo-compact.png"
-                      alt="Charvik Staffing Consultancy"
-                      className="h-16 w-auto max-w-[280px] object-contain block"
-                      onError={(e: any) => {
-                        e.target.onerror = null;
-                        e.target.src = '/logo.png';
-                      }}
-                    />
-                  </div>
-
-                  {/* Right: Contact Information */}
-                  <div className="text-right text-xs space-y-1.5 text-slate-700 font-medium">
-                    <div className="flex items-center justify-end gap-1.5 text-slate-900 font-bold">
-                      <Phone className="w-3.5 h-3.5 text-[#0099B8] shrink-0" />
-                      <span>9505151527</span>
-                    </div>
-                    <div className="flex items-center justify-end gap-1.5 text-slate-700">
-                      <Mail className="w-3.5 h-3.5 text-[#0099B8] shrink-0" />
-                      <span>charvikstaffingconsultancy@gmail.com</span>
-                    </div>
-                    <div className="flex items-center justify-end gap-1.5 text-slate-700">
-                      <MapPin className="w-3.5 h-3.5 text-[#0099B8] shrink-0" />
-                      <span>Hyderabad, Vanasthalipuram</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Cyan Accent Bar */}
-                <div className="h-1 bg-gradient-to-r from-[#0099B8] via-[#00B4D8] to-[#142B4A] rounded-full mt-3"></div>
+              {/* Top Letterhead Header (Official Charvik Letterhead) */}
+              <div className="w-full mb-4">
+                <img
+                  src="/charvik-letterhead-header.png"
+                  alt="Charvik Staffing Consultancy"
+                  className="w-full h-auto block rounded-t"
+                  style={{ width: '100%', height: 'auto', display: 'block' }}
+                />
               </div>
 
               {/* Title Header (Matching Image 1: BILL OF SUPPLY) */}
@@ -1566,12 +1539,14 @@ export const RecordManagement: React.FC = () => {
                 </div>
               </div>
 
-              {/* Bottom Letterhead Geometric Accent (Matching Image 3) */}
-              <div className="mt-6 pt-2 border-t-2 border-[#142B4A]">
-                <div className="h-1.5 bg-gradient-to-r from-[#142B4A] via-[#0099B8] to-[#00B4D8] rounded-full"></div>
-                <div className="text-center text-[10px] text-slate-400 mt-1.5">
-                  Charvik Staffing Consultancy • Your Talent | Our Support | A Brighter Future
-                </div>
+              {/* Bottom Letterhead Footer (Official Charvik Letterhead) */}
+              <div className="w-full mt-6 pt-2">
+                <img
+                  src="/charvik-letterhead-footer.png"
+                  alt="Charvik Footer"
+                  className="w-full h-auto block"
+                  style={{ width: '100%', height: 'auto', display: 'block' }}
+                />
               </div>
             </div>
           </div>

@@ -1341,6 +1341,15 @@ export const BusCondition: React.FC = () => {
               id="saved-report-printable-area"
               className="bg-white border border-slate-300 p-6 rounded-xl shadow-xs text-black font-sans"
             >
+              {/* Official Charvik Letterhead Header */}
+              <div className="w-full mb-3">
+                <img
+                  src="/charvik-letterhead-header.png"
+                  alt="CHARVIK STAFFING CONSULTANCY"
+                  className="w-full h-auto block"
+                />
+              </div>
+
               <div className="text-center mb-4">
                 <h1 className="text-xl font-black tracking-wide text-black uppercase mb-1">
                   DAILY VEHICLE CHECK REPORT
@@ -1449,6 +1458,15 @@ export const BusCondition: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Official Charvik Letterhead Footer */}
+              <div className="w-full pt-4 mt-2">
+                <img
+                  src="/charvik-letterhead-footer.png"
+                  alt="Charvik Footer"
+                  className="w-full h-auto block"
+                />
+              </div>
             </div>
           </div>
         </Modal>
@@ -1480,6 +1498,15 @@ export const BusCondition: React.FC = () => {
               id="blank-report-printable-area"
               className="bg-white border border-slate-300 p-6 rounded-xl shadow-xs text-black font-sans"
             >
+              {/* Official Charvik Letterhead Header */}
+              <div className="w-full mb-3">
+                <img
+                  src="/charvik-letterhead-header.png"
+                  alt="CHARVIK STAFFING CONSULTANCY"
+                  className="w-full h-auto block"
+                />
+              </div>
+
               <div className="text-center mb-4">
                 <h1 className="text-xl font-black tracking-wide text-black uppercase mb-1 header-title">
                   DAILY VEHICLE CHECK REPORT
@@ -1563,6 +1590,15 @@ export const BusCondition: React.FC = () => {
                     <span className="border-b border-black w-48 inline-block pb-0.5 sig-field">&nbsp;</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Official Charvik Letterhead Footer */}
+              <div className="w-full pt-4 mt-2">
+                <img
+                  src="/charvik-letterhead-footer.png"
+                  alt="Charvik Footer"
+                  className="w-full h-auto block"
+                />
               </div>
             </div>
           </div>

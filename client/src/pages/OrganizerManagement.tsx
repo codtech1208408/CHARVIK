@@ -311,14 +311,14 @@ export const OrganizerManagement: React.FC = () => {
 
       if (shouldPrint) {
         printSheet({
-          title: 'CHARVIK FLEET MANAGEMENT - ORGANIZER RECEIPT',
-          subtitle: `Receipt No: ${receiptNo} | Organization: ${targetOrg.organization_name}`,
+          title: 'CHARVIK STAFFING CONSULTANCY - OPERATOR PAYMENT RECEIPT',
+          subtitle: `Receipt No: ${receiptNo} | Operator: ${targetOrg.organization_name}`,
           orientation: 'portrait',
           htmlContent: `
-            <div style="font-family: sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px;">
-              <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 16px; margin-bottom: 20px;">
-                <h2 style="margin: 0; color: #142B4A; font-size: 22px;">CHARVIK FLEET MANAGEMENT</h2>
-                <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Official Organization Revenue / Payment Receipt</p>
+            <div style="font-family: sans-serif; padding: 20px; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
+              <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 14px; margin-bottom: 18px;">
+                <h2 style="margin: 0; color: #142B4A; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">OPERATOR PAYMENT RECEIPT</h2>
+                <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Operator Revenue &amp; Payment Record</p>
               </div>
               <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
                 <tr>

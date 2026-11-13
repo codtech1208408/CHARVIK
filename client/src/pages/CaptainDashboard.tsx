@@ -916,7 +916,16 @@ export const CaptainDashboard: React.FC = () => {
             </div>
 
             {/* Official Biodata helper & Captains Table matching image.png */}
-            <div className="border-2 border-black overflow-hidden font-sans text-xs bg-white">
+            <div className="border-2 border-black overflow-hidden font-sans text-xs bg-white printable-sheet">
+              {/* Official Charvik Letterhead Header */}
+              <div className="bg-white border-b-2 border-black">
+                <img
+                  src="/charvik-letterhead-header.png"
+                  alt="CHARVIK STAFFING CONSULTANCY"
+                  className="w-full h-auto block"
+                />
+              </div>
+
               {/* Yellow Header */}
               <div className="bg-[#FFFF00] text-black font-black text-center py-2.5 text-sm uppercase tracking-wider border-b-2 border-black">
                 Biodata helper &amp; Captains
@@ -1102,6 +1111,15 @@ export const CaptainDashboard: React.FC = () => {
                   </tr>
                 </tbody>
               </table>
+
+              {/* Official Charvik Letterhead Footer */}
+              <div className="w-full border-t-2 border-black bg-white">
+                <img
+                  src="/charvik-letterhead-footer.png"
+                  alt="Charvik Footer"
+                  className="w-full h-auto block"
+                />
+              </div>
             </div>
 
             {/* Notifications */}
@@ -1142,18 +1160,24 @@ export const CaptainDashboard: React.FC = () => {
           subtitle="Charvik Staffing Consultancy • Employee Verification Sheet"
           maxWidth="max-w-2xl"
         >
-          <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-4 text-xs">
+          <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-4 text-xs printable-sheet">
+            {/* Official Charvik Letterhead Header */}
+            <div className="w-full">
+              <img
+                src="/charvik-letterhead-header.png"
+                alt="CHARVIK STAFFING CONSULTANCY"
+                className="w-full h-auto block"
+              />
+            </div>
+
             <div className="flex items-center justify-between border-b pb-3 border-slate-200">
-              <div className="flex items-center space-x-3">
-                <img src="/logo.jpg" alt="Logo" className="w-10 h-10 object-contain" />
-                <div>
-                  <h3 className="font-extrabold text-sm text-[#142B4A]">CHARVIK STAFFING CONSULTANCY</h3>
-                  <p className="text-[10px] text-slate-500 uppercase font-bold">{viewingCrewBiodata.role} Master Biodata</p>
-                </div>
+              <div>
+                <h3 className="font-extrabold text-sm text-[#142B4A]">CHARVIK STAFFING CONSULTANCY</h3>
+                <p className="text-[10px] text-slate-500 uppercase font-bold">{viewingCrewBiodata.role} Master Biodata</p>
               </div>
               <button
                 onClick={() => window.print()}
-                className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer"
+                className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer no-print"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print</span>
@@ -1461,6 +1485,15 @@ export const CaptainDashboard: React.FC = () => {
                 </table>
               </div>
             )}
+
+            {/* Official Charvik Letterhead Footer */}
+            <div className="w-full pt-4">
+              <img
+                src="/charvik-letterhead-footer.png"
+                alt="Charvik Footer"
+                className="w-full h-auto block"
+              />
+            </div>
           </div>
         </Modal>
       )}

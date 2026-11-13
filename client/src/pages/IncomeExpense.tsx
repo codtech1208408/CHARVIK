@@ -496,39 +496,103 @@ export const IncomeExpense: React.FC = () => {
       window.print();
       return;
     }
-    const win = window.open('', '_blank', 'width=800,height=600');
-    if (!win) {
+
+    let iframe = document.getElementById('charvik-voucher-print-frame') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'charvik-voucher-print-frame';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!doc) {
       window.print();
       return;
     }
-    win.document.write(`
-      <html>
+
+    const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .map((el) => el.outerHTML)
+      .join('\n');
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="en">
         <head>
-          <title>Transaction Voucher #${voucherItem?.id}</title>
+          <meta charset="utf-8" />
+          <title>Charvik Official Voucher - #${voucherItem?.id}</title>
+          ${styles}
           <style>
-            body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; color: #1e293b; }
-            .voucher { border: 2px solid #0f172a; padding: 24px; border-radius: 12px; max-width: 650px; margin: 0 auto; }
-            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; }
-            .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; }
-            .income { background: #ecfdf5; color: #047857; }
-            .expense { background: #fef2f2; color: #b91c1c; }
-            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
-            .row { margin-bottom: 8px; }
-            .label { font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase; }
-            .val { font-size: 14px; font-weight: 600; color: #0f172a; margin-top: 2px; }
-            .amount-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin: 16px 0; text-align: right; }
-            .signatures { display: flex; justify-content: space-between; margin-top: 48px; padding-top: 16px; border-top: 1px dashed #cbd5e1; font-size: 12px; color: #64748b; }
+            @page {
+              size: A4 portrait;
+              margin: 8mm 10mm;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              color: #0f172a !important;
+              font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            #printable-voucher {
+              border: 1.5px solid #cbd5e1 !important;
+              box-shadow: none !important;
+              border-radius: 8px !important;
+              max-width: 680px !important;
+              margin: 0 auto !important;
+              padding: 16px !important;
+            }
           </style>
         </head>
         <body>
-          ${printArea.outerHTML}
-          <script>
-            window.onload = function() { window.print(); window.close(); }
-          </script>
+          <div style="padding: 10px;">
+            ${printArea.outerHTML}
+          </div>
         </body>
       </html>
     `);
-    win.document.close();
+    doc.close();
+
+    const triggerPrint = () => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch {
+        window.print();
+      }
+    };
+
+    const imgs = doc.getElementsByTagName('img');
+    let loadedCount = 0;
+    const totalImgs = imgs.length;
+
+    if (totalImgs === 0) {
+      setTimeout(triggerPrint, 250);
+    } else {
+      for (let i = 0; i < totalImgs; i++) {
+        if (imgs[i].complete) {
+          loadedCount++;
+          if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+        } else {
+          imgs[i].onload = () => {
+            loadedCount++;
+            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+          };
+          imgs[i].onerror = () => {
+            loadedCount++;
+            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+          };
+        }
+      }
+    }
   };
 
   // Payment mode helper
@@ -1428,15 +1492,27 @@ export const IncomeExpense: React.FC = () => {
         >
           <div className="space-y-4">
             {/* The Printable Sheet */}
-            <div id="printable-voucher" className="voucher bg-white p-6 rounded-2xl border-2 border-slate-900 shadow-sm space-y-4">
-              <div className="header flex items-start justify-between border-b-2 border-slate-200 pb-3">
+            <div id="printable-voucher" className="voucher bg-white p-5 rounded-2xl border border-slate-300 shadow-sm space-y-3 font-sans">
+              {/* Official Charvik Letterhead Header */}
+              <div className="w-full mb-2">
+                <img
+                  src="/charvik-letterhead-header.png"
+                  alt="CHARVIK STAFFING CONSULTANCY"
+                  className="w-full h-auto block rounded-t"
+                  style={{ width: '100%', height: 'auto', display: 'block' }}
+                />
+              </div>
+
+              <div className="header flex items-center justify-between border-b-2 border-[#142B4A] pb-2.5 mb-3">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">CHARVIK FLEET MANAGEMENT</h2>
-                  <p className="text-[11px] text-slate-500 font-semibold">Official Corporate Accounts & Treasury Department</p>
+                  <h3 className="text-base font-black text-[#142B4A] uppercase tracking-wide">
+                    {voucherItem.transaction_type.toUpperCase()} PAYMENT VOUCHER
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-semibold">Official Treasury & Cash Flow Record</p>
                 </div>
                 <div className="text-right">
                   <span className={`badge ${voucherItem.transaction_type === 'Income' ? 'income' : 'expense'}`}>
-                    {voucherItem.transaction_type.toUpperCase()} VOUCHER
+                    {voucherItem.transaction_type.toUpperCase()}
                   </span>
                   <p className="text-xs font-mono font-bold text-slate-700 mt-1">VCH-{voucherItem.id}</p>
                 </div>
@@ -1486,7 +1562,7 @@ export const IncomeExpense: React.FC = () => {
                 </span>
               </div>
 
-              <div className="signatures flex justify-between pt-8 text-xs text-slate-500 border-t border-dashed border-slate-300">
+              <div className="signatures flex justify-between pt-6 text-xs text-slate-500 border-t border-dashed border-slate-300">
                 <div>
                   <div className="w-32 border-b border-slate-400 mb-1" />
                   <span>Prepared By / Cashier</span>
@@ -1499,6 +1575,16 @@ export const IncomeExpense: React.FC = () => {
                   <div className="w-32 border-b border-slate-400 mb-1" />
                   <span>Authorized Signatory</span>
                 </div>
+              </div>
+
+              {/* Official Charvik Letterhead Footer */}
+              <div className="w-full mt-4 pt-1">
+                <img
+                  src="/charvik-letterhead-footer.png"
+                  alt="Charvik Footer"
+                  className="w-full h-auto block"
+                  style={{ width: '100%', height: 'auto', display: 'block' }}
+                />
               </div>
             </div>
 

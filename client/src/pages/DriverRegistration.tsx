@@ -1132,20 +1132,18 @@ export const DriverRegistration: React.FC = () => {
 
           {/* Biodata Driver Official Table Format */}
           <div className="border-2 border-black overflow-hidden font-sans printable-sheet">
-            {/* Company Print Header */}
-            <div className="p-3 bg-white border-b-2 border-black flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#142B4A] text-white flex items-center justify-center font-black text-sm">
-                  C
+            {/* Official Charvik Letterhead Header */}
+            <div className="bg-white border-b-2 border-black">
+              <img
+                src="/charvik-letterhead-header.png"
+                alt="CHARVIK STAFFING CONSULTANCY"
+                className="w-full h-auto block"
+              />
+              <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-700 font-bold">
+                <div>DRIVER FLEET STAFFING VERIFICATION RECORD</div>
+                <div className="text-right text-[10px]">
+                  <span>Status: <strong className="text-emerald-700">Verified Preview</strong></span>
                 </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900 tracking-tight uppercase">CHARVIK STAFFING CONSULTANCY</h3>
-                  <p className="text-[10px] text-slate-600 font-semibold">Driver Fleet Staffing Verification Record</p>
-                </div>
-              </div>
-              <div className="text-right text-[10px] text-slate-600">
-                <p><strong className="text-slate-900">Role:</strong> <span className="font-bold">Driver</span></p>
-                <p><strong className="text-slate-900">Status:</strong> <span className="font-bold text-emerald-700">Verified Preview</span></p>
               </div>
             </div>
 
@@ -1395,6 +1393,15 @@ export const DriverRegistration: React.FC = () => {
                   <span>Date: ____________</span>
                 </div>
               </div>
+            </div>
+
+            {/* Official Charvik Letterhead Footer */}
+            <div className="w-full border-t-2 border-black bg-white">
+              <img
+                src="/charvik-letterhead-footer.png"
+                alt="Charvik Footer"
+                className="w-full h-auto block"
+              />
             </div>
           </div>
         </div>

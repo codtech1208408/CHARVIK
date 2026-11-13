@@ -1330,30 +1330,25 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
 
             {/* Official Printable Audit Sheet Container */}
-            <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 print:border-none print:p-0 space-y-6">
-              {/* Header Letterhead */}
-              <div className="flex items-center justify-between border-b-2 border-slate-800 pb-4">
-                <div className="flex items-center gap-3">
-                  <img
-                    src="/logo-compact.png"
-                    alt="Charvik Staffing Consultancy"
-                    className="h-16 w-auto object-contain block"
-                    onError={(e: any) => {
-                      e.target.onerror = null;
-                      e.target.src = '/logo.png';
-                    }}
-                  />
-                  <div>
-                    <h2 className="text-lg font-black text-slate-900 tracking-tight uppercase">
-                      Charvik Staffing Consultancy
-                    </h2>
-                    <p className="text-xs font-bold tracking-wider text-slate-600">
-                      Fleet Operations, Staffing & Transit Vehicle Quality Audits
-                    </p>
-                    <p className="text-[10px] text-slate-500">
-                      Official Captain Onboard Vehicle Inspection Record
-                    </p>
-                  </div>
+            <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 print:border-none print:p-0 space-y-5">
+              {/* Official Charvik Letterhead Header */}
+              <div className="w-full">
+                <img
+                  src="/charvik-letterhead-header.png"
+                  alt="CHARVIK STAFFING CONSULTANCY"
+                  className="w-full h-auto block"
+                />
+              </div>
+
+              {/* Header Letterhead Meta */}
+              <div className="flex items-center justify-between border-b-2 border-slate-800 pb-3">
+                <div>
+                  <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">
+                    CAPTAIN ONBOARD VEHICLE INSPECTION &amp; AUDIT RECORD
+                  </h2>
+                  <p className="text-xs font-bold tracking-wider text-slate-600">
+                    Fleet Operations, Crew Staffing &amp; Transit Vehicle Quality Assurance
+                  </p>
                 </div>
 
                 <div className="text-right">
@@ -1492,6 +1487,15 @@ export const CaptainAuditRecord: React.FC = () => {
                   <span className="font-bold block">Fleet Operations Manager</span>
                   <span className="text-[10px] text-slate-400 uppercase">Charvik Quality Admin</span>
                 </div>
+              </div>
+
+              {/* Official Charvik Letterhead Footer */}
+              <div className="w-full pt-4">
+                <img
+                  src="/charvik-letterhead-footer.png"
+                  alt="Charvik Footer"
+                  className="w-full h-auto block"
+                />
               </div>
             </div>
           </div>

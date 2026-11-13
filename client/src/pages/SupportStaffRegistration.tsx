@@ -1004,7 +1004,22 @@ export const SupportStaffRegistration: React.FC = () => {
           </div>
 
           {/* Biodata helper & Captains Official Table Format */}
-          <div className="border-2 border-black overflow-hidden font-sans">
+          <div className="border-2 border-black overflow-hidden font-sans printable-sheet">
+            {/* Official Charvik Letterhead Header */}
+            <div className="bg-white border-b-2 border-black">
+              <img
+                src="/charvik-letterhead-header.png"
+                alt="CHARVIK STAFFING CONSULTANCY"
+                className="w-full h-auto block"
+              />
+              <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-700 font-bold">
+                <div>CREW &amp; SUPPORT STAFF FLEET VERIFICATION RECORD</div>
+                <div className="text-right text-[10px]">
+                  <span>Status: <strong className="text-emerald-700">Verified Preview</strong></span>
+                </div>
+              </div>
+            </div>
+
             {/* Yellow Header */}
             <div className="bg-[#FFFF00] text-black font-black text-center py-2.5 text-sm uppercase tracking-wider border-b-2 border-black">
               Biodata helper &amp; Captains
@@ -1219,6 +1234,15 @@ export const SupportStaffRegistration: React.FC = () => {
                   <span>Date: ____________</span>
                 </div>
               </div>
+            </div>
+
+            {/* Official Charvik Letterhead Footer */}
+            <div className="w-full border-t-2 border-black bg-white">
+              <img
+                src="/charvik-letterhead-footer.png"
+                alt="Charvik Footer"
+                className="w-full h-auto block"
+              />
             </div>
           </div>
         </div>
