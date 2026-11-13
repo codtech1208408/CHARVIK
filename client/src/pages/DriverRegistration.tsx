@@ -251,25 +251,25 @@ export const DriverRegistration: React.FC = () => {
       {/* Header */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#00367A] via-[#004B9E] to-[#0056B3] p-5 shadow-lg border-b-4 border-[#F59E0B]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-inner">
+          <div className="flex items-center gap-3 max-w-sm lg:max-w-md">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-inner shrink-0">
               <UserPlus className="w-6 h-6 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-black text-white tracking-wide">
                 Driver Biodata Registration
               </h2>
-              <p className="text-xs text-blue-100 font-medium mt-0.5">
+              <p className="text-xs text-blue-100 font-medium mt-0.5 leading-snug">
                 Step-by-step biodata wizard with Aadhaar, PAN, commercial driving licence, and bank verification.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 shrink-0 z-20">
             <button
               type="button"
               onClick={() => navigate('/admin/employee-registration')}
-              className="inline-flex items-center px-4 py-2 rounded-2xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 transition-colors gap-1.5 cursor-pointer shadow-sm border border-slate-200"
+              className="inline-flex items-center px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 transition-colors gap-1.5 cursor-pointer shadow-sm border border-slate-200"
             >
               <ArrowLeft className="w-4 h-4 text-blue-600" />
               <span>Back to Employees</span>
@@ -277,7 +277,7 @@ export const DriverRegistration: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsPreviewOpen(true)}
-              className="inline-flex items-center px-4 py-2 rounded-2xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 transition-colors gap-1.5 cursor-pointer shadow-sm border border-slate-200"
+              className="inline-flex items-center px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 transition-colors gap-1.5 cursor-pointer shadow-sm border border-slate-200"
             >
               <Eye className="w-4 h-4 text-blue-600" />
               <span>Preview Biodata</span>
@@ -285,12 +285,12 @@ export const DriverRegistration: React.FC = () => {
           </div>
         </div>
 
-        {/* Real 3D Luxury Coach Bus Graphic */}
-        <div className="absolute right-0 top-0 bottom-0 w-80 pointer-events-none opacity-90 hidden md:block">
+        {/* Real 3D Luxury Coach Bus Graphic - Positioned in center/right gap so it NEVER collides with buttons */}
+        <div className="absolute right-[280px] top-0 bottom-0 w-64 pointer-events-none opacity-95 hidden lg:block">
           <img
             src={luxuryCoachHeader}
             alt="Luxury Coach Bus"
-            className="h-full w-full object-cover object-left"
+            className="h-full w-full object-contain object-center"
           />
         </div>
       </div>

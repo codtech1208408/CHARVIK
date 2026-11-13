@@ -15,8 +15,19 @@ import {
   ArrowRight,
   ArrowLeft,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Calendar,
+  Mail,
+  Phone,
+  FileText,
+  MapPin,
+  Clock,
+  Sparkles,
+  Award,
+  Bus,
+  Check
 } from 'lucide-react';
+import luxuryCoachHeader from '../assets/luxury-coach-header.png';
 import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
 import { Modal } from '../components/common/Modal';
@@ -253,70 +264,87 @@ export const SupportStaffRegistration: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div>
-          <h2 className="text-xl font-bold text-[#142B4A] flex items-center gap-2">
-            <UserCheck className="w-5 h-5 text-blue-600" />
-            <span>Helper and Captain Registration</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Register transport helpers and bus captains with full identity, bank, reference, and deployment records.
-          </p>
+      {/* Header with 3D Luxury Coach Bus */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#00367A] via-[#004B9E] to-[#0056B3] p-5 shadow-lg border-b-4 border-[#F59E0B]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+          <div className="flex items-center gap-3 max-w-sm lg:max-w-md">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-inner shrink-0">
+              <UserCheck className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-white tracking-wide">
+                Helper & Captain Biodata Registration
+              </h2>
+              <p className="text-xs text-blue-100 font-medium mt-0.5 leading-snug">
+                Step-by-step biodata wizard with Aadhaar, PAN, bank verification, and deployment allocation.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 shrink-0 z-20">
+            <button
+              type="button"
+              onClick={() => navigate('/admin/employee-registration')}
+              className="inline-flex items-center px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 transition-colors gap-1.5 cursor-pointer shadow-sm border border-slate-200"
+            >
+              <ArrowLeft className="w-4 h-4 text-blue-600" />
+              <span>Back to Employees</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPreviewOpen(true)}
+              className="inline-flex items-center px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 transition-colors gap-1.5 cursor-pointer shadow-sm border border-slate-200"
+            >
+              <Eye className="w-4 h-4 text-blue-600" />
+              <span>Preview Biodata</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/employee-registration')}
-            className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors gap-1.5 cursor-pointer border border-slate-200"
-          >
-            <ArrowLeft className="w-4 h-4 text-blue-600" />
-            <span>Back to Employees</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsPreviewOpen(true)}
-            className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors gap-1.5 cursor-pointer"
-          >
-            <Eye className="w-4 h-4" />
-            <span>Preview Biodata</span>
-          </button>
+        {/* Real 3D Luxury Coach Bus Graphic - Positioned in center/right gap so it NEVER collides with buttons */}
+        <div className="absolute right-[280px] top-0 bottom-0 w-64 pointer-events-none opacity-95 hidden lg:block">
+          <img
+            src={luxuryCoachHeader}
+            alt="Luxury Coach Bus"
+            className="h-full w-full object-contain object-center"
+          />
         </div>
       </div>
 
       {/* Role Selection Toggle */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+      <div className="bg-white p-4 rounded-3xl border border-blue-100 shadow-sm flex items-center justify-between">
         <div>
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Target Role</span>
-          <p className="text-xs text-slate-700 font-medium">Select whether registering a Bus Helper or Captain</p>
+          <span className="text-xs font-black text-blue-900 uppercase tracking-wider block">TARGET ROLE</span>
+          <p className="text-xs text-slate-600 font-medium mt-0.5">Select whether registering a Bus Helper or Captain</p>
         </div>
 
-        <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+        <div className="flex rounded-2xl bg-blue-50/60 p-1.5 border border-blue-100">
           <button
             type="button"
             onClick={() => handleRoleChange('Helper')}
-            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              formData.role === 'Helper' ? 'bg-[#142B4A] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              formData.role === 'Helper' ? 'bg-[#004B9E] text-white shadow-md' : 'text-slate-600 hover:text-blue-900'
             }`}
           >
-            Bus Helper
+            <Users className="w-4 h-4" />
+            <span>Bus Helper</span>
           </button>
           <button
             type="button"
             onClick={() => handleRoleChange('Captain')}
-            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              formData.role === 'Captain' ? 'bg-[#142B4A] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              formData.role === 'Captain' ? 'bg-[#004B9E] text-white shadow-md' : 'text-slate-600 hover:text-blue-900'
             }`}
           >
-            Bus Captain
+            <Award className="w-4 h-4" />
+            <span>Bus Captain</span>
           </button>
         </div>
       </div>
 
       {/* Progress Tabs */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto">
-        <div className="flex items-center justify-between min-w-[500px] relative">
+      <div className="bg-white p-4 rounded-3xl border border-blue-100 shadow-sm overflow-x-auto">
+        <div className="flex items-center justify-between min-w-[550px] relative">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 w-full -z-0"></div>
           {steps.map((st) => {
             const Icon = st.icon;
@@ -331,7 +359,7 @@ export const SupportStaffRegistration: React.FC = () => {
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
                     isCurrent
-                      ? 'bg-blue-600 text-white ring-4 ring-blue-100'
+                      ? 'bg-[#004B9E] text-white ring-4 ring-blue-100'
                       : isDone
                       ? 'bg-emerald-600 text-white'
                       : 'bg-white text-slate-400 border border-slate-300'
@@ -341,7 +369,7 @@ export const SupportStaffRegistration: React.FC = () => {
                 </div>
                 <span
                   className={`text-[11px] font-bold mt-1.5 whitespace-nowrap ${
-                    isCurrent ? 'text-blue-700' : isDone ? 'text-slate-800' : 'text-slate-400'
+                    isCurrent ? 'text-blue-700 font-extrabold' : isDone ? 'text-slate-800' : 'text-slate-400'
                   }`}
                 >
                   {st.title}
@@ -352,23 +380,24 @@ export const SupportStaffRegistration: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Form */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+      {/* Main Form Container */}
+      <div className="bg-white p-6 rounded-3xl border border-blue-100 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* STEP 1: Personal Info */}
           {currentStep === 1 && (
             <div className="space-y-4 animate-in fade-in">
-              <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 1: Personal Information (Biodata {formData.role === 'Captain' ? 'Captains' : 'Helper'})
-              </h3>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
+                <User className="w-4 h-4 text-white" />
+                <span>Step 1: Personal Information (Biodata {formData.role === 'Captain' ? 'Captain' : 'Helper'})</span>
+              </div>
 
               {/* 1. Profile Photo */}
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl bg-slate-200 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
+              <div className="p-4 bg-blue-50/20 border border-blue-100 rounded-2xl flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-white border-2 border-dashed border-blue-300 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
                   {formData.profile_photo ? (
                     <img src={formData.profile_photo} alt="Profile Photo" className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-7 h-7 text-slate-400" />
+                    <User className="w-7 h-7 text-blue-400" />
                   )}
                 </div>
                 <div className="flex-1">
@@ -378,7 +407,7 @@ export const SupportStaffRegistration: React.FC = () => {
                     type="file"
                     accept="image/*"
                     onChange={(e) => handleFileUpload('profile_photo', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#004B9E] file:text-white hover:file:bg-[#00367A] cursor-pointer"
                   />
                 </div>
               </div>
@@ -386,26 +415,30 @@ export const SupportStaffRegistration: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Employee ID */}
                 <div>
-                  <label className="block text-xs font-bold text-[#142B4A] mb-1">
-                    Employee ID *
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Employee ID <span className="text-rose-500">*</span></span>
                   </label>
                   <input
                     type="text"
                     value={formData.employee_code}
                     onChange={(e) => handleInputChange('employee_code', e.target.value)}
                     placeholder="e.g. HLP-1001 or CPT-1001"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold text-blue-700"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-mono font-bold text-blue-700 shadow-2xs"
                     required
                   />
                 </div>
 
                 {/* 2. Gender */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Users className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Gender</span>
+                  </label>
                   <select
                     value={formData.gender}
                     onChange={(e) => handleInputChange('gender', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs cursor-pointer"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -415,15 +448,16 @@ export const SupportStaffRegistration: React.FC = () => {
 
                 {/* 3. Name (As per Aadhaar) */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Name (As per Aadhaar) *
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <User className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Name (As per Aadhaar) <span className="text-rose-500">*</span></span>
                   </label>
                   <input
                     type="text"
                     value={formData.full_name}
                     onChange={(e) => handleInputChange('full_name', e.target.value)}
                     placeholder="Enter full name as printed on Aadhaar"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                     required
                   />
                 </div>
@@ -432,25 +466,31 @@ export const SupportStaffRegistration: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 4. DOB */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">DOB (Date of Birth) *</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                    <span>DOB (Date of Birth) <span className="text-rose-500">*</span></span>
+                  </label>
                   <input
                     type="date"
                     value={formData.date_of_birth}
                     onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                     required
                   />
                 </div>
 
                 {/* 5. E MAIL */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">E MAIL</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Mail className="w-3.5 h-3.5 text-blue-600" />
+                    <span>E MAIL</span>
+                  </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="staff@charvikstaffing.com"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
@@ -458,26 +498,32 @@ export const SupportStaffRegistration: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 6. Phone Number * */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Phone className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Phone Number <span className="text-rose-500">*</span></span>
+                  </label>
                   <input
                     type="tel"
                     value={formData.phone_number}
                     onChange={(e) => handleInputChange('phone_number', e.target.value)}
-                    placeholder="9701011111"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    placeholder="e.g. 9701011111"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                     required
                   />
                 </div>
 
                 {/* 7. Alternative Number */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Alternative Number</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Phone className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Alternative Number</span>
+                  </label>
                   <input
                     type="tel"
                     value={formData.alternative_phone_number}
                     onChange={(e) => handleInputChange('alternative_phone_number', e.target.value)}
                     placeholder="Alternative contact"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
@@ -487,33 +533,40 @@ export const SupportStaffRegistration: React.FC = () => {
           {/* STEP 2: Identity Docs */}
           {currentStep === 2 && (
             <div className="space-y-4 animate-in fade-in">
-              <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 2: Identity Documents (Aadhaar & PAN)
-              </h3>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
+                <CreditCard className="w-4 h-4 text-white" />
+                <span>Step 2: Identity Documents (Aadhaar & PAN)</span>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 8. Aadhaar Number */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Aadhaar Number *</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Aadhaar Number <span className="text-rose-500">*</span></span>
+                  </label>
                   <input
                     type="text"
                     value={formData.aadhaar_number}
                     onChange={(e) => handleInputChange('aadhaar_number', e.target.value)}
                     placeholder="XXXX-XXXX-1234"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-mono font-bold text-slate-800 shadow-2xs"
                     required
                   />
                 </div>
 
                 {/* 10. PAN Card Number */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">PAN Card Number</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <FileText className="w-3.5 h-3.5 text-blue-600" />
+                    <span>PAN Card Number</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.pan_number}
                     onChange={(e) => handleInputChange('pan_number', e.target.value.toUpperCase())}
                     placeholder="PQRST5678K"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono uppercase"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-mono font-bold uppercase text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
@@ -521,50 +574,50 @@ export const SupportStaffRegistration: React.FC = () => {
               {/* Identity Documents Upload (Aadhaar Front, Aadhaar Back, PAN Card) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                 {/* Aadhaar Front */}
-                <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                  <Upload className="w-6 h-6 text-slate-400 mb-1" />
-                  <p className="text-xs font-bold text-slate-700">Aadhaar Card (Front Side)</p>
-                  <p className="text-[11px] text-slate-400 mb-2">Upload Front photo</p>
+                <div className="p-4 rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/20 flex flex-col items-center text-center">
+                  <Upload className="w-6 h-6 text-blue-500 mb-1" />
+                  <p className="text-xs font-bold text-slate-800">Aadhaar Card (Front Side)</p>
+                  <p className="text-[11px] text-slate-500 mb-2">Upload Front photo</p>
                   <input
                     type="file"
                     accept="image/*,.pdf"
                     onChange={(e) => handleFileUpload('aadhaar_front_doc', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-[#004B9E] file:text-white hover:file:bg-[#00367A] cursor-pointer w-full"
                   />
                   {formData.aadhaar_front_doc && (
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Front side attached</p>
+                    <p className="text-[10px] text-emerald-600 font-bold mt-1.5">✓ Front side attached</p>
                   )}
                 </div>
 
                 {/* Aadhaar Back */}
-                <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                  <Upload className="w-6 h-6 text-slate-400 mb-1" />
-                  <p className="text-xs font-bold text-slate-700">Aadhaar Card (Back Side)</p>
-                  <p className="text-[11px] text-slate-400 mb-2">Upload Back photo</p>
+                <div className="p-4 rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/20 flex flex-col items-center text-center">
+                  <Upload className="w-6 h-6 text-blue-500 mb-1" />
+                  <p className="text-xs font-bold text-slate-800">Aadhaar Card (Back Side)</p>
+                  <p className="text-[11px] text-slate-500 mb-2">Upload Back photo</p>
                   <input
                     type="file"
                     accept="image/*,.pdf"
                     onChange={(e) => handleFileUpload('aadhaar_back_doc', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-[#004B9E] file:text-white hover:file:bg-[#00367A] cursor-pointer w-full"
                   />
                   {formData.aadhaar_back_doc && (
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Back side attached</p>
+                    <p className="text-[10px] text-emerald-600 font-bold mt-1.5">✓ Back side attached</p>
                   )}
                 </div>
 
                 {/* PAN Card */}
-                <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                  <Upload className="w-6 h-6 text-slate-400 mb-1" />
-                  <p className="text-xs font-bold text-slate-700">Upload Photo File (PAN Card)</p>
-                  <p className="text-[11px] text-slate-400 mb-2">Clear photo of PAN</p>
+                <div className="p-4 rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/20 flex flex-col items-center text-center">
+                  <Upload className="w-6 h-6 text-blue-500 mb-1" />
+                  <p className="text-xs font-bold text-slate-800">Upload Photo File (PAN Card)</p>
+                  <p className="text-[11px] text-slate-500 mb-2">Clear photo of PAN</p>
                   <input
                     type="file"
                     accept="image/*,.pdf"
                     onChange={(e) => handleFileUpload('pan_doc', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer w-full"
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-[#004B9E] file:text-white hover:file:bg-[#00367A] cursor-pointer w-full"
                   />
                   {formData.pan_doc && (
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ PAN Card file attached</p>
+                    <p className="text-[10px] text-emerald-600 font-bold mt-1.5">✓ PAN Card file attached</p>
                   )}
                 </div>
               </div>
@@ -575,82 +628,97 @@ export const SupportStaffRegistration: React.FC = () => {
           {/* STEP 3: Bank Name ( passbook cheque ) */}
           {currentStep === 3 && (
             <div className="space-y-4 animate-in fade-in">
-              <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 3: Bank Details
-              </h3>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
+                <Building className="w-4 h-4 text-white" />
+                <span>Step 3: Bank Details</span>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Bank Name ( passbook cheque )
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Building className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Bank Name (passbook / cheque)</span>
                   </label>
                   <input
                     type="text"
                     value={formData.bank_name}
                     onChange={(e) => handleInputChange('bank_name', e.target.value)}
-                    placeholder="Union Bank / SBI"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    placeholder="e.g. State Bank of India / HDFC"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Account Holder Name</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <User className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Account Holder Name</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.account_holder_name || formData.full_name}
                     onChange={(e) => handleInputChange('account_holder_name', e.target.value)}
                     placeholder="Name as printed on passbook"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Account Number</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Account Number</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.account_number}
                     onChange={(e) => handleInputChange('account_number', e.target.value)}
                     placeholder="123456789012"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-mono font-bold text-slate-800 shadow-2xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">IFSC Code</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <FileText className="w-3.5 h-3.5 text-blue-600" />
+                    <span>IFSC Code</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.ifsc_code}
                     onChange={(e) => handleInputChange('ifsc_code', e.target.value.toUpperCase())}
-                    placeholder="UBIN0543210"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono uppercase"
+                    placeholder="SBIN0001234"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-mono font-bold uppercase text-slate-800 shadow-2xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Branch</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Branch</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.branch}
                     onChange={(e) => handleInputChange('branch', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    placeholder="Branch name"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center text-center">
-                <Upload className="w-6 h-6 text-slate-400 mb-2" />
-                <p className="text-xs font-bold text-slate-700">Upload Photo File (passbook / cheque)</p>
-                <p className="text-[11px] text-slate-400 mb-2">Upload photo of passbook front page or cancelled cheque</p>
+              <div className="p-4 rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/20 flex flex-col items-center text-center">
+                <Upload className="w-6 h-6 text-blue-500 mb-2" />
+                <p className="text-xs font-bold text-slate-800">Upload Photo File (passbook / cheque)</p>
+                <p className="text-[11px] text-slate-500 mb-2">Upload photo of passbook front page or cancelled cheque</p>
                 <input
                   type="file"
                   accept="image/*,.pdf"
                   onChange={(e) => handleFileUpload('bank_proof_doc', e)}
-                  className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                  className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#004B9E] file:text-white hover:file:bg-[#00367A] cursor-pointer"
                 />
                 {formData.bank_proof_doc && (
-                  <p className="text-[10px] text-emerald-600 font-bold mt-1">✓ Bank passbook / cheque attached</p>
+                  <p className="text-[10px] text-emerald-600 font-bold mt-1.5">✓ Bank passbook / cheque attached</p>
                 )}
               </div>
             </div>
@@ -659,34 +727,39 @@ export const SupportStaffRegistration: React.FC = () => {
           {/* STEP 4: Nominee Details */}
           {currentStep === 4 && (
             <div className="space-y-4 animate-in fade-in">
-              <div className="border-b border-slate-100 pb-2">
-                <h3 className="text-sm font-bold text-[#142B4A]">
-                  Step 4: Nominee Details (Legal & Accidental Beneficiary)
-                </h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Record next of kin nominee information for {formData.role} statutory claims, accidental coverage, and emergency settlements.
-                </p>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
+                <ShieldCheck className="w-4 h-4 text-white" />
+                <span>Step 4: Nominee Details (Legal & Accidental Beneficiary)</span>
               </div>
+              <p className="text-[11px] text-slate-500">
+                Record next of kin nominee information for {formData.role} statutory claims, accidental coverage, and emergency settlements.
+              </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Nominee Full Name *</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <User className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Nominee Full Name <span className="text-rose-500">*</span></span>
+                  </label>
                   <input
                     type="text"
                     value={formData.nominee_name}
                     onChange={(e) => handleInputChange('nominee_name', e.target.value)}
                     placeholder="e.g. Smt. Lakshmi"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Relationship with {formData.role} *</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Users className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Relationship with {formData.role} <span className="text-rose-500">*</span></span>
+                  </label>
                   <select
                     value={formData.nominee_relationship}
                     onChange={(e) => handleInputChange('nominee_relationship', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-semibold text-slate-800"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs cursor-pointer"
                   >
                     <option value="">Select Option</option>
                     <option value="Spouse">Spouse (Wife / Husband)</option>
@@ -703,35 +776,44 @@ export const SupportStaffRegistration: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Nominee Contact Number *</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Phone className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Nominee Contact Number <span className="text-rose-500">*</span></span>
+                  </label>
                   <input
                     type="tel"
                     value={formData.nominee_phone}
                     onChange={(e) => handleInputChange('nominee_phone', e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Nominee Age / Date of Birth</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Nominee Age / Date of Birth</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.nominee_age}
                     onChange={(e) => handleInputChange('nominee_age', e.target.value)}
                     placeholder="e.g. 30 or YYYY-MM-DD"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Nominee Aadhaar Number (Optional)</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Nominee Aadhaar (Optional)</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.nominee_aadhaar}
                     onChange={(e) => handleInputChange('nominee_aadhaar', e.target.value)}
                     placeholder="12-digit Aadhaar number"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-mono font-bold text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
@@ -741,46 +823,54 @@ export const SupportStaffRegistration: React.FC = () => {
           {/* STEP 5: Reference Details */}
           {currentStep === 5 && (
             <div className="space-y-4 animate-in fade-in">
-              <div className="border-b border-slate-100 pb-2">
-                <h3 className="text-sm font-bold text-[#142B4A]">
-                  Step 5: Reference Details (Verification)
-                </h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Previous transport employer or acquaintance who can verify conduct.
-                </p>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
+                <Users className="w-4 h-4 text-white" />
+                <span>Step 5: Reference Details (Verification)</span>
               </div>
+              <p className="text-[11px] text-slate-500">
+                Previous transport employer or acquaintance who can verify conduct.
+              </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Name</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <User className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Name</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.reference_name}
                     onChange={(e) => handleInputChange('reference_name', e.target.value)}
                     placeholder="Reference person name"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Phone className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Phone Number</span>
+                  </label>
                   <input
                     type="tel"
                     value={formData.reference_phone}
                     onChange={(e) => handleInputChange('reference_phone', e.target.value)}
                     placeholder="Primary reference phone"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Alternative Number</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Phone className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Alternative Number</span>
+                  </label>
                   <input
                     type="tel"
                     value={formData.reference_alt_phone}
                     onChange={(e) => handleInputChange('reference_alt_phone', e.target.value)}
                     placeholder="Secondary reference phone"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
@@ -790,26 +880,28 @@ export const SupportStaffRegistration: React.FC = () => {
           {/* STEP 6: Employment */}
           {currentStep === 6 && (
             <div className="space-y-4 animate-in fade-in">
-              <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 6: Employment & Allocation
-              </h3>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
+                <Briefcase className="w-4 h-4 text-white" />
+                <span>Step 6: Employment & Allocation</span>
+              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-blue-50/60 border border-blue-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-blue-50/50 border border-blue-200">
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Worker Type (Employment Category) *
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Briefcase className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Worker Type (Employment Category) <span className="text-rose-500">*</span></span>
                   </label>
                   <select
                     value={formData.employment_type || 'Permanent'}
                     onChange={(e) => handleInputChange('employment_type', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-blue-300 bg-white font-bold text-blue-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-300 bg-white font-bold text-blue-900 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer shadow-2xs"
                   >
                     <option value="Permanent">Permanent Worker</option>
                     <option value="Temporary">Temporary Worker</option>
                     <option value="Salary Based">Salary Based</option>
                   </select>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Select whether the {formData.role} is a Permanent worker, Temporary staff, or Salary Based.
+                    Select whether the {formData.role} is Permanent, Temporary, or Salary Based.
                   </p>
                 </div>
 
@@ -828,7 +920,7 @@ export const SupportStaffRegistration: React.FC = () => {
                         : 'Permanent Worker (Per Day Salary) (₹) *'}
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
                     <input
                       type="number"
                       min="0"
@@ -840,7 +932,7 @@ export const SupportStaffRegistration: React.FC = () => {
                           ? 'Enter monthly salary amount (₹)'
                           : 'Enter per day salary amount (₹)'
                       }
-                      className="w-full text-xs pl-7 pr-3 p-2.5 rounded-xl border border-blue-300 bg-white font-semibold text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full text-xs pl-8 pr-3.5 py-2.5 rounded-2xl border border-blue-300 bg-white font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none shadow-2xs"
                     />
                   </div>
                   <p className="text-[11px] text-slate-500 mt-1">Admin manual salary entry</p>
@@ -849,23 +941,29 @@ export const SupportStaffRegistration: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Employee Code *</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Employee Code <span className="text-rose-500">*</span></span>
+                  </label>
                   <input
                     type="text"
                     value={formData.employee_code}
                     onChange={(e) => handleInputChange('employee_code', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-bold text-slate-900"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-bold text-slate-900 shadow-2xs"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Joining Date</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Joining Date</span>
+                  </label>
                   <input
                     type="date"
                     value={formData.joining_date}
                     onChange={(e) => handleInputChange('joining_date', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
@@ -878,11 +976,14 @@ export const SupportStaffRegistration: React.FC = () => {
               />
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Assigned Bus</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                  <Bus className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Assigned Bus</span>
+                </label>
                 <select
                   value={formData.assigned_bus_id}
                   onChange={(e) => handleInputChange('assigned_bus_id', e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs cursor-pointer"
                 >
                   <option value="">-- No Bus Assigned --</option>
                   {buses.map((b) => (
@@ -894,12 +995,16 @@ export const SupportStaffRegistration: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Remarks</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                  <FileText className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Remarks</span>
+                </label>
                 <textarea
                   rows={2}
                   value={formData.internal_remarks}
                   onChange={(e) => handleInputChange('internal_remarks', e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                  placeholder="Additional notes or deployment details..."
+                  className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                 />
               </div>
             </div>
@@ -907,7 +1012,7 @@ export const SupportStaffRegistration: React.FC = () => {
 
           {/* Validation Alert Banner */}
           {stepError && (
-            <div className="flex items-center gap-3 p-3.5 bg-rose-50 border-2 border-rose-300 rounded-xl text-rose-800 text-xs font-bold animate-in fade-in">
+            <div className="flex items-center gap-3 p-3.5 bg-rose-50 border-2 border-rose-300 rounded-2xl text-rose-800 text-xs font-bold animate-in fade-in">
               <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />
               <div>
                 <p className="font-extrabold text-rose-900">Please fill the required detail to proceed:</p>
@@ -922,18 +1027,18 @@ export const SupportStaffRegistration: React.FC = () => {
               <button
                 type="button"
                 onClick={handlePrev}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-2xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <ArrowLeft className="w-4 h-4 text-blue-600" />
                 <span>Previous Step</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => navigate('/admin/employee-registration')}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-2xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer"
               >
-                <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
+                <ArrowLeft className="w-4 h-4 text-slate-500" />
                 <span>Cancel & Back</span>
               </button>
             )}
@@ -942,18 +1047,18 @@ export const SupportStaffRegistration: React.FC = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] text-white text-xs font-black flex items-center gap-2 shadow-md transition-all cursor-pointer"
               >
                 <span>Next Step</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-4 h-4 text-white" />
               </button>
             ) : (
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold flex items-center gap-2 shadow-md transition-colors cursor-pointer disabled:opacity-60"
+                className="px-7 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] text-white text-xs font-black flex items-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-60"
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <Check className="w-4 h-4 text-white" />
                 <span>{isSubmitting ? 'Registering...' : `Submit ${formData.role} Registration`}</span>
               </button>
             )}
