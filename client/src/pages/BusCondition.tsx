@@ -16,7 +16,11 @@ import {
   Disc,
   Gauge,
   ClipboardList,
-  AlertCircle
+  AlertCircle,
+  Calendar,
+  MapPin,
+  Save,
+  Wrench
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { BusConditionInspection, Bus as BusType } from '../types';
@@ -1067,16 +1071,19 @@ export const BusCondition: React.FC = () => {
       >
         <form noValidate onSubmit={handleSave} className="space-y-4">
           {/* Top Metadata Grid */}
-          <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+          <div className="p-4 rounded-2xl border border-blue-100 bg-blue-50/20 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Date *</label>
+                <label className="flex items-center gap-1.5 font-bold text-xs text-slate-800 mb-1">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Date <span className="text-rose-500">*</span></span>
+                </label>
                 <input
                   type="date"
                   required
                   value={formData.inspection_date}
                   onChange={(e) => setFormData({ ...formData, inspection_date: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white outline-none font-medium"
+                  className="w-full px-3 py-2.5 rounded-xl border border-blue-200 bg-white outline-none font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 shadow-2xs"
                 />
               </div>
 
@@ -1093,13 +1100,16 @@ export const BusCondition: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Starting KM</label>
+                <label className="flex items-center gap-1.5 font-bold text-xs text-slate-800 mb-1">
+                  <Gauge className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Starting KM</span>
+                </label>
                 <input
                   type="number"
                   placeholder="e.g. 45000"
                   value={formData.starting_km}
                   onChange={(e) => setFormData({ ...formData, starting_km: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-white outline-none font-mono font-bold"
+                  className="w-full px-3 py-2.5 rounded-xl border border-blue-200 bg-white outline-none font-mono font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 shadow-2xs"
                 />
               </div>
 
@@ -1120,26 +1130,27 @@ export const BusCondition: React.FC = () => {
           {/* Dynamic Items Table */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                {formData.items.length}-Point Pre-Trip Inspection Checklist
-              </span>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
+                <Wrench className="w-4 h-4 text-white" />
+                <span>{formData.items.length}-Point Pre-Trip Inspection Checklist</span>
+              </div>
             </div>
 
-            <div className="border border-slate-200 rounded-xl overflow-hidden max-h-[380px] overflow-y-auto">
+            <div className="border border-blue-200 rounded-2xl overflow-hidden max-h-[380px] overflow-y-auto shadow-2xs">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#DCE6F1] text-black font-bold border-b border-slate-300 sticky top-0 z-10">
+                <thead className="bg-[#004B9E] text-white font-bold border-b border-blue-900 sticky top-0 z-10 uppercase tracking-wider text-[11px]">
                   <tr>
-                    <th className="py-2 px-3 w-10 text-center border-r border-slate-300">No.</th>
-                    <th className="py-2 px-3 border-r border-slate-300">Inspection item</th>
-                    <th className="py-2 px-2 text-center w-16 border-r border-slate-300 font-bold">OK</th>
-                    <th className="py-2 px-2 text-center w-20 border-r border-slate-300 font-bold">Not OK</th>
-                    <th className="py-2 px-3 w-64">Remarks</th>
+                    <th className="py-2.5 px-3 w-10 text-center border-r border-blue-800/60">No.</th>
+                    <th className="py-2.5 px-3 border-r border-blue-800/60">Inspection item</th>
+                    <th className="py-2.5 px-2 text-center w-16 border-r border-blue-800/60 font-bold">OK</th>
+                    <th className="py-2.5 px-2 text-center w-20 border-r border-blue-800/60 font-bold">Not OK</th>
+                    <th className="py-2.5 px-3 w-64">Remarks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
                   {formData.items.map((item) => (
-                    <tr key={item.no} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-2 px-3 text-center font-bold text-slate-600 border-r border-slate-200">
+                    <tr key={item.no} className="hover:bg-blue-50/30 transition-colors">
+                      <td className="py-2 px-3 text-center font-bold text-slate-700 border-r border-slate-200">
                         {item.no}
                       </td>
 
@@ -1204,7 +1215,7 @@ export const BusCondition: React.FC = () => {
                         )}
                       </td>
 
-                      {/* OK Column - Square Checkbox Matching Image 2 */}
+                      {/* OK Column - Square Checkbox Matching Image */}
                       <td
                         className="py-1.5 px-2 text-center border-r border-slate-200 cursor-pointer hover:bg-emerald-50/40 select-none"
                         onClick={() => handleItemStatusChange(item.no, 'OK')}
@@ -1215,18 +1226,20 @@ export const BusCondition: React.FC = () => {
                             e.stopPropagation();
                             handleItemStatusChange(item.no, 'OK');
                           }}
-                          className="inline-flex items-center justify-center p-1 cursor-pointer focus:outline-none"
+                          className="inline-flex items-center justify-center p-0.5 cursor-pointer focus:outline-none"
                           title="Mark as OK"
                         >
                           {item.status === 'OK' ? (
-                            <span className="inline-block w-4 h-4 bg-black border-2 border-black rounded-xs shadow-2xs"></span>
+                            <span className="inline-flex items-center justify-center w-5 h-5 bg-emerald-600 rounded-md text-white shadow-2xs">
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            </span>
                           ) : (
-                            <span className="inline-block w-4 h-4 bg-white border-2 border-slate-400 rounded-xs hover:border-slate-600"></span>
+                            <span className="inline-block w-5 h-5 bg-white border-2 border-slate-300 rounded-md hover:border-slate-400"></span>
                           )}
                         </button>
                       </td>
 
-                      {/* Not OK Column - Square Checkbox Matching Image 2 */}
+                      {/* Not OK Column - Square Checkbox Matching Image */}
                       <td
                         className="py-1.5 px-2 text-center border-r border-slate-200 cursor-pointer hover:bg-rose-50/40 select-none"
                         onClick={() => handleItemStatusChange(item.no, 'Not OK')}
@@ -1237,13 +1250,15 @@ export const BusCondition: React.FC = () => {
                             e.stopPropagation();
                             handleItemStatusChange(item.no, 'Not OK');
                           }}
-                          className="inline-flex items-center justify-center p-1 cursor-pointer focus:outline-none"
+                          className="inline-flex items-center justify-center p-0.5 cursor-pointer focus:outline-none"
                           title="Mark as Not OK"
                         >
                           {item.status === 'Not OK' ? (
-                            <span className="inline-block w-4 h-4 bg-black border-2 border-black rounded-xs shadow-2xs"></span>
+                            <span className="inline-flex items-center justify-center w-5 h-5 bg-rose-600 rounded-md text-white shadow-2xs">
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            </span>
                           ) : (
-                            <span className="inline-block w-4 h-4 bg-white border-2 border-slate-400 rounded-xs hover:border-slate-600"></span>
+                            <span className="inline-block w-5 h-5 bg-white border-2 border-slate-300 rounded-md hover:border-slate-400"></span>
                           )}
                         </button>
                       </td>
@@ -1254,7 +1269,7 @@ export const BusCondition: React.FC = () => {
                           placeholder="Optional notes / remark..."
                           value={item.remarks}
                           onChange={(e) => handleItemRemarksChange(item.no, e.target.value)}
-                          className="w-full text-xs px-2 py-1 rounded-lg border border-slate-200 bg-white focus:border-blue-400 outline-none"
+                          className="w-full text-xs px-2.5 py-1.5 rounded-xl border border-blue-100 bg-white focus:border-blue-400 outline-none"
                         />
                       </td>
                     </tr>
@@ -1273,8 +1288,8 @@ export const BusCondition: React.FC = () => {
                 <Plus className="w-3.5 h-3.5" />
                 <span>+ Add More Inspection Item</span>
               </button>
-              <span className="text-[11px] text-slate-500 font-semibold">
-                Total Checklist Items: <strong className="text-slate-800">{formData.items.length}</strong>
+              <span className="px-3 py-1 bg-blue-50 text-blue-900 rounded-lg text-xs font-bold border border-blue-200">
+                Total Checklist Items: <strong className="text-blue-950 font-black">{formData.items.length}</strong>
               </span>
             </div>
           </div>
@@ -1282,15 +1297,16 @@ export const BusCondition: React.FC = () => {
           {/* Bottom Section: Defects / Repairs & Signatures */}
           <div className="space-y-3 pt-2">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Defects / repairs required
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <AlertTriangle className="w-4 h-4 text-rose-500" />
+                <span>Defects / Repairs Required</span>
               </label>
               <textarea
                 rows={2}
                 placeholder="Mention any mechanical, electrical or safety defects requiring maintenance..."
                 value={formData.defects_found}
                 onChange={(e) => setFormData({ ...formData, defects_found: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none"
+                className="w-full text-sm p-3.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none text-slate-800 shadow-2xs resize-none placeholder:text-slate-400"
               />
             </div>
           </div>
@@ -1300,16 +1316,17 @@ export const BusCondition: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAddOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="px-6 py-2.5 rounded-2xl border border-slate-300 font-bold text-sm text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] active:scale-95 transition-all cursor-pointer shadow-sm"
+              className="px-7 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] text-white text-sm font-black shadow-md flex items-center gap-2 transition-colors cursor-pointer"
             >
-              Save Vehicle Check Report
+              <Save className="w-4 h-4" />
+              <span>Save Vehicle Check Report</span>
             </button>
           </div>
         </form>

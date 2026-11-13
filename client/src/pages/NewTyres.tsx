@@ -838,11 +838,11 @@ export const NewTyres: React.FC = () => {
         icon={<Disc className="w-5 h-5 text-white" />}
         maxWidth="max-w-2xl"
       >
-        <form noValidate onSubmit={handleSaveTyre} className="space-y-4">
+        <form noValidate onSubmit={handleSaveTyre} className="space-y-4 pt-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                <Calendar className="w-3.5 h-3.5 text-blue-600" />
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Calendar className="w-4 h-4 text-blue-600" />
                 <span>Purchase Date <span className="text-rose-500">*</span></span>
               </label>
               <input
@@ -850,13 +850,13 @@ export const NewTyres: React.FC = () => {
                 required
                 value={formData.purchase_date}
                 onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800 shadow-2xs"
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                <Bus className="w-3.5 h-3.5 text-blue-600" />
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Bus className="w-4 h-4 text-blue-600" />
                 <span>Vehicle Number <span className="text-rose-500">*</span></span>
               </label>
               <SearchableSelect
@@ -870,8 +870,8 @@ export const NewTyres: React.FC = () => {
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                <Gauge className="w-3.5 h-3.5 text-blue-600" />
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Gauge className="w-4 h-4 text-blue-600" />
                 <span>Starting KM</span>
               </label>
               <input
@@ -888,13 +888,13 @@ export const NewTyres: React.FC = () => {
                     total_km: (sNum + pNum) > 0 ? (sNum + pNum) : ''
                   }));
                 }}
-                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold text-slate-800 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                <Gauge className="w-3.5 h-3.5 text-indigo-600" />
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Gauge className="w-4 h-4 text-indigo-600" />
                 <span>Present Running KM</span>
               </label>
               <input
@@ -911,26 +911,28 @@ export const NewTyres: React.FC = () => {
                     total_km: (sNum + pNum) > 0 ? (sNum + pNum) : ''
                   }));
                 }}
-                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold text-indigo-700"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold text-indigo-700 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
 
             {/* Live Total KM Banner */}
-            <div className="sm:col-span-2 p-3 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border-2 border-emerald-300 rounded-xl flex items-center justify-between shadow-2xs">
-              <div className="flex items-center gap-2">
-                <Gauge className="w-4 h-4 text-emerald-700" />
+            <div className="sm:col-span-2 p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border-2 border-emerald-300 rounded-2xl flex items-center justify-between shadow-2xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700">
+                  <Gauge className="w-5 h-5" />
+                </div>
                 <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
                   Total KM Running:
                 </span>
               </div>
-              <span className="text-base font-black font-mono text-emerald-800">
+              <span className="text-lg font-black font-mono text-emerald-800">
                 {((Number(formData.starting_km) || 0) + (Number(formData.present_km) || 0)).toLocaleString('en-IN')} KM
               </span>
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                <Tag className="w-3.5 h-3.5 text-blue-600" />
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Tag className="w-4 h-4 text-amber-500" />
                 <span>Tyre Number <span className="text-rose-500">*</span></span>
               </label>
               <input
@@ -939,19 +941,19 @@ export const NewTyres: React.FC = () => {
                 placeholder="e.g. MRF-8899201"
                 value={formData.tyre_serial_number}
                 onChange={(e) => setFormData({ ...formData, tyre_serial_number: e.target.value })}
-                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold text-slate-800 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                <Building className="w-3.5 h-3.5 text-blue-600" />
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Building className="w-4 h-4 text-blue-600" />
                 <span>Brand</span>
               </label>
               <select
                 value={formData.brand}
                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-semibold cursor-pointer"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800 cursor-pointer shadow-2xs"
               >
                 <option value="MRF">MRF</option>
                 <option value="Apollo">Apollo</option>
@@ -964,8 +966,8 @@ export const NewTyres: React.FC = () => {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                <Building className="w-3.5 h-3.5 text-blue-600" />
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Building className="w-4 h-4 text-blue-600" />
                 <span>Supplier / Dealer</span>
               </label>
               <input
@@ -973,27 +975,27 @@ export const NewTyres: React.FC = () => {
                 placeholder="e.g. Sri Balaji Tyres, Hyd"
                 value={formData.supplier}
                 onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
               />
             </div>
           </div>
 
           {/* Photo Uploads with Visual Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <ImageIcon className="w-4 h-4 text-blue-600" />
                 <span>Tyre Photo</span>
               </label>
-              <div className="p-3 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl bg-slate-50/60 transition-colors">
+              <div className="p-3.5 border-2 border-dashed border-blue-200 hover:border-blue-500 rounded-2xl bg-blue-50/30 transition-colors">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleFileUpload(e, 'tyre_photo_url')}
-                  className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
+                  className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#004B9E] file:text-white hover:file:bg-[#00367A] cursor-pointer"
                 />
                 {formData.tyre_photo_url && (
-                  <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden border border-slate-300 shadow-xs">
+                  <div className="mt-2 w-20 h-20 rounded-xl overflow-hidden border border-slate-300 shadow-xs">
                     <img src={formData.tyre_photo_url} alt="Tyre preview" className="w-full h-full object-cover" />
                   </div>
                 )}
@@ -1001,19 +1003,19 @@ export const NewTyres: React.FC = () => {
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-                <Receipt className="w-3.5 h-3.5 text-amber-600" />
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Receipt className="w-4 h-4 text-amber-600" />
                 <span>Invoice / Receipt Photo</span>
               </label>
-              <div className="p-3 border-2 border-dashed border-slate-300 hover:border-amber-500 rounded-xl bg-slate-50/60 transition-colors">
+              <div className="p-3.5 border-2 border-dashed border-amber-200 hover:border-amber-500 rounded-2xl bg-amber-50/30 transition-colors">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleFileUpload(e, 'invoice_photo_url')}
-                  className="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-700 cursor-pointer"
+                  className="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-700 cursor-pointer"
                 />
                 {formData.invoice_photo_url && (
-                  <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden border border-slate-300 shadow-xs">
+                  <div className="mt-2 w-20 h-20 rounded-xl overflow-hidden border border-slate-300 shadow-xs">
                     <img src={formData.invoice_photo_url} alt="Invoice preview" className="w-full h-full object-cover" />
                   </div>
                 )}
@@ -1022,8 +1024,8 @@ export const NewTyres: React.FC = () => {
           </div>
 
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
-              <FileText className="w-3.5 h-3.5 text-blue-600" />
+            <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+              <FileText className="w-4 h-4 text-slate-500" />
               <span>Notes / Remarks</span>
             </label>
             <textarea
@@ -1031,15 +1033,15 @@ export const NewTyres: React.FC = () => {
               placeholder="Purchase details, warranty or batch notes..."
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+              className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsAddEditModalOpen(false)}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-6 py-2.5 rounded-2xl border border-slate-300 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <X className="w-4 h-4 text-slate-500" />
               <span>Cancel</span>
@@ -1048,7 +1050,7 @@ export const NewTyres: React.FC = () => {
               type="button"
               onClick={handleSaveTyre}
               disabled={saving}
-              className="px-6 py-2.5 rounded-xl bg-[#0E52A5] hover:bg-[#072B56] disabled:opacity-50 text-white text-xs font-black shadow-md transition-all cursor-pointer flex items-center gap-2"
+              className="px-7 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] disabled:opacity-50 text-white text-sm font-black shadow-md transition-all cursor-pointer flex items-center gap-2"
             >
               {saving ? <RefreshCw className="w-4 h-4 animate-spin text-white" /> : <Check className="w-4 h-4 text-white" />}
               <span>{saving ? 'Saving Tyre Record...' : 'Save Tyre Record'}</span>

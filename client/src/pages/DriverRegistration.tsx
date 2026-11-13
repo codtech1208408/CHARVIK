@@ -16,8 +16,14 @@ import {
   ArrowRight,
   ArrowLeft,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Mail,
+  Phone,
+  Smartphone,
+  Calendar,
+  Ticket
 } from 'lucide-react';
+import luxuryCoachHeader from '../assets/luxury-coach-header.png';
 import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
 import { Modal } from '../components/common/Modal';
@@ -243,39 +249,54 @@ export const DriverRegistration: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div>
-          <h2 className="text-xl font-bold text-[#142B4A] flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-blue-600" />
-            <span>Driver Biodata Registration</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Step-by-step biodata wizard with Aadhaar, PAN, commercial driving licence, and bank verification.
-          </p>
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#00367A] via-[#004B9E] to-[#0056B3] p-5 shadow-lg border-b-4 border-[#F59E0B]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-inner">
+              <UserPlus className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-white tracking-wide">
+                Driver Biodata Registration
+              </h2>
+              <p className="text-xs text-blue-100 font-medium mt-0.5">
+                Step-by-step biodata wizard with Aadhaar, PAN, commercial driving licence, and bank verification.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={() => navigate('/admin/employee-registration')}
+              className="inline-flex items-center px-4 py-2 rounded-2xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 transition-colors gap-1.5 cursor-pointer shadow-sm border border-slate-200"
+            >
+              <ArrowLeft className="w-4 h-4 text-blue-600" />
+              <span>Back to Employees</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPreviewOpen(true)}
+              className="inline-flex items-center px-4 py-2 rounded-2xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 transition-colors gap-1.5 cursor-pointer shadow-sm border border-slate-200"
+            >
+              <Eye className="w-4 h-4 text-blue-600" />
+              <span>Preview Biodata</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/employee-registration')}
-            className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors gap-1.5 cursor-pointer border border-slate-200"
-          >
-            <ArrowLeft className="w-4 h-4 text-blue-600" />
-            <span>Back to Employees</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsPreviewOpen(true)}
-            className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors gap-1.5 cursor-pointer"
-          >
-            <Eye className="w-4 h-4" />
-            <span>Preview Biodata</span>
-          </button>
+        {/* Real 3D Luxury Coach Bus Graphic */}
+        <div className="absolute right-0 top-0 bottom-0 w-80 pointer-events-none opacity-90 hidden md:block">
+          <img
+            src={luxuryCoachHeader}
+            alt="Luxury Coach Bus"
+            className="h-full w-full object-cover object-left"
+          />
         </div>
       </div>
 
       {/* Wizard Progress Tabs */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm overflow-x-auto">
+      <div className="bg-white p-4 rounded-3xl border border-blue-100 shadow-sm overflow-x-auto">
         <div className="flex items-center justify-between min-w-[550px] relative">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 w-full -z-0"></div>
           {steps.map((st) => {
@@ -290,7 +311,7 @@ export const DriverRegistration: React.FC = () => {
               >
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${isCurrent
-                      ? 'bg-blue-600 text-white ring-4 ring-blue-100'
+                      ? 'bg-[#004B9E] text-white ring-4 ring-blue-100'
                       : isDone
                         ? 'bg-emerald-600 text-white'
                         : 'bg-white text-slate-400 border border-slate-300'
@@ -299,7 +320,7 @@ export const DriverRegistration: React.FC = () => {
                   {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                 </div>
                 <span
-                  className={`text-[11px] font-bold mt-1.5 whitespace-nowrap ${isCurrent ? 'text-blue-700' : isDone ? 'text-slate-800' : 'text-slate-400'
+                  className={`text-[11px] font-bold mt-1.5 whitespace-nowrap ${isCurrent ? 'text-blue-700 font-extrabold' : isDone ? 'text-slate-800' : 'text-slate-400'
                     }`}
                 >
                   {st.title}
@@ -311,22 +332,23 @@ export const DriverRegistration: React.FC = () => {
       </div>
 
       {/* Main Form Container */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+      <div className="bg-white p-6 rounded-3xl border border-blue-100 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* STEP 1: Personal Information */}
           {currentStep === 1 && (
             <div className="space-y-4 animate-in fade-in">
-              <h3 className="text-sm font-bold text-[#142B4A] border-b border-slate-100 pb-2">
-                Step 1: Personal Information (Biodata Driver)
-              </h3>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
+                <User className="w-4 h-4 text-white" />
+                <span>Step 1: Personal Information (Biodata Driver)</span>
+              </div>
 
               {/* 1. Profile Photo */}
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl bg-slate-200 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
+              <div className="p-4 bg-blue-50/20 border border-blue-100 rounded-2xl flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-white border-2 border-dashed border-blue-300 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
                   {formData.profile_photo ? (
                     <img src={formData.profile_photo} alt="Profile Photo" className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-7 h-7 text-slate-400" />
+                    <User className="w-7 h-7 text-blue-400" />
                   )}
                 </div>
                 <div className="flex-1">
@@ -336,7 +358,7 @@ export const DriverRegistration: React.FC = () => {
                     type="file"
                     accept="image/*"
                     onChange={(e) => handleFileUpload('profile_photo', e)}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#004B9E] file:text-white hover:file:bg-[#00367A] cursor-pointer"
                   />
                 </div>
               </div>
@@ -344,26 +366,30 @@ export const DriverRegistration: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Employee ID */}
                 <div>
-                  <label className="block text-xs font-bold text-[#142B4A] mb-1">
-                    Employee ID *
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Employee ID <span className="text-rose-500">*</span></span>
                   </label>
                   <input
                     type="text"
                     value={formData.employee_code}
                     onChange={(e) => handleInputChange('employee_code', e.target.value)}
                     placeholder="e.g. DRV-1001"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-mono font-bold text-blue-700"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-mono font-bold text-blue-700 shadow-2xs"
                     required
                   />
                 </div>
 
                 {/* 2. Gender */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Users className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Gender</span>
+                  </label>
                   <select
                     value={formData.gender}
                     onChange={(e) => handleInputChange('gender', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs cursor-pointer"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -373,15 +399,16 @@ export const DriverRegistration: React.FC = () => {
 
                 {/* 3. Name (As per Aadhaar) */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Name (As per Aadhaar) *
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <User className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Name (As per Aadhaar) <span className="text-rose-500">*</span></span>
                   </label>
                   <input
                     type="text"
                     value={formData.full_name}
                     onChange={(e) => handleInputChange('full_name', e.target.value)}
                     placeholder="Enter full name as printed on Aadhaar"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                     required
                   />
                 </div>
@@ -390,25 +417,31 @@ export const DriverRegistration: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 4. DOB */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">DOB (Date of Birth) *</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                    <span>DOB (Date of Birth) <span className="text-rose-500">*</span></span>
+                  </label>
                   <input
                     type="date"
                     value={formData.date_of_birth}
                     onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                     required
                   />
                 </div>
 
                 {/* 5. E MAIL */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">E MAIL</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Mail className="w-3.5 h-3.5 text-blue-600" />
+                    <span>E MAIL</span>
+                  </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="driver@charvikstaffing.com"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
@@ -416,26 +449,32 @@ export const DriverRegistration: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 6. Phone Number * */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Phone className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Phone Number <span className="text-rose-500">*</span></span>
+                  </label>
                   <input
                     type="tel"
                     value={formData.phone_number}
                     onChange={(e) => handleInputChange('phone_number', e.target.value)}
                     placeholder="e.g. 9848012345"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                     required
                   />
                 </div>
 
                 {/* 7. Alternative Number */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Alternative Number</label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                    <Smartphone className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Alternative Number</span>
+                  </label>
                   <input
                     type="tel"
                     value={formData.alternative_phone_number}
                     onChange={(e) => handleInputChange('alternative_phone_number', e.target.value)}
                     placeholder="e.g. 9848099999"
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs"
                   />
                 </div>
               </div>
@@ -1053,18 +1092,18 @@ export const DriverRegistration: React.FC = () => {
               <button
                 type="button"
                 onClick={handlePrev}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-2xl border border-slate-300 font-bold text-sm text-slate-700 bg-white hover:bg-slate-50 flex items-center gap-2 transition-colors shadow-2xs cursor-pointer"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <ArrowLeft className="w-4 h-4 text-slate-600" />
                 <span>Previous Step</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => navigate('/admin/employee-registration')}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-2xl border border-slate-300 font-bold text-sm text-slate-700 bg-white hover:bg-slate-50 flex items-center gap-2 transition-colors shadow-2xs cursor-pointer"
               >
-                <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
+                <ArrowLeft className="w-4 h-4 text-slate-600" />
                 <span>Cancel & Back</span>
               </button>
             )}
@@ -1073,16 +1112,16 @@ export const DriverRegistration: React.FC = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                className="px-7 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] text-white text-sm font-black flex items-center gap-2 shadow-md transition-colors cursor-pointer"
               >
                 <span>Next Step</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold flex items-center gap-2 shadow-md transition-colors cursor-pointer disabled:opacity-60"
+                className="px-7 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] text-white text-sm font-black flex items-center gap-2 shadow-md transition-colors cursor-pointer disabled:opacity-60"
               >
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span>{isSubmitting ? 'Submitting Registration...' : 'Submit Driver Registration'}</span>

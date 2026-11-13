@@ -22,7 +22,10 @@ import {
   ArrowLeft,
   FileCheck,
   Camera,
-  Info
+  Info,
+  Users,
+  Save,
+  ImageIcon
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
@@ -872,21 +875,22 @@ export const CaptainAuditRecord: React.FC = () => {
         subtitle="Complete the bus inspection checklist and upload crew & bus photos."
         maxWidth="max-w-4xl"
       >
-        <form onSubmit={handleSubmitAudit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <form onSubmit={handleSubmitAudit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
           {/* Card 1: Bus Number */}
-          <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-2">
-            <label className="text-sm font-black text-slate-800 flex items-center gap-1">
-              Bus Number <span className="text-rose-500 font-bold">*</span>
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-1.5">
+            <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+              <Bus className="w-4 h-4 text-blue-600" />
+              <span>Bus Number <span className="text-rose-500">*</span></span>
             </label>
             <div className="relative">
               <input
                 type="text"
                 required
                 list="buses-datalist"
-                placeholder="Your answer (e.g. AP16TV1234)"
+                placeholder="YOUR ANSWER (E.G. AP16TV1234)"
                 value={busNumber}
                 onChange={(e) => setBusNumber(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl font-bold uppercase tracking-wide focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none uppercase font-bold text-slate-800 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
               />
               <datalist id="buses-datalist">
                 {Array.from(
@@ -902,15 +906,17 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 2: Route & Captain Information (Driver fields removed) */}
-          <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-4">
-            <h3 className="text-sm font-black text-slate-800 border-b border-slate-200/80 pb-2">
-              Route & Crew Information
-            </h3>
+          {/* Card 2: Route & Captain Information */}
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
+              <Users className="w-4 h-4 text-white" />
+              <span>Route & Crew Information</span>
+            </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                Route <span className="text-rose-500">*</span>
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
+                <MapPin className="w-4 h-4 text-blue-600" />
+                <span>Route <span className="text-rose-500">*</span></span>
               </label>
               <input
                 type="text"
@@ -919,7 +925,7 @@ export const CaptainAuditRecord: React.FC = () => {
                 placeholder="Your answer (e.g. Hyderabad - Bangalore)"
                 value={route}
                 onChange={(e) => setRoute(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
               />
               <datalist id="routes-datalist">
                 {routes.map((r: any) => (
@@ -931,10 +937,11 @@ export const CaptainAuditRecord: React.FC = () => {
               </datalist>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                  Captain Name <span className="text-rose-500">*</span>
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
+                  <User className="w-4 h-4 text-blue-600" />
+                  <span>Captain Name <span className="text-rose-500">*</span></span>
                 </label>
                 <input
                   type="text"
@@ -942,56 +949,63 @@ export const CaptainAuditRecord: React.FC = () => {
                   placeholder="Your answer"
                   value={captainName}
                   onChange={(e) => setCaptainName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold"
+                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  Captain Mobile Number
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
+                  <Phone className="w-4 h-4 text-blue-600" />
+                  <span>Captain Mobile Number</span>
                 </label>
                 <input
                   type="tel"
                   placeholder="Your answer (10 digits)"
                   value={captainPhone}
                   onChange={(e) => setCaptainPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
                 />
               </div>
             </div>
           </div>
 
           {/* Card 3: Amenities Checklist with Edit & Delete */}
-          <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-4">
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-black text-slate-800">
-                  Amenties
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Check each item as OK or Not OK. Use Edit or Delete to manage items.
-                </p>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
+                  <Layers className="w-4 h-4 text-blue-700" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800">
+                    Amenities
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Check each item as OK or Not OK. Use Edit or Delete to manage items.
+                  </p>
+                </div>
               </div>
 
               <button
                 type="button"
                 onClick={handleAddMoreAmenity}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-100/70 hover:bg-blue-200/80 rounded-xl transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-colors cursor-pointer shadow-2xs"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>+ Add More Amenities</span>
               </button>
             </div>
 
-            {/* Amenities Table as in Image 4 */}
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-              <table className="w-full text-left border-collapse text-sm">
+            {/* Amenities Table */}
+            <div className="bg-white rounded-2xl border border-blue-200 overflow-hidden shadow-2xs">
+              <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                    <th className="py-2.5 px-3.5">Amenity / Item</th>
-                    <th className="py-2.5 px-3 text-center w-20">OK</th>
-                    <th className="py-2.5 px-3 text-center w-20">Not OK</th>
-                    <th className="py-2.5 px-3.5">Remarks</th>
+                  <tr className="bg-[#004B9E] text-white font-bold border-b border-blue-900 uppercase tracking-wider text-[11px]">
+                    <th className="py-2.5 px-3 text-center w-12 border-r border-blue-800/60">#</th>
+                    <th className="py-2.5 px-3.5 border-r border-blue-800/60">Amenity / Item</th>
+                    <th className="py-2.5 px-3 text-center w-20 border-r border-blue-800/60">OK</th>
+                    <th className="py-2.5 px-3 text-center w-20 border-r border-blue-800/60">Not OK</th>
+                    <th className="py-2.5 px-3.5 border-r border-blue-800/60">Remarks</th>
                     <th className="py-2.5 px-2.5 w-24 text-center">Actions</th>
                   </tr>
                 </thead>
@@ -1001,8 +1015,11 @@ export const CaptainAuditRecord: React.FC = () => {
                     const isNotOk = item.status === 'Not OK';
 
                     return (
-                      <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-2.5 px-3.5 font-medium text-slate-800">
+                      <tr key={item.id} className="hover:bg-blue-50/30 transition-colors">
+                        <td className="py-2.5 px-3 text-center font-bold text-slate-600 border-r border-slate-100">
+                          {idx + 1}
+                        </td>
+                        <td className="py-2.5 px-3.5 font-semibold text-slate-800 border-r border-slate-100">
                           {editingAmenityIndex === idx ? (
                             <div className="flex items-center gap-1.5">
                               <input
@@ -1043,43 +1060,49 @@ export const CaptainAuditRecord: React.FC = () => {
                         </td>
 
                         {/* OK Button */}
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-2 px-3 text-center border-r border-slate-100">
                           <button
                             type="button"
                             onClick={() => handleToggleAmenityStatus(idx, 'OK')}
-                            className={`w-7 h-7 mx-auto rounded flex items-center justify-center transition-all cursor-pointer ${isOk
-                                ? 'bg-black text-white shadow-xs'
-                                : 'border-2 border-slate-400 hover:border-black bg-white text-transparent'
-                              }`}
+                            className="inline-flex items-center justify-center p-0.5 cursor-pointer focus:outline-none"
                             title="Mark as OK"
                           >
-                            {isOk ? '■' : '□'}
+                            {isOk ? (
+                              <span className="inline-flex items-center justify-center w-5 h-5 bg-emerald-600 rounded-md text-white shadow-2xs">
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              </span>
+                            ) : (
+                              <span className="inline-block w-5 h-5 bg-white border-2 border-slate-300 rounded-md hover:border-slate-400"></span>
+                            )}
                           </button>
                         </td>
 
                         {/* Not OK Button */}
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-2 px-3 text-center border-r border-slate-100">
                           <button
                             type="button"
                             onClick={() => handleToggleAmenityStatus(idx, 'Not OK')}
-                            className={`w-7 h-7 mx-auto rounded flex items-center justify-center transition-all cursor-pointer ${isNotOk
-                                ? 'bg-rose-600 text-white shadow-xs font-bold'
-                                : 'border-2 border-slate-400 hover:border-rose-500 bg-white text-transparent'
-                              }`}
+                            className="inline-flex items-center justify-center p-0.5 cursor-pointer focus:outline-none"
                             title="Mark as Not OK"
                           >
-                            {isNotOk ? '■' : '□'}
+                            {isNotOk ? (
+                              <span className="inline-flex items-center justify-center w-5 h-5 bg-rose-600 rounded-md text-white shadow-2xs">
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              </span>
+                            ) : (
+                              <span className="inline-block w-5 h-5 bg-white border-2 border-slate-300 rounded-md hover:border-slate-400"></span>
+                            )}
                           </button>
                         </td>
 
                         {/* Remarks Input field */}
-                        <td className="py-2 px-3.5">
+                        <td className="py-2 px-3.5 border-r border-slate-100">
                           <input
                             type="text"
                             placeholder="Optional notes / remark..."
                             value={item.remarks}
                             onChange={(e) => handleAmenityRemarkChange(idx, e.target.value)}
-                            className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-slate-50/50"
+                            className="w-full px-2.5 py-1.5 text-xs border border-blue-100 rounded-xl focus:border-blue-400 outline-none bg-white"
                           />
                         </td>
 
@@ -1123,7 +1146,7 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
 
             <div className="flex justify-end pt-1">
-              <span className="text-xs font-bold text-slate-500">
+              <span className="px-3 py-1 bg-blue-50 text-blue-900 rounded-lg text-xs font-bold border border-blue-200">
                 Total Checklist Items: <strong>{amenities.length}</strong> (
                 {amenities.filter((a) => a.status === 'OK').length} OK,{' '}
                 {amenities.filter((a) => a.status === 'Not OK').length} Not OK)
@@ -1132,7 +1155,7 @@ export const CaptainAuditRecord: React.FC = () => {
           </div>
 
           {/* Card 4: Bus Cleaning Picture */}
-          <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-3">
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <label className="text-sm font-black text-slate-800 flex items-center gap-1">
@@ -1176,7 +1199,7 @@ export const CaptainAuditRecord: React.FC = () => {
                     type="button"
                     onClick={() => cleaningFileInputRef.current?.click()}
                     disabled={uploadingCleaningPhoto}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-blue-600 border border-blue-300 rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-blue-50/50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <Upload className="w-4 h-4" />
                     <span>{uploadingCleaningPhoto ? 'Uploading...' : 'Add file'}</span>
@@ -1186,8 +1209,8 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 5: Staff Picture (Placed BELOW Bus Cleaning Picture as requested) */}
-          <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-3">
+          {/* Card 5: Staff Picture */}
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <label className="text-sm font-black text-slate-800 flex items-center gap-1">
@@ -1231,7 +1254,7 @@ export const CaptainAuditRecord: React.FC = () => {
                     type="button"
                     onClick={() => staffFileInputRef.current?.click()}
                     disabled={uploadingStaffPhoto}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-blue-600 border border-blue-300 rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-blue-50/50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <Upload className="w-4 h-4" />
                     <span>{uploadingStaffPhoto ? 'Uploading...' : 'Add file'}</span>
@@ -1241,9 +1264,9 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 6: General Audit Remarks (Optional) */}
-          <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-1.5">
-            <label className="text-xs font-bold text-slate-700">
+          {/* Card 6: General Audit Remarks */}
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-1.5">
+            <label className="text-xs font-bold text-slate-800">
               General Audit Remarks / Handover Notes
             </label>
             <textarea
@@ -1251,31 +1274,31 @@ export const CaptainAuditRecord: React.FC = () => {
               placeholder="Any additional feedback or supervisor instructions..."
               value={generalRemarks}
               onChange={(e) => setGeneralRemarks(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full p-3.5 text-xs bg-white border border-blue-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-2xs"
             />
           </div>
 
           {/* Submit Action */}
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-200">
+          <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsFormOpen(false)}
-              className="px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer transition-colors"
+              className="px-6 py-2.5 rounded-2xl border border-slate-300 font-bold text-sm text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-50 active:scale-95 flex items-center gap-2"
+              className="px-7 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] text-white text-sm font-black shadow-md flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
             >
-              <ShieldCheck className="w-4 h-4" />
+              <Save className="w-4 h-4" />
               <span>
                 {submitting
                   ? 'Saving Record...'
                   : isEditing
-                    ? 'Update Captain Audit Record'
-                    : 'Submit Captain Audit Record'}
+                    ? 'Update Audit Record'
+                    : 'Save Audit Record'}
               </span>
             </button>
           </div>

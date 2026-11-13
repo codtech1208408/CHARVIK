@@ -29,7 +29,8 @@ import {
   X,
   FileSpreadsheet,
   Lock,
-  ShieldCheck
+  ShieldCheck,
+  Milestone
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
@@ -1659,29 +1660,32 @@ export const TaskManagement: React.FC = () => {
       <Modal
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        title={editingTrip ? 'Edit Trip & Multi-Staff Duty' : 'Log New Trip & Multi-Staff Duty'}
+        title={editingTrip ? 'Edit Task & Multi-Staff Duty' : 'Log New Task & Multi-Staff Duty'}
         subtitle="Assign up to 4 crew members (Driver 1, Driver 2, Helper, Captain) and fleet operation tracking."
         maxWidth="max-w-4xl"
       >
         <form onSubmit={handleSaveTrip} className="space-y-5">
           {/* Section 1: Trip Details & Operational Route */}
-          <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-black text-slate-900 uppercase tracking-wider">
-              <Calendar className="w-4 h-4 text-blue-600" />
-              <span>1. Trip Details & Operational Route</span>
+          <div className="p-4 rounded-2xl border border-blue-100 bg-blue-50/20 space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
+              <Milestone className="w-4 h-4 text-white" />
+              <span>1. TRIP DETAILS & OPERATIONAL ROUTE</span>
             </div>
 
             {/* Row 1: Trip Start Date + Vehicle Number (Searchable) + Vehicle Type */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Trip Start Date */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Trip Start Date *</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Trip Start Date <span className="text-rose-500">*</span></span>
+                </label>
                 <input
                   type="date"
                   required
                   value={formData.trip_start_date || todayStr}
                   onChange={(e) => setFormData({ ...formData, trip_start_date: e.target.value })}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-blue-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
                 />
               </div>
 
@@ -1708,12 +1712,15 @@ export const TaskManagement: React.FC = () => {
 
               {/* Vehicle Type */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Type *</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                  <Bus className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Vehicle Type <span className="text-rose-500">*</span></span>
+                </label>
                 <select
                   required
                   value={formData.vehicle_type || ''}
                   onChange={(e) => setFormData({ ...formData, vehicle_type: e.target.value })}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none cursor-pointer"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-blue-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none cursor-pointer shadow-2xs"
                 >
                   <option value="">-- Select Vehicle Type --</option>
                   <option value="Seater">Seater</option>
@@ -1751,12 +1758,15 @@ export const TaskManagement: React.FC = () => {
 
               {/* Vehicle Status */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Vehicle Status *</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Vehicle Status <span className="text-rose-500">*</span></span>
+                </label>
                 <select
                   required
                   value={formData.vehicle_status || 'RUN'}
                   onChange={(e: any) => handleVehicleStatusChange(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none cursor-pointer"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-blue-200 bg-white font-bold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none cursor-pointer shadow-2xs"
                 >
                   <option value="RUN">🟢 RUN</option>
                   <option value="HOLD (Low Occupancy)">🟡 HOLD (Low Occupancy)</option>
@@ -1768,12 +1778,15 @@ export const TaskManagement: React.FC = () => {
 
               {/* Operator / Organizer */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator / Organizer *</label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                  <Users className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Operator / Organizer <span className="text-rose-500">*</span></span>
+                </label>
                 <select
                   required
                   value={formData.operator_organizer || ''}
                   onChange={(e) => setFormData({ ...formData, operator_organizer: e.target.value })}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium cursor-pointer"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-blue-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 cursor-pointer shadow-2xs"
                 >
                   <option value="">-- Choose Organizer --</option>
                   {organizers.map((o: any) => (
@@ -1791,14 +1804,14 @@ export const TaskManagement: React.FC = () => {
           {/* Section 2: Crew Assignment & Separate Financial Split (Up to 4 Members) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-black text-slate-900 uppercase tracking-wider">
-                <Users className="w-4 h-4 text-blue-600" />
-                <span>2. Crew Assignment & Salary Split (Up to 4 Members)</span>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
+                <Users className="w-4 h-4 text-white" />
+                <span>2. CREW ASSIGNMENT & SALARY SPLIT (UP TO 4 MEMBERS)</span>
               </div>
             </div>
 
             {/* Financial Amount Supervision Mode Banner */}
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/90 flex items-center justify-between text-xs">
+            <div className="p-2.5 rounded-2xl bg-blue-50/40 border border-blue-100 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 <span className="font-semibold text-slate-700">
@@ -1806,11 +1819,11 @@ export const TaskManagement: React.FC = () => {
                 </span>
               </div>
               {isAmountsLocked ? (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
                   <Lock className="w-2.5 h-2.5" /> Staff Locked
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
                   Admin Supervised
                 </span>
               )}
@@ -1818,7 +1831,7 @@ export const TaskManagement: React.FC = () => {
 
             {/* Hold Status Auto-Rate Banner */}
             {formData.vehicle_status?.startsWith('HOLD') && (
-              <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-between text-amber-900 text-xs animate-in fade-in">
+              <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-between text-amber-900 text-xs animate-in fade-in">
                 <div className="flex items-center gap-2">
                   <span className="text-base">⚠️</span>
                   <div>
@@ -1844,11 +1857,9 @@ export const TaskManagement: React.FC = () => {
                   </span>
                 </span>
 
-                {formData.vehicle_status?.startsWith('HOLD') && (
-                  <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
-                    ⚡ Hold Duty: ₹500
-                  </span>
-                )}
+                <span className="px-3 py-1 rounded-xl bg-amber-100/90 text-amber-900 border border-amber-200 text-xs font-black shadow-2xs">
+                  Driver 1 Pay: ₹{Number(formData.driver1?.salary_amount || 0)}
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1858,7 +1869,7 @@ export const TaskManagement: React.FC = () => {
                     required
                     value={formData.driver1?.employee_name || ''}
                     onChange={(e) => handleDriver1Select(e.target.value)}
-                    className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                    className="w-full text-xs p-2.5 rounded-xl border border-amber-200 bg-white font-semibold outline-none shadow-2xs"
                   >
                     <option value="">-- Select Driver 1 --</option>
                     {drivers.map((d) => (
@@ -1903,41 +1914,17 @@ export const TaskManagement: React.FC = () => {
                         }
                       });
                     }}
-                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
+                    className={`w-full text-xs p-2.5 rounded-xl border font-bold outline-none shadow-2xs ${formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
                       ? 'bg-amber-50/70 text-amber-900 border-amber-300 cursor-not-allowed'
-                      : 'bg-white'
+                      : 'border-amber-200 bg-white'
                       }`}
                   />
                 </div>
               </div>
-
-              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-amber-200/50">
-                {formData.vehicle_status?.startsWith('HOLD') ? (
-                  <span className="text-amber-800 font-bold flex items-center gap-1">
-                    <span>⚡</span> Bus on Hold: Driver 1 receives ₹500 flat pay
-                  </span>
-                ) : (
-                  <div className="w-full flex items-center justify-between text-slate-500">
-                    <span className="text-[10px]">
-                      {drivers.find((d) => d.full_name === formData.driver1?.employee_name)?.salary ? (
-                        <span className="text-emerald-700 font-semibold">
-                          ✓ Auto-filled from {drivers.find((d) => d.full_name === formData.driver1?.employee_name)?.employment_type || 'registered'} salary
-                        </span>
-                      ) : null}
-                    </span>
-                    <span>
-                      Driver 1 Pay:{' '}
-                      <strong className="text-slate-900 font-bold">
-                        ₹{Number(formData.driver1?.salary_amount || 0)}
-                      </strong>
-                    </span>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Crew Member 2: Driver 2 (Secondary / Reliever Driver) */}
-            <div className="p-4 rounded-2xl border border-blue-200 bg-blue-50/20 space-y-3">
+            <div className="p-4 rounded-2xl border-2 border-blue-200 bg-blue-50/20 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 uppercase">
                   <span>🚗 2. Driver 2 (Secondary / Reliever Driver)</span>
@@ -1946,13 +1933,9 @@ export const TaskManagement: React.FC = () => {
                   </span>
                 </span>
 
-                <div className="flex items-center gap-2">
-                  {formData.vehicle_status?.startsWith('HOLD') && (
-                    <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">
-                      ⚡ Hold Duty: ₹500
-                    </span>
-                  )}
-                </div>
+                <span className="px-3 py-1 rounded-xl bg-blue-100/90 text-blue-900 border border-blue-200 text-xs font-black shadow-2xs">
+                  Driver 2 Pay: ₹{Number(formData.driver2?.salary_amount || 0)}
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1963,7 +1946,7 @@ export const TaskManagement: React.FC = () => {
                   <select
                     value={formData.driver2?.employee_name || ''}
                     onChange={(e) => handleDriver2Select(e.target.value)}
-                    className="w-full text-xs p-2 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                    className="w-full text-xs p-2.5 rounded-xl border border-blue-200 bg-white font-semibold outline-none shadow-2xs"
                   >
                     <option value="">-- None (Single Driver Duty) --</option>
                     {drivers.map((d) => (
@@ -2008,47 +1991,27 @@ export const TaskManagement: React.FC = () => {
                         }
                       });
                     }}
-                    className={`w-full text-xs p-2 rounded-xl border border-slate-200 font-bold outline-none ${formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
+                    className={`w-full text-xs p-2.5 rounded-xl border font-bold outline-none shadow-2xs ${formData.vehicle_status?.startsWith('HOLD') || isAmountsLocked
                       ? 'bg-amber-50/70 text-amber-900 border-amber-300 cursor-not-allowed'
-                      : 'bg-white'
+                      : 'border-blue-200 bg-white'
                       }`}
                   />
                 </div>
               </div>
-
-              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-blue-200/50">
-                {formData.vehicle_status?.startsWith('HOLD') ? (
-                  <span className="text-amber-800 font-bold flex items-center gap-1">
-                    <span>⚡</span> Bus on Hold: Driver 2 receives ₹500 flat pay
-                  </span>
-                ) : (
-                  <div className="w-full flex items-center justify-between text-slate-500">
-                    <span className="text-[10px]">
-                      {drivers.find((d) => d.full_name === formData.driver2?.employee_name)?.salary ? (
-                        <span className="text-emerald-700 font-semibold">
-                          ✓ Auto-filled from {drivers.find((d) => d.full_name === formData.driver2?.employee_name)?.employment_type || 'registered'} salary
-                        </span>
-                      ) : null}
-                    </span>
-                    <span>
-                      Driver 2 Pay:{' '}
-                      <strong className="text-slate-900 font-bold">
-                        ₹{Number(formData.driver2?.salary_amount || 0)}
-                      </strong>
-                    </span>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Crew Member 3: Helper (Loading Assistant / Cleaner) */}
-            <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/20 space-y-3">
+            <div className="p-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50/20 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 uppercase">
                   <span>🛠️ 3. Helper (Loading Assistant / Cleaner)</span>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
                     Optional
                   </span>
+                </span>
+
+                <span className="px-3 py-1 rounded-xl bg-emerald-100/90 text-emerald-900 border border-emerald-200 text-xs font-black shadow-2xs">
+                  Helper Pay: ₹{Number(formData.helper?.salary_amount || 0)}
                 </span>
               </div>
 
@@ -2058,7 +2021,7 @@ export const TaskManagement: React.FC = () => {
                   <select
                     value={formData.helper?.employee_name || ''}
                     onChange={(e) => handleHelperSelect(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                    className="w-full text-xs p-2.5 rounded-xl border border-emerald-200 bg-white font-semibold outline-none shadow-2xs"
                   >
                     <option value="">-- None (No Helper Required) --</option>
                     {helpers.map((h) => (
@@ -2100,35 +2063,24 @@ export const TaskManagement: React.FC = () => {
                         }
                       });
                     }}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-bold outline-none"
+                    className="w-full text-xs p-2.5 rounded-xl border border-emerald-200 bg-white font-bold outline-none shadow-2xs"
                   />
                 </div>
               </div>
-
-              {formData.helper?.employee_name && (
-                <div className="flex items-center justify-between text-[11px] pt-1 border-t border-emerald-200/50">
-                  <span className="text-[10px] text-slate-500">
-                    {helpers.find((h) => h.full_name === formData.helper?.employee_name)?.salary ? (
-                      <span className="text-emerald-700 font-semibold">
-                        ✓ Auto-filled from registered salary
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="text-slate-500">
-                    Helper Pay: <strong className="text-slate-900 font-bold">₹{Number(formData.helper?.salary_amount || 0)}</strong>
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Crew Member 4: Captain (Route Supervisor / Duty Captain) */}
-            <div className="p-4 rounded-2xl border border-purple-200 bg-purple-50/20 space-y-3">
+            <div className="p-4 rounded-2xl border-2 border-purple-200 bg-purple-50/20 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 uppercase">
                   <span>⚓ 4. Captain (Route Supervisor / Duty Captain)</span>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">
                     Optional
                   </span>
+                </span>
+
+                <span className="px-3 py-1 rounded-xl bg-purple-100/90 text-purple-900 border border-purple-200 text-xs font-black shadow-2xs">
+                  Captain Pay: ₹0
                 </span>
               </div>
 
@@ -2137,7 +2089,7 @@ export const TaskManagement: React.FC = () => {
                 <select
                   value={formData.captain?.employee_name || ''}
                   onChange={(e) => handleCaptainSelect(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white font-semibold outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-purple-200 bg-white font-semibold outline-none shadow-2xs"
                 >
                   <option value="">-- None (No Captain Assigned) --</option>
                   {captains.map((c) => (
@@ -2152,7 +2104,7 @@ export const TaskManagement: React.FC = () => {
 
           {/* Section 3: Trip Remarks */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-800 mb-1.5">
               Trip Remarks (Admin Notes / Experience / Performance)
             </label>
             <textarea
@@ -2160,9 +2112,9 @@ export const TaskManagement: React.FC = () => {
               value={formData.trip_remarks || ''}
               onChange={(e) => setFormData({ ...formData, trip_remarks: e.target.value })}
               placeholder="e.g. Completed route on time, disciplined behavior, good vehicle maintenance..."
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+              className="w-full text-xs p-3.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none shadow-2xs"
             />
-            <p className="text-[10px] text-slate-400 mt-0.5">
+            <p className="text-[10px] text-slate-400 mt-1">
               These remarks will be permanently preserved in all assigned crew members&apos; dossiers.
             </p>
           </div>
@@ -2174,19 +2126,20 @@ export const TaskManagement: React.FC = () => {
               <span className="font-black text-slate-900 text-sm">₹{tally.totalSalary}</span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setIsAddOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-2xl border border-slate-300 font-bold text-sm text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-colors shadow-sm cursor-pointer"
+                className="px-7 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] text-white text-sm font-black shadow-md flex items-center gap-2 transition-colors cursor-pointer"
               >
-                {editingTrip ? 'Update Trip Record' : 'Save Trip Record'}
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{editingTrip ? 'Update Task & Duty' : 'Log Task & Assign Duty'}</span>
               </button>
             </div>
           </div>

@@ -26,7 +26,13 @@ import {
   XCircle,
   Check,
   LayoutGrid,
-  List
+  List,
+  Ticket,
+  Leaf,
+  Milestone,
+  CreditCard,
+  Save,
+  FileEdit
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
@@ -1064,29 +1070,35 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
         isOpen={isAddEditOpen}
         onClose={() => setIsAddEditOpen(false)}
         title={editingBus ? `Edit Vehicle (${editingBus.registration_number})` : 'Add Vehicle'}
-        subtitle="Manage fleet vehicle registration, bus type, status, and compliance documents"
+        subtitle="Manage fleet vehicle registration, bus type, status, and compliance documents."
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSaveBus} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Registration No. *</label>
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Ticket className="w-4 h-4 text-blue-600" />
+                <span>Registration No. <span className="text-rose-500">*</span></span>
+              </label>
               <input
                 type="text"
                 value={formData.registration_number}
                 onChange={(e) => setFormData({ ...formData, registration_number: e.target.value.toUpperCase() })}
-                placeholder="e.g. AP 16 TC 2080"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none uppercase font-semibold font-mono"
+                placeholder="E.G. AP 16 TC 2080"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none uppercase font-bold font-mono text-slate-800 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Bus Type *</label>
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Bus className="w-4 h-4 text-blue-600" />
+                <span>Bus Type <span className="text-rose-500">*</span></span>
+              </label>
               <select
                 value={formData.bus_type}
                 onChange={(e) => setFormData({ ...formData, bus_type: e.target.value })}
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none font-semibold text-slate-800 shadow-2xs cursor-pointer"
                 required
               >
                 <option value="">-- Select Bus Type --</option>
@@ -1108,79 +1120,95 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
           {/* Vehicle Identification Numbers */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Chassis Number</label>
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Truck className="w-4 h-4 text-blue-600" />
+                <span>Chassis Number</span>
+              </label>
               <input
                 type="text"
                 value={formData.chassis_number || ''}
                 onChange={(e) => setFormData({ ...formData, chassis_number: e.target.value.toUpperCase() })}
-                placeholder="e.g. YS2S4X2000551024"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none uppercase font-semibold font-mono"
+                placeholder="E.G. YS2S4X2000551024"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none uppercase font-bold font-mono text-slate-800 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Engine Number</label>
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+                <Wrench className="w-4 h-4 text-blue-600" />
+                <span>Engine Number</span>
+              </label>
               <input
                 type="text"
                 value={formData.engine_number || ''}
                 onChange={(e) => setFormData({ ...formData, engine_number: e.target.value.toUpperCase() })}
-                placeholder="e.g. DC091209451"
-                className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none uppercase font-semibold font-mono"
+                placeholder="E.G. DC091209451"
+                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none uppercase font-bold font-mono text-slate-800 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
               />
             </div>
           </div>
 
           {/* Compliance & Document Expiry Dates */}
-          <div className="pt-3 border-t border-slate-100 space-y-3">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-blue-600" />
-              <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                Document & Compliance Validity
-              </p>
+          <div className="pt-2 space-y-2">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
+              <Shield className="w-4 h-4 text-white" />
+              <span>DOCUMENT & COMPLIANCE VALIDITY</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/70 p-4 rounded-xl border border-slate-200/80">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50/30 p-4 rounded-2xl border border-blue-100">
               {/* Left Column */}
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Registration Date</label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                    <Calendar className="w-4 h-4 text-blue-600" />
+                    <span>Registration Date</span>
+                  </label>
                   <input
                     type="date"
                     value={formData.registration_date || ''}
                     onChange={(e) => setFormData({ ...formData, registration_date: e.target.value })}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none shadow-2xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Tax Valid Upto</label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    <span>Tax Valid Upto</span>
+                  </label>
                   <input
                     type="date"
                     value={formData.tax_valid_upto || ''}
                     onChange={(e) => setFormData({ ...formData, tax_valid_upto: e.target.value })}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none shadow-2xs"
                   />
                   {renderExpiryWarning(formData.tax_valid_upto)}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">PUCC Valid Upto</label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                    <Leaf className="w-4 h-4 text-emerald-600" />
+                    <span>PUCC Valid Upto</span>
+                  </label>
                   <input
                     type="date"
                     value={formData.puc_expiry || ''}
                     onChange={(e) => setFormData({ ...formData, puc_expiry: e.target.value })}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none shadow-2xs"
                   />
                   {renderExpiryWarning(formData.puc_expiry)}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">AITP Valid Upto</label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                    <Milestone className="w-4 h-4 text-blue-600" />
+                    <span>AITP Valid Upto</span>
+                  </label>
                   <input
                     type="date"
                     value={formData.aitp_valid_upto || ''}
                     onChange={(e) => setFormData({ ...formData, aitp_valid_upto: e.target.value })}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none shadow-2xs"
                   />
                   {renderExpiryWarning(formData.aitp_valid_upto)}
                 </div>
@@ -1189,34 +1217,43 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
               {/* Right Column */}
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Fitness Valid Upto</label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                    <span>Fitness Valid Upto</span>
+                  </label>
                   <input
                     type="date"
                     value={formData.fitness_expiry || ''}
                     onChange={(e) => setFormData({ ...formData, fitness_expiry: e.target.value })}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none shadow-2xs"
                   />
                   {renderExpiryWarning(formData.fitness_expiry)}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Insurance Valid Upto</label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                    <Shield className="w-4 h-4 text-blue-600" />
+                    <span>Insurance Valid Upto</span>
+                  </label>
                   <input
                     type="date"
                     value={formData.insurance_expiry || ''}
                     onChange={(e) => setFormData({ ...formData, insurance_expiry: e.target.value })}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none shadow-2xs"
                   />
                   {renderExpiryWarning(formData.insurance_expiry)}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Permit Valid Upto</label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                    <CreditCard className="w-4 h-4 text-blue-600" />
+                    <span>Permit Valid Upto</span>
+                  </label>
                   <input
                     type="date"
                     value={formData.permit_expiry || ''}
                     onChange={(e) => setFormData({ ...formData, permit_expiry: e.target.value })}
-                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 outline-none shadow-2xs"
                   />
                   {renderExpiryWarning(formData.permit_expiry)}
                 </div>
@@ -1225,12 +1262,15 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Remarks & Notes</label>
+            <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
+              <FileEdit className="w-4 h-4 text-blue-600" />
+              <span>Remarks & Notes</span>
+            </label>
             <textarea
               rows={2}
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
+              className="w-full text-sm p-3.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none text-slate-800 shadow-2xs resize-none placeholder:text-slate-400"
               placeholder="Operational or compliance notes..."
             />
           </div>
@@ -1239,15 +1279,16 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
             <button
               type="button"
               onClick={() => setIsAddEditOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="px-6 py-2.5 rounded-2xl border border-slate-300 font-bold text-sm text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] transition-colors cursor-pointer shadow-sm"
+              className="px-7 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] text-white text-sm font-black shadow-md flex items-center gap-2 transition-colors cursor-pointer"
             >
-              {editingBus ? 'Update Bus Record' : 'Save Bus to Fleet'}
+              <Save className="w-4 h-4" />
+              <span>{editingBus ? 'Update Bus Record' : 'Save Bus to Fleet'}</span>
             </button>
           </div>
         </form>
