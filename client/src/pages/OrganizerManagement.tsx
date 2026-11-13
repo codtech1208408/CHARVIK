@@ -361,7 +361,7 @@ export const OrganizerManagement: React.FC = () => {
         });
       }
     } catch {
-      error('Failed to record organizer payment.');
+      error('Failed to record operator payment.');
     }
   };
 

@@ -488,7 +488,7 @@ export const Earnings: React.FC = () => {
                 className="px-4 py-2.5 rounded-xl text-xs font-black bg-white text-blue-900 hover:bg-blue-50 flex items-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap shrink-0"
               >
                 <Plus className="w-4 h-4 text-blue-800" />
-                <span>Record Organizer Amount</span>
+                <span>Record Operator Amount</span>
               </button>
 
               <button
@@ -551,16 +551,16 @@ export const Earnings: React.FC = () => {
         {/* 1. TOP 4 KPI CARDS (Matching Glowing Vibrant Color Palettes) */}
         {!isSwitchingPeriod && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* Card 1: Organizer Amount Received (Royal Blue Gradient) */}
+            {/* Card 1: Operator Amount Received (Royal Blue Gradient) */}
             <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all flex items-center justify-between group cursor-pointer">
               <div className="space-y-1">
                 <p className="text-xs font-black text-blue-900 uppercase tracking-wider">
-                  Organizer Amount Received
+                  Operator Amount Received
                 </p>
                 <h3 className="text-2xl sm:text-3xl font-black text-blue-950 tracking-tight font-mono">
                   ₹{totalOrganizerReceived.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-blue-700/90 font-medium">Collections from organizers</p>
+                <p className="text-xs text-blue-700/90 font-medium">Collections from operators</p>
               </div>
               <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/30 group-hover:scale-110 transition-transform">
                 <Building2 className="w-6 h-6" />
@@ -969,24 +969,24 @@ export const Earnings: React.FC = () => {
         )}
       </div>
 
-      {/* MODAL 1: Record Organizer Amount (Matching Reference Video) */}
+      {/* MODAL 1: Record Operator Amount (Matching Reference Video) */}
       <Modal
         isOpen={isRecordModalOpen}
         onClose={() => setIsRecordModalOpen(false)}
-        title="Record Organizer Amount"
-        subtitle="Log payment receipt collections from client partner organizations."
+        title="Record Operator Amount"
+        subtitle="Log payment receipt collections from operators."
         maxWidth="max-w-md"
       >
         <form onSubmit={handleSaveOrganizerPayment} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Organizer *</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Operator *</label>
             <select
               required
               value={paymentForm.organizer_name}
               onChange={(e) => setPaymentForm({ ...paymentForm, organizer_name: e.target.value })}
               className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none font-medium cursor-pointer"
             >
-              <option value="">Select organizer</option>
+              <option value="">Select operator</option>
               {organizers.map((o) => (
                 <option key={o.id} value={o.organization_name}>
                   {o.organization_name}
