@@ -30,7 +30,9 @@ import {
   Filter,
   Download,
   AlertCircle,
-  ArrowRight
+  ArrowRight,
+  Tag,
+  Check
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
@@ -105,6 +107,38 @@ export const VyshnaviTravels: React.FC = () => {
   const [isTxnModalOpen, setIsTxnModalOpen] = useState(false);
   const [editingTxn, setEditingTxn] = useState<VyshnaviTransaction | null>(null);
   const [previewReceiptUrl, setPreviewReceiptUrl] = useState<string | null>(null);
+
+  // Category management (Add more, edit & delete for Income & Expense)
+  const [incomeCategories, setIncomeCategories] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('charvik_vyshnavi_income_categories');
+      if (saved) return JSON.parse(saved);
+      const general = localStorage.getItem('charvik_custom_income_categories');
+      if (general) return JSON.parse(general);
+    } catch {}
+    return INCOME_CATEGORIES;
+  });
+
+  const [expenseCategories, setExpenseCategories] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('charvik_vyshnavi_expense_categories');
+      if (saved) return JSON.parse(saved);
+      const general = localStorage.getItem('charvik_custom_expense_categories');
+      if (general) return JSON.parse(general);
+    } catch {}
+    return EXPENSE_CATEGORIES;
+  });
+
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
+  const [isStandaloneCatModalOpen, setIsStandaloneCatModalOpen] = useState(false);
+  const [standaloneCatType, setStandaloneCatType] = useState<'Income' | 'Expense'>('Income');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingCategoryOldName, setEditingCategoryOldName] = useState<string | null>(null);
+  const [editingCategoryNewName, setEditingCategoryNewName] = useState('');
+
+  // Printout Report State (for full tab statement printing)
+  const [isPrintReportModalOpen, setIsPrintReportModalOpen] = useState(false);
+  const [reportPrintType, setReportPrintType] = useState<'records' | 'transactions'>('records');
 
   // Record Form State
   const [recordForm, setRecordForm] = useState<{
@@ -485,7 +519,7 @@ export const VyshnaviTravels: React.FC = () => {
     setTxnForm({
       transaction_type: type,
       transaction_date: new Date().toISOString().split('T')[0],
-      category: '',
+      category: (type === 'Income' ? incomeCategories[0] : expenseCategories[0]) || '',
       vehicle_number: buses.length > 0 ? (buses[0].registration_number || buses[0].bus_number).split('(')[0].trim() : 'General / Fleet Wide',
       amount: '',
       payment_mode: 'UPI',
@@ -740,6 +774,233 @@ export const VyshnaviTravels: React.FC = () => {
     success('Exported ledger CSV successfully');
   };
 
+  // Active Categories for current transaction form
+  const activeTxnCategories = txnForm.transaction_type === 'Income' ? incomeCategories : expenseCategories;
+
+  // Add Category Handler
+  const handleAddCategory = (targetType?: 'Income' | 'Expense') => {
+    const isIncome = (targetType || txnForm.transaction_type) === 'Income';
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    const targetList = isIncome ? incomeCategories : expenseCategories;
+
+    if (targetList.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      error(`Category "${trimmed}" already exists.`);
+      return;
+    }
+
+    const updated = [...targetList, trimmed];
+    if (isIncome) {
+      setIncomeCategories(updated);
+      localStorage.setItem('charvik_vyshnavi_income_categories', JSON.stringify(updated));
+    } else {
+      setExpenseCategories(updated);
+      localStorage.setItem('charvik_vyshnavi_expense_categories', JSON.stringify(updated));
+    }
+
+    setTxnForm((prev) => ({ ...prev, category: trimmed }));
+    setNewCategoryName('');
+    success(`Category "${trimmed}" added!`);
+  };
+
+  // Start Edit Category
+  const handleStartEditCategory = (catName: string) => {
+    setEditingCategoryOldName(catName);
+    setEditingCategoryNewName(catName);
+  };
+
+  // Save Edit Category
+  const handleSaveEditCategory = (oldName: string, targetType?: 'Income' | 'Expense') => {
+    const isIncome = (targetType || txnForm.transaction_type) === 'Income';
+    const trimmed = editingCategoryNewName.trim();
+    if (!trimmed || trimmed === oldName) {
+      setEditingCategoryOldName(null);
+      setEditingCategoryNewName('');
+      return;
+    }
+
+    const targetList = isIncome ? incomeCategories : expenseCategories;
+    if (targetList.some((c) => c.toLowerCase() === trimmed.toLowerCase() && c.toLowerCase() !== oldName.toLowerCase())) {
+      error(`Category "${trimmed}" already exists.`);
+      return;
+    }
+
+    const updated = targetList.map((c) => (c === oldName ? trimmed : c));
+    if (isIncome) {
+      setIncomeCategories(updated);
+      localStorage.setItem('charvik_vyshnavi_income_categories', JSON.stringify(updated));
+    } else {
+      setExpenseCategories(updated);
+      localStorage.setItem('charvik_vyshnavi_expense_categories', JSON.stringify(updated));
+    }
+
+    if (txnForm.category === oldName) {
+      setTxnForm((prev) => ({ ...prev, category: trimmed }));
+    }
+
+    setEditingCategoryOldName(null);
+    setEditingCategoryNewName('');
+    success(`Category renamed to "${trimmed}"!`);
+  };
+
+  // Delete Category
+  const handleDeleteCategory = (catName: string, targetType?: 'Income' | 'Expense') => {
+    const isIncome = (targetType || txnForm.transaction_type) === 'Income';
+    const targetList = isIncome ? incomeCategories : expenseCategories;
+    if (targetList.length <= 1) {
+      error('At least one category is required.');
+      return;
+    }
+
+    const updated = targetList.filter((c) => c !== catName);
+    if (isIncome) {
+      setIncomeCategories(updated);
+      localStorage.setItem('charvik_vyshnavi_income_categories', JSON.stringify(updated));
+    } else {
+      setExpenseCategories(updated);
+      localStorage.setItem('charvik_vyshnavi_expense_categories', JSON.stringify(updated));
+    }
+
+    if (txnForm.category === catName) {
+      setTxnForm((prev) => ({ ...prev, category: updated[0] || '' }));
+    }
+
+    success(`Category "${catName}" deleted.`);
+  };
+
+  // Open Report Printout Modal
+  const handleOpenPrintReport = (type: 'records' | 'transactions') => {
+    setReportPrintType(type);
+    setIsPrintReportModalOpen(true);
+  };
+
+  // Print Report Content via Isolated IFrame
+  const handlePrintReportContent = () => {
+    const printElement = document.getElementById('vyshnavi-printable-report');
+    if (!printElement) {
+      window.print();
+      return;
+    }
+
+    let iframe = document.getElementById('vyshnavi-print-frame') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'vyshnavi-print-frame';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .map((el) => el.outerHTML)
+      .join('\n');
+
+    const reportTitle = reportPrintType === 'records'
+      ? 'Vyshnavi Travels - Billing & Service Records Statement'
+      : 'Vyshnavi Travels - Income & Expense Ledger Statement';
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>${reportTitle}</title>
+          ${styles}
+          <style>
+            @page {
+              size: A4 landscape;
+              margin: 6mm 8mm;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              color: #0f172a !important;
+              font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            #isolated-report-wrap {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 auto !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+            }
+            #vyshnavi-printable-report {
+              box-shadow: none !important;
+              border: none !important;
+              padding: 4mm 6mm !important;
+              max-width: 100% !important;
+              width: 100% !important;
+              min-height: auto !important;
+            }
+            @media print {
+              #vyshnavi-printable-report {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                min-height: auto !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div id="isolated-report-wrap">
+            ${printElement.outerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    const triggerPrint = () => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (e) {
+        window.print();
+      }
+    };
+
+    const imgs = doc.getElementsByTagName('img');
+    let loadedCount = 0;
+    const totalImgs = imgs.length;
+
+    if (totalImgs === 0) {
+      setTimeout(triggerPrint, 250);
+    } else {
+      for (let i = 0; i < totalImgs; i++) {
+        if (imgs[i].complete) {
+          loadedCount++;
+          if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+        } else {
+          imgs[i].onload = () => {
+            loadedCount++;
+            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+          };
+          imgs[i].onerror = () => {
+            loadedCount++;
+            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+          };
+        }
+      }
+    }
+  };
+
   return (
     <div className="space-y-6 pb-12">
       {/* Top Header Card */}
@@ -808,6 +1069,17 @@ export const VyshnaviTravels: React.FC = () => {
               </span>
             </button>
           </div>
+
+          {/* Quick Printout Option */}
+          <button
+            type="button"
+            onClick={() => handleOpenPrintReport(activeTab)}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white text-xs font-bold shadow-md shadow-slate-900/15 cursor-pointer transition-all"
+            title={`Print ${activeTab === 'records' ? 'Billing & Service Records' : 'Income & Expense Ledger'} Statement`}
+          >
+            <Printer className="w-4 h-4 text-amber-400" />
+            <span>Printout</span>
+          </button>
 
           {activeTab === 'records' ? (
             <button
@@ -975,6 +1247,16 @@ export const VyshnaviTravels: React.FC = () => {
                   Clear Filters
                 </button>
               )}
+
+              <button
+                type="button"
+                onClick={() => handleOpenPrintReport('records')}
+                className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-2xs hover:border-blue-400 transition-colors"
+                title="Print Billing & Service Records Statement"
+              >
+                <Printer className="w-3.5 h-3.5 text-blue-600" />
+                <span>Print Records</span>
+              </button>
             </div>
           </div>
 
@@ -1284,18 +1566,18 @@ export const VyshnaviTravels: React.FC = () => {
               >
                 <option value="All">All Categories</option>
                 <optgroup label="Income Categories">
-                  {INCOME_CATEGORIES.map((c) => (
+                  {incomeCategories.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </optgroup>
                 <optgroup label="Expense Categories">
-                  {EXPENSE_CATEGORIES.map((c) => (
+                  {expenseCategories.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </optgroup>
-                {Array.from(new Set(transactions.map((t) => t.category).filter((c) => c && !INCOME_CATEGORIES.includes(c) && !EXPENSE_CATEGORIES.includes(c)))).length > 0 && (
+                {Array.from(new Set(transactions.map((t) => t.category).filter((c) => c && !incomeCategories.includes(c) && !expenseCategories.includes(c)))).length > 0 && (
                   <optgroup label="Other Categories">
-                    {Array.from(new Set(transactions.map((t) => t.category).filter((c) => c && !INCOME_CATEGORIES.includes(c) && !EXPENSE_CATEGORIES.includes(c)))).map((c) => (
+                    {Array.from(new Set(transactions.map((t) => t.category).filter((c) => c && !incomeCategories.includes(c) && !expenseCategories.includes(c)))).map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </optgroup>
@@ -1317,6 +1599,31 @@ export const VyshnaviTravels: React.FC = () => {
                 })}
                 <option value="General / Fleet Wide">General / Fleet Wide</option>
               </select>
+
+              {/* Categories Management Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setStandaloneCatType(txnTypeFilter === 'Expense' ? 'Expense' : 'Income');
+                  setIsStandaloneCatModalOpen(true);
+                }}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-2xs hover:border-blue-400 transition-colors"
+                title="Manage Income & Expense Categories"
+              >
+                <Tag className="w-3.5 h-3.5 text-blue-600" />
+                <span>Categories</span>
+              </button>
+
+              {/* Print Ledger */}
+              <button
+                type="button"
+                onClick={() => handleOpenPrintReport('transactions')}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-2xs hover:border-emerald-400 transition-colors"
+                title="Print Income & Expense Ledger Statement"
+              >
+                <Printer className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Print Ledger</span>
+              </button>
 
               {/* Export CSV */}
               <button
@@ -1839,7 +2146,15 @@ export const VyshnaviTravels: React.FC = () => {
           <div className="flex items-center gap-3 p-1.5 bg-slate-100 rounded-2xl">
             <button
               type="button"
-              onClick={() => setTxnForm((prev) => ({ ...prev, transaction_type: 'Income' }))}
+              onClick={() =>
+                setTxnForm((prev) => ({
+                  ...prev,
+                  transaction_type: 'Income',
+                  category: incomeCategories.includes(prev.category)
+                    ? prev.category
+                    : incomeCategories[0] || 'Trip Advance / Booking'
+                }))
+              }
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                 txnForm.transaction_type === 'Income'
                   ? 'bg-emerald-600 text-white shadow-xs'
@@ -1850,7 +2165,15 @@ export const VyshnaviTravels: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setTxnForm((prev) => ({ ...prev, transaction_type: 'Expense' }))}
+              onClick={() =>
+                setTxnForm((prev) => ({
+                  ...prev,
+                  transaction_type: 'Expense',
+                  category: expenseCategories.includes(prev.category)
+                    ? prev.category
+                    : expenseCategories[0] || 'Diesel / Fuel'
+                }))
+              }
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                 txnForm.transaction_type === 'Expense'
                   ? 'bg-rose-600 text-white shadow-xs'
@@ -1893,24 +2216,153 @@ export const VyshnaviTravels: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Category <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
+            <div className="sm:col-span-2">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700">
+                  Category <span className="text-rose-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryManagerOpen(!isCategoryManagerOpen)}
+                  className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>+ Add More / Manage</span>
+                </button>
+              </div>
+
+              <select
                 required
-                list="vyshnavi-category-suggestions"
-                placeholder={txnForm.transaction_type === 'Income' ? 'Type income category (e.g. Trip Advance, Booking...)' : 'Type expense category (e.g. Diesel, Maintenance, Toll...)'}
                 value={txnForm.category}
-                onChange={(e) => setTxnForm({ ...txnForm, category: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-500"
-              />
-              <datalist id="vyshnavi-category-suggestions">
-                {(txnForm.transaction_type === 'Income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map((c) => (
-                  <option key={c} value={c} />
+                onChange={(e) => {
+                  if (e.target.value === '__add_more__') {
+                    setIsCategoryManagerOpen(true);
+                  } else {
+                    setTxnForm({ ...txnForm, category: e.target.value });
+                  }
+                }}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-500 cursor-pointer"
+              >
+                <option value="">Select Category...</option>
+                {activeTxnCategories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
                 ))}
-              </datalist>
+                <option value="__add_more__" className="text-blue-600 font-bold bg-blue-50">
+                  + Add More Category...
+                </option>
+              </select>
+
+              {/* Inline Category Manager */}
+              {isCategoryManagerOpen && (
+                <div className="mt-2.5 p-3 bg-slate-100 border border-slate-200 rounded-2xl space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                    <span className="flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Manage {txnForm.transaction_type} Categories</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsCategoryManagerOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Add New Category Row */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder={`New ${txnForm.transaction_type.toLowerCase()} category...`}
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCategory();
+                        }
+                      }}
+                      className="flex-1 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500 font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddCategory()}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#142B4A] hover:bg-[#1E3A5F] text-white transition-colors cursor-pointer shrink-0"
+                    >
+                      + Add
+                    </button>
+                  </div>
+
+                  {/* Existing Categories List with Edit and Delete options */}
+                  <div className="max-h-40 overflow-y-auto divide-y divide-slate-100 bg-white rounded-xl border border-slate-200 p-1">
+                    {activeTxnCategories.map((cat) => {
+                      const isEditing = editingCategoryOldName === cat;
+
+                      return (
+                        <div key={cat} className="flex items-center justify-between gap-2 p-1.5 text-xs hover:bg-slate-50 rounded-lg group">
+                          {isEditing ? (
+                            <div className="flex items-center gap-1.5 flex-1">
+                              <input
+                                type="text"
+                                value={editingCategoryNewName}
+                                onChange={(e) => setEditingCategoryNewName(e.target.value)}
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleSaveEditCategory(cat);
+                                  } else if (e.key === 'Escape') {
+                                    setEditingCategoryOldName(null);
+                                  }
+                                }}
+                                className="flex-1 text-xs px-2 py-1 rounded-lg border border-blue-400 bg-white outline-none font-medium"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEditCategory(cat)}
+                                className="p-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors cursor-pointer shrink-0"
+                                title="Save Category"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingCategoryOldName(null)}
+                                className="p-1 rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors cursor-pointer shrink-0"
+                                title="Cancel"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="font-semibold text-slate-800 truncate">{cat}</span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEditCategory(cat)}
+                                  className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                  title="Edit Category Name"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCategory(cat)}
+                                  className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Delete Category"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
@@ -2337,6 +2789,433 @@ export const VyshnaviTravels: React.FC = () => {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 5: STANDALONE TRANSACTION CATEGORY MANAGEMENT                        */}
+      {/* ========================================================================= */}
+      {isStandaloneCatModalOpen && (
+        <Modal
+          isOpen={isStandaloneCatModalOpen}
+          onClose={() => {
+            setIsStandaloneCatModalOpen(false);
+            setEditingCategoryOldName(null);
+            setEditingCategoryNewName('');
+          }}
+          title="Manage Vyshnavi Travels Categories"
+          subtitle="Add new categories, or edit & delete existing categories for Income and Expense transactions."
+          size="md"
+        >
+          <div className="space-y-4">
+            {/* Type Switcher */}
+            <div className="flex bg-slate-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => {
+                  setStandaloneCatType('Income');
+                  setEditingCategoryOldName(null);
+                }}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  standaloneCatType === 'Income'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Income Categories ({incomeCategories.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setStandaloneCatType('Expense');
+                  setEditingCategoryOldName(null);
+                }}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  standaloneCatType === 'Expense'
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <TrendingDown className="w-3.5 h-3.5" />
+                <span>Expense Categories ({expenseCategories.length})</span>
+              </button>
+            </div>
+
+            {/* Add New Category Row */}
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder={`New ${standaloneCatType.toLowerCase()} category name...`}
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCategory(standaloneCatType);
+                  }
+                }}
+                className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500 font-medium"
+              />
+              <button
+                type="button"
+                onClick={() => handleAddCategory(standaloneCatType)}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#142B4A] hover:bg-[#1E3A5F] text-white transition-colors cursor-pointer shrink-0"
+              >
+                + Add Category
+              </button>
+            </div>
+
+            {/* Existing Categories List with Edit and Delete options */}
+            <div className="max-h-64 overflow-y-auto divide-y divide-slate-100 bg-slate-50 rounded-2xl border border-slate-200 p-2">
+              {(standaloneCatType === 'Income' ? incomeCategories : expenseCategories).map((cat) => {
+                const isEditing = editingCategoryOldName === cat;
+
+                return (
+                  <div key={cat} className="flex items-center justify-between gap-2 p-2 text-xs hover:bg-white rounded-xl transition-colors">
+                    {isEditing ? (
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <input
+                          type="text"
+                          value={editingCategoryNewName}
+                          onChange={(e) => setEditingCategoryNewName(e.target.value)}
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleSaveEditCategory(cat, standaloneCatType);
+                            } else if (e.key === 'Escape') {
+                              setEditingCategoryOldName(null);
+                            }
+                          }}
+                          className="flex-1 text-xs px-2.5 py-1.5 rounded-lg border border-blue-400 bg-white outline-none font-medium"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEditCategory(cat, standaloneCatType)}
+                          className="p-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors cursor-pointer shrink-0"
+                          title="Save Category"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingCategoryOldName(null)}
+                          className="p-1.5 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors cursor-pointer shrink-0"
+                          title="Cancel"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 truncate">
+                          <span className={`w-2 h-2 rounded-full ${standaloneCatType === 'Income' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                          <span className="font-bold text-slate-800 truncate">{cat}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditCategory(cat)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                            title="Edit Category"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(cat, standaloneCatType)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Delete Category"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setIsStandaloneCatModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 6: OFFICIAL VYSHNAVI TRAVELS REPORT PRINTOUT                         */}
+      {/* ========================================================================= */}
+      {isPrintReportModalOpen && (
+        <Modal
+          isOpen={isPrintReportModalOpen}
+          onClose={() => setIsPrintReportModalOpen(false)}
+          title={`Print ${reportPrintType === 'records' ? 'Billing & Service Records' : 'Income & Expense Ledger'} Statement`}
+          size="2xl"
+        >
+          <div className="space-y-4">
+            {/* Quick Actions Bar */}
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200 flex-wrap gap-2">
+              <div className="text-xs text-slate-500">
+                <span>Statement: </span>
+                <strong className="text-slate-900 font-bold">
+                  {reportPrintType === 'records'
+                    ? `Vyshnavi Travels Records (${filteredRecords.length} entries)`
+                    : `Vyshnavi Travels Ledger (${filteredTransactions.length} entries)`}
+                </strong>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrintReportContent}
+                  className="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-900/20 cursor-pointer transition-colors"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print Document</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsPrintReportModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Document Container */}
+            <div className="bg-slate-100 p-4 rounded-2xl overflow-y-auto max-h-[75vh]">
+              {/* THE OFFICIAL PRINTABLE REPORT SHEET */}
+              <div
+                id="vyshnavi-printable-report"
+                className="bg-white mx-auto shadow-xl rounded-sm p-6 sm:p-8 text-slate-900 font-sans flex flex-col justify-between"
+                style={{ width: '100%', maxWidth: '980px', minHeight: '900px' }}
+              >
+                <div>
+                  <div className="w-full">
+                    <img
+                      src="/vyshnavi-letterhead-header-clean.png"
+                      alt="Vyshnavi Travels Official Letterhead Header"
+                      className="w-full h-auto block rounded-t"
+                      style={{ width: '100%', height: 'auto', display: 'block' }}
+                    />
+                  </div>
+
+                  {/* Document Title Banner */}
+                  <div className="mt-4 text-center border-b-2 border-slate-800 pb-2">
+                    <h2 className="text-base font-black tracking-wider text-slate-900 uppercase">
+                      {reportPrintType === 'records'
+                        ? 'OFFICIAL BILLING & SERVICE RECORDS STATEMENT'
+                        : 'OFFICIAL INCOME & EXPENSE LEDGER STATEMENT'}
+                    </h2>
+                    <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
+                      {reportPrintType === 'records'
+                        ? 'Fleet Management • Client Billing • Crew Salaries • Operational Dues'
+                        : 'Fleet Operations Cash Flow • Money In / Money Out Ledger • Voucher Records'}
+                    </p>
+                  </div>
+
+                  {/* Statement Metadata & Summary KPIs */}
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Report Date</span>
+                      <strong className="text-slate-900 text-xs font-black">
+                        {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </strong>
+                    </div>
+                    {reportPrintType === 'records' ? (
+                      <>
+                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase block">Total Invoiced</span>
+                          <strong className="text-slate-900 text-xs font-black">
+                            ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.total_amount) || 0), 0).toLocaleString('en-IN')}
+                          </strong>
+                        </div>
+                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                          <span className="text-[10px] font-bold text-emerald-600 uppercase block">Total Received</span>
+                          <strong className="text-emerald-700 text-xs font-black">
+                            ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.received_amount) || 0), 0).toLocaleString('en-IN')}
+                          </strong>
+                        </div>
+                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                          <span className="text-[10px] font-bold text-rose-600 uppercase block">Balance Due</span>
+                          <strong className="text-rose-700 text-xs font-black">
+                            ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.balance_amount) || 0), 0).toLocaleString('en-IN')}
+                          </strong>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                          <span className="text-[10px] font-bold text-emerald-600 uppercase block">Total Income</span>
+                          <strong className="text-emerald-700 text-xs font-black">
+                            + ₹{filteredTransactions.filter(t => t.transaction_type === 'Income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0).toLocaleString('en-IN')}
+                          </strong>
+                        </div>
+                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                          <span className="text-[10px] font-bold text-rose-600 uppercase block">Total Expenses</span>
+                          <strong className="text-rose-700 text-xs font-black">
+                            - ₹{filteredTransactions.filter(t => t.transaction_type === 'Expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0).toLocaleString('en-IN')}
+                          </strong>
+                        </div>
+                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase block">Net Balance</span>
+                          <strong className="text-blue-900 text-xs font-black">
+                            ₹{(filteredTransactions.filter(t => t.transaction_type === 'Income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0) - filteredTransactions.filter(t => t.transaction_type === 'Expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0)).toLocaleString('en-IN')}
+                          </strong>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Complete Printable Table */}
+                  <div className="mt-4 border border-slate-300 rounded-lg overflow-hidden">
+                    {reportPrintType === 'records' ? (
+                      <table className="w-full text-left border-collapse text-[11px]">
+                        <thead>
+                          <tr className="bg-slate-800 text-white font-bold uppercase text-[10px]">
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-center w-10">S.No</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Record / Inv #</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Date</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Billed To (Client)</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Period</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-center">Staff</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-right">Invoiced (₹)</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-right">Received (₹)</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-right">Balance Due (₹)</th>
+                            <th className="py-2 px-2.5 text-center">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {filteredRecords.map((rec, idx) => (
+                            <tr key={rec.id || idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold text-slate-500">{idx + 1}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-bold text-slate-900">{rec.record_number}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{rec.record_date}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-medium text-slate-800">{rec.bill_to_name}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{rec.period_month || '—'}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold">{rec.total_staff_count || rec.items?.length || 1}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-black text-slate-900">₹{(rec.total_amount || 0).toLocaleString('en-IN')}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-bold text-emerald-700">₹{(rec.received_amount || 0).toLocaleString('en-IN')}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-bold text-rose-700">₹{(rec.balance_amount || 0).toLocaleString('en-IN')}</td>
+                              <td className="py-2 px-2.5 text-center font-bold uppercase text-[10px] text-slate-700">{rec.payment_status}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
+                            <td colSpan={6} className="py-2.5 px-2.5 text-right uppercase tracking-wider">Grand Totals:</td>
+                            <td className="py-2.5 px-2.5 text-right font-mono font-black">
+                              ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.total_amount) || 0), 0).toLocaleString('en-IN')}
+                            </td>
+                            <td className="py-2.5 px-2.5 text-right font-mono font-black text-emerald-700">
+                              ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.received_amount) || 0), 0).toLocaleString('en-IN')}
+                            </td>
+                            <td className="py-2.5 px-2.5 text-right font-mono font-black text-rose-700">
+                              ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.balance_amount) || 0), 0).toLocaleString('en-IN')}
+                            </td>
+                            <td></td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    ) : (
+                      <table className="w-full text-left border-collapse text-[11px]">
+                        <thead>
+                          <tr className="bg-slate-800 text-white font-bold uppercase text-[10px]">
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-center w-10">S.No</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Date</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Type</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Category</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Vehicle</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Party / Vendor</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Mode</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700">Ref / UTR #</th>
+                            <th className="py-2 px-2.5 text-right">Amount (₹)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {filteredTransactions.map((t, idx) => (
+                            <tr key={t.id || idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold text-slate-500">{idx + 1}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{t.transaction_date}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-bold">
+                                <span className={t.transaction_type === 'Income' ? 'text-emerald-700' : 'text-rose-700'}>
+                                  {t.transaction_type}
+                                </span>
+                              </td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-medium text-slate-900">{t.category}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{t.vehicle_number || 'General'}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-700">{t.party_name || '—'}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{t.payment_mode}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-mono text-[10px] text-slate-600">{t.reference_no || '—'}</td>
+                              <td className={`py-2 px-2.5 text-right font-black font-mono ${t.transaction_type === 'Income' ? 'text-emerald-700' : 'text-rose-700'}`}>
+                                {t.transaction_type === 'Income' ? '+' : '-'} ₹{(t.amount || 0).toLocaleString('en-IN')}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
+                            <td colSpan={8} className="py-2.5 px-2.5 text-right uppercase tracking-wider">Net Cash Flow:</td>
+                            <td className="py-2.5 px-2.5 text-right font-mono font-black">
+                              ₹{(filteredTransactions.filter(t => t.transaction_type === 'Income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0) - filteredTransactions.filter(t => t.transaction_type === 'Expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0)).toLocaleString('en-IN')}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    )}
+                  </div>
+
+                  {/* Bank Details Strip */}
+                  <div className="mt-4 bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-[11px]">
+                    <div>
+                      <span className="font-bold text-slate-800">Bank Settlement: </span>
+                      <span className="text-slate-600">Kotak Mahindra Bank, VANAS Hyderabad • A/C: <strong>2848153146</strong> • IFSC: <strong>KKBK0007460</strong></span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-slate-800">UPI ID: </span>
+                      <span className="text-slate-600"><strong>9000202241@ybl</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Official Notice & Signatures */}
+                  <div className="mt-6 flex items-end justify-between pt-4 border-t border-slate-200 text-xs">
+                    <div className="text-[10px] text-slate-500 space-y-0.5">
+                      <p className="font-semibold text-slate-700">Notice:</p>
+                      <p>1. Computer-generated official operations statement issued by Vyshnavi Travels.</p>
+                      <p>2. For any discrepancies, please notify accounts within 3 business days.</p>
+                    </div>
+                    <div className="text-center space-y-8">
+                      <div className="w-44 border-b border-slate-400"></div>
+                      <span className="text-[11px] font-bold text-slate-700 block">
+                        Authorized Signatory / Seal
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Letterhead Footer */}
+                <div className="mt-6 pt-2">
+                  <div className="w-full">
+                    <img
+                      src="/vyshnavi-letterhead-footer-clean.png"
+                      alt="Vyshnavi Travels Official Letterhead Footer"
+                      className="w-full h-auto block"
+                      style={{ width: '100%', height: 'auto', display: 'block' }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </Modal>
