@@ -498,7 +498,7 @@ export const OrganizerManagement: React.FC = () => {
             <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
               <tr>
                 <th className="py-2.5 px-3 w-12 text-center">S.NO</th>
-                <th className="py-2.5 px-3 min-w-[200px]">Operator / Organization Name</th>
+                <th className="py-2.5 px-3 min-w-[200px]">Operator</th>
                 <th className="py-2.5 px-3 w-44">GST Number</th>
                 <th className="py-2.5 px-3 w-40">Contact Person</th>
                 <th className="py-2.5 px-3 w-36">Phone Number</th>
@@ -613,7 +613,7 @@ export const OrganizerManagement: React.FC = () => {
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              Operator / Organization Name *
+              Operator *
             </label>
             <input
               type="text"
