@@ -472,6 +472,7 @@ export function initDatabase() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         organization_name TEXT NOT NULL,
         gst_number TEXT,
+        pan_number TEXT,
         contact_person TEXT,
         phone_number TEXT,
         email TEXT,
@@ -540,6 +541,7 @@ export function initDatabase() {
     try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN general_checkup_photo TEXT`).run(); } catch (_) {}
     try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN filter_renewal_date DATE`).run(); } catch (_) {}
     try { db.prepare(`ALTER TABLE ac_maintenance_records ADD COLUMN filter_status TEXT DEFAULT 'Active'`).run(); } catch (_) {}
+    try { db.prepare(`ALTER TABLE organizers ADD COLUMN pan_number TEXT DEFAULT ''`).run(); } catch (_) {}
 
     // Create organizer_payments table
     db.prepare(`

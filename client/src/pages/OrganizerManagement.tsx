@@ -32,6 +32,7 @@ export interface OrganizerItem {
   id: number;
   organization_name: string;
   gst_number: string;
+  pan_number?: string;
   contact_person: string;
   phone_number: string;
   email: string;
@@ -59,6 +60,7 @@ export const OrganizerManagement: React.FC = () => {
             id: o.id || idx + 1,
             organization_name: o.organization_name || '',
             gst_number: o.gst_number || '',
+            pan_number: o.pan_number || '',
             contact_person: o.contact_person || '',
             phone_number: o.phone_number || '',
             email: o.email || '',
@@ -117,6 +119,7 @@ export const OrganizerManagement: React.FC = () => {
   const [formData, setFormData] = useState<Partial<OrganizerItem>>({
     organization_name: '',
     gst_number: '',
+    pan_number: '',
     contact_person: '',
     phone_number: '',
     email: '',
@@ -134,6 +137,7 @@ export const OrganizerManagement: React.FC = () => {
     setFormData({
       organization_name: '',
       gst_number: '',
+      pan_number: '',
       contact_person: '',
       phone_number: '',
       email: '',
@@ -147,6 +151,7 @@ export const OrganizerManagement: React.FC = () => {
     setFormData({
       organization_name: org.organization_name,
       gst_number: org.gst_number || '',
+      pan_number: org.pan_number || '',
       contact_person: org.contact_person,
       phone_number: org.phone_number,
       email: org.email || '',
@@ -184,12 +189,14 @@ export const OrganizerManagement: React.FC = () => {
     }
 
     const trimmedGst = (formData.gst_number || '').trim().toUpperCase();
+    const trimmedPan = (formData.pan_number || '').trim().toUpperCase();
 
     if (editingOrg) {
       const updatedItem: OrganizerItem = {
         ...editingOrg,
         organization_name: formData.organization_name!.trim(),
         gst_number: trimmedGst,
+        pan_number: trimmedPan,
         contact_person: formData.contact_person!.trim(),
         phone_number: formData.phone_number!.trim(),
         email: (formData.email || '').trim(),
@@ -206,6 +213,7 @@ export const OrganizerManagement: React.FC = () => {
         id: Date.now(),
         organization_name: formData.organization_name!.trim(),
         gst_number: trimmedGst,
+        pan_number: trimmedPan,
         contact_person: formData.contact_person!.trim(),
         phone_number: formData.phone_number!.trim(),
         email: (formData.email || '').trim(),
@@ -374,6 +382,7 @@ export const OrganizerManagement: React.FC = () => {
     return (
       o.organization_name.toLowerCase().includes(query) ||
       (o.gst_number && o.gst_number.toLowerCase().includes(query)) ||
+      (o.pan_number && o.pan_number.toLowerCase().includes(query)) ||
       o.contact_person.toLowerCase().includes(query) ||
       o.phone_number.includes(query) ||
       (o.email && o.email.toLowerCase().includes(query)) ||
@@ -487,7 +496,7 @@ export const OrganizerManagement: React.FC = () => {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by operator name, GST number, contact person, or phone..."
+            placeholder="Search by operator name, GST, PAN, contact person, or phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
@@ -503,7 +512,7 @@ export const OrganizerManagement: React.FC = () => {
               <tr>
                 <th className="py-2.5 px-3 w-12 text-center">S.NO</th>
                 <th className="py-2.5 px-3 min-w-[200px]">Operator</th>
-                <th className="py-2.5 px-3 w-44">GST Number</th>
+                <th className="py-2.5 px-3 w-48">GST / PAN Number</th>
                 <th className="py-2.5 px-3 w-40">Contact Person</th>
                 <th className="py-2.5 px-3 w-36">Phone Number</th>
                 <th className="py-2.5 px-3 min-w-[180px]">Email Address</th>
@@ -544,11 +553,17 @@ export const OrganizerManagement: React.FC = () => {
 
                     <td className="py-2 px-3">
                       {o.gst_number ? (
-                        <span className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">
+                        <span className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px] inline-block">
                           {o.gst_number}
                         </span>
-                      ) : (
+                      ) : !o.pan_number ? (
                         <span className="text-slate-400 text-xs italic">—</span>
+                      ) : null}
+                      {o.pan_number && (
+                        <div className="text-[10px] text-slate-500 font-mono font-bold mt-0.5 flex items-center gap-1">
+                          <span className="text-slate-400 font-normal">PAN:</span>
+                          <span className="text-slate-800 bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.2 rounded text-[10px] uppercase font-mono font-bold">{o.pan_number}</span>
+                        </div>
                       )}
                     </td>
 
@@ -611,14 +626,14 @@ export const OrganizerManagement: React.FC = () => {
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         title={editingOrg ? 'Edit Operator' : 'Add New Operator'}
-        subtitle="Manage partner operator details, GST number, and contact points."
+        subtitle="Manage partner operator details, GST/PAN numbers, and contact points."
         icon={<Building2 className="w-5 h-5 text-white" />}
         maxWidth="max-w-2xl"
       >
-        <form onSubmit={handleSave} className="space-y-4 pt-1">
+        <form onSubmit={handleSave} className="space-y-2.5 pt-0.5">
           <div>
-            <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-              <Building2 className="w-4 h-4 text-blue-600" />
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+              <Building2 className="w-3.5 h-3.5 text-blue-600" />
               <span>Operator Name <span className="text-rose-500">*</span></span>
             </label>
             <input
@@ -627,29 +642,46 @@ export const OrganizerManagement: React.FC = () => {
               value={formData.organization_name || ''}
               onChange={(e) => setFormData({ ...formData, organization_name: e.target.value })}
               placeholder="e.g. Sri Krishna Travels or Hyderabad Logistics"
-              className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
+              className="w-full text-xs px-3.5 py-2 rounded-xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
             />
           </div>
 
-          <div>
-            <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-              <CreditCard className="w-4 h-4 text-blue-600" />
-              <span>GST Number</span>
-            </label>
-            <input
-              type="text"
-              value={formData.gst_number || ''}
-              onChange={(e) => setFormData({ ...formData, gst_number: e.target.value.toUpperCase() })}
-              placeholder="E.G. 36AAAAA0000A1Z5"
-              maxLength={15}
-              className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold uppercase text-slate-800 shadow-2xs placeholder:text-slate-400"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
-              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-                <User className="w-4 h-4 text-blue-600" />
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                <span>GST Number</span>
+              </label>
+              <input
+                type="text"
+                value={formData.gst_number || ''}
+                onChange={(e) => setFormData({ ...formData, gst_number: e.target.value.toUpperCase() })}
+                placeholder="E.G. 36AAAAA0000A1Z5"
+                maxLength={15}
+                className="w-full text-xs px-3.5 py-2 rounded-xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold uppercase text-slate-800 shadow-2xs placeholder:text-slate-400"
+              />
+            </div>
+
+            <div>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                <span>PAN Card Number</span>
+              </label>
+              <input
+                type="text"
+                value={formData.pan_number || ''}
+                onChange={(e) => setFormData({ ...formData, pan_number: e.target.value.toUpperCase() })}
+                placeholder="E.G. ABCDE1234F"
+                maxLength={10}
+                className="w-full text-xs px-3.5 py-2 rounded-xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-mono font-bold uppercase text-slate-800 shadow-2xs placeholder:text-slate-400"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                <User className="w-3.5 h-3.5 text-blue-600" />
                 <span>Contact Person <span className="text-rose-500">*</span></span>
               </label>
               <input
@@ -658,13 +690,13 @@ export const OrganizerManagement: React.FC = () => {
                 value={formData.contact_person || ''}
                 onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                 placeholder="Manager / Officer Name"
-                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
+                className="w-full text-xs px-3.5 py-2 rounded-xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-                <Phone className="w-4 h-4 text-blue-600" />
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                <Phone className="w-3.5 h-3.5 text-blue-600" />
                 <span>Phone Number <span className="text-rose-500">*</span></span>
               </label>
               <input
@@ -673,14 +705,14 @@ export const OrganizerManagement: React.FC = () => {
                 value={formData.phone_number || ''}
                 onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
                 placeholder="Official mobile / phone"
-                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
+                className="w-full text-xs px-3.5 py-2 rounded-xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
               />
             </div>
           </div>
 
           <div>
-            <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-              <Mail className="w-4 h-4 text-blue-600" />
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+              <Mail className="w-3.5 h-3.5 text-blue-600" />
               <span>Email Address</span>
             </label>
             <input
@@ -688,13 +720,13 @@ export const OrganizerManagement: React.FC = () => {
               value={formData.email || ''}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="transport@company.com"
-              className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
+              className="w-full text-xs px-3.5 py-2 rounded-xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
             />
           </div>
 
           <div>
-            <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-              <MapPin className="w-4 h-4 text-blue-600" />
+            <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+              <MapPin className="w-3.5 h-3.5 text-blue-600" />
               <span>Office Address</span>
             </label>
             <textarea
@@ -702,24 +734,24 @@ export const OrganizerManagement: React.FC = () => {
               value={formData.office_address || ''}
               onChange={(e) => setFormData({ ...formData, office_address: e.target.value })}
               placeholder="Campus or office address"
-              className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400"
+              className="w-full text-xs px-3.5 py-2 rounded-xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800 shadow-2xs placeholder:text-slate-400 resize-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2.5 pt-2.5 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setIsAddOpen(false)}
-              className="px-6 py-2.5 rounded-2xl border border-slate-300 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              <X className="w-4 h-4 text-slate-500" />
+              <X className="w-3.5 h-3.5 text-slate-500" />
               <span>Cancel</span>
             </button>
             <button
               type="submit"
-              className="px-7 py-2.5 rounded-2xl bg-[#004B9E] hover:bg-[#00367A] text-white text-sm font-black shadow-md transition-all cursor-pointer flex items-center gap-2"
+              className="px-6 py-2 rounded-xl bg-[#004B9E] hover:bg-[#00367A] text-white text-xs font-black shadow-md transition-all cursor-pointer flex items-center gap-1.5"
             >
-              <Save className="w-4 h-4 text-white" />
+              <Save className="w-3.5 h-3.5 text-white" />
               <span>{editingOrg ? 'Update Operator' : 'Save Operator'}</span>
             </button>
           </div>

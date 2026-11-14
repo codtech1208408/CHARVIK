@@ -1249,12 +1249,13 @@ app.post('/api/organizers', (req: Request, res: Response) => {
   try {
     const id = o.id || Date.now();
     db.prepare(`
-      INSERT INTO organizers (id, organization_name, gst_number, contact_person, phone_number, email, office_address)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO organizers (id, organization_name, gst_number, pan_number, contact_person, phone_number, email, office_address)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       o.organization_name.trim(),
       o.gst_number?.trim() || '',
+      o.pan_number?.trim() || '',
       o.contact_person?.trim() || '',
       o.phone_number?.trim() || '',
       o.email?.trim() || '',
@@ -1275,12 +1276,13 @@ app.put('/api/organizers/:id', (req: Request, res: Response) => {
   try {
     db.prepare(`
       UPDATE organizers SET
-        organization_name = ?, gst_number = ?, contact_person = ?, phone_number = ?,
+        organization_name = ?, gst_number = ?, pan_number = ?, contact_person = ?, phone_number = ?,
         email = ?, office_address = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
       o.organization_name?.trim() || '',
       o.gst_number?.trim() || '',
+      o.pan_number?.trim() || '',
       o.contact_person?.trim() || '',
       o.phone_number?.trim() || '',
       o.email?.trim() || '',
