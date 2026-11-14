@@ -532,7 +532,7 @@ export const ProductManagement: React.FC = () => {
     const newName = window.prompt('Edit Product Name:', currentName);
     if (!newName || !newName.trim()) return;
     const newPart = window.prompt(
-      'Edit Part Name / Number:',
+      'Edit Part Number:',
       receiveForm.part_number || (matched ? matched.part_number : '')
     );
     const updatedName = newName.trim();
@@ -1571,12 +1571,12 @@ export const ProductManagement: React.FC = () => {
                 </select>
               </div>
 
-              {/* 2. Part Name / Part Number (Next, auto-fills product name) */}
+              {/* 2. Part Number (Next, auto-fills product name) */}
               <div className="sm:col-span-2">
                 <div className="flex items-center justify-between mb-1">
                   <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
                     <Tag className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Part Name / Part Number</span>
+                    <span>Part Number</span>
                   </label>
                   <span className="text-[10px] text-slate-400 font-medium">Auto-fills product name</span>
                 </div>
