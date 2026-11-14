@@ -832,10 +832,10 @@ export const RecordManagement: React.FC = () => {
                     <td className="py-2 px-3 text-center">
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${r.payment_status === 'Paid'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : r.payment_status === 'Partial'
-                              ? 'bg-amber-50 text-amber-700 border-amber-200'
-                              : 'bg-rose-50 text-rose-700 border-rose-200'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : r.payment_status === 'Partial'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-rose-50 text-rose-700 border-rose-200'
                           }`}
                       >
                         {r.payment_status}
@@ -1403,10 +1403,10 @@ export const RecordManagement: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500 font-bold">Payment Status:</span>
                     <span className={`font-bold ${printingRecord.payment_status === 'Paid'
-                        ? 'text-emerald-700'
-                        : printingRecord.payment_status === 'Partial'
-                          ? 'text-amber-700'
-                          : 'text-rose-700'
+                      ? 'text-emerald-700'
+                      : printingRecord.payment_status === 'Partial'
+                        ? 'text-amber-700'
+                        : 'text-rose-700'
                       }`}>
                       {printingRecord.payment_status}
                     </span>

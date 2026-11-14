@@ -1576,16 +1576,6 @@ export const IncomeExpense: React.FC = () => {
                   <span>Authorized Signatory</span>
                 </div>
               </div>
-
-              {/* Official Charvik Letterhead Footer */}
-              <div className="w-full mt-4 pt-1">
-                <img
-                  src="/charvik-letterhead-footer.png"
-                  alt="Charvik Footer"
-                  className="w-full h-auto block"
-                  style={{ width: '100%', height: 'auto', display: 'block' }}
-                />
-              </div>
             </div>
 
             {/* Modal Actions */}

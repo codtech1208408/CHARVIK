@@ -1511,15 +1511,6 @@ export const CaptainAuditRecord: React.FC = () => {
                   <span className="text-[10px] text-slate-400 uppercase">Charvik Quality Admin</span>
                 </div>
               </div>
-
-              {/* Official Charvik Letterhead Footer */}
-              <div className="w-full pt-4">
-                <img
-                  src="/charvik-letterhead-footer.png"
-                  alt="Charvik Footer"
-                  className="w-full h-auto block"
-                />
-              </div>
             </div>
           </div>
         </Modal>

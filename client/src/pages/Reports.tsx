@@ -348,15 +348,6 @@ export const Reports: React.FC = () => {
             </table>
           )}
         </div>
-
-        {/* Official Charvik Letterhead Footer */}
-        <div className="w-full pt-4 border-t border-slate-200">
-          <img
-            src="/charvik-letterhead-footer.png"
-            alt="Charvik Footer"
-            className="w-full h-auto block"
-          />
-        </div>
       </div>
     </div>
   );

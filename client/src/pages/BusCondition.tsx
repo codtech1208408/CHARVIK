@@ -1475,15 +1475,6 @@ export const BusCondition: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Official Charvik Letterhead Footer */}
-              <div className="w-full pt-4 mt-2">
-                <img
-                  src="/charvik-letterhead-footer.png"
-                  alt="Charvik Footer"
-                  className="w-full h-auto block"
-                />
-              </div>
             </div>
           </div>
         </Modal>
@@ -1607,15 +1598,6 @@ export const BusCondition: React.FC = () => {
                     <span className="border-b border-black w-48 inline-block pb-0.5 sig-field">&nbsp;</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Official Charvik Letterhead Footer */}
-              <div className="w-full pt-4 mt-2">
-                <img
-                  src="/charvik-letterhead-footer.png"
-                  alt="Charvik Footer"
-                  className="w-full h-auto block"
-                />
               </div>
             </div>
           </div>

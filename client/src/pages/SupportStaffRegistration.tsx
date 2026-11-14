@@ -1307,15 +1307,6 @@ export const SupportStaffRegistration: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* Official Charvik Letterhead Footer */}
-            <div className="w-full border-t-2 border-black bg-white">
-              <img
-                src="/charvik-letterhead-footer.png"
-                alt="Charvik Footer"
-                className="w-full h-auto block"
-              />
-            </div>
           </div>
         </div>
       </Modal>
