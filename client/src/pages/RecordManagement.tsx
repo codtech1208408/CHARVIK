@@ -1557,16 +1557,6 @@ export const RecordManagement: React.FC = () => {
                   <span className="text-[10px] text-slate-500">Charvik Staffing Consultancy</span>
                 </div>
               </div>
-
-              {/* Bottom Letterhead Footer (Official Charvik Letterhead) */}
-              <div className="w-full mt-6 pt-2">
-                <img
-                  src="/charvik-letterhead-footer.png"
-                  alt="Charvik Footer"
-                  className="w-full h-auto block"
-                  style={{ width: '100%', height: 'auto', display: 'block' }}
-                />
-              </div>
             </div>
           </div>
         </Modal>
