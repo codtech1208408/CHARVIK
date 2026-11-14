@@ -25,7 +25,6 @@ import {
 } from 'lucide-react';
 import luxuryCoachHeader from '../assets/luxury-coach-header.png';
 import { api } from '../services/api';
-import type { Bus as BusType } from '../types';
 import { Modal } from '../components/common/Modal';
 import { StatusToggle } from '../components/common/StatusToggle';
 import { useToast } from '../components/common/Toast';
@@ -39,7 +38,6 @@ export const DriverRegistration: React.FC = () => {
   const { user } = useAuth();
   const { success, error } = useToast();
 
-  const [buses, setBuses] = useState<BusType[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,7 +106,6 @@ export const DriverRegistration: React.FC = () => {
   const [stepError, setStepError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.getBuses().then(setBuses).catch(console.error);
     api.getNextEmployeeCode('Driver')
       .then((res) => {
         if (res?.nextCode) {
@@ -311,10 +308,10 @@ export const DriverRegistration: React.FC = () => {
               >
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${isCurrent
-                      ? 'bg-[#004B9E] text-white ring-4 ring-blue-100'
-                      : isDone
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-white text-slate-400 border border-slate-300'
+                    ? 'bg-[#004B9E] text-white ring-4 ring-blue-100'
+                    : isDone
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-white text-slate-400 border border-slate-300'
                     }`}
                 >
                   {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
@@ -994,8 +991,8 @@ export const DriverRegistration: React.FC = () => {
                     {formData.employment_type === 'Temporary'
                       ? 'Temporary Worker (Per Day Salary) (₹) *'
                       : formData.employment_type === 'Salary Based'
-                      ? 'Salary Based Worker (Monthly Salary) (₹) *'
-                      : 'Permanent Worker (Per Day Salary) (₹) *'}
+                        ? 'Salary Based Worker (Monthly Salary) (₹) *'
+                        : 'Permanent Worker (Per Day Salary) (₹) *'}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
@@ -1046,22 +1043,6 @@ export const DriverRegistration: React.FC = () => {
                 value={formData.employment_status || 'Active'}
                 onChange={(val) => handleInputChange('employment_status', val)}
               />
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Assigned Fleet Bus</label>
-                <select
-                  value={formData.assigned_bus_id}
-                  onChange={(e) => handleInputChange('assigned_bus_id', e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
-                >
-                  <option value="">-- No Bus Assigned Initially --</option>
-                  {buses.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.bus_number} ({b.registration_number}) - {b.make} {b.model}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Internal HR Remarks</label>
@@ -1355,8 +1336,8 @@ export const DriverRegistration: React.FC = () => {
                   <td className="p-2.5 font-semibold pl-4 border-r border-black bg-slate-50/50">Worker Type</td>
                   <td className="p-2.5">
                     <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${formData.employment_type === 'Temporary'
-                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                        : formData.employment_type === 'Salary Based'
+                      ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                      : formData.employment_type === 'Salary Based'
                         ? 'bg-blue-100 text-blue-800 border border-blue-300'
                         : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                       }`}>
@@ -1369,8 +1350,8 @@ export const DriverRegistration: React.FC = () => {
                     {formData.employment_type === 'Temporary'
                       ? 'Temporary Worker (Per Day Salary)'
                       : formData.employment_type === 'Salary Based'
-                      ? 'Salary Based Worker (Monthly Salary)'
-                      : 'Permanent Worker (Per Day Salary)'}
+                        ? 'Salary Based Worker (Monthly Salary)'
+                        : 'Permanent Worker (Per Day Salary)'}
                   </td>
                   <td className="p-2.5 font-bold text-slate-900">
                     {formData.salary ? `₹${Number(formData.salary).toLocaleString('en-IN')}` : '₹0'}

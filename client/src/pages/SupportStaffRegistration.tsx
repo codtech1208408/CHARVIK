@@ -24,12 +24,10 @@ import {
   Clock,
   Sparkles,
   Award,
-  Bus,
   Check
 } from 'lucide-react';
 import luxuryCoachHeader from '../assets/luxury-coach-header.png';
 import { api } from '../services/api';
-import type { Bus as BusType } from '../types';
 import { Modal } from '../components/common/Modal';
 import { StatusToggle } from '../components/common/StatusToggle';
 import { useToast } from '../components/common/Toast';
@@ -43,7 +41,6 @@ export const SupportStaffRegistration: React.FC = () => {
   const { user } = useAuth();
   const { success, error } = useToast();
 
-  const [buses, setBuses] = useState<BusType[]>([]);
   const [existingEmployees, setExistingEmployees] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -112,7 +109,6 @@ export const SupportStaffRegistration: React.FC = () => {
   });
 
   useEffect(() => {
-    api.getBuses().then(setBuses).catch(console.error);
     api.getEmployees().then((empList) => {
       setExistingEmployees(Array.isArray(empList) ? empList : []);
     }).catch(() => {
@@ -974,25 +970,6 @@ export const SupportStaffRegistration: React.FC = () => {
                 value={formData.employment_status || 'Active'}
                 onChange={(val) => handleInputChange('employment_status', val)}
               />
-
-              <div>
-                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
-                  <Bus className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Assigned Bus</span>
-                </label>
-                <select
-                  value={formData.assigned_bus_id}
-                  onChange={(e) => handleInputChange('assigned_bus_id', e.target.value)}
-                  className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white outline-none font-semibold text-slate-800 shadow-2xs cursor-pointer"
-                >
-                  <option value="">-- No Bus Assigned --</option>
-                  {buses.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.bus_number} ({b.registration_number})
-                    </option>
-                  ))}
-                </select>
-              </div>
 
               <div>
                 <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
