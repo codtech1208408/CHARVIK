@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { PrintButton } from '../components/common/PrintButton';
 import { api } from '../services/api';
 import { auditLogger } from '../services/auditLogger';
 import { printSheet } from '../utils/printSheet';
@@ -72,19 +73,23 @@ export interface VehicleUsageRecord {
 
 const PRODUCTS_STORAGE_KEY = 'charvik_product_spare_parts_v2';
 const USAGE_STORAGE_KEY = 'charvik_vehicle_spare_usage_v2';
+const CATEGORIES_STORAGE_KEY = 'charvik_product_custom_categories_v2';
+const CATALOG_STORAGE_KEY = 'charvik_saved_catalog_products_v2';
 
-const CATEGORIES = [
-  'All Categories',
-  'Spare Part',
-  'Lubricants',
-  'Filters',
-  'Brake & Mechanical',
-  'Electrical',
-  'Tyres & Wheels',
-  'Battery & Power',
-  'AC Parts',
-  'Consumable',
-  'Other'
+const DEFAULT_CATEGORIES = ['Spare Part'];
+
+export interface CatalogProduct {
+  id: string;
+  name: string;
+  part_number: string;
+  category: string;
+}
+
+const DEFAULT_CATALOG_PRODUCTS: CatalogProduct[] = [
+  { id: 'cat-1', name: 'Heavy Duty Front Brake Pads (Set)', part_number: 'BP-001', category: 'Spare Part' },
+  { id: 'cat-2', name: 'Castrol VECTON 15W-40 CK-4 Engine Oil', part_number: 'OIL-15W40', category: 'Spare Part' },
+  { id: 'cat-3', name: 'Fleetguard Primary Fuel Water Separator Filter', part_number: 'FS-19732', category: 'Spare Part' },
+  { id: 'cat-4', name: 'Heavy Duty 24V Alternator Belt', part_number: 'BLT-24V-HD', category: 'Spare Part' }
 ];
 
 const INITIAL_SEED_PRODUCTS: ProductItem[] = [
@@ -93,7 +98,6 @@ const INITIAL_SEED_PRODUCTS: ProductItem[] = [
     name: 'Heavy Duty Front Brake Pads (Set)',
     part_number: 'BP-001',
     category: 'Spare Part',
-    brand: 'Bosch Commercial',
     received_date: '2026-10-25',
     quantity_received: 20,
     used_quantity: 4,
@@ -106,8 +110,7 @@ const INITIAL_SEED_PRODUCTS: ProductItem[] = [
     id: 'prod-2',
     name: 'Castrol VECTON 15W-40 CK-4 Engine Oil',
     part_number: 'OIL-15W40',
-    category: 'Lubricants',
-    brand: 'Castrol',
+    category: 'Spare Part',
     received_date: '2026-10-26',
     quantity_received: 15,
     used_quantity: 3,
@@ -120,8 +123,7 @@ const INITIAL_SEED_PRODUCTS: ProductItem[] = [
     id: 'prod-3',
     name: 'Fleetguard Primary Fuel Water Separator Filter',
     part_number: 'FS-19732',
-    category: 'Filters',
-    brand: 'Fleetguard Cummins',
+    category: 'Spare Part',
     received_date: '2026-10-27',
     quantity_received: 24,
     used_quantity: 6,
@@ -134,8 +136,7 @@ const INITIAL_SEED_PRODUCTS: ProductItem[] = [
     id: 'prod-4',
     name: 'Heavy Duty 24V Alternator Belt',
     part_number: 'BLT-24V-HD',
-    category: 'Electrical',
-    brand: 'Gates Fleet',
+    category: 'Spare Part',
     received_date: '2026-10-28',
     quantity_received: 10,
     used_quantity: 10,
@@ -226,18 +227,41 @@ export const ProductManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
 
+  // Categories state with persistence
+  const [categories, setCategories] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(CATEGORIES_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return DEFAULT_CATEGORIES;
+  });
+
+  // Catalog Products state with persistence
+  const [catalogProducts, setCatalogProducts] = useState<CatalogProduct[]>(() => {
+    try {
+      const saved = localStorage.getItem(CATALOG_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return DEFAULT_CATALOG_PRODUCTS;
+  });
+
   // Modals
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [previewPhotoTitle, setPreviewPhotoTitle] = useState<string>('');
 
-  // Receive Product Form (unit, unit cost, supplier removed; photo upload added)
+  // Receive Product Form (category, part number, product name, brand removed)
   const [receiveForm, setReceiveForm] = useState({
     product_name: '',
     part_number: '',
     category: 'Spare Part',
-    brand: '',
     received_date: new Date().toISOString().split('T')[0],
     quantity_received: 1,
     is_reused: false,
@@ -314,7 +338,6 @@ export const ProductManagement: React.FC = () => {
         !searchTerm.trim() ||
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (p.part_number && p.part_number.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (p.brand && p.brand.toLowerCase().includes(searchTerm.toLowerCase())) ||
         p.category.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchCategory =
@@ -380,13 +403,189 @@ export const ProductManagement: React.FC = () => {
     }
   };
 
+  // Category Management Handlers
+  const handleAddCategoryPrompt = () => {
+    const name = window.prompt('Enter new category name:');
+    if (!name || !name.trim()) return;
+    const trimmed = name.trim();
+    if (categories.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      error(`Category "${trimmed}" already exists.`);
+      return;
+    }
+    const updated = [...categories, trimmed];
+    setCategories(updated);
+    try {
+      localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(updated));
+    } catch {}
+    setReceiveForm((prev) => ({ ...prev, category: trimmed }));
+    success(`Category "${trimmed}" added!`);
+  };
+
+  const handleEditCategoryPrompt = () => {
+    const current = receiveForm.category;
+    const name = window.prompt('Edit category name:', current);
+    if (!name || !name.trim() || name.trim() === current) return;
+    const trimmed = name.trim();
+    const updated = categories.map((c) => (c === current ? trimmed : c));
+    setCategories(updated);
+    try {
+      localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(updated));
+    } catch {}
+    setReceiveForm((prev) => ({ ...prev, category: trimmed }));
+    const updatedCatalog = catalogProducts.map((cp) =>
+      cp.category === current ? { ...cp, category: trimmed } : cp
+    );
+    setCatalogProducts(updatedCatalog);
+    try {
+      localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(updatedCatalog));
+    } catch {}
+    success(`Category renamed to "${trimmed}"!`);
+  };
+
+  const handleDeleteCategoryPrompt = () => {
+    const current = receiveForm.category;
+    if (categories.length <= 1) {
+      error('At least one category must remain.');
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete category "${current}"?`)) return;
+    const updated = categories.filter((c) => c !== current);
+    setCategories(updated);
+    try {
+      localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(updated));
+    } catch {}
+    setReceiveForm((prev) => ({ ...prev, category: updated[0] || 'Spare Part' }));
+    success(`Category "${current}" deleted.`);
+  };
+
+  // Product Name & Part Number Auto-Link & Catalog Handlers
+  const handleSelectCatalogProduct = (catalogId: string) => {
+    if (!catalogId) {
+      setReceiveForm((prev) => ({
+        ...prev,
+        product_name: '',
+        part_number: ''
+      }));
+      return;
+    }
+    const matched = catalogProducts.find((cp) => cp.id === catalogId);
+    if (matched) {
+      setReceiveForm((prev) => ({
+        ...prev,
+        product_name: matched.name,
+        part_number: matched.part_number,
+        category: matched.category || prev.category
+      }));
+    }
+  };
+
+  const handleProductNameChange = (val: string) => {
+    const matched = catalogProducts.find(
+      (cp) => cp.name.trim().toLowerCase() === val.trim().toLowerCase()
+    );
+    if (matched) {
+      setReceiveForm((prev) => ({
+        ...prev,
+        product_name: val,
+        part_number: matched.part_number || prev.part_number,
+        category: matched.category || prev.category
+      }));
+    } else {
+      setReceiveForm((prev) => ({ ...prev, product_name: val }));
+    }
+  };
+
+  const handlePartNumberChange = (val: string) => {
+    const matched = catalogProducts.find(
+      (cp) => cp.part_number.trim().toLowerCase() === val.trim().toLowerCase()
+    );
+    if (matched) {
+      setReceiveForm((prev) => ({
+        ...prev,
+        part_number: val,
+        product_name: matched.name || prev.product_name,
+        category: matched.category || prev.category
+      }));
+    } else {
+      setReceiveForm((prev) => ({ ...prev, part_number: val }));
+    }
+  };
+
+  const handleAddNewProductTemplate = () => {
+    setReceiveForm((prev) => ({
+      ...prev,
+      product_name: '',
+      part_number: ''
+    }));
+    success('Ready to enter new product name and part number.');
+  };
+
+  const handleEditCatalogProductPrompt = () => {
+    const currentName = receiveForm.product_name.trim();
+    if (!currentName) {
+      error('Please select or enter a product name first.');
+      return;
+    }
+    const matched = catalogProducts.find(
+      (cp) => cp.name.toLowerCase() === currentName.toLowerCase()
+    );
+    const newName = window.prompt('Edit Product Name:', currentName);
+    if (!newName || !newName.trim()) return;
+    const newPart = window.prompt(
+      'Edit Part Name / Number:',
+      receiveForm.part_number || (matched ? matched.part_number : '')
+    );
+    const updatedName = newName.trim();
+    const updatedPart = (newPart || '').trim();
+
+    if (matched) {
+      const updatedCatalog = catalogProducts.map((cp) =>
+        cp.id === matched.id
+          ? { ...cp, name: updatedName, part_number: updatedPart, category: receiveForm.category }
+          : cp
+      );
+      setCatalogProducts(updatedCatalog);
+      try {
+        localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(updatedCatalog));
+      } catch {}
+    }
+    setReceiveForm((prev) => ({
+      ...prev,
+      product_name: updatedName,
+      part_number: updatedPart
+    }));
+    success(`Updated product "${updatedName}"!`);
+  };
+
+  const handleDeleteCatalogProductPrompt = () => {
+    const currentName = receiveForm.product_name.trim();
+    if (!currentName) {
+      error('Please select a product to delete.');
+      return;
+    }
+    const matched = catalogProducts.find(
+      (cp) => cp.name.toLowerCase() === currentName.toLowerCase()
+    );
+    if (!matched) {
+      setReceiveForm((prev) => ({ ...prev, product_name: '', part_number: '' }));
+      return;
+    }
+    if (!window.confirm(`Delete product "${matched.name}" from saved list?`)) return;
+    const updatedCatalog = catalogProducts.filter((cp) => cp.id !== matched.id);
+    setCatalogProducts(updatedCatalog);
+    try {
+      localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(updatedCatalog));
+    } catch {}
+    setReceiveForm((prev) => ({ ...prev, product_name: '', part_number: '' }));
+    success(`Deleted "${matched.name}" from saved products.`);
+  };
+
   // Open Receive Modal
   const handleOpenReceiveModal = () => {
     setReceiveForm({
       product_name: '',
       part_number: '',
-      category: 'Spare Part',
-      brand: '',
+      category: categories[0] || 'Spare Part',
       received_date: new Date().toISOString().split('T')[0],
       quantity_received: 1,
       is_reused: false,
@@ -426,8 +625,6 @@ export const ProductManagement: React.FC = () => {
     const finalReusedName = isReused ? (reusedName || receiveForm.product_name.trim()) : '';
 
     // Check if product with identical name and part number exists:
-    // If it exists, add to its received count and stock.
-    // If not, create a new product entry so it appears in history!
     const existingIndex = products.findIndex(
       (p) =>
         p.name.trim().toLowerCase() === receiveForm.product_name.trim().toLowerCase() &&
@@ -443,7 +640,6 @@ export const ProductManagement: React.FC = () => {
       const updated = {
         ...existing,
         category: receiveForm.category || existing.category,
-        brand: receiveForm.brand || existing.brand,
         received_date: receiveForm.received_date,
         quantity_received: newTotalReceived,
         stock_quantity: newStock,
@@ -466,7 +662,6 @@ export const ProductManagement: React.FC = () => {
         name: receiveForm.product_name.trim(),
         part_number: receiveForm.part_number.trim() || undefined,
         category: receiveForm.category || 'Spare Part',
-        brand: receiveForm.brand.trim() || undefined,
         received_date: receiveForm.received_date,
         quantity_received: qty,
         used_quantity: 0,
@@ -490,6 +685,41 @@ export const ProductManagement: React.FC = () => {
           : `Product "${newProduct.name}" created and added to inventory!`
       );
     }
+
+    // Save/update product into saved catalog so it is immediately selectable next time
+    const trimmedName = receiveForm.product_name.trim();
+    const trimmedPart = (receiveForm.part_number || '').trim();
+    const trimmedCat = receiveForm.category || 'Spare Part';
+
+    setCatalogProducts((prev) => {
+      const idx = prev.findIndex(
+        (cp) => cp.name.toLowerCase() === trimmedName.toLowerCase()
+      );
+      let updated: CatalogProduct[];
+      if (idx >= 0) {
+        updated = [...prev];
+        updated[idx] = {
+          ...updated[idx],
+          name: trimmedName,
+          part_number: trimmedPart || updated[idx].part_number,
+          category: trimmedCat
+        };
+      } else {
+        updated = [
+          {
+            id: `cat-prod-${Date.now()}`,
+            name: trimmedName,
+            part_number: trimmedPart,
+            category: trimmedCat
+          },
+          ...prev
+        ];
+      }
+      try {
+        localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
     auditLogger.log({
       user: 'Admin',
@@ -871,7 +1101,7 @@ export const ProductManagement: React.FC = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search product, part number, brand, vehicle..."
+            placeholder="Search product, part number, category, vehicle..."
             className="w-full text-xs pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
           />
           {searchTerm && (
@@ -890,7 +1120,8 @@ export const ProductManagement: React.FC = () => {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700 cursor-pointer"
           >
-            {CATEGORIES.map((cat) => (
+            <option value="All Categories">All Categories</option>
+            {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
@@ -925,15 +1156,23 @@ export const ProductManagement: React.FC = () => {
             </div>
           </div>
 
-          {/* Record Vehicle Usage Action Button */}
-          <button
-            type="button"
-            onClick={() => handleOpenUsageModal()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold bg-[#142B4A] hover:bg-slate-800 text-white shadow-xs hover:shadow-md transition-all cursor-pointer self-start sm:self-auto"
-          >
-            <Bus className="w-4 h-4 text-blue-300" />
-            <span>Record Vehicle Usage</span>
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <PrintButton
+              title="CHARVIK SPARE PARTS & INVENTORY RECORDS"
+              subtitle={`Live Stock: ${totalStockCount} units available`}
+              targetId="product-inventory-table-container"
+              orientation="landscape"
+              label="Print Inventory"
+            />
+            <button
+              type="button"
+              onClick={() => handleOpenUsageModal()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold bg-[#142B4A] hover:bg-slate-800 text-white shadow-xs hover:shadow-md transition-all cursor-pointer"
+            >
+              <Bus className="w-4 h-4 text-blue-300" />
+              <span>Record Vehicle Usage</span>
+            </button>
+          </div>
         </div>
 
         {/* Inventory Records Table */}
@@ -942,8 +1181,8 @@ export const ProductManagement: React.FC = () => {
             <thead className="bg-[#DCE6F1] text-black font-bold border-b border-slate-300">
               <tr>
                 <th className="py-2.5 px-3 text-center w-12 border-r border-slate-300">S.NO</th>
-                <th className="py-2.5 px-3 border-r border-slate-300">PRODUCT</th>
-                <th className="py-2.5 px-3 border-r border-slate-300">CATEGORY / BRAND</th>
+                <th className="py-2.5 px-3 border-r border-slate-300">PRODUCT / PART NUMBER</th>
+                <th className="py-2.5 px-3 border-r border-slate-300">CATEGORY</th>
                 <th className="py-2.5 px-3 text-center border-r border-slate-300">RECEIVED</th>
                 <th className="py-2.5 px-3 text-center border-r border-slate-300">USED</th>
                 <th className="py-2.5 px-3 text-center border-r border-slate-300">STOCK</th>
@@ -1009,14 +1248,11 @@ export const ProductManagement: React.FC = () => {
                     </div>
                   </td>
 
-                  {/* Category & Brand */}
+                  {/* Category */}
                   <td className="py-3 px-3 border-r border-slate-100">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
                       {p.category}
                     </span>
-                    <p className="text-[11px] font-bold text-slate-600 mt-1">
-                      {p.brand || '—'}
-                    </p>
                   </td>
 
                   {/* Received */}
@@ -1145,6 +1381,16 @@ export const ProductManagement: React.FC = () => {
                 Every spare part issued against a vehicle with date, odometer, remarks & verification photo.
               </p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <PrintButton
+              title="CHARVIK VEHICLE SPARE PARTS USAGE LOG"
+              subtitle={`Total Issued Records: ${usageHistory.length}`}
+              targetId="spare-usage-table-container"
+              orientation="landscape"
+              label="Print Usage Log"
+            />
           </div>
         </div>
 
@@ -1279,49 +1525,45 @@ export const ProductManagement: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* Product Name */}
+              {/* 1. Category (First, with Add, Edit, Delete) */}
               <div className="sm:col-span-2">
-                <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-                  <Package className="w-4 h-4 text-blue-600" />
-                  <span>Product Name <span className="text-rose-600">*</span></span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Brake pad, engine oil, filter..."
-                  value={receiveForm.product_name}
-                  onChange={(e) => setReceiveForm((prev) => ({ ...prev, product_name: e.target.value }))}
-                  className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs placeholder:text-slate-400"
-                />
-              </div>
-
-              {/* Part Number */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-                  <Tag className="w-4 h-4 text-amber-500" />
-                  <span>Part Number</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="BP-001, OIL-15W40..."
-                  value={receiveForm.part_number}
-                  onChange={(e) => setReceiveForm((prev) => ({ ...prev, part_number: e.target.value }))}
-                  className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
-                />
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-                  <Layers className="w-4 h-4 text-purple-600" />
-                  <span>Category <span className="text-rose-600">*</span></span>
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                    <Layers className="w-3.5 h-3.5 text-purple-600" />
+                    <span>Category <span className="text-rose-600">*</span></span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleAddCategoryPrompt}
+                      className="inline-flex items-center gap-1 text-[11px] font-black text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" /> Add Category
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleEditCategoryPrompt}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-blue-600 cursor-pointer"
+                    >
+                      <Edit className="w-3 h-3" /> Edit
+                    </button>
+                    {categories.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteCategoryPrompt}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 hover:text-rose-800 cursor-pointer"
+                      >
+                        <Trash2 className="w-3 h-3" /> Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <select
                   value={receiveForm.category}
                   onChange={(e) => setReceiveForm((prev) => ({ ...prev, category: e.target.value }))}
-                  className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-blue-200 bg-white font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs"
                 >
-                  {CATEGORIES.filter((c) => c !== 'All Categories').map((cat) => (
+                  {categories.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>
@@ -1329,25 +1571,112 @@ export const ProductManagement: React.FC = () => {
                 </select>
               </div>
 
-              {/* Brand */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Brand</span>
-                </label>
+              {/* 2. Part Name / Part Number (Next, auto-fills product name) */}
+              <div className="sm:col-span-2">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                    <Tag className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Part Name / Part Number</span>
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-medium">Auto-fills product name</span>
+                </div>
                 <input
                   type="text"
-                  placeholder="Bosch, Castrol, Tata..."
-                  value={receiveForm.brand}
-                  onChange={(e) => setReceiveForm((prev) => ({ ...prev, brand: e.target.value }))}
-                  className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs placeholder:text-slate-400"
+                  list="catalog-parts-list"
+                  placeholder="e.g. BP-001, OIL-15W40..."
+                  value={receiveForm.part_number}
+                  onChange={(e) => handlePartNumberChange(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-blue-200 bg-white font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
                 />
+                <datalist id="catalog-parts-list">
+                  {catalogProducts.filter(cp => cp.part_number).map((cp) => (
+                    <option key={cp.id} value={cp.part_number}>
+                      {cp.name}
+                    </option>
+                  ))}
+                </datalist>
               </div>
 
-              {/* Received Date */}
+              {/* 3. Product Name (Next, with Add More, Edit, Delete, auto-fills part number) */}
+              <div className="sm:col-span-2">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                    <Package className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Product Name <span className="text-rose-600">*</span></span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleAddNewProductTemplate}
+                      className="inline-flex items-center gap-1 text-[11px] font-black text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" /> Add More
+                    </button>
+                    {receiveForm.product_name && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleEditCatalogProductPrompt}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-blue-600 cursor-pointer"
+                        >
+                          <Edit className="w-3 h-3" /> Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDeleteCatalogProductPrompt}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 hover:text-rose-800 cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" /> Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick Select from Saved Catalog */}
+                {catalogProducts.length > 0 && (
+                  <div className="mb-1.5">
+                    <select
+                      value={
+                        catalogProducts.find(
+                          (cp) => cp.name.toLowerCase() === receiveForm.product_name.trim().toLowerCase()
+                        )?.id || ''
+                      }
+                      onChange={(e) => handleSelectCatalogProduct(e.target.value)}
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      <option value="">-- Or Select from Saved Products ({catalogProducts.length}) --</option>
+                      {catalogProducts.map((cp) => (
+                        <option key={cp.id} value={cp.id}>
+                          {cp.name} {cp.part_number ? `(${cp.part_number})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <input
+                  type="text"
+                  required
+                  list="catalog-products-list"
+                  placeholder="Brake pad, engine oil, filter..."
+                  value={receiveForm.product_name}
+                  onChange={(e) => handleProductNameChange(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-blue-200 bg-white font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs placeholder:text-slate-400"
+                />
+                <datalist id="catalog-products-list">
+                  {catalogProducts.map((cp) => (
+                    <option key={cp.id} value={cp.name}>
+                      {cp.part_number ? `Part: ${cp.part_number}` : ''}
+                    </option>
+                  ))}
+                </datalist>
+              </div>
+
+              {/* 4. Received Date & Quantity Received (Brand removed!) */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-                  <Calendar className="w-4 h-4 text-blue-600" />
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
                   <span>Received Date <span className="text-rose-600">*</span></span>
                 </label>
                 <input
@@ -1355,23 +1684,22 @@ export const ProductManagement: React.FC = () => {
                   required
                   value={receiveForm.received_date}
                   onChange={(e) => setReceiveForm((prev) => ({ ...prev, received_date: e.target.value }))}
-                  className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-blue-200 bg-white font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs"
                 />
               </div>
 
-              {/* Quantity Received */}
-              <div className="sm:col-span-2">
-                <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-                  <Boxes className="w-4 h-4 text-indigo-600" />
+              <div>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
+                  <Boxes className="w-3.5 h-3.5 text-indigo-600" />
                   <span>Quantity Received <span className="text-rose-600">*</span></span>
                 </label>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setReceiveForm(prev => ({ ...prev, quantity_received: Math.max(1, (prev.quantity_received || 1) - 1) }))}
-                    className="w-11 h-11 rounded-2xl bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 flex items-center justify-center font-black border border-slate-200 transition-all cursor-pointer shadow-2xs"
+                    className="w-9 h-9 rounded-xl border border-slate-300 bg-slate-50 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-700 cursor-pointer shrink-0"
                   >
-                    <Minus className="w-5 h-5" />
+                    <Minus className="w-3.5 h-3.5" />
                   </button>
                   <input
                     type="number"
@@ -1387,14 +1715,14 @@ export const ProductManagement: React.FC = () => {
                         reused_quantity: prev.is_reused ? Math.min(prev.reused_quantity || val, val) : 0
                       }));
                     }}
-                    className="flex-1 text-center text-base px-4 py-2.5 rounded-2xl border border-blue-200 bg-white font-black text-[#142B4A] focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs"
+                    className="flex-1 text-center text-xs px-3 py-2 rounded-xl border border-blue-200 bg-white font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs"
                   />
                   <button
                     type="button"
                     onClick={() => setReceiveForm(prev => ({ ...prev, quantity_received: (prev.quantity_received || 0) + 1 }))}
-                    className="w-11 h-11 rounded-2xl bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-700 flex items-center justify-center font-black border border-slate-200 transition-all cursor-pointer shadow-2xs"
+                    className="w-9 h-9 rounded-xl border border-slate-300 bg-slate-50 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-700 cursor-pointer shrink-0"
                   >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>

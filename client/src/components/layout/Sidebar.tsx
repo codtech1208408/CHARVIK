@@ -701,8 +701,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setIsMobileOpen(false);
                   }}
                   className={`flex items-center gap-2.5 px-3 py-1.5 text-xs transition-colors ${subActive
-                      ? 'text-blue-600 font-bold'
-                      : 'text-slate-800 hover:text-blue-600 font-medium'
+                    ? 'text-blue-600 font-bold'
+                    : 'text-slate-800 hover:text-blue-600 font-medium'
                     }`}
                 >
                   <SubIcon className={`w-4 h-4 shrink-0 ${subActive ? 'text-blue-600' : 'text-slate-500'}`} />
