@@ -512,12 +512,27 @@ export const ProductManagement: React.FC = () => {
   };
 
   const handleAddNewProductTemplate = () => {
+    const newName = window.prompt('Enter new product name:');
+    if (!newName || !newName.trim()) return;
+    const cleanName = newName.trim();
+    const newPart = window.prompt('Enter Part Number for this product (optional):');
+    const cleanPart = (newPart || '').trim();
+
+    const newProd: CatalogProduct = {
+      id: `prod_${Date.now()}`,
+      name: cleanName,
+      part_number: cleanPart,
+      category: receiveForm.category || 'Spare Part'
+    };
+    const updated = [...catalogProducts, newProd];
+    setCatalogProducts(updated);
+    saveCatalogProducts(updated);
     setReceiveForm((prev) => ({
       ...prev,
-      product_name: '',
-      part_number: ''
+      product_name: cleanName,
+      part_number: cleanPart
     }));
-    success('Ready to enter new product name and part number.');
+    success(`Product "${cleanName}" added and selected.`);
   };
 
   const handleEditCatalogProductPrompt = () => {
@@ -1645,10 +1660,10 @@ export const ProductManagement: React.FC = () => {
                       onChange={(e) => handleSelectCatalogProduct(e.target.value)}
                       className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                     >
-                      <option value="">-- Or Select from Saved Products ({catalogProducts.length}) --</option>
+                      <option value="">-- Select from Saved Products ({catalogProducts.length}) --</option>
                       {catalogProducts.map((cp) => (
                         <option key={cp.id} value={cp.id}>
-                          {cp.name} {cp.part_number ? `(${cp.part_number})` : ''}
+                          {cp.name}
                         </option>
                       ))}
                     </select>
@@ -1666,9 +1681,7 @@ export const ProductManagement: React.FC = () => {
                 />
                 <datalist id="catalog-products-list">
                   {catalogProducts.map((cp) => (
-                    <option key={cp.id} value={cp.name}>
-                      {cp.part_number ? `Part: ${cp.part_number}` : ''}
-                    </option>
+                    <option key={cp.id} value={cp.name} />
                   ))}
                 </datalist>
               </div>
