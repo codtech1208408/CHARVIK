@@ -96,114 +96,33 @@ export function printSheet(options: PrintOptions): void {
           font-size: 11px;
           line-height: 1.4;
           background: #ffffff;
-          padding: 4px 8px;
+          padding: 4px 6px;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
-        /* 1. Top Header Box with outer blue border */
-        .charvik-top-header {
-          border: 1.5px solid #0056b3;
-          border-radius: 6px;
-          padding: 8px 18px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background: #ffffff;
-          margin-bottom: 4px;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+        /* 1. Exact Full-Width Letterhead & Sub-Banner matching Image copy 2 */
+        .charvik-exact-header-wrap {
+          width: 100%;
+          margin-bottom: 5px;
         }
-        .header-logo-box {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          padding-left: 8px;
-        }
-        .header-logo-box img {
-          max-height: 82px;
-          max-width: 280px;
-          object-fit: contain;
+        .charvik-exact-header-img {
+          width: 100%;
+          height: auto;
           display: block;
         }
-        .header-divider-line {
-          width: 1.5px;
-          height: 80px;
-          background-color: #0056b3;
-          margin: 0 24px;
-          flex-shrink: 0;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        .header-contacts-box {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 4.5px;
-        }
-        .contact-row {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .contact-circle {
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          background: #0056b3;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        .contact-circle svg {
-          display: block !important;
-          width: 12px;
-          height: 12px;
-        }
-        .contact-phone-text {
-          font-size: 17px;
-          font-weight: 800;
-          color: #072346;
-          letter-spacing: 0.5px;
-        }
-        .contact-sub-text {
-          font-size: 12.5px;
-          font-weight: 600;
-          color: #072346;
-        }
 
-        /* 2. Sub-Header Bar (Light blue fill, dark blue border) */
-        .charvik-service-bar {
-          border: 1.5px solid #0056b3;
-          border-radius: 4px;
-          background: #dbeafe !important;
-          padding: 5px 12px;
-          text-align: center;
-          font-size: 10.5px;
-          font-weight: 800;
-          color: #072346;
-          letter-spacing: 0.8px;
-          text-transform: uppercase;
-          margin-bottom: 6px;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-
-        /* 3. Title & Meta Strip Box */
+        /* 2. Title & Meta Strip Box */
         .charvik-meta-bar {
           border: 1.5px solid #0056b3;
-          border-radius: 4px;
-          padding: 5.5px 12px;
+          border-radius: 3px;
+          padding: 4.5px 10px;
           display: flex;
           justify-content: space-between;
           align-items: center;
           background: #ffffff;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
+          box-sizing: border-box;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
@@ -213,7 +132,7 @@ export function printSheet(options: PrintOptions): void {
           gap: 8px;
         }
         .charvik-meta-title {
-          font-size: 12px;
+          font-size: 11.5px;
           font-weight: 900;
           color: #072346;
           text-transform: uppercase;
@@ -231,7 +150,7 @@ export function printSheet(options: PrintOptions): void {
           white-space: nowrap;
         }
 
-        /* 4. Table Styling matching Image copy 2 */
+        /* 3. Table Styling matching Image copy 2 */
         table {
           width: 100% !important;
           border-collapse: collapse !important;
@@ -283,10 +202,6 @@ export function printSheet(options: PrintOptions): void {
           font-weight: 600 !important;
         }
 
-        svg {
-          display: inline-block;
-        }
-
         @media print {
           body {
             padding: 0 !important;
@@ -300,54 +215,17 @@ export function printSheet(options: PrintOptions): void {
       </style>
     </head>
     <body>
-      <!-- Top Header Container matching Image copy 2 -->
-      <div class="charvik-top-header">
-        <div class="header-logo-box">
-          <img 
-            src="/logo.png" 
-            alt="CHARVIK STAFFING CONSULTANCY" 
-            onerror="this.src='/logo-compact.png'" 
-          />
-        </div>
-        <div class="header-divider-line"></div>
-        <div class="header-contacts-box">
-          <!-- Phone -->
-          <div class="contact-row">
-            <span class="contact-circle">
-              <svg viewBox="0 0 24 24" fill="white"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-1.57 1.97c-2.83-1.44-5.15-3.75-6.59-6.59l1.97-1.57c.28-.27.36-.66.25-1.02A11.36 11.36 0 0 1 9 5.31c0-.55-.45-1-1-1H4.5c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-.99-.93z"/></svg>
-            </span>
-            <span class="contact-phone-text">9396151527</span>
-          </div>
-          <!-- Email -->
-          <div class="contact-row">
-            <span class="contact-circle">
-              <svg viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-            </span>
-            <span class="contact-sub-text">charvikstaffingconsulrancy@gmail.com</span>
-          </div>
-          <!-- Website -->
-          <div class="contact-row">
-            <span class="contact-circle">
-              <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-            </span>
-            <span class="contact-sub-text">charvikstaffingconsulrancy.in</span>
-          </div>
-          <!-- Location -->
-          <div class="contact-row">
-            <span class="contact-circle">
-              <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-            </span>
-            <span class="contact-sub-text">Hyderabad, Telangana</span>
-          </div>
-        </div>
+      <!-- Exact Full-Width Header from Reference Image -->
+      <div class="charvik-exact-header-wrap">
+        <img 
+          src="/charvik-exact-print-header.png" 
+          alt="CHARVIK STAFFING CONSULTANCY" 
+          class="charvik-exact-header-img"
+          onerror="this.src='/charvik-letterhead-header.png'"
+        />
       </div>
 
-      <!-- 2. Sub-Header Bar (Light blue fill, dark blue border) -->
-      <div class="charvik-service-bar">
-        STAFFING &nbsp;|&nbsp; MANPOWER SOLUTIONS &nbsp;|&nbsp; FLEET MAINTENANCE SUPPORT &nbsp;|&nbsp; OPERATIONAL SERVICES
-      </div>
-
-      <!-- 3. Report Title & Meta Strip Box -->
+      <!-- Title & Meta Strip Box -->
       <div class="charvik-meta-bar">
         <div class="charvik-meta-left">
           <span class="charvik-meta-title">${title}</span>
@@ -358,7 +236,7 @@ export function printSheet(options: PrintOptions): void {
         </div>
       </div>
 
-      <!-- 4. Printable Table / Body -->
+      <!-- Printable Table / Body -->
       <div class="print-body">
         ${bodyContent}
       </div>

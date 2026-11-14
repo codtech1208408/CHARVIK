@@ -140,3 +140,4 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
