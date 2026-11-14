@@ -25,6 +25,7 @@ import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { auditLogger } from '../services/auditLogger';
 import { PrintButton } from '../components/common/PrintButton';
+import { printSheet } from '../utils/printSheet';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 
 export interface FuelingEntry {
@@ -395,123 +396,109 @@ export const DailyKilometers: React.FC = () => {
     }
   };
 
-  // Print Individual Fueling Slip with Official Charvik Letterhead
+  // Print Individual Fueling Slip with Official Charvik Letterhead Format
   const handlePrintFuelingEntry = (e: FuelingEntry) => {
-    const printContent = `
-      <html>
-      <head>
-        <title>Fueling Receipt - ${e.vehicle_number} (${e.date})</title>
-        <style>
-          @page { margin: 18mm 15mm; size: A4 portrait; }
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 13px; }
-          .letterhead { display: flex; align-items: center; justify-content: space-between; padding: 0 0 14px 0; border-bottom: 3px solid #0E52A5; margin-bottom: 18px; }
-          .letterhead img { height: 70px; width: auto; object-fit: contain; }
-          .company-info { text-align: right; }
-          .company-info h2 { font-size: 20px; font-weight: 900; color: #0B3A79; letter-spacing: 1px; }
-          .company-info p { font-size: 10px; color: #555; margin-top: 2px; }
-          .doc-title { text-align: center; margin-bottom: 18px; }
-          .doc-title h3 { font-size: 16px; font-weight: 800; color: #0B3A79; text-transform: uppercase; letter-spacing: 1px; }
-          .doc-title p { font-size: 11px; color: #666; margin-top: 3px; }
-          .vehicle-banner { background: linear-gradient(135deg, #0B3A79, #1E70EB); color: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
-          .vehicle-banner .reg { font-size: 22px; font-weight: 900; font-family: monospace; letter-spacing: 1px; }
-          .vehicle-banner .route { font-size: 13px; color: #dbeafe; margin-top: 3px; font-weight: 600; }
-          .vehicle-banner .date { font-size: 13px; text-align: right; color: #b3d4ff; font-weight: 700; }
-          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
-          .info-box { background: #f4f8ff; border: 1px solid #c8daf5; border-radius: 8px; padding: 12px 14px; }
-          .info-box label { font-size: 10px; font-weight: 700; color: #0E52A5; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
-          .info-box span { font-size: 14px; font-weight: 800; color: #1a1a2e; }
-          .financials { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px; }
-          .fin-box { border: 2px solid #c8daf5; border-radius: 8px; padding: 12px 14px; text-align: center; }
-          .fin-box.highlight { background: #ecfdf5; border-color: #059669; }
-          .fin-box label { font-size: 10px; font-weight: 700; color: #0E52A5; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
-          .fin-box .amount { font-size: 20px; font-weight: 900; color: #0B3A79; }
-          .fin-box.highlight .amount { color: #059669; }
-          .notes-box { background: #fff; border: 1px dashed #94a3b8; border-radius: 8px; padding: 12px 14px; margin-bottom: 18px; font-size: 12px; }
-          .notes-box strong { color: #0B3A79; }
-          .footer { border-top: 1.5px solid #c8daf5; margin-top: 24px; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: #888; }
-        </style>
-      </head>
-      <body>
-        <div class="letterhead">
-          <img src="/logo-compact.png" alt="Charvik Logo" />
-          <div class="company-info">
-            <h2>CHARVIK</h2>
-            <p>Staffing Consultancy &amp; Fleet Operations</p>
-            <p>contact@charvikstaffing.com | +91 98765 43210</p>
-          </div>
-        </div>
+    const htmlContent = `
+      <div style="font-family: inherit;">
+        <!-- Vehicle & Trip Corridor Details -->
+        <table style="width: 100% !important; border: 1.5px solid #0056b3 !important; border-collapse: collapse !important; margin-bottom: 10px !important;">
+          <thead>
+            <tr>
+              <th colspan="2" style="background-color: #072346 !important; color: #ffffff !important; padding: 8px 12px !important; font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important;">
+                FLEET VEHICLE TRIP & FUELING PARTICULARS
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="width: 50% !important; padding: 7px 10px !important; border: 1px solid #93c5fd !important; background-color: #f8fafc !important;">
+                <span style="font-size: 9px !important; font-weight: 800 !important; color: #0056b3 !important; text-transform: uppercase !important; display: block !important;">Vehicle Registration</span>
+                <span style="font-size: 14px !important; font-weight: 900 !important; color: #072346 !important; font-family: monospace !important;">${e.vehicle_number}</span>
+              </td>
+              <td style="width: 50% !important; padding: 7px 10px !important; border: 1px solid #93c5fd !important; background-color: #f8fafc !important;">
+                <span style="font-size: 9px !important; font-weight: 800 !important; color: #0056b3 !important; text-transform: uppercase !important; display: block !important;">Date of Fueling</span>
+                <span style="font-size: 12px !important; font-weight: 800 !important; color: #072346 !important;">${e.date}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 7px 10px !important; border: 1px solid #93c5fd !important;">
+                <span style="font-size: 9px !important; font-weight: 800 !important; color: #0056b3 !important; text-transform: uppercase !important; display: block !important;">Trip Corridor / Route</span>
+                <span style="font-size: 11px !important; font-weight: 700 !important; color: #0f172a !important;">${e.route || 'General Fleet Corridor'}</span>
+              </td>
+              <td style="padding: 7px 10px !important; border: 1px solid #93c5fd !important;">
+                <span style="font-size: 9px !important; font-weight: 800 !important; color: #0056b3 !important; text-transform: uppercase !important; display: block !important;">Fuel Station</span>
+                <span style="font-size: 11px !important; font-weight: 700 !important; color: #0f172a !important;">${e.station || 'Highway Fuel Depot'}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-        <div class="doc-title">
-          <h3>Mileage &amp; Fueling Receipt</h3>
-          <p>Record ID: <strong>#${e.id}</strong> &nbsp;|&nbsp; Printed on: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-        </div>
-
-        <div class="vehicle-banner">
-          <div>
-            <div class="reg">${e.vehicle_number}</div>
-            <div class="route">${e.route || 'General Fleet Corridor'}</div>
-          </div>
-          <div class="date">
-            <div>Date of Fueling</div>
-            <div style="font-size:15px; color:#fff; margin-top:2px;">${e.date}</div>
-          </div>
-        </div>
-
-        <div class="info-grid">
-          <div class="info-box">
-            <label>Last Fuel KM (Start)</label>
-            <span>${Number(e.last_fuel_km).toLocaleString('en-IN')} KM</span>
-          </div>
-          <div class="info-box">
-            <label>End Trip KM</label>
-            <span>${Number(e.end_trip_km).toLocaleString('en-IN')} KM</span>
-          </div>
-          <div class="info-box">
-            <label>Total Distance Run</label>
-            <span>${Number(e.total_km).toLocaleString('en-IN')} KM</span>
-          </div>
-          <div class="info-box">
-            <label>Fuel Station</label>
-            <span>${e.station || 'Highway Fuel Depot'}</span>
-          </div>
-        </div>
-
-        <div class="financials">
-          <div class="fin-box">
-            <label>Fuel Consumed</label>
-            <div class="amount">${e.fuel_liters} L</div>
-          </div>
-          <div class="fin-box">
-            <label>Fuel Cost</label>
-            <div class="amount">&#8377; ${Number(e.fuel_cost).toLocaleString('en-IN')}</div>
-          </div>
-          <div class="fin-box highlight">
-            <label>Calculated Mileage</label>
-            <div class="amount">${e.mileage_km_l.toFixed(2)} KM/L</div>
-          </div>
-        </div>
+        <!-- Distance & Mileage Table -->
+        <table style="width: 100% !important; border: 1.5px solid #0056b3 !important; border-collapse: collapse !important; margin-bottom: 10px !important;">
+          <thead>
+            <tr>
+              <th style="background-color: #072346 !important; color: #ffffff !important; padding: 7px 10px !important; font-size: 9.5px !important; text-align: left !important;">START ODOMETER</th>
+              <th style="background-color: #072346 !important; color: #ffffff !important; padding: 7px 10px !important; font-size: 9.5px !important; text-align: left !important;">END ODOMETER</th>
+              <th style="background-color: #072346 !important; color: #ffffff !important; padding: 7px 10px !important; font-size: 9.5px !important; text-align: left !important;">TOTAL DISTANCE</th>
+              <th style="background-color: #072346 !important; color: #ffffff !important; padding: 7px 10px !important; font-size: 9.5px !important; text-align: left !important;">FUEL CONSUMED</th>
+              <th style="background-color: #072346 !important; color: #ffffff !important; padding: 7px 10px !important; font-size: 9.5px !important; text-align: left !important;">TOTAL COST</th>
+              <th style="background-color: #072346 !important; color: #ffffff !important; padding: 7px 10px !important; font-size: 9.5px !important; text-align: left !important;">CALCULATED MILEAGE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 9px 10px !important; border: 1px solid #93c5fd !important; font-weight: 800 !important; font-size: 11px !important; color: #072346 !important;">${Number(e.last_fuel_km).toLocaleString('en-IN')} KM</td>
+              <td style="padding: 9px 10px !important; border: 1px solid #93c5fd !important; font-weight: 800 !important; font-size: 11px !important; color: #072346 !important;">${Number(e.end_trip_km).toLocaleString('en-IN')} KM</td>
+              <td style="padding: 9px 10px !important; border: 1px solid #93c5fd !important; font-weight: 900 !important; font-size: 11.5px !important; color: #0056b3 !important;">${Number(e.total_km).toLocaleString('en-IN')} KM</td>
+              <td style="padding: 9px 10px !important; border: 1px solid #93c5fd !important; font-weight: 900 !important; font-size: 11.5px !important; color: #072346 !important;">${Number(e.fuel_liters).toFixed(2)} L</td>
+              <td style="padding: 9px 10px !important; border: 1px solid #93c5fd !important; font-weight: 900 !important; font-size: 11.5px !important; color: #072346 !important;">₹${Number(e.fuel_cost || 0).toLocaleString('en-IN')}</td>
+              <td style="padding: 9px 10px !important; border: 1px solid #93c5fd !important; font-weight: 900 !important; font-size: 12.5px !important; color: #059669 !important; background-color: #f0fdf4 !important;">${Number(e.mileage_km_l || 0).toFixed(2)} KM/L</td>
+            </tr>
+          </tbody>
+        </table>
 
         ${e.remarks ? `
-          <div class="notes-box">
-            <strong>Remarks / Notes:</strong> ${e.remarks}
-          </div>
+          <table style="width: 100% !important; border: 1.5px solid #0056b3 !important; border-collapse: collapse !important; margin-bottom: 14px !important;">
+            <tbody>
+              <tr>
+                <td style="padding: 7px 10px !important; border: 1px solid #93c5fd !important; background-color: #f8fafc !important;">
+                  <strong style="color: #072346 !important; font-size: 10.5px !important;">Remarks / Operational Notes:</strong>
+                  <span style="font-size: 10.5px !important; color: #334155 !important; margin-left: 6px !important;">${e.remarks}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         ` : ''}
 
-        <div class="footer">
-          <span>Generated by Charvik Fleet Management System</span>
-          <span>${new Date().toLocaleString('en-IN')}</span>
-        </div>
-      </body>
-      </html>
+        <!-- Official Signatures Block -->
+        <table style="width: 100% !important; margin-top: 32px !important; border: none !important; border-collapse: collapse !important;">
+          <tbody>
+            <tr>
+              <td style="width: 33% !important; text-align: center !important; border: none !important; padding-top: 35px !important;">
+                <div style="border-top: 1px dashed #64748b !important; width: 150px !important; margin: 0 auto 4px auto !important;"></div>
+                <span style="font-size: 10px !important; font-weight: 800 !important; color: #072346 !important; display: block !important;">Driver Signature</span>
+              </td>
+              <td style="width: 33% !important; text-align: center !important; border: none !important; padding-top: 35px !important;">
+                <div style="border-top: 1px dashed #64748b !important; width: 150px !important; margin: 0 auto 4px auto !important;"></div>
+                <span style="font-size: 10px !important; font-weight: 800 !important; color: #072346 !important; display: block !important;">Station Attendant</span>
+              </td>
+              <td style="width: 34% !important; text-align: center !important; border: none !important; padding-top: 35px !important;">
+                <div style="border-top: 1px dashed #64748b !important; width: 150px !important; margin: 0 auto 4px auto !important;"></div>
+                <span style="font-size: 10px !important; font-weight: 800 !important; color: #072346 !important; display: block !important;">Authorized Signatory</span>
+                <span style="font-size: 8.5px !important; color: #64748b !important;">Charvik Staffing Consultancy</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     `;
-    const win = window.open('', '_blank', 'width=800,height=700');
-    if (win) {
-      win.document.write(printContent);
-      win.document.close();
-      win.focus();
-      setTimeout(() => { win.print(); win.close(); }, 400);
-    }
+
+    printSheet({
+      title: 'MILEAGE & FUELING RECEIPT',
+      subtitle: `Vehicle: ${e.vehicle_number} • Slip #${e.id}`,
+      htmlContent,
+      orientation: 'portrait'
+    });
   };
 
   // Export to Excel / CSV with vehicle-specific filtering and summary count
