@@ -169,6 +169,7 @@ export const TaskManagement: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [staffCategoryFilter, setStaffCategoryFilter] = useState('All Staff Categories');
+  const [vehicleStatusFilter, setVehicleStatusFilter] = useState('All Vehicle Statuses');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('All Payment Statuses');
   const [routeOriginFilter, setRouteOriginFilter] = useState('All Route Origins');
   const [destinationFilter, setDestinationFilter] = useState('All Destinations');
@@ -786,6 +787,10 @@ export const TaskManagement: React.FC = () => {
         if (!t.route_corridor.toLowerCase().includes(destinationFilter.toLowerCase())) return false;
       }
 
+      // Vehicle status filter (Active vs Hold)
+      if (vehicleStatusFilter === 'Active' && String(t.vehicle_status || '').toUpperCase().startsWith('HOLD')) return false;
+      if (vehicleStatusFilter === 'Hold' && !String(t.vehicle_status || '').toUpperCase().startsWith('HOLD')) return false;
+
       // Duty status filter
       if (statusFilter === 'Active' && t.duty_status === 'Completed') return false;
       if (statusFilter === 'Completed' && t.duty_status !== 'Completed') return false;
@@ -797,6 +802,7 @@ export const TaskManagement: React.FC = () => {
     activePoolTrips,
     search,
     staffCategoryFilter,
+    vehicleStatusFilter,
     paymentStatusFilter,
     routeOriginFilter,
     destinationFilter,
@@ -850,6 +856,16 @@ export const TaskManagement: React.FC = () => {
         if (!matchesDst) return false;
       }
 
+      // Vehicle status filter on bus
+      if (vehicleStatusFilter === 'Active') {
+        const matchesActive = bTrips.some((t) => !String(t.vehicle_status || '').toUpperCase().startsWith('HOLD'));
+        if (!matchesActive) return false;
+      }
+      if (vehicleStatusFilter === 'Hold') {
+        const matchesHold = bTrips.some((t) => String(t.vehicle_status || '').toUpperCase().startsWith('HOLD'));
+        if (!matchesHold) return false;
+      }
+
       if (statusFilter === 'Active') {
         return bTrips.some((t) => t.duty_status !== 'Completed');
       }
@@ -866,6 +882,7 @@ export const TaskManagement: React.FC = () => {
     busGroupMap,
     search,
     staffCategoryFilter,
+    vehicleStatusFilter,
     paymentStatusFilter,
     routeOriginFilter,
     destinationFilter,
@@ -882,6 +899,7 @@ export const TaskManagement: React.FC = () => {
       csvLines.push(`"CHARVIK STAFFING CONSULTANCY - TRIP MANAGEMENT FLEET DUTY REPORT"`);
       csvLines.push(`"Vehicle / Search Filter","${vehLabel}"`);
       csvLines.push(`"Staff Category","${staffCategoryFilter}"`);
+      csvLines.push(`"Vehicle Status","${vehicleStatusFilter}"`);
       csvLines.push(`"Payment Status","${paymentStatusFilter}"`);
       csvLines.push(`"Origin / Destination","${routeOriginFilter} -> ${destinationFilter}"`);
       csvLines.push(`"Date Range","${fromDateFilter || selectedDate} to ${toDateFilter || selectedDate}"`);
@@ -1087,7 +1105,7 @@ export const TaskManagement: React.FC = () => {
                   ? `Pending Unassigned Fleet Buses (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
                   : `All Individual Trip Logs (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`
             }
-            subtitle={`Period: ${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel} • Status: ${statusFilter}`}
+            subtitle={`Period: ${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel} • Vehicle Status: ${vehicleStatusFilter}`}
             targetId={
               activeTab === 'assigned'
                 ? 'assigned-duties-table-wrap'
@@ -1133,7 +1151,18 @@ export const TaskManagement: React.FC = () => {
           <option value="Captain">Captain Assigned</option>
         </select>
 
-        {/* 3. All Payment Statuses */}
+        {/* 3. Vehicle Status Filter */}
+        <select
+          value={vehicleStatusFilter}
+          onChange={(e) => setVehicleStatusFilter(e.target.value)}
+          className="text-xs font-bold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-700 outline-none cursor-pointer"
+        >
+          <option value="All Vehicle Statuses">All Vehicle Statuses</option>
+          <option value="Active">Active</option>
+          <option value="Hold">Hold</option>
+        </select>
+
+        {/* 4. All Payment Statuses */}
         <select
           value={paymentStatusFilter}
           onChange={(e) => setPaymentStatusFilter(e.target.value)}
@@ -1196,12 +1225,13 @@ export const TaskManagement: React.FC = () => {
         </div>
 
         {/* Clear Filters Button */}
-        {(search || staffCategoryFilter !== 'All Staff Categories' || paymentStatusFilter !== 'All Payment Statuses' || routeOriginFilter !== 'All Route Origins' || destinationFilter !== 'All Destinations' || fromDateFilter || toDateFilter) && (
+        {(search || staffCategoryFilter !== 'All Staff Categories' || vehicleStatusFilter !== 'All Vehicle Statuses' || paymentStatusFilter !== 'All Payment Statuses' || routeOriginFilter !== 'All Route Origins' || destinationFilter !== 'All Destinations' || fromDateFilter || toDateFilter) && (
           <button
             type="button"
             onClick={() => {
               setSearch('');
               setStaffCategoryFilter('All Staff Categories');
+              setVehicleStatusFilter('All Vehicle Statuses');
               setPaymentStatusFilter('All Payment Statuses');
               setRouteOriginFilter('All Route Origins');
               setDestinationFilter('All Destinations');
