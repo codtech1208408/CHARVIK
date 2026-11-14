@@ -41,6 +41,8 @@ import { StatusToggle } from '../components/common/StatusToggle';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
+import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 import { useAuth } from '../context/AuthContext';
 
 export interface DocExpiryItem {
@@ -449,6 +451,97 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
   const drivers = employees.filter((e) => e.role === 'Driver');
   const helpers = employees.filter((e) => e.role === 'Helper');
 
+  const handlePrintBusMaster = () => {
+    const headers = [
+      'S.NO',
+      'Registration No',
+      'Model',
+      'Bus Type',
+      'Seating',
+      'Owner / Operator',
+      'Status',
+      'Fitness Expiry',
+      'Tax Expiry',
+      'Insurance Expiry',
+      'PUCC Expiry'
+    ];
+    const tableRowsHtml = filteredBuses
+      .map(
+        (b, i) => `
+      <tr>
+        <td style="text-align: center; font-weight: bold;">${i + 1}</td>
+        <td style="font-weight: bold; color: #072346;">${b.registration_number}</td>
+        <td>${b.model || '—'}</td>
+        <td>${b.bus_type || '—'}</td>
+        <td style="text-align: center;">${b.seating_capacity || '—'}</td>
+        <td>${b.fleet_owner || '—'}</td>
+        <td style="font-weight: bold;">${b.operational_status || 'Active'}</td>
+        <td>${b.fitness_expiry || '—'}</td>
+        <td>${b.tax_valid_upto || '—'}</td>
+        <td>${b.insurance_expiry || '—'}</td>
+        <td>${b.puc_expiry || '—'}</td>
+      </tr>
+    `
+      )
+      .join('');
+
+    const htmlContent = `
+      <table>
+        <thead>
+          <tr>
+            ${headers.map((h, idx) => `<th class="${idx === 0 || idx === 4 ? 'text-center' : ''}">${h}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRowsHtml}
+        </tbody>
+      </table>
+    `;
+
+    printSheet({
+      title: `Fleet Vehicles Master Sheet (${statusFilter})`,
+      subtitle: `Total Vehicles: ${filteredBuses.length} • Filter: ${statusFilter}`,
+      htmlContent,
+      orientation: 'landscape'
+    });
+  };
+
+  const handleExportBusMasterExcel = () => {
+    const headers = [
+      'S.NO',
+      'Registration Number',
+      'Model / Chassis',
+      'Bus Type',
+      'Seating Capacity',
+      'Fleet Owner / Operator',
+      'Operational Status',
+      'Fitness Expiry',
+      'Tax Valid Upto',
+      'Insurance Expiry',
+      'PUC Expiry'
+    ];
+    const rows = filteredBuses.map((b, i) => [
+      i + 1,
+      b.registration_number,
+      b.model || '',
+      b.bus_type || '',
+      b.seating_capacity || '',
+      b.fleet_owner || '',
+      b.operational_status || '',
+      b.fitness_expiry || '',
+      b.tax_valid_upto || '',
+      b.insurance_expiry || '',
+      b.puc_expiry || ''
+    ]);
+    exportTableToExcel({
+      title: `Fleet Vehicles Master Sheet (${statusFilter})`,
+      subtitle: `Total Vehicles: ${filteredBuses.length} • Filter: ${statusFilter}`,
+      filename: `Fleet_Vehicles_Master_${statusFilter}`,
+      headers,
+      rows
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header with Real Bus Coach Banner matching Reference */}
@@ -697,6 +790,8 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
               title={`Fleet Vehicles Master Sheet (${statusFilter})`}
               subtitle={`Total Vehicles: ${filteredBuses.length} • Filter: ${statusFilter}`}
               targetId="bus-master-content-area"
+              onPrint={handlePrintBusMaster}
+              onExportExcel={handleExportBusMasterExcel}
             />
           </div>
         </div>

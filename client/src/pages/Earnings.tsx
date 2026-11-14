@@ -505,6 +505,7 @@ export const Earnings: React.FC = () => {
                 subtitle={`Total Tasks: ${periodFilteredTasks.length} • Task Spend: ₹${totalTaskSpend.toLocaleString('en-IN')}`}
                 targetId="earnings-full-analytics-wrap"
                 label="Print Report"
+                showExcel={false}
                 className="px-3.5 py-2.5 whitespace-nowrap shrink-0 bg-white/20 hover:bg-white/30 border border-white/30 text-white"
               />
             </div>

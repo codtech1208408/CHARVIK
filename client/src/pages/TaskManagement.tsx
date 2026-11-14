@@ -1079,6 +1079,7 @@ export const TaskManagement: React.FC = () => {
           </button>
 
           <PrintButton
+            showExcel={false}
             title={
               activeTab === 'assigned'
                 ? `Assigned Fleet Duties (${isDateRangeActive ? `${formatDisplayDate(fromDateFilter)} to ${formatDisplayDate(toDateFilter)}` : currentMonthLabel})`

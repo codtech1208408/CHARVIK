@@ -653,6 +653,7 @@ export const DailyKilometers: React.FC = () => {
               subtitle={`Total Records: ${filteredEntries.length} • Total Fuel Cost: ₹${totalFuelCost.toLocaleString('en-IN')}`}
               targetId="mileage-fueling-table-wrap"
               label="Print Sheet"
+              showExcel={false}
             />
 
             <button

@@ -32,6 +32,7 @@ import { useAuth } from '../context/AuthContext';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 import type { Bus as BusType } from '../types';
 import type { DailyMaintenanceRecord } from '../services/seedData';
+import { PrintButton } from '../components/common/PrintButton';
 
 export const DailyMaintenance: React.FC = () => {
   const { user } = useAuth();
@@ -483,6 +484,16 @@ export const DailyMaintenance: React.FC = () => {
               <span>Export Excel</span>
             </button>
 
+            <PrintButton
+              title="Daily Vehicle Maintenance Records"
+              subtitle={`Total Records: ${filteredRecords.length}`}
+              targetId="daily-maintenance-table-container"
+              orientation="landscape"
+              label="Print Sheet"
+              showExcel={false}
+              className="px-3.5 py-2.5 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs"
+            />
+
             <button
               type="button"
               onClick={handleOpenAdd}
@@ -609,7 +620,7 @@ export const DailyMaintenance: React.FC = () => {
       </div>
 
       {/* Records Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
+      <div id="daily-maintenance-table-container" className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>

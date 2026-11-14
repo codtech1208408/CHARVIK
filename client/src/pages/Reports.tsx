@@ -14,6 +14,7 @@ import { api } from '../services/api';
 import type { Bus as BusType } from '../types';
 import { Badge } from '../components/common/Badge';
 import { useToast } from '../components/common/Toast';
+import { printSheet } from '../utils/printSheet';
 
 export const Reports: React.FC = () => {
   const { success, error } = useToast();
@@ -166,7 +167,14 @@ export const Reports: React.FC = () => {
               <span>Excel</span>
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={() =>
+                printSheet({
+                  title: currentReportMeta?.label || 'OFFICIAL REPORT',
+                  subtitle: `Generated on ${new Date().toLocaleDateString('en-IN')}`,
+                  elementId: 'reports-data-table-wrap',
+                  orientation: 'landscape'
+                })
+              }
               className="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-black text-blue-900 bg-white hover:bg-blue-50 transition-colors gap-1.5 cursor-pointer shadow-md whitespace-nowrap"
             >
               <Printer className="w-3.5 h-3.5 text-blue-800" />
@@ -289,7 +297,7 @@ export const Reports: React.FC = () => {
         </div>
 
         {/* Dynamic Data Table */}
-        <div className="overflow-x-auto">
+        <div id="reports-data-table-wrap" className="overflow-x-auto">
           {loading ? (
             <div className="py-12 text-center text-slate-400">
               <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
