@@ -23,7 +23,6 @@ import { TyreMaintenance } from './pages/TyreMaintenance';
 import { NewTyres } from './pages/NewTyres';
 import { VehicleMaintenance } from './pages/VehicleMaintenance';
 import { VehicleMaintenanceJobCard } from './pages/VehicleMaintenanceJobCard';
-import { DailyMaintenance } from './pages/DailyMaintenance';
 import { AcMaintenance } from './pages/AcMaintenance';
 import { OilFilterMaintenance } from './pages/OilFilterMaintenance';
 import { BatteryMaintenance } from './pages/BatteryMaintenance';
@@ -83,7 +82,7 @@ export function App() {
               <Route path="vehicle-maintenance" element={<VehicleMaintenance />} />
               <Route path="vehicle-maintenance-card" element={<VehicleMaintenanceJobCard />} />
               <Route path="job-card" element={<Navigate to="/admin/vehicle-maintenance-card" replace />} />
-              <Route path="daily-maintenance" element={<DailyMaintenance />} />
+              <Route path="daily-maintenance" element={<Navigate to="/admin/vehicle-maintenance-card" replace />} />
               <Route path="new-tyres" element={<NewTyres />} />
               <Route path="tyres/new" element={<Navigate to="/admin/new-tyres" replace />} />
               <Route path="mileage-fueling" element={<DailyKilometers />} />

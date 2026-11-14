@@ -33,7 +33,6 @@ import {
   ClipboardCheck,
   History,
   FileText,
-  CalendarCheck,
   Gauge
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -170,10 +169,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Admin Vehicle Maintenance Subtabs
   const adminVehicleMaintenanceSubItems: NavSubItem[] = [
     { label: 'Fleet Maintenance Overview', route: '/admin/vehicle-maintenance', icon: Gauge, activeRoutes: ['/admin/vehicle-maintenance'] },
-    { label: 'Vehicle Maintenance', route: '/admin/vehicle-maintenance-card', icon: Wrench, activeRoutes: ['/admin/vehicle-maintenance-card', '/admin/job-card'] },
+    { label: 'Daily Vehicle Maintenance', route: '/admin/vehicle-maintenance-card', icon: Wrench, activeRoutes: ['/admin/vehicle-maintenance-card', '/admin/job-card', '/admin/daily-maintenance'] },
     { label: 'Vehicle Registration', route: '/admin/vehicles', icon: Bus, activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management'] },
     { label: 'Daily Vehicle Checkup', route: '/admin/daily-vehicle-checkup', icon: ClipboardCheck, activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition'] },
-    { label: 'Daily Maintenance', route: '/admin/daily-maintenance', icon: CalendarCheck, activeRoutes: ['/admin/daily-maintenance'] },
     { label: 'Mileage & Fueling', route: '/admin/mileage-fueling', icon: Fuel, activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers'] },
     { label: 'New Tyres', route: '/admin/new-tyres', icon: Disc, activeRoutes: ['/admin/new-tyres', '/admin/tyres/new'] },
     { label: 'Product Management', route: '/admin/products', icon: Package, activeRoutes: ['/admin/products', '/admin/product-management'] },

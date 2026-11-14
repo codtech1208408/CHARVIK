@@ -10,8 +10,7 @@ import {
   Package,
   ShieldCheck,
   FileText,
-  Wrench,
-  CalendarCheck
+  Wrench
 } from 'lucide-react';
 
 export interface ModuleCategoryItem {
@@ -58,10 +57,10 @@ export const ALL_MODULE_CATEGORIES: ModuleCategoryItem[] = [
   },
   {
     id: 'vehicle_maintenance',
-    name: 'Vehicle Maintenance',
+    name: 'Daily Vehicle Maintenance',
     route: '/admin/vehicle-maintenance',
     icon: Wrench,
-    activeRoutes: ['/admin/vehicle-maintenance'],
+    activeRoutes: ['/admin/vehicle-maintenance', '/admin/vehicle-maintenance-card', '/admin/job-card'],
     description: 'Fleet maintenance overview, service status & intervals'
   },
   {
@@ -71,14 +70,6 @@ export const ALL_MODULE_CATEGORIES: ModuleCategoryItem[] = [
     icon: ClipboardCheck,
     activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/bus-condition', '/admin/vehicle-checkup'],
     description: 'Daily inspection and bus condition checklists'
-  },
-  {
-    id: 'daily_maintenance',
-    name: 'Daily Maintenance',
-    route: '/admin/daily-maintenance',
-    icon: CalendarCheck,
-    activeRoutes: ['/admin/daily-maintenance'],
-    description: 'Daily repairs, complaints, showroom bills & invoice records'
   },
   {
     id: 'new_tyres',
