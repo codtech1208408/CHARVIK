@@ -159,20 +159,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Vertical Divider */}
         <div className="h-8 w-[1.5px] bg-slate-300 mx-1 shrink-0" />
 
-        {/* Charvik brand logo */}
+        {/* Charvik brand logo matching exact lockup with crisp bold slogan */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex flex-col items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-0.5 group select-none"
+          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-1 group select-none"
           title="Charvik Staffing Consultancy"
         >
           <img
-            src="/logo-brand.png?v=2"
+            src="/logo-exact.png?v=3"
             alt="Charvik Staffing Consultancy"
-            className="h-[52px] sm:h-[58px] lg:h-[62px] w-auto max-w-[280px] sm:max-w-[340px] lg:max-w-[400px] object-contain transition-transform group-hover:scale-[1.01]"
+            className="h-[66px] sm:h-[72px] lg:h-[76px] w-auto max-w-[280px] sm:max-w-[340px] lg:max-w-[400px] object-contain transition-transform group-hover:scale-[1.02]"
           />
-          <span className="text-[8px] sm:text-[9.5px] lg:text-[10px] font-black text-[#0B1E38] tracking-[0.16em] uppercase whitespace-nowrap leading-none mt-1">
-            YOUR TALENT &nbsp;|&nbsp; OUR SUPPORT &nbsp;|&nbsp; A BRIGHTER FUTURE
-          </span>
         </Link>
 
         {/* Operator Mode: Quick Return to Admin Button */}
