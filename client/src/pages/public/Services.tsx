@@ -160,30 +160,34 @@ export const Services: React.FC = () => {
                       <div className="grid grid-cols-2 gap-3 sm:gap-4">
                         <div className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-slate-200 transition-all duration-300 group bg-white">
                           <img
-                            src="/assets/crew-driver.png"
+                            src="/assets/crew-driver-hd.png"
                             alt="Driver Supply - Professional Drivers for Your Buses"
                             className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="eager"
                           />
                         </div>
                         <div className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-slate-200 transition-all duration-300 group bg-white">
                           <img
-                            src="/assets/crew-helper.png"
+                            src="/assets/crew-helper-hd.png"
                             alt="Helper Supply - Skilled Helpers for Your Operations"
                             className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="eager"
                           />
                         </div>
                         <div className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-slate-200 transition-all duration-300 group bg-white">
                           <img
-                            src="/assets/crew-captain.png"
+                            src="/assets/crew-captain-hd.png"
                             alt="Bus Captain Supply - Experienced Captains for Your Buses"
                             className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="eager"
                           />
                         </div>
                         <div className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-slate-200 transition-all duration-300 group bg-white">
                           <img
-                            src="/assets/crew-supervisor.png"
+                            src="/assets/crew-supervisor-hd.png"
                             alt="Supervisor Supply - Qualified Supervisors for Better Management"
                             className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="eager"
                           />
                         </div>
                       </div>
