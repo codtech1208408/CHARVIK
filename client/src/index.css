@@ -17,6 +17,7 @@
     -webkit-appearance: none;
     margin: 0;
   }
+
   input[type="number"] {
     -moz-appearance: textfield;
     appearance: textfield;
@@ -28,13 +29,16 @@
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
@@ -199,9 +203,9 @@
   }
 
   /* When printing an open modal or printable sheet, hide the background page content */
-  body:has(.printable-sheet) #root > *:not(:has(.printable-sheet)),
-  body:has(.printable-sheet) main > *:not(:has(.printable-sheet)),
-  body:has(.printable-sheet) .admin-data-page > *:not(:has(.printable-sheet)) {
+  body:has(.printable-sheet) #root>*:not(:has(.printable-sheet)),
+  body:has(.printable-sheet) main>*:not(:has(.printable-sheet)),
+  body:has(.printable-sheet) .admin-data-page>*:not(:has(.printable-sheet)) {
     display: none !important;
   }
 
@@ -215,7 +219,7 @@
     padding: 0 !important;
   }
 
-  .fixed.inset-0:has(.printable-sheet) > div {
+  .fixed.inset-0:has(.printable-sheet)>div {
     padding: 0 !important;
     display: block !important;
     width: 100% !important;

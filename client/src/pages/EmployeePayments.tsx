@@ -510,14 +510,14 @@ export const EmployeePayments: React.FC = () => {
     // If user clicked "Confirm & Print Receipt"
     if (shouldPrint) {
       printSheet({
-        title: "STAFF PAYMENT RECEIPT",
+        title: "TRIP DUTY & REMUNERATION SLIP",
         subtitle: `Receipt No: ${receiptNo} | Staff: ${targetStaff.full_name} (${targetStaff.employee_code})`,
         orientation: "portrait",
         hideMetaBar: true,
         htmlContent: `
           <div style="font-family: sans-serif; padding: 20px; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
-            <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 14px; margin-bottom: 18px;">
-              <h2 style="margin: 0; color: #142B4A; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">STAFF PAYMENT RECEIPT</h2>
+            <div style="text-align: center; border-bottom: 2px solid #072346; padding-bottom: 14px; margin-bottom: 18px;">
+              <h2 style="margin: 0; color: #072346; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">TRIP DUTY &amp; REMUNERATION SLIP</h2>
               <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Staff Remuneration & Advance Payment Record</p>
             </div>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
@@ -956,17 +956,17 @@ export const EmployeePayments: React.FC = () => {
     });
   };
 
-  // 1. Print Individual Payment Receipt
+  // 1. Print Individual Payment Receipt / Slip
   const handlePrintReceipt = (payment: RecordedPayment) => {
     printSheet({
-      title: "STAFF PAYMENT RECEIPT",
+      title: "TRIP DUTY & REMUNERATION SLIP",
       subtitle: `Receipt No: ${payment.id} | Staff: ${payment.employee_name} (${payment.employee_code})`,
       orientation: "portrait",
       hideMetaBar: true,
       htmlContent: `
         <div style="font-family: sans-serif; padding: 20px; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
-          <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 14px; margin-bottom: 18px;">
-            <h2 style="margin: 0; color: #142B4A; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">STAFF PAYMENT RECEIPT</h2>
+          <div style="text-align: center; border-bottom: 2px solid #072346; padding-bottom: 14px; margin-bottom: 18px;">
+            <h2 style="margin: 0; color: #072346; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">TRIP DUTY &amp; REMUNERATION SLIP</h2>
             <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Staff Remuneration & Advance Payment Record</p>
           </div>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
@@ -1027,9 +1027,9 @@ export const EmployeePayments: React.FC = () => {
       hideMetaBar: true,
       htmlContent: `
         <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 650px; margin: 0 auto; border: 1.5px solid #cbd5e1; border-radius: 14px; background: #ffffff;">
-          <div style="border-bottom: 2.5px solid #142B4A; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="border-bottom: 2.5px solid #072346; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
-              <h2 style="margin: 0; color: #142B4A; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">TRIP DUTY &amp; REMUNERATION SLIP</h2>
+              <h2 style="margin: 0; color: #072346; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">TRIP DUTY &amp; REMUNERATION SLIP</h2>
               <p style="margin: 3px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Trip Duty Voucher & Staff Remuneration Record</p>
             </div>
             <div style="text-align: right;">
