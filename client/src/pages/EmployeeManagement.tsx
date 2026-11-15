@@ -42,6 +42,7 @@ import { PrintButton } from '../components/common/PrintButton';
 import { useAuth } from '../context/AuthContext';
 import { ALL_MODULE_CATEGORIES, ALL_CATEGORY_NAMES } from '../constants/moduleCategories';
 import { formatEmployeeId } from '../utils/employeeCode';
+import { printSheet } from '../utils/printSheet';
 
 export const EmployeeManagement: React.FC = () => {
   const navigate = useNavigate();
@@ -1366,7 +1367,15 @@ export const EmployeeManagement: React.FC = () => {
                 <button
                   onClick={() => {
                     setViewTab('sheet');
-                    setTimeout(() => window.print(), 100);
+                    setTimeout(() => {
+                      printSheet({
+                        title: `${viewingProfile.employee.full_name} - Biodata`,
+                        elementId: 'printable-employee-sheet',
+                        orientation: 'portrait',
+                        hideMetaBar: true,
+                        hideHeader: true
+                      });
+                    }, 50);
                   }}
                   className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
@@ -1398,7 +1407,7 @@ export const EmployeeManagement: React.FC = () => {
 
             {/* MODE 1: Official Yellow-Header Table matching image.png */}
             {viewTab === 'sheet' && (
-              <div className="border-2 border-black overflow-hidden font-sans text-xs bg-white printable-sheet">
+              <div id="printable-employee-sheet" className="border-2 border-black overflow-hidden font-sans text-xs bg-white printable-sheet">
                 {/* Official Charvik Letterhead Header */}
                 <div className="bg-white border-b-2 border-black">
                   <img

@@ -31,6 +31,7 @@ import { useToast } from '../components/common/Toast';
 import { getNextEmployeeCode } from '../utils/employeeCode';
 import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
 import { useAuth } from '../context/AuthContext';
+import { printSheet } from '../utils/printSheet';
 
 export const DriverRegistration: React.FC = () => {
   const navigate = useNavigate();
@@ -1130,8 +1131,16 @@ export const DriverRegistration: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={() => window.print()}
-              className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold"
+              onClick={() => {
+                printSheet({
+                  title: `${formData.full_name || 'Driver'} - Biodata`,
+                  elementId: 'printable-driver-sheet',
+                  orientation: 'portrait',
+                  hideMetaBar: true,
+                  hideHeader: true
+                });
+              }}
+              className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Print</span>
@@ -1139,7 +1148,7 @@ export const DriverRegistration: React.FC = () => {
           </div>
 
           {/* Biodata Driver Official Table Format */}
-          <div className="border-2 border-black overflow-hidden font-sans printable-sheet">
+          <div id="printable-driver-sheet" className="border-2 border-black overflow-hidden font-sans printable-sheet">
             {/* Official Charvik Letterhead Header */}
             <div className="bg-white border-b-2 border-black">
               <img

@@ -32,6 +32,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { printSheet } from '../utils/printSheet';
 
 export const CaptainDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -907,7 +908,15 @@ export const CaptainDashboard: React.FC = () => {
               </div>
 
               <button
-                onClick={() => window.print()}
+                onClick={() => {
+                  printSheet({
+                    title: `${captain?.name || user?.name || 'Captain'} - Biodata`,
+                    elementId: 'printable-captain-sheet',
+                    orientation: 'portrait',
+                    hideMetaBar: true,
+                    hideHeader: true
+                  });
+                }}
                 className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
@@ -916,7 +925,7 @@ export const CaptainDashboard: React.FC = () => {
             </div>
 
             {/* Official Biodata helper & Captains Table matching image.png */}
-            <div className="border-2 border-black overflow-hidden font-sans text-xs bg-white printable-sheet">
+            <div id="printable-captain-sheet" className="border-2 border-black overflow-hidden font-sans text-xs bg-white printable-sheet">
               {/* Official Charvik Letterhead Header */}
               <div className="bg-white border-b-2 border-black">
                 <img

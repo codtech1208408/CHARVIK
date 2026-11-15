@@ -16,6 +16,8 @@ interface PrintOptions {
   orientation?: 'portrait' | 'landscape';
   /** Set to true to hide the outer boxed title & meta strip (used for slips and vouchers) */
   hideMetaBar?: boolean;
+  /** Set to true to omit top letterhead banner (if the printable element already contains it) */
+  hideHeader?: boolean;
 }
 
 export function printSheet(options: PrintOptions): void {
@@ -30,7 +32,8 @@ export function printSheet(options: PrintOptions): void {
     elementId,
     htmlContent,
     orientation = 'landscape',
-    hideMetaBar = false
+    hideMetaBar = false,
+    hideHeader = false
   } = options;
 
   let bodyContent = '';
@@ -205,6 +208,18 @@ export function printSheet(options: PrintOptions): void {
           font-weight: 600 !important;
         }
 
+        /* 4. Cloned Sheets & Modals Styling */
+        .printable-sheet {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          margin: 0 !important;
+        }
+        img {
+          max-width: 100% !important;
+          height: auto !important;
+        }
+
         @media print {
           body {
             padding: 0 !important;
@@ -219,6 +234,7 @@ export function printSheet(options: PrintOptions): void {
     </head>
     <body>
       <!-- Exact Full-Width Header from Reference Image -->
+      ${!hideHeader ? `
       <div class="charvik-exact-header-wrap">
         <img 
           src="/charvik-exact-print-header.png?v=20261115" 
@@ -227,6 +243,7 @@ export function printSheet(options: PrintOptions): void {
           onerror="this.src='/charvik-letterhead-header.png?v=20261115'"
         />
       </div>
+      ` : ''}
 
       <!-- Title & Meta Strip Box -->
       ${!hideMetaBar ? `

@@ -33,6 +33,7 @@ import { StatusToggle } from '../components/common/StatusToggle';
 import { useToast } from '../components/common/Toast';
 import { getNextEmployeeCode } from '../utils/employeeCode';
 import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
+import { printSheet } from '../utils/printSheet';
 import { useAuth } from '../context/AuthContext';
 
 export const SupportStaffRegistration: React.FC = () => {
@@ -1061,7 +1062,15 @@ export const SupportStaffRegistration: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={() => window.print()}
+              onClick={() => {
+                printSheet({
+                  title: `${formData.full_name || formData.role} - Biodata`,
+                  elementId: 'printable-support-sheet',
+                  orientation: 'portrait',
+                  hideMetaBar: true,
+                  hideHeader: true
+                });
+              }}
               className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer"
             >
               <Printer className="w-4 h-4" />
@@ -1070,7 +1079,7 @@ export const SupportStaffRegistration: React.FC = () => {
           </div>
 
           {/* Biodata helper & Captains Official Table Format */}
-          <div className="border-2 border-black overflow-hidden font-sans printable-sheet">
+          <div id="printable-support-sheet" className="border-2 border-black overflow-hidden font-sans printable-sheet">
             {/* Official Charvik Letterhead Header */}
             <div className="bg-white border-b-2 border-black">
               <img
