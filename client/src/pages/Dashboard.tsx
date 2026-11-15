@@ -688,57 +688,57 @@ export const Dashboard: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
             {/* 1. OPENING BALANCE (Vibrant Mint / Emerald Theme) */}
             <div
               onClick={() => navigate('/admin/income-expense')}
-              className="bg-gradient-to-br from-[#D1FAE5] via-[#A7F3D0] to-[#6EE7B7] rounded-3xl border-2 border-[#10B981] p-5 sm:p-6 shadow-md shadow-emerald-500/15 hover:shadow-xl hover:border-emerald-600 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden"
+              className="bg-gradient-to-br from-[#D1FAE5] via-[#A7F3D0] to-[#6EE7B7] rounded-2xl border-2 border-[#10B981] p-3.5 sm:p-4 shadow-sm hover:shadow-md hover:border-emerald-600 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden"
             >
               <div className="relative z-10 flex items-start justify-between w-full">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-[#064E3B] uppercase tracking-wider">
+                  <p className="text-[11px] font-black text-[#064E3B] uppercase tracking-wider">
                     OPENING BALANCE
                   </p>
-                  <h3 className="text-2xl sm:text-3xl font-black text-[#022c22] mt-1.5 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#022c22] mt-1 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                     ₹{openingBalanceStats.openingBalance.toLocaleString('en-IN')}
                   </h3>
                 </div>
-                <div className="flex flex-col items-end gap-2 shrink-0 ml-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#047857] text-white flex items-center justify-center shadow-lg shadow-emerald-700/30 ring-4 ring-emerald-500/20 group-hover:scale-110 transition-transform">
-                    <Wallet className="w-6 h-6 text-white" />
+                <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#10B981] to-[#047857] text-white flex items-center justify-center shadow-md shadow-emerald-700/25 ring-2 ring-emerald-500/20 group-hover:scale-105 transition-transform">
+                    <Wallet className="w-5 h-5 text-white" />
                   </div>
-                  <div className="w-7 h-7 rounded-full bg-white/90 hover:bg-white text-[#047857] shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                    <ArrowRight className="w-3.5 h-3.5 font-black" />
+                  <div className="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-[#047857] shadow-xs flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                    <ArrowRight className="w-3 h-3 font-black" />
                   </div>
                 </div>
               </div>
 
               {/* Two Categories: Bank / UPI & Cash */}
-              <div className="relative z-10 grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-emerald-600/20">
-                <div className="bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-emerald-600/20 shadow-xs flex flex-col">
-                  <div className="flex items-center gap-1 text-[#065F46] text-[10px] font-black uppercase tracking-wider">
-                    <Landmark className="w-3 h-3 text-emerald-700 shrink-0" />
+              <div className="relative z-10 grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-emerald-600/20">
+                <div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-emerald-600/20 shadow-2xs flex flex-col">
+                  <div className="flex items-center gap-1 text-[#065F46] text-[9.5px] font-black uppercase tracking-wider">
+                    <Landmark className="w-2.5 h-2.5 text-emerald-700 shrink-0" />
                     <span>Bank / UPI</span>
                   </div>
-                  <span className="text-sm font-mono font-black text-[#022c22] mt-0.5">
+                  <span className="text-xs sm:text-sm font-mono font-black text-[#022c22] mt-0.5">
                     ₹{openingBalanceStats.openingBankUpi.toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-emerald-600/20 shadow-xs flex flex-col">
-                  <div className="flex items-center gap-1 text-[#065F46] text-[10px] font-black uppercase tracking-wider">
-                    <Banknote className="w-3 h-3 text-emerald-700 shrink-0" />
+                <div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-emerald-600/20 shadow-2xs flex flex-col">
+                  <div className="flex items-center gap-1 text-[#065F46] text-[9.5px] font-black uppercase tracking-wider">
+                    <Banknote className="w-2.5 h-2.5 text-emerald-700 shrink-0" />
                     <span>Cash</span>
                   </div>
-                  <span className="text-sm font-mono font-black text-[#022c22] mt-0.5">
+                  <span className="text-xs sm:text-sm font-mono font-black text-[#022c22] mt-0.5">
                     ₹{openingBalanceStats.openingCash.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
 
-              <div className="relative z-10 mt-2">
-                <p className="text-[11px] text-[#065F46] font-bold flex items-center gap-1">
+              <div className="relative z-10 mt-1.5">
+                <p className="text-[10px] text-[#065F46] font-bold flex items-center gap-1">
                   <span>Updated from Income & Expense tab</span>
-                  <ExternalLink className="w-3 h-3 opacity-80" />
+                  <ExternalLink className="w-2.5 h-2.5 opacity-80" />
                 </p>
               </div>
             </div>
@@ -746,51 +746,51 @@ export const Dashboard: React.FC = () => {
             {/* 2. PAID TO EMPLOYEES (Vibrant Royal Blue Theme) */}
             <div
               onClick={() => navigate('/admin/employee-payments')}
-              className="bg-gradient-to-br from-[#DBEAFE] via-[#BFDBFE] to-[#93C5FD] rounded-3xl border-2 border-[#3B82F6] p-5 sm:p-6 shadow-md shadow-blue-500/15 hover:shadow-xl hover:border-blue-600 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden"
+              className="bg-gradient-to-br from-[#DBEAFE] via-[#BFDBFE] to-[#93C5FD] rounded-2xl border-2 border-[#3B82F6] p-3.5 sm:p-4 shadow-sm hover:shadow-md hover:border-blue-600 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden"
             >
               <div className="relative z-10 flex items-start justify-between w-full">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-[#172554] uppercase tracking-wider">
+                  <p className="text-[11px] font-black text-[#172554] uppercase tracking-wider">
                     PAID TO EMPLOYEES
                   </p>
-                  <h3 className="text-2xl sm:text-3xl font-black text-[#0f172a] mt-1.5 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#0f172a] mt-1 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                     ₹{openingBalanceStats.paidToEmployees.toLocaleString('en-IN')}
                   </h3>
                 </div>
-                <div className="flex flex-col items-end gap-2 shrink-0 ml-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shadow-lg shadow-blue-700/30 ring-4 ring-blue-500/20 group-hover:scale-110 transition-transform">
-                    <HandCoins className="w-6 h-6 text-white" />
+                <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shadow-md shadow-blue-700/25 ring-2 ring-blue-500/20 group-hover:scale-105 transition-transform">
+                    <HandCoins className="w-5 h-5 text-white" />
                   </div>
-                  <div className="w-7 h-7 rounded-full bg-white/90 hover:bg-white text-[#1D4ED8] shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                    <ArrowRight className="w-3.5 h-3.5 font-black" />
+                  <div className="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-[#1D4ED8] shadow-xs flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                    <ArrowRight className="w-3 h-3 font-black" />
                   </div>
                 </div>
               </div>
 
               {/* Two Categories: Bank / UPI & Cash */}
-              <div className="relative z-10 grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-blue-600/20">
-                <div className="bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-blue-600/20 shadow-xs flex flex-col">
-                  <div className="flex items-center gap-1 text-[#1E40AF] text-[10px] font-black uppercase tracking-wider">
-                    <Landmark className="w-3 h-3 text-blue-700 shrink-0" />
+              <div className="relative z-10 grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-blue-600/20">
+                <div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-blue-600/20 shadow-2xs flex flex-col">
+                  <div className="flex items-center gap-1 text-[#1E40AF] text-[9.5px] font-black uppercase tracking-wider">
+                    <Landmark className="w-2.5 h-2.5 text-blue-700 shrink-0" />
                     <span>Bank / UPI</span>
                   </div>
-                  <span className="text-sm font-mono font-black text-[#0f172a] mt-0.5">
+                  <span className="text-xs sm:text-sm font-mono font-black text-[#0f172a] mt-0.5">
                     ₹{openingBalanceStats.paidBankUpi.toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-blue-600/20 shadow-xs flex flex-col">
-                  <div className="flex items-center gap-1 text-[#1E40AF] text-[10px] font-black uppercase tracking-wider">
-                    <Banknote className="w-3 h-3 text-blue-700 shrink-0" />
+                <div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-blue-600/20 shadow-2xs flex flex-col">
+                  <div className="flex items-center gap-1 text-[#1E40AF] text-[9.5px] font-black uppercase tracking-wider">
+                    <Banknote className="w-2.5 h-2.5 text-blue-700 shrink-0" />
                     <span>Cash</span>
                   </div>
-                  <span className="text-sm font-mono font-black text-[#0f172a] mt-0.5">
+                  <span className="text-xs sm:text-sm font-mono font-black text-[#0f172a] mt-0.5">
                     ₹{openingBalanceStats.paidCash.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
 
-              <div className="relative z-10 mt-2">
-                <p className="text-[11px] text-[#1E40AF] font-bold">
+              <div className="relative z-10 mt-1.5">
+                <p className="text-[10px] text-[#1E40AF] font-bold">
                   Disbursed from opening balance
                 </p>
               </div>
@@ -799,51 +799,51 @@ export const Dashboard: React.FC = () => {
             {/* 3. REMAINING BALANCE (Vibrant Warm Orange Theme) */}
             <div
               onClick={() => navigate('/admin/income-expense')}
-              className="bg-gradient-to-br from-[#FFEDD5] via-[#FED7AA] to-[#FDBA74] rounded-3xl border-2 border-[#F97316] p-5 sm:p-6 shadow-md shadow-orange-500/15 hover:shadow-xl hover:border-orange-600 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden"
+              className="bg-gradient-to-br from-[#FFEDD5] via-[#FED7AA] to-[#FDBA74] rounded-2xl border-2 border-[#F97316] p-3.5 sm:p-4 shadow-sm hover:shadow-md hover:border-orange-600 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden"
             >
               <div className="relative z-10 flex items-start justify-between w-full">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-[#431407] uppercase tracking-wider">
+                  <p className="text-[11px] font-black text-[#431407] uppercase tracking-wider">
                     REMAINING BALANCE
                   </p>
-                  <h3 className="text-2xl sm:text-3xl font-black text-[#270b04] mt-1.5 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#270b04] mt-1 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                     ₹{openingBalanceStats.remainingOpeningBalance.toLocaleString('en-IN')}
                   </h3>
                 </div>
-                <div className="flex flex-col items-end gap-2 shrink-0 ml-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F97316] to-[#C2410C] text-white flex items-center justify-center shadow-lg shadow-orange-700/30 ring-4 ring-orange-500/20 group-hover:scale-110 transition-transform">
-                    <PiggyBank className="w-6 h-6 text-white" />
+                <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F97316] to-[#C2410C] text-white flex items-center justify-center shadow-md shadow-orange-700/25 ring-2 ring-orange-500/20 group-hover:scale-105 transition-transform">
+                    <PiggyBank className="w-5 h-5 text-white" />
                   </div>
-                  <div className="w-7 h-7 rounded-full bg-white/90 hover:bg-white text-[#C2410C] shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                    <ArrowRight className="w-3.5 h-3.5 font-black" />
+                  <div className="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-[#C2410C] shadow-xs flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                    <ArrowRight className="w-3 h-3 font-black" />
                   </div>
                 </div>
               </div>
 
               {/* Two Categories: Bank / UPI & Cash */}
-              <div className="relative z-10 grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-orange-600/20">
-                <div className="bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-orange-600/20 shadow-xs flex flex-col">
-                  <div className="flex items-center gap-1 text-[#9A3412] text-[10px] font-black uppercase tracking-wider">
-                    <Landmark className="w-3 h-3 text-orange-700 shrink-0" />
+              <div className="relative z-10 grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-orange-600/20">
+                <div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-orange-600/20 shadow-2xs flex flex-col">
+                  <div className="flex items-center gap-1 text-[#9A3412] text-[9.5px] font-black uppercase tracking-wider">
+                    <Landmark className="w-2.5 h-2.5 text-orange-700 shrink-0" />
                     <span>Bank / UPI</span>
                   </div>
-                  <span className="text-sm font-mono font-black text-[#270b04] mt-0.5">
+                  <span className="text-xs sm:text-sm font-mono font-black text-[#270b04] mt-0.5">
                     ₹{openingBalanceStats.remainingBankUpi.toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="bg-white/80 backdrop-blur-sm px-2.5 py-1.5 rounded-xl border border-orange-600/20 shadow-xs flex flex-col">
-                  <div className="flex items-center gap-1 text-[#9A3412] text-[10px] font-black uppercase tracking-wider">
-                    <Banknote className="w-3 h-3 text-orange-700 shrink-0" />
+                <div className="bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-orange-600/20 shadow-2xs flex flex-col">
+                  <div className="flex items-center gap-1 text-[#9A3412] text-[9.5px] font-black uppercase tracking-wider">
+                    <Banknote className="w-2.5 h-2.5 text-orange-700 shrink-0" />
                     <span>Cash</span>
                   </div>
-                  <span className="text-sm font-mono font-black text-[#270b04] mt-0.5">
+                  <span className="text-xs sm:text-sm font-mono font-black text-[#270b04] mt-0.5">
                     ₹{openingBalanceStats.remainingCash.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
 
-              <div className="relative z-10 mt-2">
-                <p className="text-[11px] text-[#9A3412] font-bold">
+              <div className="relative z-10 mt-1.5">
+                <p className="text-[10px] text-[#9A3412] font-bold">
                   Balance left in opening funds
                 </p>
               </div>
@@ -870,30 +870,30 @@ export const Dashboard: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
             {/* 4. MEMBERS WITH TRIP (Vibrant Royal Purple Theme) */}
             <div
               onClick={() => setShowMembersModal(true)}
-              className="bg-gradient-to-br from-[#F3E8FF] via-[#E9D5FF] to-[#D8B4FE] rounded-3xl border-2 border-[#A855F7] p-5 sm:p-6 shadow-md shadow-purple-500/15 hover:shadow-xl hover:border-purple-600 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
+              className="bg-gradient-to-br from-[#F3E8FF] via-[#E9D5FF] to-[#D8B4FE] rounded-2xl border-2 border-[#A855F7] p-3.5 sm:p-4 shadow-sm hover:shadow-md hover:border-purple-600 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
               <div className="relative z-10 flex-1">
-                <p className="text-xs font-black text-[#3B0764] uppercase tracking-wider">
+                <p className="text-[11px] font-black text-[#3B0764] uppercase tracking-wider">
                   MEMBERS WITH TRIP
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-[#2e0854] mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left">
+                <h3 className="text-xl sm:text-2xl font-black text-[#2e0854] mt-1 tracking-tight group-hover:scale-105 transition-transform origin-left">
                   {taskStats.membersCount} Members
                 </h3>
-                <p className="text-xs text-[#6B21A8] font-bold mt-1.5 flex items-center gap-1">
+                <p className="text-[11px] text-[#6B21A8] font-bold mt-1 flex items-center gap-1">
                   <span>Assigned crew on duty</span>
                   <span className="underline font-black ml-1 text-[#3B0764]">Click to view</span>
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#9333EA] to-[#6B21A8] text-white flex items-center justify-center shadow-lg shadow-purple-700/30 ring-4 ring-purple-500/20 group-hover:scale-110 transition-transform">
-                  <UserCheck className="w-7 h-7 text-white" />
+              <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 relative z-10">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#9333EA] to-[#6B21A8] text-white flex items-center justify-center shadow-md shadow-purple-700/25 ring-2 ring-purple-500/20 group-hover:scale-105 transition-transform">
+                  <UserCheck className="w-5 h-5 text-white" />
                 </div>
-                <div className="w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#6B21A8] shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                  <ArrowRight className="w-4 h-4 font-black" />
+                <div className="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-[#6B21A8] shadow-xs flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                  <ArrowRight className="w-3 h-3 font-black" />
                 </div>
               </div>
             </div>
@@ -901,25 +901,25 @@ export const Dashboard: React.FC = () => {
             {/* 5. SALARY PAID (Vibrant Mint / Emerald Theme) */}
             <div
               onClick={() => navigate('/admin/employee-payments')}
-              className="bg-gradient-to-br from-[#D1FAE5] via-[#A7F3D0] to-[#6EE7B7] rounded-3xl border-2 border-[#10B981] p-5 sm:p-6 shadow-md shadow-emerald-500/15 hover:shadow-xl hover:border-emerald-600 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
+              className="bg-gradient-to-br from-[#D1FAE5] via-[#A7F3D0] to-[#6EE7B7] rounded-2xl border-2 border-[#10B981] p-3.5 sm:p-4 shadow-sm hover:shadow-md hover:border-emerald-600 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
               <div className="relative z-10 flex-1">
-                <p className="text-xs font-black text-[#064E3B] uppercase tracking-wider">
+                <p className="text-[11px] font-black text-[#064E3B] uppercase tracking-wider">
                   SALARY PAID
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-[#022c22] mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                <h3 className="text-xl sm:text-2xl font-black text-[#022c22] mt-1 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                   ₹{taskStats.salaryPaid.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-[#065F46] font-bold mt-1.5">
+                <p className="text-[11px] text-[#065F46] font-bold mt-1">
                   Disbursed salary to trip staff
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#047857] text-white flex items-center justify-center shadow-lg shadow-emerald-700/30 ring-4 ring-emerald-500/20 group-hover:scale-110 transition-transform">
-                  <CheckCircle2 className="w-7 h-7 text-white" />
+              <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 relative z-10">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#10B981] to-[#047857] text-white flex items-center justify-center shadow-md shadow-emerald-700/25 ring-2 ring-emerald-500/20 group-hover:scale-105 transition-transform">
+                  <CheckCircle2 className="w-5 h-5 text-white" />
                 </div>
-                <div className="w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#047857] shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                  <ArrowRight className="w-4 h-4 font-black" />
+                <div className="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-[#047857] shadow-xs flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                  <ArrowRight className="w-3 h-3 font-black" />
                 </div>
               </div>
             </div>
@@ -927,25 +927,25 @@ export const Dashboard: React.FC = () => {
             {/* 6. REMAINING SALARY (Vibrant Rose / Coral Theme) */}
             <div
               onClick={() => navigate('/admin/employee-payments')}
-              className="bg-gradient-to-br from-[#FFE4E6] via-[#FECDD3] to-[#FDA4AF] rounded-3xl border-2 border-[#F43F5E] p-5 sm:p-6 shadow-md shadow-rose-500/15 hover:shadow-xl hover:border-rose-600 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
+              className="bg-gradient-to-br from-[#FFE4E6] via-[#FECDD3] to-[#FDA4AF] rounded-2xl border-2 border-[#F43F5E] p-3.5 sm:p-4 shadow-sm hover:shadow-md hover:border-rose-600 transition-all cursor-pointer group flex items-start justify-between relative overflow-hidden"
             >
               <div className="relative z-10 flex-1">
-                <p className="text-xs font-black text-[#4C0519] uppercase tracking-wider">
+                <p className="text-[11px] font-black text-[#4C0519] uppercase tracking-wider">
                   REMAINING SALARY
                 </p>
-                <h3 className="text-2xl sm:text-3xl font-black text-[#380412] mt-2 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
+                <h3 className="text-xl sm:text-2xl font-black text-[#380412] mt-1 tracking-tight group-hover:scale-105 transition-transform origin-left font-mono">
                   ₹{taskStats.remainingSalary.toLocaleString('en-IN')}
                 </h3>
-                <p className="text-xs text-[#9F1239] font-bold mt-1.5">
+                <p className="text-[11px] text-[#9F1239] font-bold mt-1">
                   Pending staff salary dues
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-3 shrink-0 ml-3 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#F43F5E] to-[#BE123C] text-white flex items-center justify-center shadow-lg shadow-rose-700/30 ring-4 ring-rose-500/20 group-hover:scale-110 transition-transform">
-                  <Clock className="w-7 h-7 text-white" />
+              <div className="flex flex-col items-end gap-1.5 shrink-0 ml-2 relative z-10">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F43F5E] to-[#BE123C] text-white flex items-center justify-center shadow-md shadow-rose-700/25 ring-2 ring-rose-500/20 group-hover:scale-105 transition-transform">
+                  <Clock className="w-5 h-5 text-white" />
                 </div>
-                <div className="w-8 h-8 rounded-full bg-white/90 hover:bg-white text-[#BE123C] shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                  <ArrowRight className="w-4 h-4 font-black" />
+                <div className="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-[#BE123C] shadow-xs flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                  <ArrowRight className="w-3 h-3 font-black" />
                 </div>
               </div>
             </div>
