@@ -499,7 +499,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     } else {
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
       const popupHeight = Math.min((item.subItems?.length || 1) * 44 + 65, 520);
-      const calculatedTop = Math.max(12, Math.min(rect.top - 6, window.innerHeight - popupHeight - 16));
+      const calculatedTop = Math.max(92, Math.min(rect.top - 6, window.innerHeight - popupHeight - 16));
       setActiveFlyout({
         route: item.route,
         item,
@@ -517,7 +517,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const popupHeight = Math.min((item.subItems?.length || 1) * 44 + 65, 520);
-    const calculatedTop = Math.max(12, Math.min(rect.top - 6, window.innerHeight - popupHeight - 16));
+    const calculatedTop = Math.max(92, Math.min(rect.top - 6, window.innerHeight - popupHeight - 16));
     setActiveFlyout({
       route: item.route,
       item,
@@ -541,8 +541,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className={`fixed bottom-0 left-0 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-sm w-[88px] ${isMobileOpen
           ? 'top-0 z-50 translate-x-0 shadow-2xl'
           : isVisible
-            ? 'top-[84px] sm:top-[92px] z-20 -translate-x-full lg:translate-x-0'
-            : 'top-[84px] sm:top-[92px] z-20 -translate-x-full'
+            ? 'top-[88px] z-30 -translate-x-full lg:translate-x-0'
+            : 'top-[88px] z-30 -translate-x-full'
           }`}
       >
         {/* Mobile Close Button (shown only on mobile drawer) */}
@@ -558,8 +558,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {/* Navigation Items List (Always Compact icon-strip format matching Image 3) */}
-        <div className="flex-1 overflow-y-auto py-2.5 px-2 space-y-2 scrollbar-none">
+        {/* Navigation Items List with generous top padding so Dashboard button is never covered */}
+        <div className="flex-1 overflow-y-auto pt-4 pb-3 px-2 space-y-2 scrollbar-none">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isTabActive(item);

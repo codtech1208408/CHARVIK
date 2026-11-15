@@ -300,7 +300,7 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F0F4F9] flex flex-col">
-      {/* Full-width Top Navigation Header */}
+      {/* Full-width Top Navigation Header - Fixed at Top */}
       <Navbar
         onMobileToggle={() => setIsMobileOpen(true)}
         onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
@@ -308,7 +308,7 @@ export const AdminLayout: React.FC = () => {
         isSidebarVisible={isSidebarVisible}
       />
 
-      <div className="flex-1 flex flex-row relative">
+      <div className="flex-1 flex flex-row pt-[88px] relative">
         {/* Sidebar - Positioned under Top Header */}
         <Sidebar
           isVisible={isSidebarVisible}
