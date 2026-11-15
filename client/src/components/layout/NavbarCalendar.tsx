@@ -210,28 +210,59 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
           <span>{todayButtonLabel}</span>
         </button>
       ) : (
-        <div className="hidden sm:flex flex-col items-center">
-          <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className={`flex items-center space-x-1.5 px-3 py-1 rounded-xl border text-xs transition-all cursor-pointer select-none group ${
-              isOpen
-                ? 'bg-blue-50/90 border-blue-400 text-blue-900 ring-2 ring-blue-500/20 shadow-xs'
-                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
-            }`}
-            title="Fleet Calendar & Operations Schedule (Click to open)"
-            aria-label="Toggle fleet calendar"
-            aria-expanded={isOpen}
-          >
-            <Calendar className="w-3.5 h-3.5 text-[#2563EB] group-hover:scale-110 transition-transform" />
-            <span className="font-semibold">{todayButtonLabel}</span>
-          </button>
-          {currentTime && (
-            <div className="flex items-center gap-1 text-[11px] font-bold text-slate-600 mt-0.5 tracking-wide select-none">
-              <Clock className="w-3 h-3 text-[#2563EB]" />
-              <span>{currentTime}</span>
-            </div>
-          )}
+        <div
+          onClick={() => setIsOpen(!isOpen)}
+          className={`hidden md:flex items-center bg-white border rounded-full px-3.5 py-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:border-blue-300 transition-all cursor-pointer select-none group ${
+            isOpen ? 'border-blue-400 ring-2 ring-blue-500/20' : 'border-blue-200/90'
+          }`}
+          title="Fleet Operations Calendar & Schedule (Click to open)"
+          aria-label="Toggle fleet calendar"
+          aria-expanded={isOpen}
+        >
+          {/* Glossy Gradient Calendar Icon */}
+          <div className="flex items-center gap-2.5">
+            <svg className="w-6 h-6 shrink-0 drop-shadow-xs" viewBox="0 0 32 32" fill="none">
+              <defs>
+                <linearGradient id="calGradNavbar" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#00A3FF" />
+                  <stop offset="100%" stopColor="#0047FF" />
+                </linearGradient>
+              </defs>
+              <rect x="2" y="4" width="28" height="25" rx="7" fill="url(#calGradNavbar)" />
+              <rect x="8" y="2" width="3" height="4" rx="1.5" fill="#FFFFFF" />
+              <rect x="21" y="2" width="3" height="4" rx="1.5" fill="#FFFFFF" />
+              <line x1="5" y1="11" x2="27" y2="11" stroke="#FFFFFF" strokeWidth="1.5" strokeOpacity="0.4" strokeLinecap="round" />
+              <rect x="7" y="14" width="3" height="3" rx="0.8" fill="#FFFFFF" />
+              <rect x="14.5" y="14" width="3" height="3" rx="0.8" fill="#FFFFFF" />
+              <rect x="22" y="14" width="3" height="3" rx="0.8" fill="#FFFFFF" />
+              <rect x="7" y="20" width="3" height="3" rx="0.8" fill="#FFFFFF" />
+              <rect x="14.5" y="20" width="3" height="3" rx="0.8" fill="#FFFFFF" />
+              <rect x="22" y="20" width="3" height="3" rx="0.8" fill="#FFFFFF" />
+            </svg>
+            <span className="text-[13px] font-bold text-[#0F172A] whitespace-nowrap">
+              {todayButtonLabel}
+            </span>
+          </div>
+
+          {/* Vertical Divider */}
+          <div className="h-4 w-px bg-slate-300 mx-3 shrink-0" />
+
+          {/* Clock Icon & Live Time */}
+          <div className="flex items-center gap-1.5">
+            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none">
+              <defs>
+                <linearGradient id="clockGradNavbar" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#00A3FF" />
+                  <stop offset="100%" stopColor="#0047FF" />
+                </linearGradient>
+              </defs>
+              <circle cx="12" cy="12" r="9" stroke="url(#clockGradNavbar)" strokeWidth="2.4" />
+              <path d="M12 7V12L15 14" stroke="url(#clockGradNavbar)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span className="text-[13px] font-bold text-[#0F172A] whitespace-nowrap">
+              {currentTime}
+            </span>
+          </div>
         </div>
       )}
 

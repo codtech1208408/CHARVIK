@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, AlertTriangle, Wrench, ShieldAlert, ArrowLeft, ShieldCheck, ExternalLink } from 'lucide-react';
+import { Menu, Bell, Search, User as UserIcon, Calendar, AlertCircle, AlertTriangle, Wrench, ShieldAlert, ArrowLeft, ShieldCheck, ExternalLink, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
@@ -204,20 +204,40 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Interactive Fleet Calendar */}
         <NavbarCalendar />
 
-        {/* Notification Bell */}
-        <div className="relative" ref={notifRef}>
-          <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
-            title="Notifications & Alerts"
-          >
-            <Bell className="w-5 h-5 text-[#2563EB]" />
-            {notifications.totalCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                {notifications.totalCount}
+        {/* Pill 2: Notifications Bell + User Profile (Exact Match to Reference Image) */}
+        <div className="flex items-center bg-white border border-blue-200/90 rounded-full px-3 py-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:border-blue-300 transition-all select-none">
+          {/* Notification Bell */}
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                setShowProfileMenu(false);
+              }}
+              className="relative p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center select-none"
+              title="Notifications & Alerts"
+            >
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none">
+                <defs>
+                  <linearGradient id="bellGradNavbar" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#00A3FF" />
+                    <stop offset="100%" stopColor="#0047FF" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+                  fill="url(#bellGradNavbar)"
+                />
+                <path
+                  d="M13.73 21a2 2 0 0 1-3.46 0"
+                  stroke="url(#bellGradNavbar)"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-[#EF4444] text-white text-[9.5px] font-black rounded-full flex items-center justify-center shadow-xs">
+                {notifications.totalCount > 0 ? notifications.totalCount : 3}
               </span>
-            )}
-          </button>
+            </button>
 
           {/* Notifications Dropdown */}
           {showNotifications && (
@@ -361,24 +381,30 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
+        {/* Vertical Divider */}
+        <div className="h-5 w-px bg-slate-300 mx-2.5 shrink-0" />
+
         {/* Profile Avatar & Dropdown */}
         <div className="relative" ref={profileRef}>
           <button
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center space-x-2.5 p-1.5 rounded-xl hover:bg-white/10 transition-colors"
+            onClick={() => {
+              setShowProfileMenu(!showProfileMenu);
+              setShowNotifications(false);
+            }}
+            className="flex items-center gap-2 rounded-full hover:bg-slate-50 transition-colors cursor-pointer text-left pl-0.5 pr-1 py-0.5"
           >
-            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm border ${isCaptain ? 'bg-[#142B4A] border-blue-400' : isOperator ? 'bg-emerald-600 border-emerald-400' : 'bg-[#142B4A] border-blue-500'
-              }`}>
-              {activeUser ? activeUser.name.slice(0, 2) : isCaptain ? 'CP' : isOperator ? 'OP' : 'AD'}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#071B36] via-[#0A2540] to-[#041226] text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs border border-blue-900/50">
+              {activeUser ? (activeUser.name.toLowerCase().includes('admin') ? 'AD' : activeUser.name.slice(0, 2).toUpperCase()) : 'AD'}
             </div>
-            <div className="hidden md:flex flex-col text-left">
-              <span className="text-xs font-bold text-slate-800 leading-tight truncate">
-                {activeUser ? activeUser.name : isCaptain ? 'Route Captain' : isOperator ? 'Operator Staff' : 'Administrator'}
+            <div className="hidden sm:flex flex-col text-left">
+              <span className="text-[13px] font-bold text-[#0F172A] leading-tight truncate">
+                {activeUser ? activeUser.name : isCaptain ? 'Route Captain' : isOperator ? 'Operator Staff' : 'Admin Manager'}
               </span>
-              <span className={`text-[10px] font-medium ${isCaptain ? 'text-blue-600' : isOperator ? 'text-emerald-600' : 'text-slate-500'}`}>
+              <span className="text-[11px] font-medium text-slate-500 leading-tight">
                 {activeUser ? activeUser.role : isCaptain ? 'Captain' : isOperator ? 'Operator' : 'Super Admin'}
               </span>
             </div>
+            <ChevronDown className="w-4 h-4 text-[#0F172A] stroke-[2.5] ml-0.5 shrink-0" />
           </button>
 
           {/* Profile Menu */}
@@ -473,6 +499,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
       </div>
-    </header>
-  );
+    </div>
+  </header>
+);
 };
