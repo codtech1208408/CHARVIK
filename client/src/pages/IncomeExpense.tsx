@@ -855,7 +855,6 @@ export const IncomeExpense: React.FC = () => {
             <option value="All">All Payment Modes</option>
             <option value="Cash">Cash</option>
             <option value="Bank Transfer">Bank Transfer</option>
-            <option value="Online / Net Banking">Online / Net Banking</option>
             <option value="UPI">UPI</option>
           </select>
 
@@ -1282,7 +1281,6 @@ export const IncomeExpense: React.FC = () => {
               >
                 <option value="Cash">Cash</option>
                 <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Online / Net Banking">Online / Net Banking</option>
                 <option value="UPI">UPI</option>
               </select>
             </div>
