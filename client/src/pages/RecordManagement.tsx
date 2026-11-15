@@ -1333,7 +1333,7 @@ export const RecordManagement: React.FC = () => {
               {/* Top Letterhead Header (Official Charvik Letterhead) */}
               <div className="w-full mb-4">
                 <img
-                  src="/charvik-letterhead-header.png"
+                  src="/charvik-letterhead-header.png?v=20261115"
                   alt="Charvik Staffing Consultancy"
                   className="w-full h-auto block rounded-t"
                   style={{ width: '100%', height: 'auto', display: 'block' }}

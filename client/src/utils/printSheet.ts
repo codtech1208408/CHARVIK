@@ -1,6 +1,6 @@
 /**
  * Universal Print Sheet Utility
- * Matches the official Charvik printed letterhead format shown in image copy 2.png
+ * Matches the official Charvik printed letterhead format with enclosed rounded banner
  */
 
 interface PrintOptions {
@@ -218,10 +218,10 @@ export function printSheet(options: PrintOptions): void {
       <!-- Exact Full-Width Header from Reference Image -->
       <div class="charvik-exact-header-wrap">
         <img 
-          src="/charvik-exact-print-header.png" 
+          src="/charvik-exact-print-header.png?v=20261115" 
           alt="CHARVIK STAFFING CONSULTANCY" 
           class="charvik-exact-header-img"
-          onerror="this.src='/charvik-letterhead-header.png'"
+          onerror="this.src='/charvik-letterhead-header.png?v=20261115'"
         />
       </div>
 

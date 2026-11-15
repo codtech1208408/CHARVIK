@@ -261,7 +261,7 @@ export const Reports: React.FC = () => {
         {/* Official Charvik Letterhead Header */}
         <div className="w-full">
           <img
-            src="/charvik-letterhead-header.png"
+            src="/charvik-letterhead-header.png?v=20261115"
             alt="CHARVIK STAFFING CONSULTANCY"
             className="w-full h-auto block"
           />

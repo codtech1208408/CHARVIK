@@ -1402,7 +1402,7 @@ export const EmployeeManagement: React.FC = () => {
                 {/* Official Charvik Letterhead Header */}
                 <div className="bg-white border-b-2 border-black">
                   <img
-                    src="/charvik-letterhead-header.png"
+                    src="/charvik-letterhead-header.png?v=20261115"
                     alt="CHARVIK STAFFING CONSULTANCY"
                     className="w-full h-auto block"
                   />
