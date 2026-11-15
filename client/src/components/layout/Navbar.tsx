@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { NavbarCalendar } from './NavbarCalendar';
+import { HeaderWaveBackground } from './HeaderWaveBackground';
 
 interface NavbarProps {
   onMobileToggle: () => void;
@@ -134,9 +135,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   return (
-    <header className="min-h-[96px] py-2 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 shadow-xs border-b border-slate-200">
-      {/* Left: Menu Drawer Toggle (Mobile) & Brand Logo when collapsed & Page Title */}
-      <div className="flex items-center space-x-2.5 sm:space-x-3.5">
+    <header className="relative min-h-[76px] sm:min-h-[82px] py-1 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 shadow-[0_4px_16px_rgba(0,114,229,0.06)] border-y-2 border-[#0072E5] overflow-hidden">
+      {/* Background Graphic Swooshes and Borders */}
+      <HeaderWaveBackground />
+
+      {/* Left: Menu Drawer Toggle & Brand Logo */}
+      <div className="relative z-10 flex items-center space-x-2 sm:space-x-3">
         <button
           onClick={() => {
             if (window.innerWidth < 1024) {
@@ -145,24 +149,26 @@ export const Navbar: React.FC<NavbarProps> = ({
               onToggleSidebar();
             }
           }}
-          className={`p-2 sm:p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center shrink-0 border border-slate-200/80 shadow-xs ${isSidebarVisible ? 'lg:hidden' : 'flex'
-            }`}
+          className="w-10 h-10 rounded-xl bg-white/95 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:bg-slate-50 flex items-center justify-center shrink-0 transition-all cursor-pointer group"
           title={isSidebarVisible ? 'Hide Navigation Sidebar' : 'Show Navigation Sidebar'}
           aria-label="Toggle Navigation Sidebar"
         >
-          <Menu className="w-5 h-5 text-[#142B4A]" />
+          <Menu className="w-5 h-5 text-[#142B4A] group-hover:scale-105 transition-transform" />
         </button>
 
-        {/* Charvik brand logo on desktop */}
+        {/* Vertical Divider */}
+        <div className="h-7 w-[1.5px] bg-slate-300 mx-1 shrink-0" />
+
+        {/* Charvik brand logo */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex items-center justify-center py-0.5 mr-4 sm:mr-6 shrink-0 transition-opacity hover:opacity-95 cursor-pointer"
+          className="flex items-center justify-center py-0.5 shrink-0 transition-opacity hover:opacity-95 cursor-pointer"
           title="Charvik Staffing Consultancy"
         >
           <img
-            src="/logo-compact.png?v=5"
+            src="/logo-compact.png?v=6"
             alt="Charvik Staffing Consultancy"
-            className="h-[80px] sm:h-[88px] lg:h-[92px] max-h-[94px] w-auto max-w-[340px] sm:max-w-[420px] lg:max-w-[500px] object-contain transition-transform hover:scale-105"
+            className="h-[58px] sm:h-[64px] lg:h-[68px] w-auto max-w-[260px] sm:max-w-[340px] lg:max-w-[420px] object-contain transition-transform hover:scale-[1.02]"
           />
         </Link>
 
@@ -199,45 +205,46 @@ export const Navbar: React.FC<NavbarProps> = ({
         )}
       </div>
 
-      {/* Right: Date, Notifications, Profile */}
-      <div className="flex items-center space-x-2 sm:space-x-3">
-        {/* Interactive Fleet Calendar */}
+      {/* Right: Date/Time Capsule, Standalone Notification Bell, Standalone Profile */}
+      <div className="relative z-10 flex items-center space-x-2 sm:space-x-3">
+        {/* Interactive Fleet Calendar & Clock Capsule */}
         <NavbarCalendar />
 
-        {/* Pill 2: Notifications Bell + User Profile (Exact Match to Reference Image) */}
-        <div className="flex items-center bg-white border border-blue-200/90 rounded-full px-3 py-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:border-blue-300 transition-all select-none">
-          {/* Notification Bell */}
-          <div className="relative" ref={notifRef}>
-            <button
-              onClick={() => {
-                setShowNotifications(!showNotifications);
-                setShowProfileMenu(false);
-              }}
-              className="relative p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center select-none"
-              title="Notifications & Alerts"
-            >
-              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none">
-                <defs>
-                  <linearGradient id="bellGradNavbar" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#00A3FF" />
-                    <stop offset="100%" stopColor="#0047FF" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
-                  fill="url(#bellGradNavbar)"
-                />
-                <path
-                  d="M13.73 21a2 2 0 0 1-3.46 0"
-                  stroke="url(#bellGradNavbar)"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-[#EF4444] text-white text-[9.5px] font-black rounded-full flex items-center justify-center shadow-xs">
-                {notifications.totalCount > 0 ? notifications.totalCount : 3}
-              </span>
-            </button>
+        {/* Vertical Divider */}
+        <div className="hidden md:block h-7 w-[1.5px] bg-slate-300 mx-0.5 shrink-0" />
+
+        {/* Standalone Notifications Bell */}
+        <div className="relative shrink-0" ref={notifRef}>
+          <button
+            onClick={() => {
+              setShowNotifications(!showNotifications);
+              setShowProfileMenu(false);
+            }}
+            className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/95 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-all group"
+            title="Notifications & Alerts"
+          >
+            <svg className="w-5 h-5 shrink-0 group-hover:scale-105 transition-transform" viewBox="0 0 24 24" fill="none">
+              <defs>
+                <linearGradient id="bellGradNavbar" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#00A3FF" />
+                  <stop offset="100%" stopColor="#0052FF" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+                fill="url(#bellGradNavbar)"
+              />
+              <path
+                d="M13.73 21a2 2 0 0 1-3.46 0"
+                stroke="url(#bellGradNavbar)"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 bg-[#EF4444] text-white text-[9.5px] font-black rounded-full flex items-center justify-center shadow-xs ring-2 ring-white">
+              {notifications.totalCount > 0 ? notifications.totalCount : 1}
+            </span>
+          </button>
 
           {/* Notifications Dropdown */}
           {showNotifications && (
@@ -382,18 +389,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Vertical Divider */}
-        <div className="h-5 w-px bg-slate-300 mx-2.5 shrink-0" />
+        <div className="h-7 w-[1.5px] bg-slate-300 mx-0.5 shrink-0" />
 
         {/* Profile Avatar & Dropdown */}
-        <div className="relative" ref={profileRef}>
+        <div className="relative shrink-0" ref={profileRef}>
           <button
             onClick={() => {
               setShowProfileMenu(!showProfileMenu);
               setShowNotifications(false);
             }}
-            className="flex items-center gap-2 rounded-full hover:bg-slate-50 transition-colors cursor-pointer text-left pl-0.5 pr-1 py-0.5"
+            className="flex items-center gap-2.5 rounded-full hover:bg-slate-50/80 transition-colors cursor-pointer text-left pl-0.5 pr-1 py-0.5 select-none group"
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#071B36] via-[#0A2540] to-[#041226] text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs border border-blue-900/50">
+            <div className="w-9 h-9 rounded-full bg-[#0A2540] text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs border border-blue-900/60 group-hover:scale-105 transition-transform">
               {activeUser ? (activeUser.name.toLowerCase().includes('admin') ? 'AD' : activeUser.name.slice(0, 2).toUpperCase()) : 'AD'}
             </div>
             <div className="hidden sm:flex flex-col text-left">
@@ -404,7 +411,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {activeUser ? activeUser.role : isCaptain ? 'Captain' : isOperator ? 'Operator' : 'Super Admin'}
               </span>
             </div>
-            <ChevronDown className="w-4 h-4 text-[#0F172A] stroke-[2.5] ml-0.5 shrink-0" />
+            <ChevronDown className="w-4 h-4 text-[#0F172A] stroke-[2.5] ml-0.5 shrink-0 group-hover:translate-y-0.5 transition-transform" />
           </button>
 
           {/* Profile Menu */}
@@ -499,7 +506,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
       </div>
-    </div>
-  </header>
-);
+    </header>
+  );
 };

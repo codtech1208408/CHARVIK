@@ -20,7 +20,7 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
 
   // Real today's date
   const realToday = new Date();
-  
+
   // State for view month/year and user-selected date
   const [viewDate, setViewDate] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -197,11 +197,10 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-2 select-none group ${
-            isOpen
+          className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-2 select-none group ${isOpen
               ? 'bg-blue-50 border-blue-400 text-blue-800 ring-2 ring-blue-500/20 shadow-xs'
               : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
-          }`}
+            }`}
           title="Fleet Operations Calendar & Schedule (Click to open)"
           aria-label="Toggle fleet calendar"
           aria-expanded={isOpen}
@@ -212,20 +211,19 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
       ) : (
         <div
           onClick={() => setIsOpen(!isOpen)}
-          className={`hidden md:flex items-center bg-white border rounded-full px-3.5 py-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:border-blue-300 transition-all cursor-pointer select-none group ${
-            isOpen ? 'border-blue-400 ring-2 ring-blue-500/20' : 'border-blue-200/90'
-          }`}
+          className={`hidden md:flex items-center bg-white/95 border rounded-full px-4 py-1.5 shadow-[0_2px_8px_rgba(0,114,229,0.06)] hover:border-blue-500 hover:shadow-[0_2px_12px_rgba(0,114,229,0.12)] transition-all cursor-pointer select-none group ${isOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-blue-400'
+            }`}
           title="Fleet Operations Calendar & Schedule (Click to open)"
           aria-label="Toggle fleet calendar"
           aria-expanded={isOpen}
         >
           {/* Glossy Gradient Calendar Icon */}
-          <div className="flex items-center gap-2.5">
-            <svg className="w-6 h-6 shrink-0 drop-shadow-xs" viewBox="0 0 32 32" fill="none">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 shrink-0 drop-shadow-xs" viewBox="0 0 32 32" fill="none">
               <defs>
                 <linearGradient id="calGradNavbar" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#00A3FF" />
-                  <stop offset="100%" stopColor="#0047FF" />
+                  <stop offset="100%" stopColor="#0052FF" />
                 </linearGradient>
               </defs>
               <rect x="2" y="4" width="28" height="25" rx="7" fill="url(#calGradNavbar)" />
@@ -248,12 +246,12 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
           <div className="h-4 w-px bg-slate-300 mx-3 shrink-0" />
 
           {/* Clock Icon & Live Time */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none">
               <defs>
                 <linearGradient id="clockGradNavbar" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#00A3FF" />
-                  <stop offset="100%" stopColor="#0047FF" />
+                  <stop offset="100%" stopColor="#0052FF" />
                 </linearGradient>
               </defs>
               <circle cx="12" cy="12" r="9" stroke="url(#clockGradNavbar)" strokeWidth="2.4" />
@@ -332,9 +330,8 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
               {daysOfWeek.map((day, idx) => (
                 <div
                   key={day}
-                  className={`text-[11px] font-bold py-1 ${
-                    idx === 0 || idx === 6 ? 'text-amber-600' : 'text-slate-400'
-                  }`}
+                  className={`text-[11px] font-bold py-1 ${idx === 0 || idx === 6 ? 'text-amber-600' : 'text-slate-400'
+                    }`}
                 >
                   {day}
                 </div>
@@ -352,15 +349,14 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
                     key={index}
                     type="button"
                     onClick={() => setSelectedDate(item.dateObj)}
-                    className={`h-8 text-xs font-semibold rounded-xl flex items-center justify-center transition-all relative cursor-pointer ${
-                      isSelected
+                    className={`h-8 text-xs font-semibold rounded-xl flex items-center justify-center transition-all relative cursor-pointer ${isSelected
                         ? 'bg-[#142B4A] text-white shadow-sm font-bold scale-105 z-10'
                         : isToday
-                        ? 'bg-blue-50 text-blue-700 font-bold border border-blue-300 hover:bg-blue-100'
-                        : item.isCurrentMonth
-                        ? 'text-slate-700 hover:bg-slate-100'
-                        : 'text-slate-300 hover:bg-slate-50'
-                    }`}
+                          ? 'bg-blue-50 text-blue-700 font-bold border border-blue-300 hover:bg-blue-100'
+                          : item.isCurrentMonth
+                            ? 'text-slate-700 hover:bg-slate-100'
+                            : 'text-slate-300 hover:bg-slate-50'
+                      }`}
                   >
                     <span>{item.day}</span>
                     {isToday && !isSelected && (
