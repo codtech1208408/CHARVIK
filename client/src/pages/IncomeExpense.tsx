@@ -1314,24 +1314,6 @@ export const IncomeExpense: React.FC = () => {
             </div>
           </div>
 
-          {/* Vehicle Linked (Optional) */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Vehicle Linked (Optional)</label>
-            <input
-              type="text"
-              list="vehicle-suggestions"
-              placeholder="e.g. AP16TV1234 or select fleet vehicle..."
-              value={formData.vehicle_number}
-              onChange={(e) => setFormData({ ...formData, vehicle_number: e.target.value })}
-              className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 bg-white font-mono"
-            />
-            <datalist id="vehicle-suggestions">
-              {vehicles.map((v) => (
-                <option key={v.id || v.registration_number} value={v.registration_number || v.bus_number} />
-              ))}
-            </datalist>
-          </div>
-
           {/* Proof Option for Every Type of Payment Mode (User Request) */}
           <div className="pt-2 border-t border-slate-100">
             <div className="flex items-center justify-between mb-1">
@@ -1538,10 +1520,6 @@ export const IncomeExpense: React.FC = () => {
                 <div className="row">
                   <span className="label block">Party / Vendor / Customer</span>
                   <span className="val block">{voucherItem.party_name || 'Fleet Cash Counter'}</span>
-                </div>
-                <div className="row">
-                  <span className="label block">Vehicle Linked</span>
-                  <span className="val block font-mono">{voucherItem.vehicle_number || 'General Fleet'}</span>
                 </div>
               </div>
 
