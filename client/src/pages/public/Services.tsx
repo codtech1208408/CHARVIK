@@ -155,18 +155,62 @@ export const Services: React.FC = () => {
               >
                 {/* Visual / Image Side */}
                 <div className={`lg:col-span-5 ${isEven ? 'lg:order-2' : ''}`}>
-                  <div className="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 group">
-                    <img
-                      src={service.image}
-                      alt={service.title}
-                      className="w-full h-80 sm:h-96 object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <span className="w-12 h-12 rounded-xl bg-[#142B4A]/90 backdrop-blur-md text-white flex items-center justify-center shadow-lg">
-                        <Icon className="w-6 h-6 text-blue-400" />
-                      </span>
+                  {service.id === 'driver-provision' ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                        <div className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-slate-200 transition-all duration-300 group bg-white">
+                          <img
+                            src="/assets/crew-driver.png"
+                            alt="Driver Supply - Professional Drivers for Your Buses"
+                            className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-slate-200 transition-all duration-300 group bg-white">
+                          <img
+                            src="/assets/crew-helper.png"
+                            alt="Helper Supply - Skilled Helpers for Your Operations"
+                            className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-slate-200 transition-all duration-300 group bg-white">
+                          <img
+                            src="/assets/crew-captain.png"
+                            alt="Bus Captain Supply - Experienced Captains for Your Buses"
+                            className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl border border-slate-200 transition-all duration-300 group bg-white">
+                          <img
+                            src="/assets/crew-supervisor.png"
+                            alt="Supervisor Supply - Qualified Supervisors for Better Management"
+                            className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      </div>
+                      <div className="hidden sm:flex items-center justify-center gap-2 pt-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <span>Driver</span>
+                        <span>•</span>
+                        <span>Helper</span>
+                        <span>•</span>
+                        <span>Bus Captain</span>
+                        <span>•</span>
+                        <span>Supervisor</span>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 group">
+                      <img
+                        src={service.image}
+                        alt={service.title}
+                        className="w-full h-80 sm:h-96 object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span className="w-12 h-12 rounded-xl bg-[#142B4A]/90 backdrop-blur-md text-white flex items-center justify-center shadow-lg">
+                          <Icon className="w-6 h-6 text-blue-400" />
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Content Side */}
