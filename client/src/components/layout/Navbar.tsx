@@ -135,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   return (
-    <header className="relative min-h-[84px] sm:min-h-[92px] py-1 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 shadow-[0_4px_16px_rgba(0,114,229,0.06)] border-y-2 border-[#0072E5] overflow-hidden">
+    <header className="relative min-h-[84px] sm:min-h-[92px] py-1 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 shadow-[0_4px_16px_rgba(0,114,229,0.06)] border-y-2 border-[#0072E5]">
       {/* Background Graphic Swooshes and Borders */}
       <HeaderWaveBackground />
 
