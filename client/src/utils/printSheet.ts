@@ -20,9 +20,17 @@ interface PrintOptions {
   hideHeader?: boolean;
 }
 
-export function printSheet(options: PrintOptions): void {
+export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?: any): void {
+  const options: PrintOptions = typeof optionsOrHtml === 'string'
+    ? {
+        ...(legacyOptions || {}),
+        htmlContent: optionsOrHtml,
+        title: legacyOptions?.title || 'PAYMENT SLIP'
+      }
+    : (optionsOrHtml || {} as PrintOptions);
+
   const {
-    title,
+    title = 'PAYMENT SLIP',
     subtitle = '',
     dateLabel = new Date().toLocaleDateString('en-IN', {
       day: '2-digit',
@@ -31,7 +39,7 @@ export function printSheet(options: PrintOptions): void {
     }),
     elementId,
     htmlContent,
-    orientation = 'landscape',
+    orientation = 'portrait',
     hideMetaBar = false,
     hideHeader = false
   } = options;

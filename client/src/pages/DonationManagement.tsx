@@ -347,76 +347,72 @@ export const DonationManagement: React.FC = () => {
     });
 
     const slipHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 750px; margin: 0 auto; padding: 24px; border: 2px solid #142B4A; border-radius: 8px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #142B4A; padding-bottom: 16px; margin-bottom: 20px;">
-          <div>
-            <h1 style="color: #142B4A; margin: 0 0 4px 0; font-size: 24px; text-transform: uppercase;">Charvik Staffing Consultancy</h1>
-            <p style="margin: 0; font-size: 13px; color: #555;">Official Staff & Fleet Welfare Fund • Registration & Compliance</p>
-            <p style="margin: 2px 0 0 0; font-size: 11px; color: #777;">Vijayawada, Andhra Pradesh • Phone: +91 98765 43210</p>
-          </div>
-          <div style="text-align: right;">
-            <div style="background: #142B4A; color: #fff; padding: 6px 14px; font-weight: bold; font-size: 14px; border-radius: 4px; display: inline-block;">
-              DONATION RECEIPT
-            </div>
-            <div style="font-size: 12px; margin-top: 6px; color: #333;">Receipt #: <strong>#DON-${String(donation.id).padStart(5, '0')}</strong></div>
-            <div style="font-size: 12px; color: #555;">Date: ${formattedDate}</div>
-          </div>
+      <div style="font-family: sans-serif; padding: 20px; max-width: 680px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
+        <div style="text-align: center; border-bottom: 2px solid #072346; padding-bottom: 14px; margin-bottom: 18px;">
+          <h2 style="margin: 0; color: #072346; font-size: 22px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">PAYMENT SLIP</h2>
+          <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Benefactor Donation & Staff Welfare Remittance Record</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
+          <tbody>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b; width: 40%;">Receipt Number:</td>
+              <td style="padding: 8px 0; font-weight: bold; font-family: monospace; text-align: right; color: #0f172a;">#DON-${String(donation.id).padStart(5, '0')}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Donation Date:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #0f172a;">${formattedDate}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Donator Name:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right; font-size: 14px; color: #072346;">${donation.donor_name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Received By Staff:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #0f172a;">
+                ${donation.received_by_employee_name} 
+                ${donation.received_by_employee_code ? `(${donation.received_by_employee_code})` : ''} 
+                ${donation.received_by_employee_role ? `• ${donation.received_by_employee_role}` : ''}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Payment Mode:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #0f172a;">${donation.payment_mode || 'Cash'}</td>
+            </tr>
+            ${donation.notes ? `
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Purpose / Notes:</td>
+              <td style="padding: 8px 0; font-weight: 600; text-align: right; color: #334155;">${donation.notes}</td>
+            </tr>` : ''}
+            <tr style="border-top: 2px dashed #cbd5e1; border-bottom: 2px dashed #cbd5e1;">
+              <td style="padding: 14px 0; font-size: 15px; font-weight: bold; color: #142B4A;">Donated Amount:</td>
+              <td style="padding: 14px 0; font-size: 20px; font-weight: 900; color: #047857; text-align: right;">₹${Number(donation.amount).toLocaleString('en-IN')}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 24px; font-size: 11px; color: #64748b;">
+          <strong>Acknowledgment:</strong> We gratefully acknowledge receipt of the contribution mentioned above. Recorded on Charvik Staffing Consultancy central ledger.
         </div>
 
-        <div style="margin-bottom: 20px;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <tbody>
-              <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px 0; font-weight: bold; color: #555; width: 35%;">Donor / Benefactor Name:</td>
-                <td style="padding: 8px 0; font-weight: bold; color: #111; font-size: 15px;">${donation.donor_name}</td>
-              </tr>
-              <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px 0; font-weight: bold; color: #555;">Amount Donated:</td>
-                <td style="padding: 8px 0; font-weight: bold; color: #16a34a; font-size: 18px;">₹${Number(donation.amount).toLocaleString('en-IN')}</td>
-              </tr>
-              <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px 0; font-weight: bold; color: #555;">Payment Mode:</td>
-                <td style="padding: 8px 0; color: #333;">${donation.payment_mode || 'Cash'}</td>
-              </tr>
-              <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 8px 0; font-weight: bold; color: #555;">Received By Employee:</td>
-                <td style="padding: 8px 0; color: #111; font-weight: bold;">
-                  ${donation.received_by_employee_name} 
-                  ${donation.received_by_employee_code ? `(${donation.received_by_employee_code})` : ''} 
-                  ${donation.received_by_employee_role ? `• ${donation.received_by_employee_role}` : ''}
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; font-weight: bold; color: #555;">Purpose / Remarks:</td>
-                <td style="padding: 8px 0; color: #444;">${donation.notes || 'Voluntary contribution for staff welfare and passenger transit services'}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 30px; font-size: 11px; color: #64748b;">
-          <strong>Official Acknowledgment:</strong> We gratefully acknowledge receipt of the generous donation mentioned above. All donations are utilized in accordance with established trust and welfare governance policies.
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; padding-top: 20px;">
-          <div style="text-align: center; width: 220px;">
-            <div style="border-bottom: 1px dashed #666; height: 35px; margin-bottom: 6px;"></div>
-            <div style="font-size: 11px; font-weight: bold; color: #444;">Receiving Employee Signature</div>
-            <div style="font-size: 10px; color: #777;">${donation.received_by_employee_name}</div>
+        <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 12px; color: #64748b;">
+          <div style="text-align: center;">
+            <p style="margin: 0; border-top: 1px solid #cbd5e1; padding-top: 6px; width: 180px; font-weight: bold; color: #334155;">Receiving Staff Signature</p>
+            <p style="margin: 2px 0 0; font-size: 10px; color: #64748b;">${donation.received_by_employee_name}</p>
           </div>
-          <div style="text-align: center; width: 220px;">
-            <div style="border-bottom: 1px dashed #666; height: 35px; margin-bottom: 6px;"></div>
-            <div style="font-size: 11px; font-weight: bold; color: #142B4A;">Authorized Signatory</div>
-            <div style="font-size: 10px; color: #777;">Charvik Staffing Consultancy</div>
+          <div style="text-align: center;">
+            <p style="margin: 0; border-top: 1px solid #cbd5e1; padding-top: 6px; width: 180px; font-weight: bold; color: #072346;">Authorized Signatory</p>
+            <p style="margin: 2px 0 0; font-size: 10px; color: #64748b;">Charvik Staffing Consultancy</p>
           </div>
         </div>
       </div>
     `;
 
-    printSheet(slipHtml, {
-      title: `Donation_Receipt_${donation.id}`,
-      hideHeader: true,
-      hideMetaBar: true
+    printSheet({
+      title: 'PAYMENT SLIP',
+      subtitle: `Donation Receipt: #DON-${String(donation.id).padStart(5, '0')} | Donor: ${donation.donor_name}`,
+      orientation: 'portrait',
+      hideMetaBar: true,
+      htmlContent: slipHtml
     });
   };
 
