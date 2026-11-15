@@ -3178,3 +3178,58 @@ export const BASE_VEHICLE_MAINTENANCE_JOB_CARDS: VehicleMaintenanceJobCardRecord
   }
 ];
 
+export const BASE_DONATIONS: any[] = [
+  {
+    id: 1,
+    donor_name: 'Dr. K. S. Murthy',
+    amount: 25000,
+    donation_date: '2026-11-10',
+    received_by_employee_id: 1,
+    received_by_employee_name: 'akhil',
+    received_by_employee_code: 'DRV-1001',
+    received_by_employee_role: 'Driver',
+    payment_mode: 'UPI / Online',
+    notes: 'Annual transit crew welfare contribution & road safety reward',
+    proof_images: [
+      'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&auto=format&fit=crop&q=80'
+    ],
+    created_at: '2026-11-10T10:30:00.000Z'
+  },
+  {
+    id: 2,
+    donor_name: 'Venkateswara Logistics Trust',
+    amount: 50000,
+    donation_date: '2026-11-12',
+    received_by_employee_id: 3,
+    received_by_employee_name: 'hari',
+    received_by_employee_code: 'CPT-1001',
+    received_by_employee_role: 'Captain',
+    payment_mode: 'Bank Transfer',
+    notes: 'Charvik Crew Aid & Safe Passenger Welfare Fund',
+    proof_images: [
+      'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80'
+    ],
+    created_at: '2026-11-12T14:15:00.000Z'
+  },
+  {
+    id: 3,
+    donor_name: 'Ramesh Babu & Family',
+    amount: 10000,
+    donation_date: '2026-11-14',
+    received_by_employee_id: 2,
+    received_by_employee_name: 'santhu',
+    received_by_employee_code: 'HLP-1001',
+    received_by_employee_role: 'Helper',
+    payment_mode: 'Cash',
+    notes: 'Temple pilgrimage charter appreciation donation for staff',
+    proof_images: [
+      'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=80'
+    ],
+    created_at: '2026-11-14T18:00:00.000Z'
+  }
+];
+
+

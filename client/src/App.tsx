@@ -10,10 +10,12 @@ import { Home } from './pages/public/Home';
 import { About } from './pages/public/About';
 import { Services } from './pages/public/Services';
 import { Contact } from './pages/public/Contact';
+import { Donations } from './pages/public/Donations';
 
 // Admin Pages
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { DonationManagement } from './pages/DonationManagement';
 import { SupportDashboard } from './pages/SupportDashboard';
 import { CaptainDashboard } from './pages/CaptainDashboard';
 import { BusMaster } from './pages/BusMaster';
@@ -61,6 +63,7 @@ export function App() {
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
+              <Route path="/donations" element={<Donations />} />
               <Route path="/contact" element={<Contact />} />
             </Route>
 
@@ -111,6 +114,8 @@ export function App() {
               <Route path="vyshnavi-travels" element={<VyshnaviTravels />} />
               <Route path="vyshnavi" element={<Navigate to="/admin/vyshnavi-travels" replace />} />
               <Route path="inquiries" element={<WebsiteInquiries />} />
+              <Route path="donations" element={<DonationManagement />} />
+              <Route path="donation" element={<Navigate to="/admin/donations" replace />} />
 
               {/* Specific Submodules & Secondary Views */}
               <Route path="maintenance-schedule" element={<MaintenanceSchedule />} />

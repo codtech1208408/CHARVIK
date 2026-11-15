@@ -5298,6 +5298,183 @@ app.get('/api/reports/:reportType', (req: Request, res: Response) => {
   }
 });
 
+// ================= DONATIONS MANAGEMENT =================
+app.get('/api/donations', (req: Request, res: Response) => {
+  try {
+    const donations = db.prepare(`
+      SELECT d.*, 
+             e.full_name as emp_full_name, e.employee_code as emp_code, e.role as emp_role
+      FROM donations d
+      LEFT JOIN employees e ON d.received_by_employee_id = e.id
+      WHERE d.is_archived = 0
+      ORDER BY d.donation_date DESC, d.id DESC
+    `).all();
+
+    const parsed = (donations as any[]).map((d: any) => ({
+      ...d,
+      received_by_employee_name: d.received_by_employee_name || d.emp_full_name || 'Staff Member',
+      received_by_employee_code: d.received_by_employee_code || d.emp_code || '',
+      received_by_employee_role: d.received_by_employee_role || d.emp_role || '',
+      proof_images: d.proof_images ? (typeof d.proof_images === 'string' ? JSON.parse(d.proof_images) : d.proof_images) : []
+    }));
+
+    return res.json(parsed);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/donations', (req: Request, res: Response) => {
+  try {
+    const {
+      donor_name,
+      amount,
+      donation_date,
+      received_by_employee_id,
+      received_by_employee_name,
+      received_by_employee_code,
+      received_by_employee_role,
+      payment_mode,
+      notes,
+      proof_images
+    } = req.body;
+
+    if (!donor_name || !amount) {
+      return res.status(400).json({ error: 'Donor name and amount are required' });
+    }
+
+    let empName = received_by_employee_name;
+    let empCode = received_by_employee_code;
+    let empRole = received_by_employee_role;
+
+    if (received_by_employee_id) {
+      const emp: any = db.prepare('SELECT id, employee_code, full_name, role FROM employees WHERE id = ?').get(received_by_employee_id);
+      if (emp) {
+        empName = emp.full_name;
+        empCode = emp.employee_code;
+        empRole = emp.role;
+      }
+    }
+
+    const proofImagesJson = JSON.stringify(Array.isArray(proof_images) ? proof_images : (proof_images ? [proof_images] : []));
+
+    const stmt = db.prepare(`
+      INSERT INTO donations (
+        donor_name, amount, donation_date, received_by_employee_id,
+        received_by_employee_name, received_by_employee_code, received_by_employee_role,
+        payment_mode, notes, proof_images
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+      donor_name.trim(),
+      Number(amount),
+      donation_date || new Date().toISOString().split('T')[0],
+      received_by_employee_id || null,
+      (empName || 'Staff Member').trim(),
+      empCode || '',
+      empRole || '',
+      payment_mode || 'Cash',
+      (notes || '').trim(),
+      proofImagesJson
+    );
+
+    const newDonation = db.prepare('SELECT * FROM donations WHERE id = ?').get(result.lastInsertRowid);
+    logAudit('ADD_DONATION', 'Donations', result.lastInsertRowid, `Donation of ₹${amount} received from ${donor_name} by ${empName || 'Staff'}`);
+
+    return res.status(201).json({
+      ...(newDonation as any),
+      proof_images: Array.isArray(proof_images) ? proof_images : []
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/donations/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      donor_name,
+      amount,
+      donation_date,
+      received_by_employee_id,
+      received_by_employee_name,
+      received_by_employee_code,
+      received_by_employee_role,
+      payment_mode,
+      notes,
+      proof_images
+    } = req.body;
+
+    let empName = received_by_employee_name;
+    let empCode = received_by_employee_code;
+    let empRole = received_by_employee_role;
+
+    if (received_by_employee_id) {
+      const emp: any = db.prepare('SELECT id, employee_code, full_name, role FROM employees WHERE id = ?').get(received_by_employee_id);
+      if (emp) {
+        empName = emp.full_name;
+        empCode = emp.employee_code;
+        empRole = emp.role;
+      }
+    }
+
+    const proofImagesJson = JSON.stringify(Array.isArray(proof_images) ? proof_images : (proof_images ? [proof_images] : []));
+
+    const stmt = db.prepare(`
+      UPDATE donations SET
+        donor_name = COALESCE(?, donor_name),
+        amount = COALESCE(?, amount),
+        donation_date = COALESCE(?, donation_date),
+        received_by_employee_id = COALESCE(?, received_by_employee_id),
+        received_by_employee_name = COALESCE(?, received_by_employee_name),
+        received_by_employee_code = COALESCE(?, received_by_employee_code),
+        received_by_employee_role = COALESCE(?, received_by_employee_role),
+        payment_mode = COALESCE(?, payment_mode),
+        notes = COALESCE(?, notes),
+        proof_images = COALESCE(?, proof_images),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+
+    stmt.run(
+      donor_name ? donor_name.trim() : null,
+      amount !== undefined ? Number(amount) : null,
+      donation_date || null,
+      received_by_employee_id || null,
+      empName ? empName.trim() : null,
+      empCode || null,
+      empRole || null,
+      payment_mode || null,
+      notes !== undefined ? notes.trim() : null,
+      proofImagesJson,
+      id
+    );
+
+    const updated = db.prepare('SELECT * FROM donations WHERE id = ?').get(id);
+    logAudit('UPDATE_DONATION', 'Donations', id, `Updated donation record #${id} for ${donor_name || 'donor'}`);
+
+    return res.json({
+      ...(updated as any),
+      proof_images: Array.isArray(proof_images) ? proof_images : []
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/donations/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    db.prepare('UPDATE donations SET is_archived = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+    logAudit('DELETE_DONATION', 'Donations', id, `Archived donation record #${id}`);
+    return res.json({ success: true, message: 'Donation record deleted' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= SETTINGS & AUDIT LOGS =================
 app.get('/api/settings', (req: Request, res: Response) => {
   const settings = db.prepare('SELECT * FROM application_settings').all();

@@ -24,6 +24,7 @@ import {
   BASE_VYSHNAVI_RECORDS,
   BASE_VYSHNAVI_TRANSACTIONS,
   BASE_VEHICLE_MAINTENANCE_JOB_CARDS,
+  BASE_DONATIONS,
   type DailyMaintenanceRecord,
   type VehicleMaintenanceJobCardRecord,
   type VehicleComplaintItem,
@@ -290,6 +291,7 @@ async function handleFallbackTableCrud(
         else if (tableKey === 'daily_maintenance' || tableKey === 'daily_maintenance_records') localList = [...BASE_DAILY_MAINTENANCE_RECORDS];
         else if (tableKey === 'vyshnavi_records' || tableKey === 'vyshnavi_service_records') localList = [...BASE_VYSHNAVI_RECORDS];
         else if (tableKey === 'vyshnavi_transactions') localList = [...BASE_VYSHNAVI_TRANSACTIONS];
+        else if (tableKey === 'donations') localList = [...BASE_DONATIONS];
 
         if (localList.length > 0) {
           setLocalCollection(tableKey, localList);
@@ -1631,6 +1633,17 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
   if (path === '/employee-payments' || path.startsWith('/employee-payments/')) {
     return handleFallbackTableCrud('employee_payments', 'employee_payments', path, method, body, params, {
       idGenerator: () => `REC-${Date.now().toString().slice(-6)}`
+    }) as any;
+  }
+
+  // 17H-2. DONATIONS FALLBACK
+  if (path === '/donations' || path.startsWith('/donations/')) {
+    return handleFallbackTableCrud('donations', 'donations', path, method, body, params, {
+      idGenerator: () => Date.now(),
+      enrich: (items: any[]) => items.map(d => ({
+        ...d,
+        proof_images: typeof d.proof_images === 'string' ? JSON.parse(d.proof_images || '[]') : (d.proof_images || [])
+      }))
     }) as any;
   }
 
@@ -3568,6 +3581,12 @@ export const api = {
   createEmployeePayment: (data: any) => request<any>('/employee-payments', { method: 'POST', body: JSON.stringify(data) }),
   updateEmployeePayment: (id: string | number, data: any) => request<any>(`/employee-payments/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteEmployeePayment: (id: string | number) => request<any>(`/employee-payments/${id}`, { method: 'DELETE' }),
+
+  // Donations Management
+  getDonations: () => request<any[]>('/donations'),
+  createDonation: (data: any) => request<any>('/donations', { method: 'POST', body: JSON.stringify(data) }),
+  updateDonation: (id: string | number, data: any) => request<any>(`/donations/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteDonation: (id: string | number) => request<any>(`/donations/${id}`, { method: 'DELETE' }),
 
   // File Upload
   uploadFile: async (file: File) => {

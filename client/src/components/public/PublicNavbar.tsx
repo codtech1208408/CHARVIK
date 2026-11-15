@@ -10,6 +10,7 @@ export const PublicNavbar: React.FC = () => {
     { name: 'Home', path: '/' },
     { name: 'About Us', path: '/about' },
     { name: 'Services', path: '/services' },
+    { name: 'Donations', path: '/donations' },
     { name: 'Contact Us', path: '/contact' },
   ];
 

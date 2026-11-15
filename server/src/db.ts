@@ -399,6 +399,24 @@ export function initDatabase() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Donations Table
+    CREATE TABLE IF NOT EXISTS donations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      donor_name TEXT NOT NULL,
+      amount REAL NOT NULL,
+      donation_date DATE NOT NULL,
+      received_by_employee_id INTEGER REFERENCES employees(id),
+      received_by_employee_name TEXT NOT NULL,
+      received_by_employee_code TEXT,
+      received_by_employee_role TEXT,
+      payment_mode TEXT DEFAULT 'Cash',
+      notes TEXT,
+      proof_images TEXT, -- JSON array of image URLs
+      is_archived INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Indexes for high-performance filtering & search
     CREATE INDEX IF NOT EXISTS idx_buses_bus_number ON buses(bus_number);
     CREATE INDEX IF NOT EXISTS idx_buses_status ON buses(operational_status);
@@ -408,6 +426,8 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_maintenance_due ON maintenance_schedules(status, next_due_date, next_due_km);
     CREATE INDEX IF NOT EXISTS idx_complaints_status ON complaints(status, priority);
     CREATE INDEX IF NOT EXISTS idx_repairs_status ON repair_work_orders(status);
+    CREATE INDEX IF NOT EXISTS idx_donations_date ON donations(donation_date);
+    CREATE INDEX IF NOT EXISTS idx_donations_donor ON donations(donor_name);
   `);
 
   try {

@@ -38,7 +38,8 @@ import {
   FileText,
   Fuel,
   Landmark,
-  Banknote
+  Banknote,
+  HeartHandshake
 } from 'lucide-react';
 import { StatCard } from '../components/common/StatCard';
 import { Modal } from '../components/common/Modal';
@@ -646,6 +647,13 @@ export const Dashboard: React.FC = () => {
             >
               <Wrench className="w-4 h-4 text-sky-200" />
               <span>Fleet Maintenance</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/donations')}
+              className="px-4 py-2 bg-rose-500/80 hover:bg-rose-500 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+            >
+              <HeartHandshake className="w-4 h-4 text-rose-100" />
+              <span>Donations & Welfare</span>
             </button>
             <button
               onClick={() => navigate('/admin/vyshnavi-travels')}

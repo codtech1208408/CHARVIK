@@ -130,6 +130,28 @@ export async function deleteOrganizerPaymentFromSupabase(id: any) {
   }
 }
 
+export async function syncDonationToSupabase(donation: any) {
+  try {
+    const payload = {
+      ...donation,
+      proof_images: typeof donation.proof_images === 'string'
+        ? JSON.parse(donation.proof_images || '[]')
+        : (donation.proof_images || [])
+    };
+    await supabase.from('donations').upsert(payload, { onConflict: 'id' });
+  } catch (err: any) {
+    console.warn('[Sync to Supabase Donation Error]:', err?.message || err);
+  }
+}
+
+export async function deleteDonationFromSupabase(id: any) {
+  try {
+    await supabase.from('donations').delete().eq('id', id);
+  } catch (err: any) {
+    console.warn('[Delete from Supabase Donation Error]:', err?.message || err);
+  }
+}
+
 /**
  * Full Startup & Periodic Sync:
  * 1. Pushes local SQLite tables into Supabase cloud
@@ -228,6 +250,12 @@ export async function syncAllWithSupabase() {
     const localOrganizers = db.prepare('SELECT * FROM organizers').all() as any[];
     for (const o of localOrganizers) {
       await syncOrganizerToSupabase(o);
+    }
+
+    // 6. DONATIONS
+    const localDonations = db.prepare('SELECT * FROM donations WHERE is_archived = 0').all() as any[];
+    for (const d of localDonations) {
+      await syncDonationToSupabase(d);
     }
 
     console.log('⚡ [Two-Way Supabase Sync] Localhost & Supabase Cloud synchronized completely.');

@@ -616,6 +616,44 @@ CREATE INDEX IF NOT EXISTS idx_maintenance_due ON maintenance_schedules(status, 
 CREATE INDEX IF NOT EXISTS idx_complaints_status ON complaints(status, priority);
 CREATE INDEX IF NOT EXISTS idx_repairs_status ON repair_work_orders(status);
 
+-- ==============================================================================
+-- 17. DONATIONS TABLE (Public Transparency & Admin Management)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS donations (
+  id BIGSERIAL PRIMARY KEY,
+  donor_name TEXT NOT NULL,
+  amount NUMERIC(12,2) NOT NULL,
+  donation_date DATE NOT NULL,
+  received_by_employee_id BIGINT REFERENCES employees(id) ON DELETE SET NULL,
+  received_by_employee_name TEXT NOT NULL,
+  received_by_employee_code TEXT,
+  received_by_employee_role TEXT,
+  payment_mode TEXT DEFAULT 'Cash',
+  notes TEXT,
+  proof_images JSONB DEFAULT '[]'::jsonb,
+  is_archived INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE donations ENABLE ROW LEVEL SECURITY;
+
+-- Allow public read access to non-archived donations for public website transparency
+DROP POLICY IF EXISTS "public_read_donations" ON donations;
+CREATE POLICY "public_read_donations" ON donations
+  FOR SELECT TO anon, authenticated
+  USING (is_archived = 0);
+
+-- Allow authenticated admins full insert/update/delete management
+DROP POLICY IF EXISTS "admin_manage_donations" ON donations;
+CREATE POLICY "admin_manage_donations" ON donations
+  FOR ALL TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+CREATE INDEX IF NOT EXISTS idx_donations_date ON donations(donation_date);
+CREATE INDEX IF NOT EXISTS idx_donations_donor ON donations(donor_name);
+
 
 -- ==============================================================================
 -- DEFAULT SEED DATA (Super Admin & Application Settings)
