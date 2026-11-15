@@ -42,10 +42,10 @@ export const HeaderWaveBackground: React.FC = () => {
         />
       </svg>
 
-      {/* Left Corner: Orange Curved Ribbon & Royal Blue Wave - Confined to corner under hamburger button */}
+      {/* Left Corner: Orange Curved Ribbon & Royal Blue Wave - Confined strictly to corner before divider */}
       <svg
-        className="absolute left-0 bottom-0 top-0 h-full w-[95px] sm:w-[115px]"
-        viewBox="0 0 115 90"
+        className="absolute left-0 bottom-0 top-0 h-full w-[48px] sm:w-[58px]"
+        viewBox="0 0 58 90"
         preserveAspectRatio="none"
         fill="none"
       >
@@ -68,19 +68,19 @@ export const HeaderWaveBackground: React.FC = () => {
 
         {/* Base dark blue foundation layer in corner */}
         <path
-          d="M0,58 Q30,70 65,78 Q85,84 105,90 L0,90 Z"
+          d="M0,62 Q15,72 32,80 Q44,86 54,90 L0,90 Z"
           fill="url(#leftDarkBlueBase)"
         />
 
         {/* Main Royal Blue Wave sweeping down to bottom edge */}
         <path
-          d="M0,62 C25,70 50,77 78,82 C92,85 104,88 115,90 L0,90 Z"
+          d="M0,66 C12,72 26,79 38,84 C46,87 52,89 58,90 L0,90 Z"
           fill="url(#leftBlueWaveGrad)"
         />
 
         {/* Dynamic Orange Curved Ribbon riding on top of the blue wave */}
         <path
-          d="M0,48 C20,58 45,67 70,73 C88,77 102,80 112,82 C95,80 75,76 55,70 C35,62 18,52 0,44 Z"
+          d="M0,52 C10,60 22,68 34,74 C43,78 50,82 56,84 C47,82 37,77 27,71 C17,63 8,54 0,48 Z"
           fill="url(#leftOrangeRibbonGrad)"
         />
       </svg>

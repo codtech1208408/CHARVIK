@@ -162,14 +162,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Charvik brand logo */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex items-center justify-center py-1 shrink-0 transition-opacity hover:opacity-95 cursor-pointer"
+          className="flex flex-col items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-0.5 group select-none"
           title="Charvik Staffing Consultancy"
         >
           <img
-            src="/logo-navbar.png?v=9"
+            src="/logo-brand.png?v=2"
             alt="Charvik Staffing Consultancy"
-            className="h-[74px] sm:h-[82px] lg:h-[86px] max-h-[88px] w-auto max-w-[320px] sm:max-w-[420px] lg:max-w-[500px] object-contain transition-transform hover:scale-[1.02]"
+            className="h-[52px] sm:h-[58px] lg:h-[62px] w-auto max-w-[280px] sm:max-w-[340px] lg:max-w-[400px] object-contain transition-transform group-hover:scale-[1.01]"
           />
+          <span className="text-[8px] sm:text-[9.5px] lg:text-[10px] font-black text-[#0B1E38] tracking-[0.16em] uppercase whitespace-nowrap leading-none mt-1">
+            YOUR TALENT &nbsp;|&nbsp; OUR SUPPORT &nbsp;|&nbsp; A BRIGHTER FUTURE
+          </span>
         </Link>
 
         {/* Operator Mode: Quick Return to Admin Button */}
