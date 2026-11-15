@@ -135,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   return (
-    <header className="relative min-h-[76px] sm:min-h-[82px] py-1 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 shadow-[0_4px_16px_rgba(0,114,229,0.06)] border-y-2 border-[#0072E5] overflow-hidden">
+    <header className="relative min-h-[84px] sm:min-h-[92px] py-1 bg-white text-slate-800 sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 shadow-[0_4px_16px_rgba(0,114,229,0.06)] border-y-2 border-[#0072E5] overflow-hidden">
       {/* Background Graphic Swooshes and Borders */}
       <HeaderWaveBackground />
 
@@ -157,18 +157,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         {/* Vertical Divider */}
-        <div className="h-7 w-[1.5px] bg-slate-300 mx-1 shrink-0" />
+        <div className="h-8 w-[1.5px] bg-slate-300 mx-1 shrink-0" />
 
         {/* Charvik brand logo */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex items-center justify-center py-0.5 shrink-0 transition-opacity hover:opacity-95 cursor-pointer"
+          className="flex items-center justify-center py-1 shrink-0 transition-opacity hover:opacity-95 cursor-pointer"
           title="Charvik Staffing Consultancy"
         >
           <img
-            src="/logo-navbar.png?v=8"
+            src="/logo-navbar.png?v=9"
             alt="Charvik Staffing Consultancy"
-            className="h-[64px] sm:h-[72px] lg:h-[76px] w-auto max-w-[280px] sm:max-w-[360px] lg:max-w-[440px] object-contain transition-transform hover:scale-[1.02]"
+            className="h-[74px] sm:h-[82px] lg:h-[86px] max-h-[88px] w-auto max-w-[320px] sm:max-w-[420px] lg:max-w-[500px] object-contain transition-transform hover:scale-[1.02]"
           />
         </Link>
 
