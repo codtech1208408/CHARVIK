@@ -18,37 +18,6 @@ import {
 } from 'lucide-react';
 
 export const Home: React.FC = () => {
-  const fleetPhotos = [
-    {
-      src: '/assets/fleet1.jpg',
-      title: 'Luxury Executive Passenger Coach',
-      desc: 'High-comfort corporate and executive transport with ergonomic seating, climate control, and modern amenities.',
-      badge: 'Executive Class',
-      capacity: '40 - 50 Seats',
-    },
-    {
-      src: '/assets/fleet2.jpg',
-      title: 'Corporate Staff Commute Coach',
-      desc: 'Dedicated daily transport for tech parks, industrial corridors, and institutional employee routes.',
-      badge: 'Corporate Shuttle',
-      capacity: '45 - 55 Seats',
-    },
-    {
-      src: '/assets/fleet3.jpg',
-      title: 'Multi-Vehicle Commercial Fleet',
-      desc: 'Expansive depot capacity ready for immediate turnkey deployment on long-term corporate contracts.',
-      badge: 'Depot Fleet',
-      capacity: '30+ Available',
-    },
-    {
-      src: '/assets/fleet5.jpg',
-      title: 'Highway Touring & Contract Coach',
-      desc: 'Smooth highway mobility with verified captains, suited for interstate tours and long-distance transit.',
-      badge: 'Express Touring',
-      capacity: '45 - 52 Seats',
-    },
-  ];
-
   const coreServices = [
     {
       title: 'Bus Rental & Hire',
@@ -527,90 +496,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. FLEET HIGHLIGHTS */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12" data-aos="fade-up">
-            <div>
-              <span className="text-xs font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-                Fleet Highlights
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#142B4A] mt-3 tracking-tight">
-                Our Operational Vehicle Portfolio
-              </h2>
-              <p className="text-slate-500 text-sm mt-1">
-                Well-maintained, clean, certified buses ready for immediate deployment.
-              </p>
-            </div>
-
-            <div className="mt-4 md:mt-0">
-              <Link
-                to="/services"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-blue-600 hover:bg-blue-50 border border-blue-200 transition"
-              >
-                <span>View Complete Fleet Specifications</span>
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {fleetPhotos.map((item, idx) => (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col"
-                data-aos="fade-up"
-                data-aos-delay={idx * 100}
-              >
-                <div className="relative h-48 overflow-hidden bg-slate-100">
-                  <img
-                    src={item.src}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#142B4A]/90 text-white backdrop-blur-xs">
-                      {item.badge}
-                    </span>
-                  </div>
-                  <div className="absolute bottom-3 right-3">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/95 text-slate-800 shadow-sm">
-                      {item.capacity}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-base group-hover:text-blue-600 transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
-
-                  <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Inspected & Certified
-                    </span>
-                    <a
-                      href="https://wa.me/919396151527?text=Hello%20Charvik%2C%20I%20am%20interested%20in%20booking%20the%20bus%20fleet."
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-bold text-blue-600 hover:text-blue-800"
-                    >
-                      Book &rarr;
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. WHY CHOOSE US */}
+      {/* 4. WHY CHOOSE US */}
       <section className="py-20 bg-gradient-to-b from-[#F5F7FB] to-white border-t border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14" data-aos="fade-up">
