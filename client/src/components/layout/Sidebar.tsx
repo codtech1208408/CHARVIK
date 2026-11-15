@@ -538,11 +538,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar Drawer - Always w-[88px] compact vertical rail */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-2xl w-[88px] ${isMobileOpen
-          ? 'translate-x-0'
+        className={`fixed bottom-0 left-0 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-sm w-[88px] ${isMobileOpen
+          ? 'top-0 z-50 translate-x-0 shadow-2xl'
           : isVisible
-            ? '-translate-x-full lg:translate-x-0'
-            : '-translate-x-full'
+            ? 'top-[78px] sm:top-[82px] z-20 -translate-x-full lg:translate-x-0'
+            : 'top-[78px] sm:top-[82px] z-20 -translate-x-full'
           }`}
       >
         {/* Mobile Close Button (shown only on mobile drawer) */}
@@ -557,24 +557,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
         )}
-
-        {/* Top Header - Three Lines (Hamburger Toggle Button) directly above Dashboard */}
-        <div className="h-[96px] flex items-center justify-center border-b border-slate-100 shrink-0 px-2">
-          <button
-            onClick={() => {
-              if (window.innerWidth < 1024) {
-                setIsMobileOpen(false);
-              } else {
-                onToggleVisibility?.();
-              }
-            }}
-            className="p-2.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center border border-slate-200/80 shadow-xs"
-            title="Hide Navigation Sidebar"
-            aria-label="Toggle Navigation Sidebar"
-          >
-            <Menu className="w-5 h-5 text-[#142B4A]" />
-          </button>
-        </div>
 
         {/* Navigation Items List (Always Compact icon-strip format matching Image 3) */}
         <div className="flex-1 overflow-y-auto py-2.5 px-2 space-y-2 scrollbar-none">

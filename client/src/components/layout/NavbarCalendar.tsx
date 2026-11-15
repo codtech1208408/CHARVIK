@@ -198,8 +198,8 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-2 select-none group ${isOpen
-              ? 'bg-blue-50 border-blue-400 text-blue-800 ring-2 ring-blue-500/20 shadow-xs'
-              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+            ? 'bg-blue-50 border-blue-400 text-blue-800 ring-2 ring-blue-500/20 shadow-xs'
+            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
             }`}
           title="Fleet Operations Calendar & Schedule (Click to open)"
           aria-label="Toggle fleet calendar"
@@ -350,12 +350,12 @@ export const NavbarCalendar: React.FC<NavbarCalendarProps> = ({ className = '', 
                     type="button"
                     onClick={() => setSelectedDate(item.dateObj)}
                     className={`h-8 text-xs font-semibold rounded-xl flex items-center justify-center transition-all relative cursor-pointer ${isSelected
-                        ? 'bg-[#142B4A] text-white shadow-sm font-bold scale-105 z-10'
-                        : isToday
-                          ? 'bg-blue-50 text-blue-700 font-bold border border-blue-300 hover:bg-blue-100'
-                          : item.isCurrentMonth
-                            ? 'text-slate-700 hover:bg-slate-100'
-                            : 'text-slate-300 hover:bg-slate-50'
+                      ? 'bg-[#142B4A] text-white shadow-sm font-bold scale-105 z-10'
+                      : isToday
+                        ? 'bg-blue-50 text-blue-700 font-bold border border-blue-300 hover:bg-blue-100'
+                        : item.isCurrentMonth
+                          ? 'text-slate-700 hover:bg-slate-100'
+                          : 'text-slate-300 hover:bg-slate-50'
                       }`}
                   >
                     <span>{item.day}</span>

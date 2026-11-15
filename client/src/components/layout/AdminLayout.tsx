@@ -300,40 +300,43 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F0F4F9] flex flex-col">
-      {/* Sidebar - Pinned on desktop */}
-      <Sidebar
-        isVisible={isSidebarVisible}
-        onToggleVisibility={() => setIsSidebarVisible(!isSidebarVisible)}
-        isMobileOpen={isMobileOpen}
-        setIsMobileOpen={setIsMobileOpen}
-        isPinned={true}
+      {/* Full-width Top Navigation Header */}
+      <Navbar
+        onMobileToggle={() => setIsMobileOpen(true)}
+        onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
+        pageTitle={getPageTitle()}
+        isSidebarVisible={isSidebarVisible}
       />
 
-      {/* Main Content Area */}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarVisible ? 'lg:pl-[88px]' : 'lg:pl-0'
-          }`}
-      >
-        <Navbar
-          onMobileToggle={() => setIsMobileOpen(true)}
-          onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
-          pageTitle={getPageTitle()}
-          isSidebarVisible={isSidebarVisible}
+      <div className="flex-1 flex flex-row relative">
+        {/* Sidebar - Positioned under Top Header */}
+        <Sidebar
+          isVisible={isSidebarVisible}
+          onToggleVisibility={() => setIsSidebarVisible(!isSidebarVisible)}
+          isMobileOpen={isMobileOpen}
+          setIsMobileOpen={setIsMobileOpen}
+          isPinned={true}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-6 w-full max-w-full pb-24 lg:pb-8">
-          <ErrorBoundary fallbackTitle="Unable to Load Dashboard View">
-            <Outlet />
-          </ErrorBoundary>
-        </main>
+        {/* Main Content Area */}
+        <div
+          className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarVisible ? 'lg:pl-[88px]' : 'lg:pl-0'
+            }`}
+        >
+          <main className="flex-1 p-4 sm:p-6 lg:p-6 w-full max-w-full pb-24 lg:pb-8">
+            <ErrorBoundary fallbackTitle="Unable to Load Dashboard View">
+              <Outlet />
+            </ErrorBoundary>
+          </main>
 
-        <footer className="py-4 px-6 border-t border-slate-200 bg-white text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 no-print">
-          <p>© 2026 Charvik Staffing Consultancy. All rights reserved.</p>
-          <p className="flex items-center gap-1.5 font-medium text-slate-600">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Fleet System Online • v1.0 Production
-          </p>
-        </footer>
+          <footer className="py-4 px-6 border-t border-slate-200 bg-white text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 no-print">
+            <p>© 2026 Charvik Staffing Consultancy. All rights reserved.</p>
+            <p className="flex items-center gap-1.5 font-medium text-slate-600">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Fleet System Online • v1.0 Production
+            </p>
+          </footer>
+        </div>
       </div>
     </div>
   );
