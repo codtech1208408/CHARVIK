@@ -197,9 +197,8 @@ export const Donations: React.FC = () => {
               >
                 <option value="All">All Modes</option>
                 <option value="Cash">Cash</option>
-                <option value="UPI / Online">UPI / Online</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Cheque">Cheque</option>
+                <option value="Online / Bank Transfer">Online / Bank Transfer</option>
+                <option value="UPI">UPI</option>
               </select>
             </div>
 

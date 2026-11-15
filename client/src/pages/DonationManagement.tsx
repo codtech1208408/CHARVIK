@@ -39,7 +39,7 @@ export interface DonationRecord {
   received_by_employee_name: string;
   received_by_employee_code?: string;
   received_by_employee_role?: string;
-  payment_mode?: 'Cash' | 'UPI / Online' | 'Bank Transfer' | 'Cheque';
+  payment_mode?: 'Cash' | 'Online / Bank Transfer' | 'UPI';
   notes?: string;
   proof_images?: string[];
   created_at?: string;
@@ -71,7 +71,7 @@ export const DonationManagement: React.FC = () => {
     received_by_employee_name: '',
     received_by_employee_code: '',
     received_by_employee_role: '',
-    payment_mode: 'Cash' as 'Cash' | 'UPI / Online' | 'Bank Transfer' | 'Cheque',
+    payment_mode: 'Cash' as 'Cash' | 'Online / Bank Transfer' | 'UPI',
     notes: '',
     proof_images: [] as string[]
   });
@@ -572,9 +572,8 @@ export const DonationManagement: React.FC = () => {
             >
               <option value="All">All Modes</option>
               <option value="Cash">Cash</option>
-              <option value="UPI / Online">UPI / Online</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-              <option value="Cheque">Cheque</option>
+              <option value="Online / Bank Transfer">Online / Bank Transfer</option>
+              <option value="UPI">UPI</option>
             </select>
           </div>
 
@@ -722,11 +721,9 @@ export const DonationManagement: React.FC = () => {
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           donation.payment_mode === 'Cash'
                             ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
-                            : donation.payment_mode === 'UPI / Online'
-                            ? 'bg-blue-50 text-blue-700 border border-blue-200/60'
-                            : donation.payment_mode === 'Bank Transfer'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
-                            : 'bg-purple-50 text-purple-700 border border-purple-200/60'
+                            : donation.payment_mode === 'UPI'
+                            ? 'bg-purple-50 text-purple-700 border border-purple-200/60'
+                            : 'bg-blue-50 text-blue-700 border border-blue-200/60'
                         }`}>
                           {donation.payment_mode || 'Cash'}
                         </span>
@@ -965,9 +962,8 @@ export const DonationManagement: React.FC = () => {
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-xs font-bold text-slate-800 bg-white"
                   >
                     <option value="Cash">Cash</option>
-                    <option value="UPI / Online">UPI / Online</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Cheque">Cheque</option>
+                    <option value="Online / Bank Transfer">Online / Bank Transfer</option>
+                    <option value="UPI">UPI</option>
                   </select>
                 </div>
 

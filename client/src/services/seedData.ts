@@ -3188,7 +3188,7 @@ export const BASE_DONATIONS: any[] = [
     received_by_employee_name: 'akhil',
     received_by_employee_code: 'DRV-1001',
     received_by_employee_role: 'Driver',
-    payment_mode: 'UPI / Online',
+    payment_mode: 'UPI',
     notes: 'Annual transit crew welfare contribution & road safety reward',
     proof_images: [
       'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=80',
@@ -3205,7 +3205,7 @@ export const BASE_DONATIONS: any[] = [
     received_by_employee_name: 'hari',
     received_by_employee_code: 'CPT-1001',
     received_by_employee_role: 'Captain',
-    payment_mode: 'Bank Transfer',
+    payment_mode: 'Online / Bank Transfer',
     notes: 'Charvik Crew Aid & Safe Passenger Welfare Fund',
     proof_images: [
       'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&auto=format&fit=crop&q=80',
