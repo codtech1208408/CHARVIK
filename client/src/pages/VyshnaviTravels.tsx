@@ -136,6 +136,47 @@ export const VyshnaviTravels: React.FC = () => {
   const [editingCategoryOldName, setEditingCategoryOldName] = useState<string | null>(null);
   const [editingCategoryNewName, setEditingCategoryNewName] = useState('');
 
+  // Vehicle Linked Manager State
+  const [customVehicles, setCustomVehicles] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('vyshnavi_custom_vehicles');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      'General / Fleet Wide',
+      'AP16TV1234',
+      'AP16TC4567',
+      'HR55X1200',
+      'DL01A1024',
+      'TS09UB9999'
+    ];
+  });
+  const [isVehicleManagerOpen, setIsVehicleManagerOpen] = useState(false);
+  const [newVehicleName, setNewVehicleName] = useState('');
+  const [editingVehicleOldName, setEditingVehicleOldName] = useState<string | null>(null);
+  const [editingVehicleNewName, setEditingVehicleNewName] = useState('');
+
+  // Party / Client / Vendor Manager State
+  const [parties, setParties] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('vyshnavi_custom_parties');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      'Sri Krishna Travels',
+      'Indian Oil',
+      'HPCL Fuel Depot',
+      'Passenger Cash Counter',
+      'TSRTC Transit Retainer',
+      'Infosys Fleet Services',
+      'Sri Balaji Tyres & Alignment'
+    ];
+  });
+  const [isPartyManagerOpen, setIsPartyManagerOpen] = useState(false);
+  const [newPartyName, setNewPartyName] = useState('');
+  const [editingPartyOldName, setEditingPartyOldName] = useState<string | null>(null);
+  const [editingPartyNewName, setEditingPartyNewName] = useState('');
+
   // Printout Report State (for full tab statement printing)
   const [isPrintReportModalOpen, setIsPrintReportModalOpen] = useState(false);
   const [reportPrintType, setReportPrintType] = useState<'records' | 'transactions'>('records');
@@ -866,6 +907,147 @@ export const VyshnaviTravels: React.FC = () => {
     }
 
     success(`Category "${catName}" deleted.`);
+  };
+
+  // Combined Vehicles List (custom + API buses)
+  const allVehicles = useMemo(() => {
+    const list = [...customVehicles];
+    buses.forEach((b) => {
+      const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+      if (reg && !list.some((v) => v.toLowerCase() === reg.toLowerCase())) {
+        list.push(reg);
+      }
+    });
+    return list;
+  }, [customVehicles, buses]);
+
+  // Add Vehicle
+  const handleAddVehicle = (val?: string) => {
+    const trimmed = (val || newVehicleName).trim();
+    if (!trimmed) {
+      error('Please enter a vehicle registration number');
+      return;
+    }
+    if (allVehicles.some((v) => v.toLowerCase() === trimmed.toLowerCase())) {
+      error(`Vehicle "${trimmed}" already exists.`);
+      return;
+    }
+    const updated = [...customVehicles, trimmed];
+    setCustomVehicles(updated);
+    localStorage.setItem('vyshnavi_custom_vehicles', JSON.stringify(updated));
+    setTxnForm((prev) => ({ ...prev, vehicle_number: trimmed }));
+    setNewVehicleName('');
+    success(`Vehicle "${trimmed}" added!`);
+  };
+
+  // Start Edit Vehicle
+  const handleStartEditVehicle = (veh: string) => {
+    setEditingVehicleOldName(veh);
+    setEditingVehicleNewName(veh);
+  };
+
+  // Save Edit Vehicle
+  const handleSaveEditVehicle = (oldName: string) => {
+    const trimmed = editingVehicleNewName.trim();
+    if (!trimmed || trimmed === oldName) {
+      setEditingVehicleOldName(null);
+      setEditingVehicleNewName('');
+      return;
+    }
+    if (allVehicles.some((v) => v.toLowerCase() === trimmed.toLowerCase() && v.toLowerCase() !== oldName.toLowerCase())) {
+      error(`Vehicle "${trimmed}" already exists.`);
+      return;
+    }
+    const updated = customVehicles.map((v) => (v === oldName ? trimmed : v));
+    if (!updated.includes(trimmed) && !customVehicles.includes(oldName)) {
+      updated.push(trimmed);
+    }
+    setCustomVehicles(updated);
+    localStorage.setItem('vyshnavi_custom_vehicles', JSON.stringify(updated));
+    if (txnForm.vehicle_number === oldName) {
+      setTxnForm((prev) => ({ ...prev, vehicle_number: trimmed }));
+    }
+    setEditingVehicleOldName(null);
+    setEditingVehicleNewName('');
+    success(`Vehicle updated to "${trimmed}".`);
+  };
+
+  // Delete Vehicle
+  const handleDeleteVehicle = (vehName: string) => {
+    if (customVehicles.length <= 1) {
+      error('At least one vehicle option is required.');
+      return;
+    }
+    const updated = customVehicles.filter((v) => v !== vehName);
+    setCustomVehicles(updated);
+    localStorage.setItem('vyshnavi_custom_vehicles', JSON.stringify(updated));
+    if (txnForm.vehicle_number === vehName) {
+      setTxnForm((prev) => ({ ...prev, vehicle_number: updated[0] || 'General / Fleet Wide' }));
+    }
+    success(`Vehicle "${vehName}" removed.`);
+  };
+
+  // Add Party
+  const handleAddParty = (val?: string) => {
+    const trimmed = (val || newPartyName).trim();
+    if (!trimmed) {
+      error('Please enter a party / client / vendor name');
+      return;
+    }
+    if (parties.some((p) => p.toLowerCase() === trimmed.toLowerCase())) {
+      error(`Party "${trimmed}" already exists.`);
+      return;
+    }
+    const updated = [...parties, trimmed];
+    setParties(updated);
+    localStorage.setItem('vyshnavi_custom_parties', JSON.stringify(updated));
+    setTxnForm((prev) => ({ ...prev, party_name: trimmed }));
+    setNewPartyName('');
+    success(`Party "${trimmed}" added!`);
+  };
+
+  // Start Edit Party
+  const handleStartEditParty = (party: string) => {
+    setEditingPartyOldName(party);
+    setEditingPartyNewName(party);
+  };
+
+  // Save Edit Party
+  const handleSaveEditParty = (oldName: string) => {
+    const trimmed = editingPartyNewName.trim();
+    if (!trimmed || trimmed === oldName) {
+      setEditingPartyOldName(null);
+      setEditingPartyNewName('');
+      return;
+    }
+    if (parties.some((p) => p.toLowerCase() === trimmed.toLowerCase() && p.toLowerCase() !== oldName.toLowerCase())) {
+      error(`Party "${trimmed}" already exists.`);
+      return;
+    }
+    const updated = parties.map((p) => (p === oldName ? trimmed : p));
+    setParties(updated);
+    localStorage.setItem('vyshnavi_custom_parties', JSON.stringify(updated));
+    if (txnForm.party_name === oldName) {
+      setTxnForm((prev) => ({ ...prev, party_name: trimmed }));
+    }
+    setEditingPartyOldName(null);
+    setEditingPartyNewName('');
+    success(`Party updated to "${trimmed}".`);
+  };
+
+  // Delete Party
+  const handleDeleteParty = (partyName: string) => {
+    if (parties.length <= 1) {
+      error('At least one party option is required.');
+      return;
+    }
+    const updated = parties.filter((p) => p !== partyName);
+    setParties(updated);
+    localStorage.setItem('vyshnavi_custom_parties', JSON.stringify(updated));
+    if (txnForm.party_name === partyName) {
+      setTxnForm((prev) => ({ ...prev, party_name: updated[0] || '' }));
+    }
+    success(`Party "${partyName}" removed.`);
   };
 
   // Open Report Printout Modal
@@ -2365,50 +2547,317 @@ export const VyshnaviTravels: React.FC = () => {
               )}
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Vehicle Linked</label>
+            {/* Vehicle Linked with Add More / Manage */}
+            <div className="relative">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700">Vehicle Linked</label>
+                <button
+                  type="button"
+                  onClick={() => setIsVehicleManagerOpen(!isVehicleManagerOpen)}
+                  className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>{isVehicleManagerOpen ? 'Close' : '+ Add More / Manage'}</span>
+                </button>
+              </div>
+
               <select
                 value={txnForm.vehicle_number}
-                onChange={(e) => setTxnForm({ ...txnForm, vehicle_number: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none"
+                onChange={(e) => {
+                  if (e.target.value === '__add_more_vehicle__') {
+                    setIsVehicleManagerOpen(true);
+                  } else {
+                    setTxnForm({ ...txnForm, vehicle_number: e.target.value });
+                  }
+                }}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none cursor-pointer"
               >
-                <option value="General / Fleet Wide">General / Fleet Wide</option>
-                {buses.map((b) => {
-                  const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
-                  return (
-                    <option key={b.id || reg} value={reg}>
-                      {reg}
-                    </option>
-                  );
-                })}
+                {allVehicles.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+                <option value="__add_more_vehicle__" className="text-blue-600 font-bold bg-blue-50">
+                  + Add More Vehicle...
+                </option>
               </select>
+
+              {/* Inline Vehicle Manager */}
+              {isVehicleManagerOpen && (
+                <div className="mt-2.5 p-3 bg-slate-100 border border-slate-200 rounded-2xl space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                    <span className="flex items-center gap-1.5">
+                      <Bus className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Manage Vehicles</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsVehicleManagerOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Add New Vehicle Row */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. AP16TV1234..."
+                      value={newVehicleName}
+                      onChange={(e) => setNewVehicleName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddVehicle();
+                        }
+                      }}
+                      className="flex-1 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500 font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddVehicle()}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#142B4A] hover:bg-[#1E3A5F] text-white transition-colors cursor-pointer shrink-0"
+                    >
+                      + Add
+                    </button>
+                  </div>
+
+                  {/* Existing Vehicles List with Edit and Delete options */}
+                  <div className="max-h-40 overflow-y-auto divide-y divide-slate-100 bg-white rounded-xl border border-slate-200 p-1">
+                    {allVehicles.map((veh) => {
+                      const isEditing = editingVehicleOldName === veh;
+
+                      return (
+                        <div key={veh} className="flex items-center justify-between gap-2 p-1.5 text-xs hover:bg-slate-50 rounded-lg group">
+                          {isEditing ? (
+                            <div className="flex items-center gap-1.5 flex-1">
+                              <input
+                                type="text"
+                                value={editingVehicleNewName}
+                                onChange={(e) => setEditingVehicleNewName(e.target.value)}
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleSaveEditVehicle(veh);
+                                  } else if (e.key === 'Escape') {
+                                    setEditingVehicleOldName(null);
+                                  }
+                                }}
+                                className="flex-1 text-xs px-2 py-1 rounded-lg border border-blue-400 bg-white outline-none font-medium"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEditVehicle(veh)}
+                                className="p-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors cursor-pointer shrink-0"
+                                title="Save Vehicle"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingVehicleOldName(null)}
+                                className="p-1 rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors cursor-pointer shrink-0"
+                                title="Cancel"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="font-semibold text-slate-800 truncate font-mono text-[11px]">{veh}</span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEditVehicle(veh)}
+                                  className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                  title="Edit Vehicle"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteVehicle(veh)}
+                                  className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Delete Vehicle"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Party / Client / Vendor Name</label>
-              <input
-                type="text"
-                placeholder="e.g. Sri Krishna Travels / Indian Oil"
+            {/* Party / Client / Vendor Name with Add More / Manage */}
+            <div className="relative">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700">Party / Client / Vendor Name</label>
+                <button
+                  type="button"
+                  onClick={() => setIsPartyManagerOpen(!isPartyManagerOpen)}
+                  className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>{isPartyManagerOpen ? 'Close' : '+ Add More / Manage'}</span>
+                </button>
+              </div>
+
+              <select
                 value={txnForm.party_name}
-                onChange={(e) => setTxnForm({ ...txnForm, party_name: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none"
-              />
+                onChange={(e) => {
+                  if (e.target.value === '__add_more_party__') {
+                    setIsPartyManagerOpen(true);
+                  } else {
+                    setTxnForm({ ...txnForm, party_name: e.target.value });
+                  }
+                }}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none cursor-pointer"
+              >
+                <option value="">Select Party / Client / Vendor...</option>
+                {parties.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+                {txnForm.party_name && !parties.includes(txnForm.party_name) && (
+                  <option value={txnForm.party_name}>{txnForm.party_name}</option>
+                )}
+                <option value="__add_more_party__" className="text-blue-600 font-bold bg-blue-50">
+                  + Add More Party / Vendor...
+                </option>
+              </select>
+
+              {/* Inline Party Manager */}
+              {isPartyManagerOpen && (
+                <div className="mt-2.5 p-3 bg-slate-100 border border-slate-200 rounded-2xl space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                    <span className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Manage Parties & Vendors</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsPartyManagerOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 cursor-pointer p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Add New Party Row */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. Sri Krishna Travels / Indian Oil..."
+                      value={newPartyName}
+                      onChange={(e) => setNewPartyName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddParty();
+                        }
+                      }}
+                      className="flex-1 text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500 font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddParty()}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#142B4A] hover:bg-[#1E3A5F] text-white transition-colors cursor-pointer shrink-0"
+                    >
+                      + Add
+                    </button>
+                  </div>
+
+                  {/* Existing Parties List with Edit and Delete options */}
+                  <div className="max-h-40 overflow-y-auto divide-y divide-slate-100 bg-white rounded-xl border border-slate-200 p-1">
+                    {parties.map((pty) => {
+                      const isEditing = editingPartyOldName === pty;
+
+                      return (
+                        <div key={pty} className="flex items-center justify-between gap-2 p-1.5 text-xs hover:bg-slate-50 rounded-lg group">
+                          {isEditing ? (
+                            <div className="flex items-center gap-1.5 flex-1">
+                              <input
+                                type="text"
+                                value={editingPartyNewName}
+                                onChange={(e) => setEditingPartyNewName(e.target.value)}
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleSaveEditParty(pty);
+                                  } else if (e.key === 'Escape') {
+                                    setEditingPartyOldName(null);
+                                  }
+                                }}
+                                className="flex-1 text-xs px-2 py-1 rounded-lg border border-blue-400 bg-white outline-none font-medium"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEditParty(pty)}
+                                className="p-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors cursor-pointer shrink-0"
+                                title="Save Party"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingPartyOldName(null)}
+                                className="p-1 rounded-md bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors cursor-pointer shrink-0"
+                                title="Cancel"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="font-semibold text-slate-800 truncate">{pty}</span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEditParty(pty)}
+                                  className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                  title="Edit Party"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteParty(pty)}
+                                  className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Delete Party"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
+            {/* Payment Mode (only UPI, Bank Transfer, Cash) */}
+            <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-slate-700 mb-1">Payment Mode</label>
               <select
                 value={txnForm.payment_mode}
                 onChange={(e) => setTxnForm({ ...txnForm, payment_mode: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none cursor-pointer"
               >
-                <option value="Cash">Cash</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Online / Net Banking">Online / Net Banking</option>
                 <option value="UPI">UPI</option>
-                <option value="FASTag">FASTag</option>
-                <option value="Cheque">Cheque</option>
-                <option value="Other">Other</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Cash">Cash</option>
               </select>
             </div>
           </div>
