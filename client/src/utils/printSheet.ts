@@ -14,6 +14,8 @@ interface PrintOptions {
   htmlContent?: string;
   /** Orientation: 'portrait' or 'landscape' */
   orientation?: 'portrait' | 'landscape';
+  /** Set to true to hide the outer boxed title & meta strip (used for slips and vouchers) */
+  hideMetaBar?: boolean;
 }
 
 export function printSheet(options: PrintOptions): void {
@@ -27,7 +29,8 @@ export function printSheet(options: PrintOptions): void {
     }),
     elementId,
     htmlContent,
-    orientation = 'landscape'
+    orientation = 'landscape',
+    hideMetaBar = false
   } = options;
 
   let bodyContent = '';
@@ -226,6 +229,7 @@ export function printSheet(options: PrintOptions): void {
       </div>
 
       <!-- Title & Meta Strip Box -->
+      ${!hideMetaBar ? `
       <div class="charvik-meta-bar">
         <div class="charvik-meta-left">
           <span class="charvik-meta-title">${title}</span>
@@ -235,6 +239,7 @@ export function printSheet(options: PrintOptions): void {
           Date: ${dateLabel} &nbsp;|&nbsp; Time: ${timeLabel}
         </div>
       </div>
+      ` : ''}
 
       <!-- Printable Table / Body -->
       <div class="print-body">
@@ -312,7 +317,7 @@ export function printSheet(options: PrintOptions): void {
       try {
         printWindow.focus();
         printWindow.print();
-      } catch {}
+      } catch { }
     }, 400);
   } else {
     window.print();

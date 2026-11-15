@@ -510,9 +510,10 @@ export const EmployeePayments: React.FC = () => {
     // If user clicked "Confirm & Print Receipt"
     if (shouldPrint) {
       printSheet({
-        title: "CHARVIK STAFFING CONSULTANCY - PAYMENT RECEIPT",
+        title: "STAFF PAYMENT RECEIPT",
         subtitle: `Receipt No: ${receiptNo} | Staff: ${targetStaff.full_name} (${targetStaff.employee_code})`,
         orientation: "portrait",
+        hideMetaBar: true,
         htmlContent: `
           <div style="font-family: sans-serif; padding: 20px; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
             <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 14px; margin-bottom: 18px;">
@@ -718,6 +719,7 @@ export const EmployeePayments: React.FC = () => {
       title: `${r.full_name} - Employee Biodata`,
       subtitle: `Official Employee Record | ID: ${formatEmployeeId(r.employee_code, r.role)} | Role: ${r.role}`,
       orientation: "portrait",
+      hideMetaBar: true,
       htmlContent: `
         <div style="font-family: Arial, sans-serif; padding: 24px; color: #1e293b;">
           <div style="border-bottom: 2px solid #142B4A; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
@@ -957,9 +959,10 @@ export const EmployeePayments: React.FC = () => {
   // 1. Print Individual Payment Receipt
   const handlePrintReceipt = (payment: RecordedPayment) => {
     printSheet({
-      title: "CHARVIK STAFFING CONSULTANCY - PAYMENT RECEIPT",
+      title: "STAFF PAYMENT RECEIPT",
       subtitle: `Receipt No: ${payment.id} | Staff: ${payment.employee_name} (${payment.employee_code})`,
       orientation: "portrait",
+      hideMetaBar: true,
       htmlContent: `
         <div style="font-family: sans-serif; padding: 20px; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
           <div style="text-align: center; border-bottom: 2px solid #142B4A; padding-bottom: 14px; margin-bottom: 18px;">
@@ -1018,9 +1021,10 @@ export const EmployeePayments: React.FC = () => {
   const handlePrintTripSlip = (trip: TripEntry) => {
     if (!r) return;
     printSheet({
-      title: "CHARVIK STAFFING CONSULTANCY - TRIP DUTY & SALARY SLIP",
+      title: "TRIP DUTY & REMUNERATION SLIP",
       subtitle: `Trip ID: #${trip.id} | Staff: ${r.full_name} (${formatEmployeeId(r.employee_code, r.role)})`,
       orientation: "portrait",
+      hideMetaBar: true,
       htmlContent: `
         <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 650px; margin: 0 auto; border: 1.5px solid #cbd5e1; border-radius: 14px; background: #ffffff;">
           <div style="border-bottom: 2.5px solid #142B4A; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start;">
@@ -1037,27 +1041,31 @@ export const EmployeePayments: React.FC = () => {
 
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
             <tr style="background: #f8fafc;">
-              <td style="padding: 9px 12px; font-weight: bold; color: #64748b; width: 35%;">Employee Name:</td>
-              <td style="padding: 9px 12px; font-weight: 800; color: #0f172a;">${r.full_name} (${r.role})</td>
+              <td style="padding: 9px 12px; font-weight: bold; color: #64748b; width: 35%;">Trip ID / Voucher:</td>
+              <td style="padding: 9px 12px; font-weight: 800; font-family: monospace; color: #142B4A;">#${trip.id}</td>
             </tr>
             <tr>
+              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Employee Name:</td>
+              <td style="padding: 9px 12px; font-weight: 800; color: #0f172a;">${r.full_name} (${r.role})</td>
+            </tr>
+            <tr style="background: #f8fafc;">
               <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Employee Code / ID:</td>
               <td style="padding: 9px 12px; font-weight: 700; font-family: monospace;">${formatEmployeeId(r.employee_code, r.role)}</td>
             </tr>
-            <tr style="background: #f8fafc;">
+            <tr>
               <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Trip Date:</td>
               <td style="padding: 9px 12px; font-weight: 700;">${trip.date}</td>
             </tr>
-            <tr>
+            <tr style="background: #f8fafc;">
               <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Vehicle Number:</td>
               <td style="padding: 9px 12px; font-weight: 800; font-family: monospace; color: #142B4A;">${trip.vehicle_number}</td>
             </tr>
-            <tr style="background: #f8fafc;">
+            <tr>
               <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Task / Route Details:</td>
               <td style="padding: 9px 12px; font-weight: 700;">${trip.route_corridor}</td>
             </tr>
             ${trip.service_number ? `
-            <tr>
+            <tr style="background: #f8fafc;">
               <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Service Number:</td>
               <td style="padding: 9px 12px; font-weight: 700; font-family: monospace;">${trip.service_number}</td>
             </tr>` : ''}
@@ -1088,6 +1096,10 @@ export const EmployeePayments: React.FC = () => {
             <div style="text-align: center; width: 140px;">
               <div style="border-top: 1px solid #94a3b8; padding-top: 5px;">Accounts Incharge</div>
             </div>
+          </div>
+
+          <div style="margin-top: 20px; text-align: right; font-size: 10px; color: #94a3b8;">
+            Printed on: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true })}
           </div>
         </div>
       `
@@ -1616,7 +1628,7 @@ export const EmployeePayments: React.FC = () => {
                                       type="button"
                                       onClick={() => handlePrintTripSlip(trip)}
                                       className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                                      title="Print Duty & Salary Slip"
+                                      title="Print Trip Duty & Remuneration Slip"
                                     >
                                       <Printer className="w-3.5 h-3.5" />
                                     </button>
