@@ -26,6 +26,7 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export interface RecordItem {
   id: string;
@@ -509,12 +510,6 @@ export const RecordManagement: React.FC = () => {
   // Export to Excel / CSV
   const handleExportCSV = () => {
     try {
-      const csvLines: string[] = [];
-      csvLines.push(`"CHARVIK STAFFING CONSULTANCY - BILLING & SERVICE RECORDS"`);
-      csvLines.push(`"Exported At","${new Date().toLocaleString()}"`);
-      csvLines.push(`"Total Records","${filteredRecords.length}"`);
-      csvLines.push('');
-
       const headers = [
         'S.No',
         'Record Number',
@@ -534,43 +529,59 @@ export const RecordManagement: React.FC = () => {
         'Account No',
         'UPI ID'
       ];
-      csvLines.push(headers.map((h) => `"${h}"`).join(','));
 
-      filteredRecords.forEach((r, idx) => {
-        const row = [
-          idx + 1,
-          r.record_number,
-          r.record_date,
-          r.period_month || '',
-          r.bill_to_name,
-          r.bill_to_address || '',
-          r.bill_to_phone || '',
-          r.bill_to_pan || '',
-          r.total_staff_count,
-          r.total_amount,
-          r.received_amount,
-          r.balance_amount,
-          r.payment_status,
-          r.bank_name || '',
-          r.bank_ifsc || '',
-          r.bank_account_no || '',
-          r.upi_id || ''
-        ];
-        csvLines.push(row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(','));
+      const rows = filteredRecords.map((r, idx) => [
+        idx + 1,
+        r.record_number,
+        r.record_date,
+        r.period_month || '',
+        r.bill_to_name,
+        r.bill_to_address || '',
+        r.bill_to_phone || '',
+        r.bill_to_pan || '',
+        r.total_staff_count,
+        r.total_amount,
+        r.received_amount,
+        r.balance_amount,
+        r.payment_status,
+        r.bank_name || '',
+        r.bank_ifsc || '',
+        r.bank_account_no || '',
+        r.upi_id || ''
+      ]);
+
+      exportTableToExcel({
+        title: 'Billing & Service Records Ledger',
+        subtitle: `Total Records: ${filteredRecords.length} | Staffing & Operational Retainership`,
+        headers,
+        rows
       });
-
-      const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Charvik_Records_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      success('Exported records to Excel / CSV.');
+      success('Exported successfully to Excel!');
     } catch {
-      error('Failed to export CSV report.');
+      error('Failed to export Excel report.');
     }
+  };
+
+  const handleExportSingleRecordExcel = (rec: any) => {
+    const headers = ['Staff Name', 'Designation / Role', 'Duty Shift / Corridor', 'Contact Phone', 'Monthly Salary (Rs)', 'Allowances (Rs)', 'Deductions (Rs)', 'Net Payable (Rs)', 'Status'];
+    const rows = (rec.staff_details || []).map((s: any) => [
+      s.staff_name,
+      s.role,
+      s.duty_route || 'Standard Shift',
+      s.phone_number || '-',
+      s.salary_amount || 0,
+      s.allowances || 0,
+      s.deductions || 0,
+      s.net_payable || s.salary_amount || 0,
+      s.payment_status || 'Paid'
+    ]);
+
+    exportTableToExcel({
+      title: `Billing & Staffing Statement - Record #${rec.record_number}`,
+      subtitle: `Client: ${rec.bill_to_name} | Period: ${rec.period_month || ''} | Date: ${rec.record_date} | Total Amount: Rs ${Number(rec.total_amount).toLocaleString('en-IN')} | Received: Rs ${Number(rec.received_amount).toLocaleString('en-IN')} | Balance: Rs ${Number(rec.balance_amount).toLocaleString('en-IN')}`,
+      headers,
+      rows
+    });
   };
 
   return (
@@ -1329,6 +1340,14 @@ export const RecordManagement: React.FC = () => {
                 <span>Ready for high-quality printing or PDF export.</span>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleExportSingleRecordExcel(printingRecord)}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>Export Excel</span>
+                </button>
                 <button
                   type="button"
                   onClick={handlePrint}

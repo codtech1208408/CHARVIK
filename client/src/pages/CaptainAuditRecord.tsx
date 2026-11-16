@@ -14,6 +14,7 @@ import {
   Check,
   Eye,
   Printer,
+  FileSpreadsheet,
   X,
   AlertCircle,
   CheckCircle2,
@@ -32,6 +33,7 @@ import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
 import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export interface AmenityCheckItem {
   id: string;
@@ -183,6 +185,56 @@ export const CaptainAuditRecord: React.FC = () => {
         hideMetaBar: true
       });
     }, 150);
+  };
+
+  const handleExportTableExcel = () => {
+    const headers = ['S.No', 'Date & Time', 'Bus Number', 'Route', 'Captain', 'Captain Phone', 'Driver', 'Driver Phone', 'Cleanliness (1-5)', 'Blanket Count', 'Water Bottles', 'Curtains', 'Compliant Status'];
+    const rows = filteredRecords.map((r, idx) => [
+      idx + 1,
+      `${r.audit_date || ''} ${r.audit_time || ''}`.trim(),
+      r.bus_number || '',
+      r.route || '',
+      r.captain_name || '',
+      r.captain_phone || '',
+      r.driver_name || '',
+      r.driver_phone || '',
+      r.cleanliness_rating || '5',
+      r.blanket_count || 0,
+      r.water_bottles_supplied ? 'Yes' : 'No',
+      r.curtains_status || 'OK',
+      r.overall_status || 'Passed'
+    ]);
+
+    exportTableToExcel({
+      title: 'Captain Pre-Trip Audit Records',
+      subtitle: `Total Records: ${filteredRecords.length} | Passed: ${metrics.passed} | Needs Attention: ${metrics.needsAttention}`,
+      headers,
+      rows
+    });
+  };
+
+  const handlePrintTable = () => {
+    printSheet({
+      title: 'Captain Pre-Trip Audit Records',
+      subtitle: `Total Records: ${filteredRecords.length} | Audits logged across active routes`,
+      elementId: 'captain-audit-records-table-container',
+      orientation: 'landscape'
+    });
+  };
+
+  const handleExportSingleRecordExcel = (rec: CaptainAuditRecordItem) => {
+    const headers = ['Checklist Item', 'Inspected Status', 'Remarks / Observations'];
+    const rows = (rec.amenities_checklist || []).map((item) => [
+      item.name,
+      item.status,
+      item.remarks || '-'
+    ]);
+    exportTableToExcel({
+      title: `Captain Pre-Trip Audit Sheet - Bus ${rec.bus_number}`,
+      subtitle: `Audit ID: #${rec.id} | Date: ${rec.audit_date} ${rec.audit_time} | Route: ${rec.route} | Captain: ${rec.captain_name} | Driver: ${rec.driver_name} | Overall Status: ${rec.overall_status}`,
+      headers,
+      rows
+    });
   };
 
   // Open Form for New Submission
@@ -557,6 +609,26 @@ export const CaptainAuditRecord: React.FC = () => {
           </div>
 
           <button
+            type="button"
+            onClick={handleExportTableExcel}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all cursor-pointer shadow-sm whitespace-nowrap"
+            title="Export Audit Records to Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+            <span>Export Excel</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handlePrintTable}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all cursor-pointer shadow-sm whitespace-nowrap"
+            title="Print Audit Sheet"
+          >
+            <Printer className="w-4 h-4 text-purple-100" />
+            <span>Print Sheet</span>
+          </button>
+
+          <button
             onClick={handleOpenNewForm}
             className="flex items-center gap-2 px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-xl font-extrabold text-xs shadow-sm transition-all cursor-pointer whitespace-nowrap"
           >
@@ -710,7 +782,7 @@ export const CaptainAuditRecord: React.FC = () => {
       </div>
 
       {/* Records Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div id="captain-audit-records-table-container" className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-sm">
             <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white">
@@ -724,7 +796,7 @@ export const CaptainAuditRecord: React.FC = () => {
                 <th className="py-2.5 px-3">Amenities Checklist</th>
                 <th className="py-2.5 px-3">Photos</th>
                 <th className="py-2.5 px-3">Status</th>
-                <th className="py-2.5 px-3 text-center">Actions</th>
+                <th className="py-2.5 px-3 text-center no-print">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -839,7 +911,7 @@ export const CaptainAuditRecord: React.FC = () => {
                         </span>
                       </td>
 
-                      <td className="py-2 px-3 text-center whitespace-nowrap">
+                      <td className="py-2 px-3 text-center whitespace-nowrap no-print">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => {
@@ -1359,6 +1431,14 @@ export const CaptainAuditRecord: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleExportSingleRecordExcel(viewRecord)}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>Export Excel</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => handlePrintRecord(viewRecord)}

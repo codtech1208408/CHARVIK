@@ -13,6 +13,7 @@ import {
   Edit2,
   Eye,
   Printer,
+  FileSpreadsheet,
   X,
   Upload,
   CheckCircle2,
@@ -35,6 +36,7 @@ import {
 import { api } from '../services/api';
 import { useToast } from '../components/common/Toast';
 import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export interface DonationRecord {
   id: string | number;
@@ -543,30 +545,49 @@ export const DonationManagement: React.FC = () => {
     });
   };
 
-  // Quick Action: Download CSV Summary
+  // Quick Action: Download Excel Summary
   const handleExportCSV = () => {
-    const headers = ['Receipt ID', 'Donor Name', 'Amount (INR)', 'Date', 'Received By Staff', 'Staff Code', 'Staff Role', 'Payment Mode', 'Notes / Purpose'];
+    const headers = ['Receipt ID', 'Donor Name', 'Amount (Rs)', 'Date', 'Received By Staff', 'Staff Code', 'Staff Role', 'Payment Mode', 'Notes / Purpose'];
     const rows = donations.map((d) => [
-      `#DON-${String(d.id).padStart(5, '0')}`,
-      `"${(d.donor_name || '').replace(/"/g, '""')}"`,
-      d.amount,
+      `DON-${String(d.id).padStart(5, '0')}`,
+      d.donor_name || '',
+      Number(d.amount) || 0,
       d.donation_date,
-      `"${(d.received_by_employee_name || '').replace(/"/g, '""')}"`,
-      `"${(d.received_by_employee_code || '').replace(/"/g, '""')}"`,
-      `"${(d.received_by_employee_role || '').replace(/"/g, '""')}"`,
-      `"${(d.payment_mode || 'Cash').replace(/"/g, '""')}"`,
-      `"${(d.notes || '').replace(/"/g, '""')}"`
+      d.received_by_employee_name || '',
+      d.received_by_employee_code || '',
+      d.received_by_employee_role || '',
+      d.payment_mode || 'Cash',
+      d.notes || ''
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `charvik_donations_summary_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    success('Donations summary CSV downloaded successfully!');
+    exportTableToExcel({
+      title: 'Charvik Charity & Donations Registry',
+      subtitle: `Total Donations: ${donations.length} | Cumulative Value: Rs ${totalAmount.toLocaleString('en-IN')}`,
+      headers,
+      rows
+    });
+    success('Donations summary exported to Excel successfully!');
+  };
+
+  const handleExportSingleDonationExcel = (donation: DonationRecord) => {
+    const headers = ['Field', 'Details'];
+    const rows = [
+      ['Receipt Number', `DON-${String(donation.id).padStart(5, '0')}`],
+      ['Date', donation.donation_date],
+      ['Donor Name', donation.donor_name],
+      ['Amount (Rs)', `Rs ${Number(donation.amount).toLocaleString('en-IN')}`],
+      ['Payment Mode', donation.payment_mode || 'Cash'],
+      ['Received By Staff', `${donation.received_by_employee_name || ''} (${donation.received_by_employee_code || ''})`],
+      ['Staff Designation', donation.received_by_employee_role || 'Staff'],
+      ['Purpose / Cause', donation.notes || 'Charitable Welfare Contribution']
+    ];
+
+    exportTableToExcel({
+      title: `Official Donation Receipt - DON-${String(donation.id).padStart(5, '0')}`,
+      subtitle: `Benefactor: ${donation.donor_name} • Date: ${donation.donation_date} • Amount: Rs ${Number(donation.amount).toLocaleString('en-IN')}`,
+      headers,
+      rows
+    });
   };
 
   return (
@@ -1606,14 +1627,24 @@ export const DonationManagement: React.FC = () => {
               )}
 
               <div className="pt-2 flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => handlePrintSlip(viewingDonation)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs cursor-pointer"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  Print Official Slip
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleExportSingleDonationExcel(viewingDonation)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs cursor-pointer"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    <span>Export Excel</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePrintSlip(viewingDonation)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs cursor-pointer"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    Print Official Slip
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => setViewingDonation(null)}

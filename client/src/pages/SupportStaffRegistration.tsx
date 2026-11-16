@@ -10,6 +10,7 @@ import {
   Upload,
   CheckCircle2,
   Printer,
+  FileSpreadsheet,
   Eye,
   Save,
   ArrowRight,
@@ -34,6 +35,7 @@ import { useToast } from '../components/common/Toast';
 import { getNextEmployeeCode } from '../utils/employeeCode';
 import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
 import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 import { useAuth } from '../context/AuthContext';
 
 export const SupportStaffRegistration: React.FC = () => {
@@ -1061,21 +1063,58 @@ export const SupportStaffRegistration: React.FC = () => {
                 <p className="text-[10px] text-slate-500 uppercase font-bold">{formData.role} Biodata Record</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                printSheet({
-                  title: `${formData.full_name || formData.role} - Biodata`,
-                  elementId: 'printable-support-sheet',
-                  orientation: 'portrait',
-                  hideMetaBar: true,
-                  hideHeader: true
-                });
-              }}
-              className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Print</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const headers = ['Field', 'Information / Record'];
+                  const rows = [
+                    ['Full Name', formData.full_name || '—'],
+                    ['Staff Code / Emp ID', formData.employee_code || '—'],
+                    ['Role / Designation', formData.role || '—'],
+                    ['Father / Guardian Name', formData.father_name || '—'],
+                    ['Mobile Number', formData.mobile_number || '—'],
+                    ['Emergency Mobile', formData.emergency_mobile || '—'],
+                    ['Aadhaar Card No', formData.aadhaar_number || '—'],
+                    ['PAN Card No', formData.pan_number || '—'],
+                    ['Blood Group', formData.blood_group || '—'],
+                    ['Current Address', formData.address || '—'],
+                    ['Permanent Address', formData.permanent_address || '—'],
+                    ['Bank Account No', formData.bank_account_number || '—'],
+                    ['Bank IFSC', formData.bank_ifsc || '—'],
+                    ['Verification Status', formData.verification_status || 'Pending']
+                  ];
+
+                  exportTableToExcel({
+                    title: `${formData.role || 'Staff'} Biodata & Verification - ${formData.full_name || 'Staff'}`,
+                    subtitle: `Emp Code: ${formData.employee_code || 'CSC'} • Role: ${formData.role || 'Staff'} • Verification: ${formData.verification_status || 'Pending'}`,
+                    headers,
+                    rows
+                  });
+                }}
+                className="p-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center gap-1.5 font-bold cursor-pointer"
+                title="Export Biodata to Excel"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <span>Export Excel</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  printSheet({
+                    title: `${formData.full_name || formData.role} - Biodata`,
+                    elementId: 'printable-support-sheet',
+                    orientation: 'portrait',
+                    hideMetaBar: true,
+                    hideHeader: true
+                  });
+                }}
+                className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print</span>
+              </button>
+            </div>
           </div>
 
           {/* Biodata helper & Captains Official Table Format */}

@@ -18,6 +18,7 @@ import {
   Edit,
   Trash2,
   Printer,
+  FileSpreadsheet,
   CheckCircle2,
   ArrowUpRight,
   ArrowDownRight,
@@ -33,6 +34,8 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
+import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export interface IncomeExpenseItem {
   id: number;
@@ -620,6 +623,73 @@ export const IncomeExpense: React.FC = () => {
     }
   };
 
+  const handleExportTableExcel = () => {
+    const headers = [
+      'S.No',
+      'Date',
+      'Type',
+      'Category',
+      'Party / Vendor',
+      'Vehicle Number',
+      'Payment Mode',
+      'Ref / UTR #',
+      'Amount (Rs)',
+      'Description / Notes'
+    ];
+
+    const rows = filteredTransactions.map((t, idx) => [
+      idx + 1,
+      t.transaction_date || '',
+      t.type || 'Expense',
+      t.category || '',
+      t.party_name || '',
+      t.vehicle_number || '',
+      t.payment_mode || 'Cash',
+      t.reference_number || '',
+      Number(t.amount) || 0,
+      t.description || ''
+    ]);
+
+    exportTableToExcel({
+      title: 'Income & Expense Transactions Ledger',
+      subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${stats.income.toLocaleString('en-IN')} | Expenses: Rs ${stats.expense.toLocaleString('en-IN')} | Net Balance: Rs ${stats.net.toLocaleString('en-IN')}`,
+      headers,
+      rows
+    });
+  };
+
+  const handlePrintTable = () => {
+    printSheet({
+      title: 'Income & Expense Transactions Ledger',
+      subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${stats.income.toLocaleString('en-IN')} | Expenses: Rs ${stats.expense.toLocaleString('en-IN')}`,
+      elementId: 'income-expense-records-table-container',
+      orientation: 'landscape'
+    });
+  };
+
+  const handleExportVoucherExcel = (v: any) => {
+    const headers = ['Field', 'Details'];
+    const rows = [
+      ['Voucher Number', `VCH-${v.id}`],
+      ['Transaction Date', v.transaction_date],
+      ['Transaction Type', v.type],
+      ['Category', v.category],
+      ['Party / Vendor', v.party_name],
+      ['Vehicle Number', v.vehicle_number || 'N/A'],
+      ['Payment Mode', v.payment_mode],
+      ['Reference / UTR #', v.reference_number || 'N/A'],
+      ['Amount (Rs)', `Rs ${Number(v.amount).toLocaleString('en-IN')}`],
+      ['Narration / Description', v.description || 'Verified operational expense']
+    ];
+
+    exportTableToExcel({
+      title: `Official Payment Voucher - #${v.id}`,
+      subtitle: `${v.type} Voucher • Paid to / Received from: ${v.party_name} • Date: ${v.transaction_date}`,
+      headers,
+      rows
+    });
+  };
+
   // Payment mode helper
   const getModeBadge = (mode: string) => {
     switch (mode) {
@@ -898,8 +968,8 @@ export const IncomeExpense: React.FC = () => {
       </div>
 
       {/* Main Transactions Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-3">
+      <div id="income-expense-records-table-container" className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs overflow-hidden">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
           <div>
             <h2 className="text-base font-extrabold text-slate-900">
               Transaction Records ({filteredTransactions.length})
@@ -907,6 +977,25 @@ export const IncomeExpense: React.FC = () => {
             <p className="text-xs text-slate-500 font-medium mt-0.5">
               Verified income deposits and expense disbursements with payment proofs.
             </p>
+          </div>
+
+          <div className="flex items-center gap-2 no-print">
+            <button
+              type="button"
+              onClick={handleExportTableExcel}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-700 font-bold text-xs shadow-2xs transition-all cursor-pointer"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Export Excel</span>
+            </button>
+            <button
+              type="button"
+              onClick={handlePrintTable}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-xs transition-all cursor-pointer"
+            >
+              <Printer className="w-3.5 h-3.5 text-blue-600" />
+              <span>Print Sheet</span>
+            </button>
           </div>
         </div>
 
@@ -923,8 +1012,8 @@ export const IncomeExpense: React.FC = () => {
                 <th className="py-3 px-4">Payment Mode</th>
                 <th className="py-3 px-4">Ref / UTR #</th>
                 <th className="py-3 px-4 text-right">Amount (₹)</th>
-                <th className="py-3 px-4 text-center">Payment Proof</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-3 px-4 text-center no-print">Payment Proof</th>
+                <th className="py-3 px-4 text-center no-print">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -990,7 +1079,7 @@ export const IncomeExpense: React.FC = () => {
                       <td className={`py-3 px-4 text-right font-mono font-black text-sm whitespace-nowrap ${isIncome ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {isIncome ? '+' : '-'} ₹{Number(t.amount).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <td className="py-3 px-4 text-center whitespace-nowrap no-print">
                         {t.proof_url ? (
                           <button
                             type="button"
@@ -1009,7 +1098,7 @@ export const IncomeExpense: React.FC = () => {
                           <span className="text-[11px] text-slate-400 font-medium">No proof</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <td className="py-3 px-4 text-center whitespace-nowrap no-print">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             type="button"
@@ -1587,6 +1676,14 @@ export const IncomeExpense: React.FC = () => {
                 className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 cursor-pointer"
               >
                 Close
+              </button>
+              <button
+                type="button"
+                onClick={() => handleExportVoucherExcel(voucherItem)}
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Export Excel</span>
               </button>
               <button
                 type="button"

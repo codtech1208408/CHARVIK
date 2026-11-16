@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Printer,
+  FileSpreadsheet,
   Bus,
   Eye,
   Edit,
@@ -29,6 +30,8 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { useAuth } from '../context/AuthContext';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
+import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export interface DailyChecklistItem {
   no: number;
@@ -840,6 +843,79 @@ export const BusCondition: React.FC = () => {
     }, 250);
   };
 
+  const handleExportTableExcel = () => {
+    const headers = ['S.No', 'Date', 'Vehicle Number', 'Captain / Driver', 'Starting KM', 'Ending KM', 'Total KM', 'Issues Count', 'Inspection Status'];
+    const rows = filteredInspections.map((item: any, idx) => [
+      idx + 1,
+      item.inspection_date || '',
+      item.registration_number || item.bus_number || '',
+      item.inspector_name || item.driver_name || '',
+      item.starting_km || 0,
+      item.ending_km || 0,
+      item.total_km || 0,
+      item.issues_count || 0,
+      item.status || 'Passed'
+    ]);
+
+    exportTableToExcel({
+      title: 'Daily Pre-Trip Vehicle Checkup Reports',
+      subtitle: `Total Reports: ${filteredInspections.length} | Pre-trip inspections recorded across fleet`,
+      headers,
+      rows
+    });
+  };
+
+  const handlePrintTable = () => {
+    printSheet({
+      title: 'Daily Pre-Trip Vehicle Checkup Reports',
+      subtitle: `Total Reports: ${filteredInspections.length} | Pre-trip inspections recorded across fleet`,
+      elementId: 'bus-condition-records-table-container',
+      orientation: 'landscape'
+    });
+  };
+
+  const handleExportSingleReportExcel = (insp: BusConditionInspection) => {
+    let checklist: DailyChecklistItem[] = [];
+    try {
+      checklist = insp.checklist_data
+        ? (typeof insp.checklist_data === 'string' ? JSON.parse(insp.checklist_data) : insp.checklist_data)
+        : [];
+    } catch {
+      checklist = [];
+    }
+
+    const headers = ['Item #', 'Inspection Component', 'Status', 'Remarks / Defects'];
+    const rows = checklist.map((item) => [
+      item.no,
+      item.name,
+      item.status,
+      item.remarks || '-'
+    ]);
+
+    exportTableToExcel({
+      title: `Daily Pre-Trip Vehicle Check Report - ${insp.registration_number || insp.bus_number}`,
+      subtitle: `Date: ${insp.inspection_date} | Starting KM: ${insp.starting_km || 0} | Ending KM: ${insp.ending_km || 0} | Inspector: ${insp.inspector_name || insp.driver_name || 'Staff'} | Status: ${insp.status || 'Passed'}`,
+      headers,
+      rows
+    });
+  };
+
+  const handleExportBlankTemplateExcel = () => {
+    const headers = ['Item #', 'Inspection Component', 'Status (OK / Not OK)', 'Remarks / Notes'];
+    const rows = DEFAULT_18_INSPECTION_ITEMS.map((item) => [
+      item.no,
+      item.name,
+      '',
+      ''
+    ]);
+    exportTableToExcel({
+      title: 'Daily Pre-Trip Vehicle Check Report - Blank Inspection Checklist',
+      subtitle: 'Charvik Staffing & Fleet Operations • Daily Pre-Trip Checklist Form',
+      headers,
+      rows
+    });
+  };
+
   const filteredInspections = inspections.filter((ins: any) => {
     if (!search) return true;
     const s = search.toLowerCase();
@@ -890,6 +966,26 @@ export const BusCondition: React.FC = () => {
               </div>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={handleExportTableExcel}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all cursor-pointer shadow-sm whitespace-nowrap"
+            title="Export Vehicle Checkups to Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+            <span>Export Excel</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handlePrintTable}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all cursor-pointer shadow-sm whitespace-nowrap"
+            title="Print Vehicle Checkup Sheet"
+          >
+            <Printer className="w-4 h-4 text-purple-100" />
+            <span>Print Sheet</span>
+          </button>
 
           <button
             onClick={handleOpenAdd}
@@ -994,7 +1090,7 @@ export const BusCondition: React.FC = () => {
       </div>
 
       {/* Main Table of Logged Checkup Reports */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div id="bus-condition-records-table-container" className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm" style={{ minWidth: '750px' }}>
             <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white uppercase font-black tracking-wider text-xs border-b border-indigo-900/30">
@@ -1005,7 +1101,7 @@ export const BusCondition: React.FC = () => {
                 <th className="py-2.5 px-3 min-w-[100px]">STARTING KM</th>
                 <th className="py-2.5 px-3 min-w-[100px]">ROUTE / TRIP</th>
                 <th className="py-2.5 px-3 min-w-[100px]">CHECKUP STATUS</th>
-                <th className="py-2.5 px-3 text-center min-w-[100px]">ACTIONS</th>
+                <th className="py-2.5 px-3 text-center min-w-[100px] no-print">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -1070,7 +1166,7 @@ export const BusCondition: React.FC = () => {
                         )}
                       </td>
 
-                      <td className="py-2 px-3 text-center">
+                      <td className="py-2 px-3 text-center no-print">
                         <div className="flex items-center justify-center gap-2">
                           <button
                             type="button"
@@ -1397,6 +1493,14 @@ export const BusCondition: React.FC = () => {
             <div className="flex justify-end gap-2 no-print">
               <button
                 type="button"
+                onClick={() => handleExportSingleReportExcel(viewingInspection)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Export Excel</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => handlePrintSection('saved-report-printable-area')}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer"
               >
@@ -1543,6 +1647,14 @@ export const BusCondition: React.FC = () => {
         >
           <div className="space-y-4">
             <div className="flex justify-end gap-2 no-print">
+              <button
+                type="button"
+                onClick={handleExportBlankTemplateExcel}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Export Excel</span>
+              </button>
               <button
                 type="button"
                 onClick={() => handlePrintSection('blank-report-printable-area')}

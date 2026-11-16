@@ -23,6 +23,7 @@ import { useToast } from '../components/common/Toast';
 import { Modal } from '../components/common/Modal';
 import { BASE_FLEET_TASKS, BASE_FLEET_BUSES, BASE_FLEET_EMPLOYEES, BASE_FLEET_ROUTES } from '../services/seedData';
 import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export interface SupporterTaskRow {
   id: number | string;
@@ -411,6 +412,41 @@ export const SupporterTasks: React.FC = () => {
     });
   };
 
+  const handleExportExcel = () => {
+    const headers = [
+      'S.No',
+      'Date',
+      'Service / Route',
+      'Vehicle Number',
+      'Status',
+      'Driver 1',
+      'Driver 2',
+      'Helper',
+      'Captain',
+      'Trip Amount (Rs)'
+    ];
+
+    const rows = filteredTasks.map((t, idx) => [
+      idx + 1,
+      t.display_date || t.trip_start_date || '',
+      t.route_corridor || t.service_number || '',
+      t.vehicle_number || '',
+      t.vehicle_status || 'Run',
+      t.driver1_name || '',
+      t.driver2_name || '',
+      t.helper_name || '',
+      t.captain_name || '',
+      getTripAmount(t)
+    ]);
+
+    exportTableToExcel({
+      title: 'Trip Tasks & Fleet Crew Schedule',
+      subtitle: `Total Scheduled: ${filteredTasks.length} | Operational Roster & Vehicle Assignments`,
+      headers,
+      rows
+    });
+  };
+
   return (
     <div className="space-y-5 pb-16">
       {/* Page Header */}
@@ -433,6 +469,15 @@ export const SupporterTasks: React.FC = () => {
 
         {/* Action Controls: + New Task and Print Sheet */}
         <div className="flex items-center flex-wrap gap-2.5">
+          <button
+            onClick={handleExportExcel}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 transition-all cursor-pointer"
+            title="Export Roster to Excel"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Export Excel</span>
+          </button>
+
           <button
             onClick={() => setIsPrintModalOpen(true)}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all cursor-pointer"
@@ -973,6 +1018,14 @@ export const SupporterTasks: React.FC = () => {
         >
           <div className="space-y-4">
             <div className="flex justify-end gap-2 no-print">
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Export Excel</span>
+              </button>
               <button
                 type="button"
                 onClick={handlePrintSection}

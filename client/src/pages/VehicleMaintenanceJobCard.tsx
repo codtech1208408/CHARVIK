@@ -14,6 +14,7 @@ import {
   Check,
   X,
   Printer,
+  FileSpreadsheet,
   Bus,
   CheckCircle2,
   IndianRupee,
@@ -31,6 +32,8 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { useAuth } from '../context/AuthContext';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
+import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 import type { Bus as BusType } from '../types';
 import type {
   VehicleMaintenanceJobCardRecord,
@@ -476,6 +479,75 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
     }, 300);
   };
 
+  const handleExportTableExcel = () => {
+    const headers = ['S.No', 'Job Card No', 'Date In', 'Vehicle Number', 'Fleet Owner', 'Odometer KM', 'Workshop / Mechanic', 'Complaints Count', 'Parts Cost (Rs)', 'Status'];
+    const rows = filteredCards.map((c, idx) => {
+      const partsTotal = (c.consumables || []).reduce((sum, p) => sum + (Number(p.total_price) || 0), 0);
+      return [
+        idx + 1,
+        c.job_card_no,
+        c.date_in || '',
+        c.vehicle_number || '',
+        c.fleet_owner || '',
+        c.odometer_km || 0,
+        `${c.workshop_name || ''} - ${c.mechanic_name || ''}`.trim(),
+        (c.complaints || []).length,
+        partsTotal,
+        c.status || 'Active'
+      ];
+    });
+
+    exportTableToExcel({
+      title: 'Vehicle Maintenance Job Cards Register',
+      subtitle: `Total Job Cards: ${filteredCards.length} | Fleet Maintenance Workshop Logs`,
+      headers,
+      rows
+    });
+  };
+
+  const handlePrintTable = () => {
+    printSheet({
+      title: 'Vehicle Maintenance Job Cards Register',
+      subtitle: `Total Job Cards: ${filteredCards.length} | Fleet Maintenance Workshop Logs`,
+      elementId: 'vehicle-job-cards-table-container',
+      orientation: 'landscape'
+    });
+  };
+
+  const handleExportSingleJobCardExcel = (card: VehicleMaintenanceJobCardRecord) => {
+    const headers = ['Type', 'Item / Work Description', 'Qty', 'Unit Rate (Rs)', 'Total (Rs)', 'Status / Action'];
+    const rows: (string | number)[][] = [];
+
+    (card.complaints || []).forEach((c, idx) => {
+      rows.push([
+        `Complaint #${idx + 1}`,
+        c.description,
+        '-',
+        '-',
+        '-',
+        c.action_taken || c.status || 'Pending'
+      ]);
+    });
+
+    (card.consumables || []).forEach((p, idx) => {
+      rows.push([
+        `Part #${idx + 1}`,
+        p.part_name,
+        p.quantity,
+        p.unit_price,
+        p.total_price,
+        'Fitted'
+      ]);
+    });
+
+    exportTableToExcel({
+      title: `Vehicle Maintenance Job Card - ${card.job_card_no}`,
+      subtitle: `Vehicle: ${card.vehicle_number} | Owner: ${card.fleet_owner} | Date: ${card.date_in} | KM: ${card.odometer_km} | Workshop: ${card.workshop_name} | Mechanic: ${card.mechanic_name}`,
+      headers,
+      rows
+    });
+  };
+
   // Filtered Cards
   const filteredCards = useMemo(() => {
     return cards.filter((c) => {
@@ -520,6 +592,26 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={handleExportTableExcel}
+              className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer whitespace-nowrap"
+              title="Export Job Cards Register to Excel"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+              <span>Export Excel</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePrintTable}
+              className="inline-flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer whitespace-nowrap"
+              title="Print Job Cards Register"
+            >
+              <Printer className="w-4 h-4 text-purple-100" />
+              <span>Print Sheet</span>
+            </button>
+
             <button
               type="button"
               onClick={handleOpenCreateModal}
@@ -654,14 +746,33 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
       </div>
 
       {/* Job Cards Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+      <div id="vehicle-job-cards-table-container" className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Wrench className="w-5 h-5 text-blue-600" />
             <h2 className="text-base font-black text-slate-900">Job Cards Registry</h2>
             <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
               {filteredCards.length} records
             </span>
+          </div>
+
+          <div className="flex items-center gap-2 no-print">
+            <button
+              type="button"
+              onClick={handleExportTableExcel}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-700 font-bold text-xs shadow-2xs transition-all cursor-pointer"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Export Excel</span>
+            </button>
+            <button
+              type="button"
+              onClick={handlePrintTable}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-xs transition-all cursor-pointer"
+            >
+              <Printer className="w-3.5 h-3.5 text-blue-600" />
+              <span>Print Sheet</span>
+            </button>
           </div>
         </div>
 
@@ -686,7 +797,7 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
                   <th className="p-3.5">Work / Complaints</th>
                   <th className="p-3.5">Parts Cost</th>
                   <th className="p-3.5">Mechanic &amp; Garage</th>
-                  <th className="p-3.5 pr-5 text-right">Actions</th>
+                  <th className="p-3.5 pr-5 text-right no-print">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
@@ -732,7 +843,7 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="p-3.5 pr-5 text-right">
+                    <td className="p-3.5 pr-5 text-right no-print">
                       <div className="inline-flex items-center gap-1.5">
                         <button
                           type="button"
@@ -1148,6 +1259,14 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
         {printingCard && (
           <div className="space-y-4">
             <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => handleExportSingleJobCardExcel(printingCard)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md cursor-pointer"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Export Excel</span>
+              </button>
               <button
                 type="button"
                 onClick={handleTriggerPrint}

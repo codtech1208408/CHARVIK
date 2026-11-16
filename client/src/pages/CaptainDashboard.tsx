@@ -24,6 +24,7 @@ import {
   Building,
   Image as ImageIcon,
   Printer,
+  FileSpreadsheet,
   Eye,
   ExternalLink
 } from 'lucide-react';
@@ -33,6 +34,7 @@ import { useToast } from '../components/common/Toast';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export const CaptainDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -901,21 +903,54 @@ export const CaptainDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  printSheet({
-                    title: `${captain?.name || user?.name || 'Captain'} - Biodata`,
-                    elementId: 'printable-captain-sheet',
-                    orientation: 'portrait',
-                    hideMetaBar: true,
-                    hideHeader: true
-                  });
-                }}
-                className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Print Biodata</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const headers = ['Field', 'Information'];
+                    const rows = [
+                      ['Captain Name', captain?.name || user?.name || '—'],
+                      ['Captain Code / Emp ID', captain?.employee_code || user?.employee_code || '—'],
+                      ['Mobile Number', captain?.phone_number || user?.phone_number || '—'],
+                      ['Emergency Contact', captain?.emergency_contact || '—'],
+                      ['Aadhaar Number', captain?.aadhaar_number || '—'],
+                      ['PAN Number', captain?.pan_number || '—'],
+                      ['Blood Group', captain?.blood_group || '—'],
+                      ['Address', captain?.address || '—'],
+                      ['Assigned Bus', currentAssignment?.bus_number || '—'],
+                      ['Route Corridor', currentAssignment?.route_corridor || '—'],
+                      ['Status', 'Active On-Duty']
+                    ];
+                    exportTableToExcel({
+                      title: `Captain Master Biodata - ${captain?.name || user?.name || 'Captain'}`,
+                      subtitle: `Emp Code: ${captain?.employee_code || 'CSC'} • Mobile: ${captain?.phone_number || user?.phone_number || '—'}`,
+                      headers,
+                      rows
+                    });
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                  title="Export Biodata to Excel"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                  <span>Export Excel</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    printSheet({
+                      title: `${captain?.name || user?.name || 'Captain'} - Biodata`,
+                      elementId: 'printable-captain-sheet',
+                      orientation: 'portrait',
+                      hideMetaBar: true,
+                      hideHeader: true
+                    });
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print Biodata</span>
+                </button>
+              </div>
             </div>
 
             {/* Official Biodata helper & Captains Table matching image.png */}
@@ -1169,21 +1204,50 @@ export const CaptainDashboard: React.FC = () => {
                 <h3 className="font-extrabold text-sm text-[#142B4A]">CHARVIK STAFFING CONSULTANCY</h3>
                 <p className="text-[10px] text-slate-500 uppercase font-bold">{viewingCrewBiodata.role} Master Biodata</p>
               </div>
-              <button
-                onClick={() => {
-                  printSheet({
-                    title: `${viewingCrewBiodata.role} Master Biodata`,
-                    elementId: 'printable-crew-biodata-content',
-                    orientation: 'portrait',
-                    hideHeader: true,
-                    hideMetaBar: true
-                  });
-                }}
-                className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer no-print"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Print</span>
-              </button>
+              <div className="flex items-center gap-2 no-print">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const headers = ['Field', 'Information'];
+                    const rows = [
+                      ['Full Name', viewingCrewBiodata.name || '—'],
+                      ['Role / Designation', viewingCrewBiodata.role || 'Staff'],
+                      ['Employee Code', viewingCrewBiodata.employee_code || '—'],
+                      ['Mobile Phone', viewingCrewBiodata.phone || viewingCrewBiodata.phone_number || '—'],
+                      ['Assigned Bus', currentAssignment?.bus_number || '—'],
+                      ['Route Corridor', currentAssignment?.route_corridor || '—'],
+                      ['Status', 'Assigned & Active']
+                    ];
+                    exportTableToExcel({
+                      title: `${viewingCrewBiodata.role} Biodata Record - ${viewingCrewBiodata.name}`,
+                      subtitle: `Role: ${viewingCrewBiodata.role} • Code: ${viewingCrewBiodata.employee_code || 'CSC'}`,
+                      headers,
+                      rows
+                    });
+                  }}
+                  className="p-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center gap-1.5 font-bold cursor-pointer"
+                  title="Export Biodata to Excel"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                  <span>Export Excel</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    printSheet({
+                      title: `${viewingCrewBiodata.role} Master Biodata`,
+                      elementId: 'printable-crew-biodata-content',
+                      orientation: 'portrait',
+                      hideHeader: true,
+                      hideMetaBar: true
+                    });
+                  }}
+                  className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print</span>
+                </button>
+              </div>
             </div>
 
             <div id="printable-crew-biodata-content" className="printable-sheet bg-white w-full max-w-full space-y-4">

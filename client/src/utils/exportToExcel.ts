@@ -67,6 +67,7 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
     trs.forEach((tr) => {
       // Skip header row if tbody included it
       if (tr.parentElement?.tagName.toLowerCase() === 'thead') return;
+      if (tr.classList.contains('no-print') || tr.getAttribute('data-no-print') !== null) return;
 
       const tds = Array.from(tr.querySelectorAll('td'));
       // Check if it's an empty state row (colSpan)
@@ -78,11 +79,23 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
       const rowData: string[] = [];
       tds.forEach((td, idx) => {
         if (actionIndices.has(idx)) return;
-        // Clean inner text (remove extraneous multiple spaces, newlines)
-        const cellText = (td.innerText || td.textContent || '')
+        if (td.classList.contains('no-print') || td.getAttribute('data-no-print') !== null) return;
+
+        // Clone cell to strip interactive buttons or badges before reading text
+        const cellClone = td.cloneNode(true) as HTMLElement;
+        cellClone.querySelectorAll('button, .no-print, [data-no-print], svg').forEach((el) => el.remove());
+
+        // Clean inner text (remove newlines, collapse spaces)
+        let cellText = (cellClone.innerText || cellClone.textContent || '')
           .replace(/\r?\n|\r/g, ' ')
           .replace(/\s+/g, ' ')
           .trim();
+
+        // If cell has leading + or - or = that could trigger formula injection in Excel, sanitize
+        if (cellText.startsWith('=') || cellText.startsWith('+')) {
+          cellText = `'${cellText}`;
+        }
+
         rowData.push(cellText);
       });
 
@@ -97,29 +110,43 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
     return;
   }
 
+  const colCount = Math.max(finalHeaders.length, 1);
+  const padRow = (firstCell: string) => {
+    const row = [firstCell];
+    for (let i = 1; i < colCount; i++) row.push('""');
+    return row.join(',');
+  };
+
   // Construct Excel CSV with Official Charvik Header Block
   const csvLines: string[] = [];
-  csvLines.push('"CHARVIK STAFFING CONSULTANCY"');
-  csvLines.push('"STAFFING | MANPOWER SOLUTIONS | FLEET MAINTENANCE SUPPORT | OPERATIONAL SERVICES"');
-  csvLines.push(`"${title.replace(/"/g, '""')}"`);
+  csvLines.push(padRow('"CHARVIK STAFFING CONSULTANCY"'));
+  csvLines.push(padRow('"STAFFING | MANPOWER SOLUTIONS | FLEET MAINTENANCE SUPPORT | OPERATIONAL SERVICES"'));
+  csvLines.push(padRow(`"${title.replace(/"/g, '""')}"`));
   if (subtitle) {
-    csvLines.push(`"${subtitle.replace(/"/g, '""')}"`);
+    csvLines.push(padRow(`"${subtitle.replace(/"/g, '""')}"`));
   }
   const dateStr = new Date().toLocaleDateString('en-IN', {
     day: '2-digit',
     month: 'short',
     year: 'numeric'
   });
-  const timeStr = new Date().toLocaleTimeString('en-IN');
-  csvLines.push(`"Export Date: ${dateStr} | Time: ${timeStr}"`);
-  csvLines.push(''); // Blank separator line
+  const timeStr = new Date().toLocaleTimeString('en-IN', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+  csvLines.push(padRow(`"Export Date: ${dateStr} | Time: ${timeStr}"`));
+  csvLines.push(padRow('""')); // Blank separator row
 
   // Add Table Headers
   csvLines.push(finalHeaders.map((h) => `"${h.replace(/"/g, '""')}"`).join(','));
 
   // Add Table Rows
   finalRows.forEach((row) => {
-    csvLines.push(row.map((val) => `"${val.replace(/"/g, '""')}"`).join(','));
+    // Ensure row matches colCount
+    const rowCells = [...row];
+    while (rowCells.length < colCount) rowCells.push('');
+    csvLines.push(rowCells.map((val) => `"${val.replace(/"/g, '""')}"`).join(','));
   });
 
   // UTF-8 BOM prefix '\uFEFF' ensures Microsoft Excel opens unicode characters and text without mojibake

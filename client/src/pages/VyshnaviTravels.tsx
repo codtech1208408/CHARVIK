@@ -38,6 +38,7 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
+import { exportTableToExcel } from '../utils/exportToExcel';
 import type { VyshnaviRecord, VyshnaviTransaction, VyshnaviServiceItem, Bus as BusType } from '../types';
 import vyshnaviLogo from '../assets/vyshnavi-logo.png';
 
@@ -811,35 +812,106 @@ export const VyshnaviTravels: React.FC = () => {
     }
   };
 
-  // Export Transactions to CSV
-  const handleExportTxnCsv = () => {
+  // Export Transactions to Excel
+  const handleExportTxnsExcel = () => {
     if (filteredTransactions.length === 0) {
       error('No transactions to export');
       return;
     }
-    const headers = ['ID', 'Date', 'Type', 'Category', 'Vehicle Number', 'Amount (INR)', 'Payment Mode', 'Party Name', 'Reference No', 'Description'];
-    const rows = filteredTransactions.map((t) => [
-      t.id,
+    const headers = ['S.No', 'Date', 'Type', 'Category', 'Vehicle Number', 'Amount (Rs)', 'Payment Mode', 'Party Name', 'Reference No', 'Description'];
+    const rows = filteredTransactions.map((t, idx) => [
+      idx + 1,
       t.transaction_date,
       t.transaction_type,
-      `"${t.category || ''}"`,
-      `"${t.vehicle_number || ''}"`,
-      t.amount,
-      `"${t.payment_mode || ''}"`,
-      `"${t.party_name || ''}"`,
-      `"${t.reference_no || ''}"`,
-      `"${(t.description || '').replace(/"/g, '""')}"`
+      t.category || '',
+      t.vehicle_number || '',
+      Number(t.amount) || 0,
+      t.payment_mode || '',
+      t.party_name || '',
+      t.reference_no || '',
+      t.description || ''
     ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Vyshnavi_Travels_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    success('Exported ledger CSV successfully');
+
+    exportTableToExcel({
+      title: 'Vyshnavi Travels - Income & Expense Ledger Statement',
+      subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${stats.income.toLocaleString('en-IN')} | Expenses: Rs ${stats.expense.toLocaleString('en-IN')} | Balance: Rs ${stats.net.toLocaleString('en-IN')}`,
+      headers,
+      rows
+    });
+    success('Exported ledger Excel successfully');
   };
+
+  // Export Records to Excel
+  const handleExportRecordsExcel = () => {
+    if (filteredRecords.length === 0) {
+      error('No billing records to export');
+      return;
+    }
+    const headers = [
+      'S.No',
+      'Invoice / Record #',
+      'Date',
+      'Billed To (Client)',
+      'Billing Period',
+      'Services Count',
+      'Total Amount (Rs)',
+      'Advance Received (Rs)',
+      'Balance Due (Rs)',
+      'Payment Status'
+    ];
+    const rows = filteredRecords.map((r, idx) => [
+      idx + 1,
+      r.record_number,
+      r.record_date,
+      r.bill_to_name,
+      r.period_month || '',
+      (r.services || []).length,
+      Number(r.total_amount) || 0,
+      Number(r.received_amount) || 0,
+      Number(r.balance_amount) || 0,
+      r.payment_status || 'Pending'
+    ]);
+
+    exportTableToExcel({
+      title: 'Vyshnavi Travels - Billing & Service Records Statement',
+      subtitle: `Total Invoices: ${filteredRecords.length} | Total Billed: Rs ${recordsTotals.billed.toLocaleString('en-IN')} | Total Received: Rs ${recordsTotals.received.toLocaleString('en-IN')} | Balance Due: Rs ${recordsTotals.balance.toLocaleString('en-IN')}`,
+      headers,
+      rows
+    });
+    success('Exported billing records Excel successfully');
+  };
+
+  // Export Single Invoice to Excel
+  const handleExportSingleRecordExcel = (rec: VyshnaviRecord) => {
+    const headers = ['S.No', 'Date', 'Vehicle Number', 'Trip / Service Description', 'Kilometres', 'Rate (Rs)', 'Total Amount (Rs)'];
+    const rows = (rec.services || []).map((s, idx) => [
+      idx + 1,
+      s.service_date || rec.record_date,
+      s.vehicle_number || '-',
+      s.description || 'Bus Charter Service',
+      s.kilometers || '-',
+      s.rate || 0,
+      s.amount || 0
+    ]);
+
+    exportTableToExcel({
+      title: `Vyshnavi Travels - Tax Invoice / Service Bill #${rec.record_number}`,
+      subtitle: `Client: ${rec.bill_to_name} | Date: ${rec.record_date} | Total Amount: Rs ${Number(rec.total_amount).toLocaleString('en-IN')} | Received: Rs ${Number(rec.received_amount).toLocaleString('en-IN')} | Balance: Rs ${Number(rec.balance_amount).toLocaleString('en-IN')}`,
+      headers,
+      rows
+    });
+  };
+
+  const handleQuickExportExcel = () => {
+    if (activeTab === 'records') {
+      handleExportRecordsExcel();
+    } else {
+      handleExportTxnsExcel();
+    }
+  };
+
+  // Legacy CSV fallback
+  const handleExportTxnCsv = handleExportTxnsExcel;
 
   // Active Categories for current transaction form
   const activeTxnCategories = txnForm.transaction_type === 'Income' ? incomeCategories : expenseCategories;
@@ -1304,7 +1376,17 @@ export const VyshnaviTravels: React.FC = () => {
             </button>
           </div>
 
-          {/* Quick Printout Option */}
+          {/* Quick Export & Printout Options */}
+          <button
+            type="button"
+            onClick={handleQuickExportExcel}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-900/15 cursor-pointer transition-all"
+            title={`Export ${activeTab === 'records' ? 'Billing & Service Records' : 'Income & Expense Ledger'} to Excel`}
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+            <span>Export Excel</span>
+          </button>
+
           <button
             type="button"
             onClick={() => handleOpenPrintReport(activeTab)}
@@ -1481,6 +1563,16 @@ export const VyshnaviTravels: React.FC = () => {
                   Clear Filters
                 </button>
               )}
+
+              <button
+                type="button"
+                onClick={handleExportRecordsExcel}
+                className="px-3.5 py-1.5 rounded-xl border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-2xs hover:border-emerald-400 transition-colors"
+                title="Export Billing & Service Records to Excel"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Export Excel</span>
+              </button>
 
               <button
                 type="button"
@@ -1848,6 +1940,17 @@ export const VyshnaviTravels: React.FC = () => {
                 <span>Categories</span>
               </button>
 
+              {/* Export Excel */}
+              <button
+                type="button"
+                onClick={handleExportTxnsExcel}
+                className="px-3 py-1.5 rounded-xl border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-2xs hover:border-emerald-400 transition-colors"
+                title="Export Income & Expense Ledger to Excel"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Export Excel</span>
+              </button>
+
               {/* Print Ledger */}
               <button
                 type="button"
@@ -1857,17 +1960,6 @@ export const VyshnaviTravels: React.FC = () => {
               >
                 <Printer className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Print Ledger</span>
-              </button>
-
-              {/* Export CSV */}
-              <button
-                type="button"
-                onClick={handleExportTxnCsv}
-                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                title="Export transactions to CSV"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Export CSV</span>
               </button>
             </div>
           </div>
@@ -3007,6 +3099,14 @@ export const VyshnaviTravels: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  onClick={() => handleExportSingleRecordExcel(printingRecord)}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>Export Excel</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => handlePrintLetterhead(printingRecord)}
                   className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
                 >
@@ -3486,6 +3586,20 @@ export const VyshnaviTravels: React.FC = () => {
                 </strong>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (reportPrintType === 'records') {
+                      handleExportRecordsExcel();
+                    } else {
+                      handleExportTxnsExcel();
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-900/20 cursor-pointer transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>Export Excel</span>
+                </button>
                 <button
                   type="button"
                   onClick={handlePrintReportContent}

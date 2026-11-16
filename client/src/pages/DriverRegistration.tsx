@@ -11,6 +11,7 @@ import {
   Upload,
   CheckCircle2,
   Printer,
+  FileSpreadsheet,
   Eye,
   Save,
   ArrowRight,
@@ -32,6 +33,7 @@ import { getNextEmployeeCode } from '../utils/employeeCode';
 import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
 import { useAuth } from '../context/AuthContext';
 import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export const DriverRegistration: React.FC = () => {
   const navigate = useNavigate();
@@ -1130,21 +1132,58 @@ export const DriverRegistration: React.FC = () => {
                 <p className="text-[10px] text-slate-500 uppercase font-bold">Driver Master Biodata</p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                printSheet({
-                  title: `${formData.full_name || 'Driver'} - Biodata`,
-                  elementId: 'printable-driver-sheet',
-                  orientation: 'portrait',
-                  hideMetaBar: true,
-                  hideHeader: true
-                });
-              }}
-              className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Print</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const headers = ['Field', 'Information / Record'];
+                  const rows = [
+                    ['Full Name', formData.full_name || '—'],
+                    ['Driver Code / Emp ID', formData.employee_code || '—'],
+                    ['Father / Guardian Name', formData.father_name || '—'],
+                    ['Mobile Number', formData.mobile_number || '—'],
+                    ['Emergency Mobile', formData.emergency_mobile || '—'],
+                    ['Aadhaar Card No', formData.aadhaar_number || '—'],
+                    ['Driving License No', formData.license_number || '—'],
+                    ['Badge / Endorsement No', formData.badge_number || '—'],
+                    ['License Expiry Date', formData.license_expiry || '—'],
+                    ['Blood Group', formData.blood_group || '—'],
+                    ['Current Address', formData.address || '—'],
+                    ['Permanent Address', formData.permanent_address || '—'],
+                    ['Assigned Bus Number', formData.assigned_bus_number || '—'],
+                    ['Verification Status', formData.verification_status || 'Pending']
+                  ];
+
+                  exportTableToExcel({
+                    title: `Driver Master Biodata & Verification - ${formData.full_name || 'Driver'}`,
+                    subtitle: `Emp Code: ${formData.employee_code || 'CSC'} • License: ${formData.license_number || 'N/A'} • Bus: ${formData.assigned_bus_number || 'N/A'}`,
+                    headers,
+                    rows
+                  });
+                }}
+                className="p-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 flex items-center gap-1.5 font-bold cursor-pointer"
+                title="Export Biodata to Excel"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <span>Export Excel</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  printSheet({
+                    title: `${formData.full_name || 'Driver'} - Biodata`,
+                    elementId: 'printable-driver-sheet',
+                    orientation: 'portrait',
+                    hideMetaBar: true,
+                    hideHeader: true
+                  });
+                }}
+                className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print</span>
+              </button>
+            </div>
           </div>
 
           {/* Biodata Driver Official Table Format */}
