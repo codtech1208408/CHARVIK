@@ -22,7 +22,9 @@ import {
   User,
   ShieldCheck,
   PenTool,
-  AlertCircle
+  AlertCircle,
+  ClipboardList,
+  Users
 } from 'lucide-react';
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
