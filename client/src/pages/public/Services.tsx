@@ -104,15 +104,7 @@ export const Services: React.FC = () => {
   return (
     <div className="overflow-hidden">
       {/* 1. Header Banner */}
-      <section className="relative text-white py-16 sm:py-24 text-center overflow-hidden bg-slate-900">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/assets/crew-staffing-banner-hd.png"
-            alt="Charvik Fleet & Crew Banner"
-            className="w-full h-full object-cover object-center opacity-25"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0c1b30]/95 via-[#142B4A]/90 to-[#1E3A5F]/85"></div>
-        </div>
+      <section className="bg-gradient-to-r from-[#0c1b30] via-[#142B4A] to-[#1E3A5F] text-white py-16 sm:py-20 text-center relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mb-4">
             <Link
