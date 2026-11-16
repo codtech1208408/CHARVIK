@@ -186,76 +186,141 @@
     color: #000000 !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* Reset layout constraints and paddings on print */
+  /* Reset layout constraints, offsets, and paddings from AdminLayout */
   #root,
+  #root > div,
   main,
-  .admin-data-page {
+  .admin-data-page,
+  div[class*="pl-[88px]"],
+  div[class*="pt-[88px]"],
+  div[class*="lg:pl-"],
+  div[class*="pb-24"] {
     padding: 0 !important;
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 0 !important;
     margin: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     overflow: visible !important;
   }
 
   /* When printing an open modal or printable sheet, hide the background page content */
-  body:has(.printable-sheet) #root>*:not(:has(.printable-sheet)),
-  body:has(.printable-sheet) main>*:not(:has(.printable-sheet)),
-  body:has(.printable-sheet) .admin-data-page>*:not(:has(.printable-sheet)) {
+  body:has(.printable-sheet) #root > *:not(:has(.printable-sheet)),
+  body:has(.printable-sheet) main > *:not(:has(.printable-sheet)),
+  body:has(.printable-sheet) .admin-data-page > *:not(:has(.printable-sheet)),
+  body:has([role="dialog"]) #root > *:not(:has([role="dialog"])),
+  body:has([role="dialog"]) main > *:not(:has([role="dialog"])),
+  body:has(.fixed.inset-0) #root > *:not(:has(.fixed.inset-0)),
+  body:has(.fixed.inset-0) main > *:not(:has(.fixed.inset-0)) {
     display: none !important;
   }
 
-  /* Modal container reset for print */
+  /* Modal container reset for print so it's not restricted to max-w-4xl or centered flex with padding */
+  .fixed.inset-0,
   .fixed.inset-0:has(.printable-sheet) {
     position: static !important;
     inset: auto !important;
     overflow: visible !important;
     display: block !important;
     width: 100% !important;
+    max-width: 100% !important;
     padding: 0 !important;
+    margin: 0 !important;
   }
 
-  .fixed.inset-0:has(.printable-sheet)>div {
+  .fixed.inset-0 > div,
+  .fixed.inset-0:has(.printable-sheet) > div {
     padding: 0 !important;
+    margin: 0 !important;
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
   }
 
+  /* Universal printable-sheet styles: 100% width, zero right-side clipping */
   .printable-sheet {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0 !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
     box-sizing: border-box !important;
     overflow: visible !important;
     page-break-inside: auto;
   }
 
-  .printable-sheet table {
+  /* Universal Table Fitting Rules for Print: Prevent Any Right-Side Overflow */
+  table,
+  .printable-sheet table,
+  .print-body table,
+  [role="dialog"] table {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     box-sizing: border-box !important;
     table-layout: fixed !important;
+    border-collapse: collapse !important;
   }
 
-  .printable-sheet img {
+  th,
+  td,
+  .printable-sheet th,
+  .printable-sheet td,
+  [role="dialog"] th,
+  [role="dialog"] td {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Force nowrap elements to wrap in print */
+  .whitespace-nowrap {
+    white-space: normal !important;
+  }
+
+  /* Prevent any element with min-w-[...] from overflowing */
+  [class*="min-w-"] {
+    min-width: 0 !important;
+  }
+
+  .printable-sheet img,
+  .print-body img,
+  img {
     width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
     display: block !important;
   }
 
+  /* Hide scrollbars */
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+
   .no-print,
+  [data-no-print],
   nav,
   header,
   aside,
   footer,
-  button {
+  button,
+  .sidebar,
+  [data-sidebar],
+  #charvik-sidebar,
+  .toast-container {
     display: none !important;
   }
 

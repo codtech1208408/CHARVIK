@@ -531,13 +531,18 @@ export const IncomeExpense: React.FC = () => {
           <style>
             @page {
               size: A4 portrait;
-              margin: 8mm 10mm;
+              margin: 5mm 6mm;
             }
+            * { box-sizing: border-box !important; }
             html, body {
               margin: 0 !important;
-              padding: 0 !important;
+              padding: 2px !important;
               background: #ffffff !important;
               color: #0f172a !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              overflow: visible !important;
               font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
@@ -546,9 +551,29 @@ export const IncomeExpense: React.FC = () => {
               border: 1.5px solid #cbd5e1 !important;
               box-shadow: none !important;
               border-radius: 8px !important;
-              max-width: 680px !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
               margin: 0 auto !important;
-              padding: 16px !important;
+              padding: 12px !important;
+              box-sizing: border-box !important;
+            }
+            table {
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              table-layout: fixed !important;
+              border-collapse: collapse !important;
+              box-sizing: border-box !important;
+            }
+            th, td {
+              word-break: break-word !important;
+              overflow-wrap: break-word !important;
+              white-space: normal !important;
+              box-sizing: border-box !important;
+            }
+            [class*="min-w-"] {
+              min-width: 0 !important;
             }
           </style>
         </head>

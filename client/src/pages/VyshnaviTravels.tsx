@@ -704,13 +704,18 @@ export const VyshnaviTravels: React.FC = () => {
           <style>
             @page {
               size: A4 portrait;
-              margin: 6mm 8mm;
+              margin: 5mm 6mm;
             }
+            * { box-sizing: border-box !important; }
             html, body {
               margin: 0 !important;
-              padding: 0 !important;
+              padding: 2px !important;
               background: #ffffff !important;
               color: #0f172a !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              overflow: visible !important;
               font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
@@ -718,17 +723,38 @@ export const VyshnaviTravels: React.FC = () => {
             #isolated-letterhead-wrap {
               width: 100% !important;
               max-width: 100% !important;
+              min-width: 0 !important;
               margin: 0 auto !important;
               padding: 0 !important;
               background: #ffffff !important;
+              box-sizing: border-box !important;
             }
             #vyshnavi-printable-letterhead {
               box-shadow: none !important;
               border: none !important;
-              padding: 4mm 6mm !important;
+              padding: 2mm 3mm !important;
               max-width: 100% !important;
               width: 100% !important;
+              min-width: 0 !important;
               min-height: auto !important;
+              box-sizing: border-box !important;
+            }
+            table {
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              table-layout: fixed !important;
+              border-collapse: collapse !important;
+              box-sizing: border-box !important;
+            }
+            th, td {
+              word-break: break-word !important;
+              overflow-wrap: break-word !important;
+              white-space: normal !important;
+              box-sizing: border-box !important;
+            }
+            [class*="min-w-"] {
+              min-width: 0 !important;
             }
             @media print {
               #vyshnavi-printable-letterhead {
@@ -1102,13 +1128,18 @@ export const VyshnaviTravels: React.FC = () => {
           <style>
             @page {
               size: A4 landscape;
-              margin: 6mm 8mm;
+              margin: 5mm 6mm;
             }
+            * { box-sizing: border-box !important; }
             html, body {
               margin: 0 !important;
-              padding: 0 !important;
+              padding: 2px !important;
               background: #ffffff !important;
               color: #0f172a !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              overflow: visible !important;
               font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
@@ -1116,17 +1147,38 @@ export const VyshnaviTravels: React.FC = () => {
             #isolated-report-wrap {
               width: 100% !important;
               max-width: 100% !important;
+              min-width: 0 !important;
               margin: 0 auto !important;
               padding: 0 !important;
               background: #ffffff !important;
+              box-sizing: border-box !important;
             }
             #vyshnavi-printable-report {
               box-shadow: none !important;
               border: none !important;
-              padding: 4mm 6mm !important;
+              padding: 2mm 3mm !important;
               max-width: 100% !important;
               width: 100% !important;
+              min-width: 0 !important;
               min-height: auto !important;
+              box-sizing: border-box !important;
+            }
+            table {
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              table-layout: fixed !important;
+              border-collapse: collapse !important;
+              box-sizing: border-box !important;
+            }
+            th, td {
+              word-break: break-word !important;
+              overflow-wrap: break-word !important;
+              white-space: normal !important;
+              box-sizing: border-box !important;
+            }
+            [class*="min-w-"] {
+              min-width: 0 !important;
             }
             @media print {
               #vyshnavi-printable-report {

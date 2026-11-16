@@ -1170,7 +1170,15 @@ export const CaptainDashboard: React.FC = () => {
                 <p className="text-[10px] text-slate-500 uppercase font-bold">{viewingCrewBiodata.role} Master Biodata</p>
               </div>
               <button
-                onClick={() => window.print()}
+                onClick={() => {
+                  printSheet({
+                    title: `${viewingCrewBiodata.role} Master Biodata`,
+                    elementId: 'printable-crew-biodata-content',
+                    orientation: 'portrait',
+                    hideHeader: true,
+                    hideMetaBar: true
+                  });
+                }}
                 className="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 font-bold cursor-pointer no-print"
               >
                 <Printer className="w-4 h-4" />
@@ -1178,8 +1186,9 @@ export const CaptainDashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* If Driver: Biodata Driver Table */}
-            {viewingCrewBiodata.role === 'Driver' ? (
+            <div id="printable-crew-biodata-content" className="printable-sheet bg-white w-full max-w-full space-y-4">
+              {/* If Driver: Biodata Driver Table */}
+              {viewingCrewBiodata.role === 'Driver' ? (
               <div className="border-2 border-black overflow-hidden font-sans">
                 <div className="bg-[#FFFF00] text-black font-black text-center py-2.5 text-sm uppercase tracking-wider border-b-2 border-black">
                   Biodata Driver
@@ -1479,6 +1488,7 @@ export const CaptainDashboard: React.FC = () => {
                 </table>
               </div>
             )}
+            </div>
           </div>
         </Modal>
       )}

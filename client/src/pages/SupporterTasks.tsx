@@ -22,6 +22,7 @@ import { api } from '../services/api';
 import { useToast } from '../components/common/Toast';
 import { Modal } from '../components/common/Modal';
 import { BASE_FLEET_TASKS, BASE_FLEET_BUSES, BASE_FLEET_EMPLOYEES, BASE_FLEET_ROUTES } from '../services/seedData';
+import { printSheet } from '../utils/printSheet';
 
 export interface SupporterTaskRow {
   id: number | string;
@@ -401,7 +402,13 @@ export const SupporterTasks: React.FC = () => {
   };
 
   const handlePrintSection = () => {
-    window.print();
+    printSheet({
+      title: 'Trip Tasks & Crew Schedule',
+      elementId: 'print-sheet-area',
+      orientation: 'landscape',
+      hideHeader: true,
+      hideMetaBar: true
+    });
   };
 
   return (
@@ -977,7 +984,7 @@ export const SupporterTasks: React.FC = () => {
             </div>
 
             {/* Exact Reference Image Spreadsheet Layout */}
-            <div id="print-sheet-area" className="bg-white p-4 border border-black rounded-lg overflow-x-auto text-black">
+            <div id="print-sheet-area" className="printable-sheet bg-white p-3 border border-black rounded-lg text-black w-full max-w-full">
               {/* Official Charvik Letterhead Header */}
               <div className="w-full mb-3">
                 <img
@@ -996,27 +1003,27 @@ export const SupporterTasks: React.FC = () => {
                 </p>
               </div>
 
-              <table className="w-full text-left border-collapse border-2 border-black text-xs font-sans whitespace-nowrap">
+              <table className="w-full table-fixed text-left border-collapse border-2 border-black text-[9px] font-sans">
                 {/* EXACT YELLOW HEADER MATCHING REFERENCE IMAGE */}
-                <thead className="bg-[#FFFF00] text-black font-extrabold uppercase text-[11px] border-b-2 border-black">
+                <thead className="bg-[#FFFF00] text-black font-extrabold uppercase text-[9.5px] border-b-2 border-black">
                   <tr>
-                    <th className="py-2 px-2.5 border border-black text-center">Date</th>
-                    <th className="py-2 px-2.5 border border-black text-center">Service ID</th>
-                    <th className="py-2 px-3 border border-black text-left">Route</th>
-                    <th className="py-2 px-2.5 border border-black text-center">Vehicle No</th>
-                    <th className="py-2 px-2.5 border border-black text-center">Status</th>
-                    <th className="py-2 px-2 border border-black text-center">Emp ID</th>
-                    <th className="py-2 px-3 border border-black text-left">Driver Name 1</th>
-                    <th className="py-2 px-2.5 border border-black text-center">Amount</th>
-                    <th className="py-2 px-2 border border-black text-center">Emp ID</th>
-                    <th className="py-2 px-3 border border-black text-left">Driver Name2</th>
-                    <th className="py-2 px-2.5 border border-black text-center">Amount</th>
-                    <th className="py-2 px-2 border border-black text-center">Emp ID 3</th>
-                    <th className="py-2 px-3 border border-black text-left">Helper</th>
-                    <th className="py-2 px-2.5 border border-black text-center">Amount</th>
-                    <th className="py-2 px-2 border border-black text-center bg-[#FFEB3B]">Emp ID 4</th>
-                    <th className="py-2 px-3 border border-black text-left bg-[#FFEB3B]">Captain</th>
-                    <th className="py-2 px-2.5 border border-black text-center bg-[#FFEB3B]">Amount</th>
+                    <th className="py-1 px-1 border border-black text-center w-[7%]">Date</th>
+                    <th className="py-1 px-1 border border-black text-center w-[5.5%]">Service</th>
+                    <th className="py-1 px-1.5 border border-black text-left w-[11%]">Route</th>
+                    <th className="py-1 px-1 border border-black text-center w-[8%]">Vehicle</th>
+                    <th className="py-1 px-1 border border-black text-center w-[5%]">Status</th>
+                    <th className="py-1 px-1 border border-black text-center w-[5%]">ID 1</th>
+                    <th className="py-1 px-1.5 border border-black text-left w-[9%]">Driver 1</th>
+                    <th className="py-1 px-1 border border-black text-center w-[5%]">Amt</th>
+                    <th className="py-1 px-1 border border-black text-center w-[5%]">ID 2</th>
+                    <th className="py-1 px-1.5 border border-black text-left w-[9%]">Driver 2</th>
+                    <th className="py-1 px-1 border border-black text-center w-[5%]">Amt</th>
+                    <th className="py-1 px-1 border border-black text-center w-[5%]">ID 3</th>
+                    <th className="py-1 px-1.5 border border-black text-left w-[8%]">Helper</th>
+                    <th className="py-1 px-1 border border-black text-center w-[4.5%]">Amt</th>
+                    <th className="py-1 px-1 border border-black text-center bg-[#FFEB3B] w-[5%]">ID 4</th>
+                    <th className="py-1 px-1.5 border border-black text-left bg-[#FFEB3B] w-[8%]">Captain</th>
+                    <th className="py-1 px-1 border border-black text-center bg-[#FFEB3B] w-[4.5%]">Amt</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black bg-white font-medium text-black">
@@ -1033,35 +1040,35 @@ export const SupporterTasks: React.FC = () => {
 
                       return (
                         <tr key={row.id} className="border-b border-black">
-                          <td className="py-1.5 px-2.5 border border-black text-center font-mono">{row.display_date}</td>
-                          <td className="py-1.5 px-2.5 border border-black text-center font-bold">{row.service_number}</td>
-                          <td className="py-1.5 px-3 border border-black font-semibold">{row.route_corridor}</td>
-                          <td className="py-1.5 px-2.5 border border-black text-center font-mono font-bold">{row.vehicle_number}</td>
+                          <td className="py-1 px-1 border border-black text-center font-mono break-words">{row.display_date}</td>
+                          <td className="py-1 px-1 border border-black text-center font-bold break-words">{row.service_number}</td>
+                          <td className="py-1 px-1.5 border border-black font-semibold break-words">{row.route_corridor}</td>
+                          <td className="py-1 px-1 border border-black text-center font-mono font-bold break-words">{row.vehicle_number}</td>
                           <td
-                            className={`py-1.5 px-2.5 border border-black text-center font-bold text-white text-xs ${
+                            className={`py-1 px-1 border border-black text-center font-bold text-white text-[8.5px] break-words ${
                               isHold ? 'bg-[#CC0000]' : 'bg-[#009933]'
                             }`}
                           >
                             {row.vehicle_status}
                           </td>
-                          <td className="py-1.5 px-2 border border-black text-center font-mono">{row.driver1_emp_id || ''}</td>
-                          <td className="py-1.5 px-3 border border-black font-semibold">{row.driver1_name || ''}</td>
-                          <td className="py-1.5 px-2.5 border border-black text-center font-bold">
+                          <td className="py-1 px-1 border border-black text-center font-mono break-words">{row.driver1_emp_id || ''}</td>
+                          <td className="py-1 px-1.5 border border-black font-semibold break-words">{row.driver1_name || ''}</td>
+                          <td className="py-1 px-1 border border-black text-center font-bold break-words">
                             {isHold ? 500 : (actualAmt > 0 ? actualAmt : '')}
                           </td>
-                          <td className="py-1.5 px-2 border border-black text-center font-mono">{row.driver2_emp_id || ''}</td>
-                          <td className="py-1.5 px-3 border border-black font-semibold">{row.driver2_name || ''}</td>
-                          <td className="py-1.5 px-2.5 border border-black text-center font-bold">
+                          <td className="py-1 px-1 border border-black text-center font-mono break-words">{row.driver2_emp_id || ''}</td>
+                          <td className="py-1 px-1.5 border border-black font-semibold break-words">{row.driver2_name || ''}</td>
+                          <td className="py-1 px-1 border border-black text-center font-bold break-words">
                             {row.driver2_name ? (isHold ? 500 : actualAmt) : ''}
                           </td>
-                          <td className="py-1.5 px-2 border border-black text-center font-mono">{row.helper_emp_id || ''}</td>
-                          <td className="py-1.5 px-3 border border-black font-semibold">{row.helper_name || ''}</td>
-                          <td className="py-1.5 px-2.5 border border-black text-center font-bold">
+                          <td className="py-1 px-1 border border-black text-center font-mono break-words">{row.helper_emp_id || ''}</td>
+                          <td className="py-1 px-1.5 border border-black font-semibold break-words">{row.helper_name || ''}</td>
+                          <td className="py-1 px-1 border border-black text-center font-bold break-words">
                             {row.helper_name ? (isHold ? '-' : actualAmt) : ''}
                           </td>
-                          <td className="py-1.5 px-2 border border-black text-center font-mono bg-[#FFFDE7]">{row.captain_emp_id || ''}</td>
-                          <td className="py-1.5 px-3 border border-black font-semibold bg-[#FFFDE7]">{row.captain_name || ''}</td>
-                          <td className="py-1.5 px-2.5 border border-black text-center font-bold bg-[#FFFDE7]">
+                          <td className="py-1 px-1 border border-black text-center font-mono bg-[#FFFDE7] break-words">{row.captain_emp_id || ''}</td>
+                          <td className="py-1 px-1.5 border border-black font-semibold bg-[#FFFDE7] break-words">{row.captain_name || ''}</td>
+                          <td className="py-1 px-1 border border-black text-center font-bold bg-[#FFFDE7] break-words">
                             {row.captain_name ? (isHold ? '-' : actualAmt) : ''}
                           </td>
                         </tr>

@@ -31,6 +31,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
+import { printSheet } from '../utils/printSheet';
 
 export interface AmenityCheckItem {
   id: string;
@@ -167,6 +168,22 @@ export const CaptainAuditRecord: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Handle Print Record via Isolated Print Sheet
+  const handlePrintRecord = (record: CaptainAuditRecordItem) => {
+    setViewRecord(record);
+    setIsViewOpen(true);
+    setTimeout(() => {
+      printSheet({
+        title: `Captain Audit Sheet #${record.id}`,
+        subtitle: `Bus ${record.bus_number} • Date: ${record.audit_date}`,
+        elementId: 'printable-captain-audit-sheet',
+        orientation: 'portrait',
+        hideHeader: true,
+        hideMetaBar: true
+      });
+    }, 150);
+  };
 
   // Open Form for New Submission
   const handleOpenNewForm = () => {
@@ -836,11 +853,7 @@ export const CaptainAuditRecord: React.FC = () => {
                           </button>
 
                           <button
-                            onClick={() => {
-                              setViewRecord(rec);
-                              setIsViewOpen(true);
-                              setTimeout(() => window.print(), 300);
-                            }}
+                            onClick={() => handlePrintRecord(rec)}
                             className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                             title="Print Audit Report"
                           >
@@ -1328,7 +1341,7 @@ export const CaptainAuditRecord: React.FC = () => {
           subtitle={`Bus ${viewRecord.bus_number} • Date: ${viewRecord.audit_date}`}
           maxWidth="max-w-4xl"
         >
-          <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+          <div className="p-4 sm:p-6 space-y-6 max-h-[85vh] overflow-y-auto print:p-0 print:max-h-none print:overflow-visible">
             {/* Action Bar for Modal (hidden on print) */}
             <div className="flex items-center justify-between no-print pb-4 border-b border-slate-200">
               <div className="flex items-center gap-2">
@@ -1348,7 +1361,7 @@ export const CaptainAuditRecord: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => handlePrintRecord(viewRecord)}
                   className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
@@ -1365,7 +1378,7 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
 
             {/* Official Printable Audit Sheet Container */}
-            <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 print:border-none print:p-0 space-y-5">
+            <div id="printable-captain-audit-sheet" className="printable-sheet bg-white p-4 sm:p-6 rounded-xl border border-slate-200 print:border-none print:p-0 space-y-5">
               {/* Official Charvik Letterhead Header */}
               <div className="w-full">
                 <img
@@ -1425,21 +1438,21 @@ export const CaptainAuditRecord: React.FC = () => {
                   Onboard Amenities & Maintenance Checklist
                 </h4>
                 <div className="border border-slate-200 rounded-xl overflow-hidden">
-                  <table className="w-full text-left border-collapse text-sm">
+                  <table className="w-full table-fixed text-left border-collapse text-xs">
                     <thead>
                       <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                        <th className="py-2 px-3 w-10 text-center">#</th>
-                        <th className="py-2 px-3">Amenity Item</th>
-                        <th className="py-2 px-3 text-center w-24">Compliance</th>
-                        <th className="py-2 px-3">Remarks / Inspector Notes</th>
+                        <th className="py-2 px-2.5 w-[8%] text-center">#</th>
+                        <th className="py-2 px-2.5 w-[36%]">Amenity Item</th>
+                        <th className="py-2 px-2.5 w-[18%] text-center">Compliance</th>
+                        <th className="py-2 px-2.5 w-[38%]">Remarks / Inspector Notes</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {(viewRecord.amenities || []).map((a, i) => (
                         <tr key={i} className={a.status === 'Not OK' ? 'bg-rose-50/40' : ''}>
-                          <td className="py-2 px-3 text-center font-bold text-slate-400">{i + 1}</td>
-                          <td className="py-2 px-3 font-semibold text-slate-800">{a.name}</td>
-                          <td className="py-2 px-3 text-center">
+                          <td className="py-2 px-2.5 text-center font-bold text-slate-400 break-words">{i + 1}</td>
+                          <td className="py-2 px-2.5 font-semibold text-slate-800 break-words">{a.name}</td>
+                          <td className="py-2 px-2.5 text-center break-words">
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-black uppercase inline-block ${a.status === 'OK'
                                   ? 'bg-emerald-100 text-emerald-800'
@@ -1449,7 +1462,7 @@ export const CaptainAuditRecord: React.FC = () => {
                               {a.status}
                             </span>
                           </td>
-                          <td className="py-2 px-3 text-slate-600 italic">
+                          <td className="py-2 px-2.5 text-slate-600 italic break-words">
                             {a.remarks || '-'}
                           </td>
                         </tr>
@@ -1467,7 +1480,7 @@ export const CaptainAuditRecord: React.FC = () => {
                     <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
                       Bus Cleaning Pictures ({viewRecord.cleaning_pictures.length})
                     </h4>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-3 sm:grid-cols-5 print:grid-cols-5 gap-2.5">
                       {viewRecord.cleaning_pictures.map((pic, i) => (
                         <div
                           key={i}
@@ -1487,7 +1500,7 @@ export const CaptainAuditRecord: React.FC = () => {
                     <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
                       Staff Pictures ({viewRecord.staff_pictures.length})
                     </h4>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-3 sm:grid-cols-5 print:grid-cols-5 gap-2.5">
                       {viewRecord.staff_pictures.map((pic, i) => (
                         <div
                           key={i}
@@ -1511,14 +1524,14 @@ export const CaptainAuditRecord: React.FC = () => {
               )}
 
               {/* Signatures Footer */}
-              <div className="pt-8 border-t border-slate-200 flex justify-between items-end text-xs text-slate-600 print:pt-16">
+              <div className="pt-6 border-t border-slate-200 flex justify-between items-end text-xs text-slate-600 print:pt-10">
                 <div className="text-center">
-                  <div className="border-b border-slate-400 w-44 mb-1"></div>
+                  <div className="border-b border-slate-400 w-36 sm:w-44 mb-1"></div>
                   <span className="font-bold block">{viewRecord.captain_name}</span>
                   <span className="text-[10px] text-slate-400 uppercase">Captain Signature</span>
                 </div>
                 <div className="text-center">
-                  <div className="border-b border-slate-400 w-44 mb-1"></div>
+                  <div className="border-b border-slate-400 w-36 sm:w-44 mb-1"></div>
                   <span className="font-bold block">Fleet Operations Manager</span>
                   <span className="text-[10px] text-slate-400 uppercase">Charvik Quality Admin</span>
                 </div>

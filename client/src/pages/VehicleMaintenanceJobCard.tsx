@@ -369,20 +369,47 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
           <style>
             @page {
               size: A4 portrait;
-              margin: 10mm;
+              margin: 5mm 6mm;
             }
-            body {
+            * { box-sizing: border-box !important; }
+            html, body {
               font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 0;
+              margin: 0 !important;
+              padding: 2px !important;
               color: #111;
               background: #fff;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              overflow: visible !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
-            * { box-sizing: border-box; }
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1.5px solid #0E52A5; padding: 6px 8px; font-size: 12px; }
+            #printable-vehicle-job-card {
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              margin: 0 auto !important;
+              padding: 0 !important;
+              box-sizing: border-box !important;
+            }
+            table {
+              border-collapse: collapse !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              table-layout: fixed !important;
+              box-sizing: border-box !important;
+            }
+            th, td {
+              border: 1.5px solid #0E52A5;
+              padding: 5px 6px;
+              font-size: 11px;
+              word-break: break-word !important;
+              overflow-wrap: break-word !important;
+              white-space: normal !important;
+              box-sizing: border-box !important;
+            }
             .header-banner {
               background: #0E52A5 !important;
               color: white !important;
@@ -1134,8 +1161,8 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
             {/* Printable Container */}
             <div
               id="printable-vehicle-job-card"
-              className="bg-white p-6 rounded-xl border border-slate-300 text-slate-900 shadow-md font-sans"
-              style={{ maxWidth: '720px', margin: '0 auto' }}
+              className="printable-sheet bg-white p-4 sm:p-6 rounded-xl border border-slate-300 text-slate-900 shadow-md font-sans w-full max-w-full print:p-0 print:border-none print:shadow-none"
+              style={{ width: '100%', margin: '0 auto' }}
             >
               {/* HEADER BANNER */}
               <div

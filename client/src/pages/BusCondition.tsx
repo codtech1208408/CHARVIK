@@ -631,8 +631,21 @@ export const BusCondition: React.FC = () => {
       return;
     }
 
-    const printWin = window.open('', '_blank', 'width=900,height=1000');
-    if (!printWin) {
+    let iframe = document.getElementById('bus-condition-print-frame') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'bus-condition-print-frame';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!doc) {
       window.print();
       return;
     }
@@ -641,7 +654,8 @@ export const BusCondition: React.FC = () => {
       .map((node) => node.outerHTML)
       .join('\n');
 
-    printWin.document.write(`
+    doc.open();
+    doc.write(`
       <!DOCTYPE html>
       <html>
         <head>
@@ -650,27 +664,37 @@ export const BusCondition: React.FC = () => {
           <style>
             @page {
               size: A4 portrait;
-              margin: 10mm 12mm;
+              margin: 5mm 6mm;
             }
-            body {
+            * {
+              box-sizing: border-box !important;
+            }
+            html, body {
               font-family: Arial, Helvetica, sans-serif;
               color: #000;
               margin: 0;
               padding: 0;
               background: #fff;
-              font-size: 11px;
+              font-size: 10.5px;
               line-height: 1.35;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              overflow: visible !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
             .report-card {
-              max-width: 780px;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
               margin: 0 auto;
-              padding: 8px;
+              padding: 2px;
+              box-sizing: border-box !important;
             }
             .header-title {
               text-align: center;
-              font-size: 21px;
+              font-size: 20px;
               font-weight: 900;
               letter-spacing: 0.5px;
               margin: 0 0 3px 0;
@@ -678,22 +702,22 @@ export const BusCondition: React.FC = () => {
             }
             .header-sub {
               text-align: center;
-              font-size: 11.5px;
+              font-size: 11px;
               font-style: italic;
               color: #222;
-              margin: 0 0 16px 0;
+              margin: 0 0 14px 0;
             }
             .meta-grid {
               display: grid;
               grid-template-columns: 1fr 1fr;
-              column-gap: 36px;
-              row-gap: 8px;
-              margin-bottom: 14px;
+              column-gap: 24px;
+              row-gap: 6px;
+              margin-bottom: 12px;
             }
             .meta-row {
               display: flex;
               align-items: flex-end;
-              font-size: 11px;
+              font-size: 10.5px;
             }
             .meta-label {
               font-weight: bold;
@@ -708,15 +732,23 @@ export const BusCondition: React.FC = () => {
               min-height: 14px;
             }
             table {
-              width: 100%;
-              border-collapse: collapse;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+              table-layout: fixed !important;
+              border-collapse: collapse !important;
               border: 1.2px solid #000;
-              margin-bottom: 12px;
-              font-size: 10.5px;
+              margin-bottom: 10px;
+              font-size: 9.5px;
+              box-sizing: border-box !important;
             }
             th, td {
               border: 1px solid #777;
-              padding: 3.5px 6px;
+              padding: 3px 5px;
+              word-break: break-word !important;
+              overflow-wrap: break-word !important;
+              white-space: normal !important;
+              box-sizing: border-box !important;
             }
             thead th {
               background-color: #DCE6F1 !important;
@@ -734,7 +766,7 @@ export const BusCondition: React.FC = () => {
             }
             .box-col {
               text-align: center;
-              width: 46px;
+              width: 44px;
             }
             .sq-box {
               display: inline-block;
@@ -754,8 +786,8 @@ export const BusCondition: React.FC = () => {
               print-color-adjust: exact !important;
             }
             .defects-box {
-              margin-top: 12px;
-              font-size: 11px;
+              margin-top: 10px;
+              font-size: 10.5px;
             }
             .defects-line {
               display: inline-block;
@@ -770,17 +802,17 @@ export const BusCondition: React.FC = () => {
               width: 100%;
               border-bottom: 1px solid #000;
               min-height: 16px;
-              margin-top: 10px;
+              margin-top: 8px;
             }
             .signatures {
-              margin-top: 36px;
+              margin-top: 28px;
               display: flex;
               justify-content: space-between;
-              font-size: 11px;
+              font-size: 10.5px;
             }
             .sig-field {
               display: inline-block;
-              width: 200px;
+              width: 180px;
               border-bottom: 1px solid #000;
               text-align: center;
               font-weight: bold;
@@ -793,17 +825,19 @@ export const BusCondition: React.FC = () => {
           <div class="report-card">
             ${el.innerHTML}
           </div>
-          <script>
-            window.onload = function() {
-              window.focus();
-              window.print();
-              setTimeout(function() { window.close(); }, 600);
-            };
-          </script>
         </body>
       </html>
     `);
-    printWin.document.close();
+    doc.close();
+
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch {
+        window.print();
+      }
+    }, 250);
   };
 
   const filteredInspections = inspections.filter((ins: any) => {
