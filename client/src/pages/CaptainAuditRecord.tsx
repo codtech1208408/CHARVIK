@@ -207,7 +207,7 @@ export const CaptainAuditRecord: React.FC = () => {
 
     exportTableToExcel({
       title: 'Captain Pre-Trip Audit Records',
-      subtitle: `Total Records: ${filteredRecords.length} | Passed: ${metrics.passed} | Needs Attention: ${metrics.needsAttention}`,
+      subtitle: `Total Records: ${filteredRecords.length} | Passed: ${metrics.passed} | Needs Attention: ${metrics.flagged}`,
       headers,
       rows
     });

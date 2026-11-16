@@ -143,12 +143,47 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
   const headerRowIdx = wsData.length;
   wsData.push(finalHeaders);
 
-  // Table Data rows
+  // Table Data rows - Format every cell value cleanly so sequence and alignment are 100% perfect
   finalRows.forEach((row) => {
-    // Pad row if shorter than header count
-    const r = [...row];
-    while (r.length < colCount) r.push('');
-    wsData.push(r);
+    const formattedRow: string[] = [];
+    for (let c = 0; c < colCount; c++) {
+      const val = row[c];
+      const hLower = String(finalHeaders[c] || '').toLowerCase();
+
+      if (val === null || val === undefined || val === '') {
+        formattedRow.push('—');
+      } else if (typeof val === 'number') {
+        if (
+          hLower.includes('amount') ||
+          hLower.includes('cost') ||
+          hLower.includes('salary') ||
+          hLower.includes('rate') ||
+          hLower.includes('due') ||
+          hLower.includes('balance') ||
+          (hLower.includes('total') && (hLower.includes('rs') || hLower.includes('inr') || hLower.includes('price') || hLower.includes('amount') || hLower.includes('spend')))
+        ) {
+          formattedRow.push(`₹ ${val.toLocaleString('en-IN')}`);
+        } else if (hLower.includes('km') || hLower.includes('odometer') || hLower.includes('distance')) {
+          formattedRow.push(`${val.toLocaleString('en-IN')} KM`);
+        } else if (hLower.includes('seating') || hLower.includes('capacity')) {
+          formattedRow.push(`${val} Seats`);
+        } else if (hLower.includes('count') && hLower.includes('staff')) {
+          formattedRow.push(`${val} Staff`);
+        } else if (hLower.includes('complaint')) {
+          formattedRow.push(`${val} Complaints`);
+        } else if (hLower.includes('issues')) {
+          formattedRow.push(`${val} Issues`);
+        } else if (hLower.includes('tasks')) {
+          formattedRow.push(`${val} Tasks`);
+        } else {
+          formattedRow.push(String(val));
+        }
+      } else {
+        const strVal = String(val).trim();
+        formattedRow.push(strVal || '—');
+      }
+    }
+    wsData.push(formattedRow);
   });
 
   // Convert to Excel Worksheet
@@ -178,29 +213,30 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
     }
 
     // Generous base width with padding
-    let width = Math.max(headerLen, maxCellLen) + 5;
+    let width = Math.max(headerLen, maxCellLen) + 6;
 
     // Specific domain keywords that need extra breathing room
     const hLower = String(finalHeaders[c] || '').toLowerCase();
-    if (hLower.includes('date') || hLower.includes('time')) width = Math.max(width, 18);
-    if (hLower.includes('phone') || hLower.includes('mobile') || hLower.includes('contact')) width = Math.max(width, 18);
-    if (hLower.includes('bus') || hLower.includes('vehicle')) width = Math.max(width, 18);
-    if (hLower.includes('route') || hLower.includes('corridor') || hLower.includes('city')) width = Math.max(width, 24);
-    if (hLower.includes('name') || hLower.includes('client') || hLower.includes('party') || hLower.includes('vendor')) width = Math.max(width, 22);
-    if (hLower.includes('amount') || hLower.includes('cost') || hLower.includes('rate') || hLower.includes('salary') || hLower.includes('total') || hLower.includes('balance')) width = Math.max(width, 16);
+    if (hLower.includes('date') || hLower.includes('time')) width = Math.max(width, 20);
+    if (hLower.includes('phone') || hLower.includes('mobile') || hLower.includes('contact')) width = Math.max(width, 20);
+    if (hLower.includes('bus') || hLower.includes('vehicle')) width = Math.max(width, 20);
+    if (hLower.includes('route') || hLower.includes('corridor') || hLower.includes('city')) width = Math.max(width, 26);
+    if (hLower.includes('name') || hLower.includes('client') || hLower.includes('party') || hLower.includes('vendor')) width = Math.max(width, 24);
+    if (hLower.includes('amount') || hLower.includes('cost') || hLower.includes('rate') || hLower.includes('salary') || hLower.includes('total') || hLower.includes('balance') || hLower.includes('due')) width = Math.max(width, 18);
     if (hLower.includes('status')) width = Math.max(width, 16);
-    if (hLower.includes('license') || hLower.includes('aadhaar') || hLower.includes('pan') || hLower.includes('gst')) width = Math.max(width, 20);
-    if (hLower.includes('account') || hLower.includes('ifsc') || hLower.includes('bank') || hLower.includes('upi')) width = Math.max(width, 22);
-    if (hLower.includes('desc') || hLower.includes('remark') || hLower.includes('notes') || hLower.includes('address') || hLower.includes('complaint')) width = Math.max(width, 36);
+    if (hLower.includes('license') || hLower.includes('aadhaar') || hLower.includes('pan') || hLower.includes('gst')) width = Math.max(width, 22);
+    if (hLower.includes('account') || hLower.includes('ifsc') || hLower.includes('bank') || hLower.includes('upi')) width = Math.max(width, 24);
+    if (hLower.includes('desc') || hLower.includes('remark') || hLower.includes('notes') || hLower.includes('address') || hLower.includes('complaint')) width = Math.max(width, 38);
 
-    // Hard bounds: min 14, max 65
-    width = Math.min(Math.max(width, 14), 65);
+    // Hard bounds: min 14, max 70
+    width = Math.min(Math.max(width, 14), 70);
     colWidths.push(width);
   }
   ws['!cols'] = colWidths.map((w) => ({ wch: w }));
 
-  // Enforce explicit Text cell type for identifiers, dates, phone numbers, codes
-  // Prevents Microsoft Excel from displaying scientific notation (e.g. 8.52E+09) or '########'
+  // Enforce explicit Text cell type for all data cells
+  // Keeps all text and numbers left-aligned directly below their column headers,
+  // prevents scientific notation (8.52E+09) and '########'
   const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
   for (let R = headerRowIdx + 1; R <= range.e.r; ++R) {
     for (let C = 0; C <= range.e.c; ++C) {
@@ -208,37 +244,9 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
       const cell = ws[cellAddress];
       if (!cell || cell.v === undefined || cell.v === null) continue;
 
-      const strVal = String(cell.v).trim();
-      const colHeader = String(finalHeaders[C] || '').toLowerCase();
-
-      const isIdentifierOrDate =
-        colHeader.includes('phone') ||
-        colHeader.includes('mobile') ||
-        colHeader.includes('contact') ||
-        colHeader.includes('account') ||
-        colHeader.includes('aadhaar') ||
-        colHeader.includes('pan') ||
-        colHeader.includes('ifsc') ||
-        colHeader.includes('utr') ||
-        colHeader.includes('ref') ||
-        colHeader.includes('date') ||
-        colHeader.includes('time') ||
-        colHeader.includes('vehicle') ||
-        colHeader.includes('license') ||
-        colHeader.includes('card') ||
-        colHeader.includes('code') ||
-        colHeader.includes('service nu') ||
-        colHeader.includes('trip') ||
-        /^\d{10,}$/.test(strVal) || // 10+ digits: phone number, account number, Aadhaar
-        /^\+?\d[\d -]{8,}$/.test(strVal) ||
-        /^\d{4}-\d{2}-\d{2}/.test(strVal) ||
-        /^\d{2}[-/]\d{2}[-/]\d{4}/.test(strVal);
-
-      if (isIdentifierOrDate) {
-        cell.t = 's'; // Force string type in Excel
-        cell.v = strVal;
-        cell.z = '@'; // Explicit text format
-      }
+      cell.t = 's'; // Force string type in Excel (ensures left-alignment with column headers)
+      cell.v = String(cell.v);
+      cell.z = '@'; // Explicit text format
     }
   }
 

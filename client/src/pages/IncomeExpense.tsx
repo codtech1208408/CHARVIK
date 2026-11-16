@@ -609,20 +609,20 @@ export const IncomeExpense: React.FC = () => {
 
     const rows = filteredTransactions.map((t, idx) => [
       idx + 1,
-      t.transaction_date || '',
-      t.type || 'Expense',
+      t.date || t.transaction_date || '',
+      t.transaction_type || t.type || 'Expense',
       t.category || '',
       t.party_name || '',
       t.vehicle_number || '',
       t.payment_mode || 'Cash',
-      t.reference_number || '',
+      t.reference_no || t.reference_number || '',
       Number(t.amount) || 0,
       t.description || ''
     ]);
 
     exportTableToExcel({
       title: 'Income & Expense Transactions Ledger',
-      subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${stats.income.toLocaleString('en-IN')} | Expenses: Rs ${stats.expense.toLocaleString('en-IN')} | Net Balance: Rs ${stats.net.toLocaleString('en-IN')}`,
+      subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${stats.totalIncome.toLocaleString('en-IN')} | Expenses: Rs ${stats.totalExpense.toLocaleString('en-IN')} | Net Balance: Rs ${stats.netBalance.toLocaleString('en-IN')}`,
       headers,
       rows
     });
@@ -631,7 +631,7 @@ export const IncomeExpense: React.FC = () => {
   const handlePrintTable = () => {
     printSheet({
       title: 'Income & Expense Transactions Ledger',
-      subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${stats.income.toLocaleString('en-IN')} | Expenses: Rs ${stats.expense.toLocaleString('en-IN')}`,
+      subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${stats.totalIncome.toLocaleString('en-IN')} | Expenses: Rs ${stats.totalExpense.toLocaleString('en-IN')}`,
       elementId: 'income-expense-records-table-container',
       orientation: 'landscape'
     });

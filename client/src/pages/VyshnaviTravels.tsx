@@ -834,7 +834,7 @@ export const VyshnaviTravels: React.FC = () => {
 
     exportTableToExcel({
       title: 'Vyshnavi Travels - Income & Expense Ledger Statement',
-      subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${stats.income.toLocaleString('en-IN')} | Expenses: Rs ${stats.expense.toLocaleString('en-IN')} | Balance: Rs ${stats.net.toLocaleString('en-IN')}`,
+      subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${txnMetrics.totalIncome.toLocaleString('en-IN')} | Expenses: Rs ${txnMetrics.totalExpense.toLocaleString('en-IN')} | Balance: Rs ${txnMetrics.netBalance.toLocaleString('en-IN')}`,
       headers,
       rows
     });
@@ -874,7 +874,7 @@ export const VyshnaviTravels: React.FC = () => {
 
     exportTableToExcel({
       title: 'Vyshnavi Travels - Billing & Service Records Statement',
-      subtitle: `Total Invoices: ${filteredRecords.length} | Total Billed: Rs ${recordsTotals.billed.toLocaleString('en-IN')} | Total Received: Rs ${recordsTotals.received.toLocaleString('en-IN')} | Balance Due: Rs ${recordsTotals.balance.toLocaleString('en-IN')}`,
+      subtitle: `Total Invoices: ${filteredRecords.length} | Total Billed: Rs ${recordMetrics.totalBilled.toLocaleString('en-IN')} | Total Received: Rs ${recordMetrics.totalReceived.toLocaleString('en-IN')} | Balance Due: Rs ${recordMetrics.totalBalance.toLocaleString('en-IN')}`,
       headers,
       rows
     });

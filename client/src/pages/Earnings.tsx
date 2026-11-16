@@ -525,8 +525,8 @@ export const Earnings: React.FC = () => {
                 key={p}
                 onClick={() => handlePeriodChange(p)}
                 className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${period === p
-                    ? 'bg-white text-blue-900 shadow-xs font-black'
-                    : 'text-blue-100 hover:text-white hover:bg-white/10'
+                  ? 'bg-white text-blue-900 shadow-xs font-black'
+                  : 'text-blue-100 hover:text-white hover:bg-white/10'
                   }`}
               >
                 {p}
@@ -636,8 +636,8 @@ export const Earnings: React.FC = () => {
                     key={cat}
                     onClick={() => setMatrixCategory(cat)}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${matrixCategory === cat
-                        ? 'bg-[#142B4A] text-white shadow-xs font-extrabold'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                      ? 'bg-[#142B4A] text-white shadow-xs font-extrabold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                       }`}
                   >
                     {cat}
@@ -870,10 +870,10 @@ export const Earnings: React.FC = () => {
                         <td className="py-2 px-3 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold ${r.role === 'Driver'
-                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                                : r.role === 'Helper'
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : r.role === 'Helper'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                               }`}
                           >
                             {r.role}
@@ -1112,8 +1112,8 @@ export const Earnings: React.FC = () => {
                       <p className="font-bold text-slate-900">₹{tr.salary.toLocaleString('en-IN')}</p>
                       <span
                         className={`inline-block text-[10px] font-bold px-2 py-0.2 rounded-full mt-0.5 ${tr.isPaid
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-rose-50 text-rose-700 border border-rose-200'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-rose-50 text-rose-700 border border-rose-200'
                           }`}
                       >
                         {tr.isPaid ? 'Settled' : 'Pending'}

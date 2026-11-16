@@ -481,19 +481,22 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
 
   const handleExportTableExcel = () => {
     const headers = ['S.No', 'Job Card No', 'Date In', 'Vehicle Number', 'Fleet Owner', 'Odometer KM', 'Workshop / Mechanic', 'Complaints Count', 'Parts Cost (Rs)', 'Status'];
-    const rows = filteredCards.map((c, idx) => {
-      const partsTotal = (c.consumables || []).reduce((sum, p) => sum + (Number(p.total_price) || 0), 0);
+    const rows = filteredCards.map((c: any, idx) => {
+      const partsTotal =
+        (c.parts || c.consumables || []).reduce((sum: number, p: any) => sum + (Number(p.amount || p.total_price) || 0), 0) ||
+        Number(c.total_parts_amount) ||
+        0;
       return [
         idx + 1,
         c.job_card_no,
-        c.date_in || '',
+        c.date_of_request || c.date_in || '',
         c.vehicle_number || '',
-        c.fleet_owner || '',
-        c.odometer_km || 0,
-        `${c.workshop_name || ''} - ${c.mechanic_name || ''}`.trim(),
+        c.fleet_owner || '—',
+        c.km_reading || c.odometer_km || 0,
+        `${c.workshop_name || ''} - ${c.mechanic_name || ''}`.trim() || '—',
         (c.complaints || []).length,
         partsTotal,
-        c.status || 'Active'
+        c.status || 'Completed'
       ];
     });
 
