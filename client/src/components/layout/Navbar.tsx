@@ -26,7 +26,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navigate = useNavigate();
   const isCaptain = location.pathname.startsWith('/captain');
   const isOperator = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
-  const isChandrikaFinance = location.pathname.includes('/chandrika-finance') || location.pathname.includes('/finance');
 
   const activeUser = (() => {
     if (isOperator) {
@@ -160,32 +159,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Vertical Divider */}
         <div className="h-8 w-[1.5px] bg-slate-300 mx-1 shrink-0" />
 
-        {/* Brand logo: dynamically showcases Chandrika Finance logo when on the finance tab */}
-        {isChandrikaFinance ? (
-          <Link
-            to="/admin/chandrika-finance"
-            className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-1 group select-none"
-            title="Chandrika Finance"
-          >
-            <img
-              src="/chandrika-finance-logo.png"
-              alt="Chandrika Finance"
-              className="h-[50px] sm:h-[56px] lg:h-[62px] w-auto max-w-[260px] sm:max-w-[320px] object-contain transition-transform group-hover:scale-[1.02]"
-            />
-          </Link>
-        ) : (
-          <Link
-            to={`${basePrefix}/dashboard`}
-            className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-1 group select-none"
-            title="Charvik Staffing Consultancy"
-          >
-            <img
-              src="/logo-exact.png?v=5"
-              alt="Charvik Staffing Consultancy"
-              className="h-[72px] sm:h-[78px] lg:h-[80px] w-auto max-w-[280px] sm:max-w-[340px] lg:max-w-[400px] object-contain transition-transform group-hover:scale-[1.02]"
-            />
-          </Link>
-        )}
+        {/* Charvik brand logo matching exact lockup with crisp bold slogan */}
+        <Link
+          to={`${basePrefix}/dashboard`}
+          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-1 group select-none"
+          title="Charvik Staffing Consultancy"
+        >
+          <img
+            src="/logo-exact.png?v=5"
+            alt="Charvik Staffing Consultancy"
+            className="h-[72px] sm:h-[78px] lg:h-[80px] w-auto max-w-[280px] sm:max-w-[340px] lg:max-w-[400px] object-contain transition-transform group-hover:scale-[1.02]"
+          />
+        </Link>
 
         {/* Operator Mode: Quick Return to Admin Button */}
         {isOperator && (
