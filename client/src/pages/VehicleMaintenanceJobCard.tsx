@@ -194,12 +194,12 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
     setParts(
       card.parts && card.parts.length > 0
         ? card.parts.map((p, i) => ({
-            id: p.id || `p${i}`,
-            part_name: p.part_name,
-            part_number_details: p.part_number_details,
-            quantity: p.quantity,
-            amount: p.amount
-          }))
+          id: p.id || `p${i}`,
+          part_name: p.part_name,
+          part_number_details: p.part_number_details,
+          quantity: p.quantity,
+          amount: p.amount
+        }))
         : [{ id: 'p1', part_name: '', part_number_details: '', quantity: '1', amount: '' }]
     );
     setMechanicName(card.mechanic_name || '');

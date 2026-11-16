@@ -26,13 +26,18 @@ import {
   Check,
   Receipt,
   X,
-  Disc
+  Disc,
+  Printer,
+  FileSpreadsheet
 } from 'lucide-react';
 import { api } from '../services/api';
 import { BASE_FLEET_BUSES, BASE_FLEET_MAINTENANCE_BUSES } from '../services/seedData';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
+import { PrintButton } from '../components/common/PrintButton';
+import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 import type { Bus as BusType } from '../types';
 
 const normalizeVeh = (str?: string) => (str || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
@@ -447,6 +452,105 @@ export const NewTyres: React.FC = () => {
     }
   };
 
+  // Print Full New Tyres Sheet
+  const handlePrintSheet = () => {
+    printSheet({
+      title: 'CHARVIK NEW TYRES INVENTORY & ALLOTMENT REPORT',
+      subtitle: `Total Tyres: ${filteredTyres.length} | Fleet Vehicles: ${stats.uniqueVehicles} | Cumulative Mileage: ${stats.totalKm.toLocaleString('en-IN')} KM`,
+      elementId: 'new-tyres-table-wrap',
+      orientation: 'landscape'
+    });
+  };
+
+  // Export Table to Excel / CSV
+  const handleExportExcel = () => {
+    exportTableToExcel({
+      elementId: 'new-tyres-table-wrap',
+      title: 'Charvik New Tyres Inventory Report',
+      subtitle: `Exported on ${new Date().toLocaleDateString('en-IN')}`
+    });
+  };
+
+  // Print Single Tyre Allotment Slip / Record
+  const handlePrintSingleTyre = (t: NewTyre) => {
+    const tVeh = (t.vehicle_number || t.allocated_bus_number || '—').split('(')[0].trim();
+    const sKm = Number(t.starting_km ?? t.km) || 0;
+    const pKm = Number(t.present_km) || 0;
+    const totKm = sKm + pKm;
+
+    const html = `
+      <div style="padding: 12px; font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a;">
+        <div style="border: 2px solid #0056b3; border-radius: 8px; padding: 16px; background: #ffffff;">
+          <div style="border-bottom: 2px solid #0056b3; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 style="margin: 0; font-size: 16px; font-weight: 900; color: #072346; text-transform: uppercase;">
+                TYRE ALLOTMENT & INVENTORY RECORD SLIP
+              </h2>
+              <p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b; font-weight: 600;">
+                Official Charvik Fleet &amp; Workshop Spare Parts Management
+              </p>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase;">Tyre Record ID</span>
+              <div style="font-size: 14px; font-weight: 900; color: #0056b3;">#${t.id}</div>
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 11px;">
+            <tr>
+              <td style="padding: 8px; font-weight: bold; background: #f8fafc; border: 1px solid #cbd5e1; width: 25%;">Tyre Serial Number</td>
+              <td style="padding: 8px; font-weight: 900; font-family: monospace; border: 1px solid #cbd5e1; width: 25%; font-size: 12px; color: #0f172a;">${t.tyre_serial_number}</td>
+              <td style="padding: 8px; font-weight: bold; background: #f8fafc; border: 1px solid #cbd5e1; width: 25%;">Purchase Date</td>
+              <td style="padding: 8px; font-weight: bold; border: 1px solid #cbd5e1; width: 25%;">${t.purchase_date || '—'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; font-weight: bold; background: #f8fafc; border: 1px solid #cbd5e1;">Allocated Vehicle</td>
+              <td style="padding: 8px; font-weight: 900; border: 1px solid #cbd5e1; color: #0056b3;">${tVeh}</td>
+              <td style="padding: 8px; font-weight: bold; background: #f8fafc; border: 1px solid #cbd5e1;">Brand &amp; Size</td>
+              <td style="padding: 8px; font-weight: bold; border: 1px solid #cbd5e1;">${t.brand || 'MRF'} ${t.size ? `(${t.size})` : ''}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; font-weight: bold; background: #f8fafc; border: 1px solid #cbd5e1;">Starting KM (Fitting)</td>
+              <td style="padding: 8px; font-family: monospace; font-weight: bold; border: 1px solid #cbd5e1;">${sKm > 0 ? `${sKm.toLocaleString('en-IN')} KM` : '0 KM'}</td>
+              <td style="padding: 8px; font-weight: bold; background: #f8fafc; border: 1px solid #cbd5e1;">Present Running KM</td>
+              <td style="padding: 8px; font-family: monospace; font-weight: bold; border: 1px solid #cbd5e1; color: #4338ca;">${pKm > 0 ? `${pKm.toLocaleString('en-IN')} KM` : '0 KM'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; font-weight: bold; background: #f8fafc; border: 1px solid #cbd5e1;">Cumulative Total KM</td>
+              <td style="padding: 8px; font-family: monospace; font-weight: 900; border: 1px solid #cbd5e1; color: #059669; font-size: 13px;">${totKm > 0 ? `${totKm.toLocaleString('en-IN')} KM` : '0 KM'}</td>
+              <td style="padding: 8px; font-weight: bold; background: #f8fafc; border: 1px solid #cbd5e1;">Supplier / Dealer</td>
+              <td style="padding: 8px; border: 1px solid #cbd5e1;">${t.supplier || '—'}</td>
+            </tr>
+            ${t.notes ? `
+            <tr>
+              <td style="padding: 8px; font-weight: bold; background: #f8fafc; border: 1px solid #cbd5e1;">Supervisor Notes</td>
+              <td colspan="3" style="padding: 8px; border: 1px solid #cbd5e1;">${t.notes}</td>
+            </tr>
+            ` : ''}
+          </table>
+
+          <div style="display: flex; justify-content: space-between; margin-top: 36px; padding-top: 12px; border-top: 1px solid #cbd5e1; font-size: 10px;">
+            <div style="text-align: center;">
+              <div style="border-bottom: 1px solid #475569; width: 140px; margin-bottom: 4px;"></div>
+              <span style="font-weight: bold; color: #475569;">Workshop In-Charge</span>
+            </div>
+            <div style="text-align: center;">
+              <div style="border-bottom: 1px solid #475569; width: 140px; margin-bottom: 4px;"></div>
+              <span style="font-weight: bold; color: #475569;">Fleet Operations Manager</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    printSheet({
+      title: `Tyre Allotment Slip - ${t.tyre_serial_number}`,
+      htmlContent: html,
+      orientation: 'portrait',
+      hideMetaBar: true
+    });
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'tyre_photo_url' | 'invoice_photo_url') => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -584,14 +688,36 @@ export const NewTyres: React.FC = () => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-black shadow-sm transition-all cursor-pointer whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4 text-slate-900" />
-            <span>+ Add New Tyre Stock</span>
-          </button>
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all cursor-pointer whitespace-nowrap"
+              title="Export New Tyres Inventory to Excel / CSV"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-white" />
+              <span>Export Excel</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePrintSheet}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-sm transition-all cursor-pointer whitespace-nowrap"
+              title="Print New Tyres Inventory Sheet"
+            >
+              <Printer className="w-4 h-4 text-white" />
+              <span>Print Sheet</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOpenAdd}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-black shadow-sm transition-all cursor-pointer whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4 text-slate-900" />
+              <span>+ Add New Tyre Stock</span>
+            </button>
+          </div>
         </div>
 
         {/* Decorative soft glow */}
@@ -670,7 +796,7 @@ export const NewTyres: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto flex-wrap">
           <select
             value={vehicleFilter}
             onChange={(e) => setVehicleFilter(e.target.value)}
@@ -683,11 +809,20 @@ export const NewTyres: React.FC = () => {
               </option>
             ))}
           </select>
+
+          <PrintButton
+            title="CHARVIK NEW TYRES INVENTORY & ALLOTMENT REPORT"
+            subtitle={`Total Units: ${filteredTyres.length} | Fleet Vehicles: ${stats.uniqueVehicles}`}
+            targetId="new-tyres-table-wrap"
+            orientation="landscape"
+            label="Print Sheet"
+            excelLabel="Export Excel"
+          />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+      <div id="new-tyres-table-wrap" className="printable-sheet bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white font-black border-b border-indigo-900/30">
@@ -701,7 +836,7 @@ export const NewTyres: React.FC = () => {
                 <th className="py-2.5 px-3">Tyre Number & Photo</th>
                 <th className="py-2.5 px-3">Brand</th>
                 <th className="py-2.5 px-3">Supplier / Notes</th>
-                <th className="py-2.5 px-3 text-center">Actions</th>
+                <th className="py-2.5 px-3 text-center no-print">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -814,8 +949,16 @@ export const NewTyres: React.FC = () => {
                       <td className="py-2 px-3 text-xs text-slate-500 max-w-[180px] truncate">
                         {t.supplier || t.notes || '—'}
                       </td>
-                      <td className="py-2 px-3 text-center whitespace-nowrap">
+                      <td className="py-2 px-3 text-center whitespace-nowrap no-print">
                         <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handlePrintSingleTyre(t)}
+                            className="p-2 rounded-xl border border-blue-200 text-blue-600 hover:bg-blue-50 cursor-pointer shadow-2xs"
+                            title="Print Tyre Allotment Slip"
+                          >
+                            <Printer className="w-4 h-4" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(t)}
