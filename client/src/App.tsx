@@ -16,6 +16,7 @@ import { Donations } from './pages/public/Donations';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { DonationManagement } from './pages/DonationManagement';
+import { ChandrikaFinance } from './pages/ChandrikaFinance';
 import { SupportDashboard } from './pages/SupportDashboard';
 import { CaptainDashboard } from './pages/CaptainDashboard';
 import { BusMaster } from './pages/BusMaster';
@@ -116,6 +117,8 @@ export function App() {
               <Route path="inquiries" element={<WebsiteInquiries />} />
               <Route path="donations" element={<DonationManagement />} />
               <Route path="donation" element={<Navigate to="/admin/donations" replace />} />
+              <Route path="chandrika-finance" element={<ChandrikaFinance />} />
+              <Route path="finance" element={<Navigate to="/admin/chandrika-finance" replace />} />
 
               {/* Specific Submodules & Secondary Views */}
               <Route path="maintenance-schedule" element={<MaintenanceSchedule />} />

@@ -135,6 +135,8 @@ export const AdminLayout: React.FC = () => {
     if (p.includes('/employee-payments')) return 'Employee Payments';
     if (p.includes('/earnings')) return 'Earnings';
     if (p.includes('/inquiries')) return 'Website Inquiries';
+    if (p.includes('/donations') || p.includes('/donation')) return 'Donations';
+    if (p.includes('/chandrika-finance') || p.includes('/finance')) return 'Chandrika Finance';
     if (p.includes('/maintenance-schedule')) return 'Maintenance Schedule';
     if (p.includes('/ac-maintenance')) return 'AC Maintenance';
     if (p.includes('/oil-filter-maintenance')) return 'Oil & Filter Replacement';

@@ -34,7 +34,8 @@ import {
   History,
   FileText,
   Gauge,
-  HeartHandshake
+  HeartHandshake,
+  Landmark
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
@@ -299,6 +300,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       route: '/admin/donations',
       icon: HeartHandshake,
       activeRoutes: ['/admin/donations', '/admin/donation']
+    },
+    {
+      label: 'Chandrika Finance',
+      route: '/admin/chandrika-finance',
+      icon: Landmark,
+      activeRoutes: ['/admin/chandrika-finance', '/admin/finance']
     },
     {
       label: 'Audit Log',
