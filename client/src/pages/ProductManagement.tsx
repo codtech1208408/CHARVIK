@@ -952,9 +952,9 @@ export const ProductManagement: React.FC = () => {
   // Print Report
   const handlePrint = () => {
     printSheet({
-      title: activeTab === 'inventory' ? 'SPARE PARTS & PRODUCT INVENTORY' : 'SPARE PARTS USAGE LOG',
-      subtitle: `Total Items: ${activeTab === 'inventory' ? filteredProducts.length : filteredLogs.length}`,
-      elementId: activeTab === 'inventory' ? 'product-inventory-table-container' : 'spare-usage-table-container',
+      title: 'CHARVIK SPARE PARTS & PRODUCT INVENTORY',
+      subtitle: `Live Stock: ${totalStockCount} units available across ${filteredProducts.length} items`,
+      elementId: 'product-inventory-table-container',
       orientation: 'landscape'
     });
   };
@@ -1200,7 +1200,7 @@ export const ProductManagement: React.FC = () => {
         </div>
 
         {/* Inventory Records Table */}
-        <div id="product-inventory-table-container" className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
+        <div id="product-inventory-table-container" className="printable-sheet border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white font-black border-b border-indigo-900/30">
               <tr>
@@ -1211,7 +1211,7 @@ export const ProductManagement: React.FC = () => {
                 <th className="py-2.5 px-3 text-center border-r border-slate-300">USED</th>
                 <th className="py-2.5 px-3 text-center border-r border-slate-300">STOCK</th>
                 <th className="py-2.5 px-3 text-center border-r border-slate-300">STATUS</th>
-                <th className="py-2.5 px-3 text-center">ACTIONS</th>
+                <th className="py-2.5 px-3 text-center no-print">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -1332,7 +1332,7 @@ export const ProductManagement: React.FC = () => {
                   </td>
 
                   {/* Actions */}
-                  <td className="py-3 px-3 text-center whitespace-nowrap">
+                  <td className="py-3 px-3 text-center whitespace-nowrap no-print">
                     <div className="flex items-center justify-center gap-1.5">
                       {p.stock_quantity > 0 ? (
                         <button
@@ -1419,7 +1419,7 @@ export const ProductManagement: React.FC = () => {
         </div>
 
         {/* Vehicle Usage History Table */}
-        <div id="spare-usage-table-container" className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
+        <div id="spare-usage-table-container" className="printable-sheet border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white font-black border-b border-indigo-900/30">
               <tr>
@@ -1431,7 +1431,7 @@ export const ProductManagement: React.FC = () => {
                 <th className="py-2.5 px-3 border-r border-slate-300">ODOMETER (KM)</th>
                 <th className="py-2.5 px-3 border-r border-slate-300">REMARKS</th>
                 <th className="py-2.5 px-3 text-center border-r border-slate-300">PHOTO</th>
-                <th className="py-2.5 px-3 text-center">ACTIONS</th>
+                <th className="py-2.5 px-3 text-center no-print">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -1498,7 +1498,7 @@ export const ProductManagement: React.FC = () => {
                   </td>
 
                   {/* Actions */}
-                  <td className="py-3 px-3 text-center whitespace-nowrap">
+                  <td className="py-3 px-3 text-center whitespace-nowrap no-print">
                     <button
                       type="button"
                       onClick={() => handleDeleteUsageRecord(u.id, u.product_name)}
