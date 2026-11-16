@@ -453,39 +453,9 @@ export const IncomeExpense: React.FC = () => {
     }
   };
 
-  // Export CSV
+  // Export to Excel
   const handleExportCSV = () => {
-    if (filteredTransactions.length === 0) {
-      error('No transactions to export');
-      return;
-    }
-
-    const headers = ['S.No', 'Date', 'Type', 'Category', 'Party / Vendor', 'Vehicle', 'Payment Mode', 'Reference / UTR', 'Amount (INR)', 'Proof Attached', 'Description'];
-    const rows = filteredTransactions.map((t, idx) => [
-      idx + 1,
-      t.date,
-      t.transaction_type,
-      `"${t.category.replace(/"/g, '""')}"`,
-      `"${(t.party_name || '—').replace(/"/g, '""')}"`,
-      t.vehicle_number || '—',
-      t.payment_mode,
-      `"${(t.reference_no || '—').replace(/"/g, '""')}"`,
-      t.transaction_type === 'Income' ? t.amount : -t.amount,
-      t.proof_url ? 'Yes' : 'No',
-      `"${(t.description || '—').replace(/"/g, '""')}"`
-    ]);
-
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Income_Expense_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    success('Income & Expense ledger exported successfully!');
+    handleExportTableExcel();
   };
 
   // Print Voucher
@@ -798,11 +768,11 @@ export const IncomeExpense: React.FC = () => {
 
             <button
               type="button"
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-md text-xs font-bold shadow-xs transition-all cursor-pointer whitespace-nowrap"
+              onClick={handleExportTableExcel}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer whitespace-nowrap border border-emerald-500"
             >
-              <Download className="w-4 h-4 text-white" />
-              <span>Export CSV</span>
+              <FileSpreadsheet className="w-4 h-4 text-white" />
+              <span>Export Excel</span>
             </button>
 
             <button

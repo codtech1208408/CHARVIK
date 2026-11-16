@@ -37,6 +37,7 @@ import { PrintButton } from '../components/common/PrintButton';
 import { api } from '../services/api';
 import { auditLogger } from '../services/auditLogger';
 import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export interface ProductItem {
   id: string;
@@ -903,49 +904,49 @@ export const ProductManagement: React.FC = () => {
   // Export to Excel / CSV
   const handleExportCSV = () => {
     try {
-      const headers = ['Type', 'Product Name', 'Part Number', 'Category', 'Brand', 'Received', 'Used', 'Current Stock', 'Date', 'Vehicle', 'Odometer KM', 'Remarks'];
+      const headers = ['Type', 'Product / Spare Part Name', 'Part Number', 'Category', 'Brand', 'Received Qty', 'Used Qty', 'Current Stock', 'Status', 'Date', 'Vehicle', 'Odometer KM', 'Remarks / Notes'];
       const productRows = products.map((p) => [
         'Inventory Record',
-        `"${p.name.replace(/"/g, '""')}"`,
-        `"${(p.part_number || '').replace(/"/g, '""')}"`,
-        `"${p.category}"`,
-        `"${(p.brand || '').replace(/"/g, '""')}"`,
+        p.name,
+        p.part_number || '—',
+        p.category,
+        p.brand || '—',
         p.quantity_received,
         p.used_quantity,
         p.stock_quantity,
+        p.stock_quantity <= 0 ? 'Out of Stock' : p.stock_quantity <= 5 ? 'Low Stock' : 'In Stock',
         p.received_date,
-        '',
-        '',
-        `"${(p.notes || '').replace(/"/g, '""')}"`
+        '—',
+        '—',
+        p.notes || '—'
       ]);
 
       const usageRows = usageHistory.map((u) => [
         'Vehicle Usage',
-        `"${u.product_name.replace(/"/g, '""')}"`,
-        `"${(u.part_number || '').replace(/"/g, '""')}"`,
-        '',
-        '',
-        '',
+        u.product_name,
+        u.part_number || '—',
+        '—',
+        '—',
+        '—',
         u.quantity_used,
-        '',
+        '—',
+        'Used',
         u.usage_date,
-        `"${u.vehicle_number}"`,
-        `"${u.odometer_km || ''}"`,
-        `"${(u.remarks || '').replace(/"/g, '""')}"`
+        u.vehicle_number,
+        u.odometer_km || '—',
+        u.remarks || '—'
       ]);
 
-      const csvContent = [headers.join(','), ...productRows.map((r) => r.join(',')), ...usageRows.map((r) => r.join(','))].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Charvik_Product_Spare_Parts_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      success('Exported Product & Spare Parts report to CSV!');
+      exportTableToExcel({
+        title: 'CHARVIK SPARE PARTS & PRODUCT INVENTORY',
+        subtitle: `Total Products: ${products.length} | Available Stock Units: ${totalStockCount} | Total Usage Records: ${usageHistory.length}`,
+        filename: 'Charvik_Product_Spare_Parts',
+        headers,
+        rows: [...productRows, ...usageRows]
+      });
+      success('Exported Product & Spare Parts report to Excel (.xlsx)!');
     } catch {
-      error('Failed to export CSV file.');
+      error('Failed to export Excel file.');
     }
   };
 
@@ -1181,6 +1182,15 @@ export const ProductManagement: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
+              title="Export Inventory to Excel"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              <span>Export Excel</span>
+            </button>
             <PrintButton
               title="CHARVIK SPARE PARTS & INVENTORY RECORDS"
               subtitle={`Live Stock: ${totalStockCount} units available`}
@@ -1407,7 +1417,16 @@ export const ProductManagement: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-xs"
+              title="Export Usage Records to Excel"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              <span>Export Excel</span>
+            </button>
             <PrintButton
               title="CHARVIK VEHICLE SPARE PARTS USAGE LOG"
               subtitle={`Total Issued Records: ${usageHistory.length}`}

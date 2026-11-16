@@ -26,6 +26,7 @@ import { api } from '../services/api';
 import { auditLogger } from '../services/auditLogger';
 import { PrintButton } from '../components/common/PrintButton';
 import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 
 export interface FuelingEntry {
@@ -501,23 +502,12 @@ export const DailyKilometers: React.FC = () => {
     });
   };
 
-  // Export to Excel / CSV with vehicle-specific filtering and summary count
+  // Export to Excel (.xlsx) with vehicle-specific filtering and summary count
   const handleExportExcel = () => {
     try {
       const isFilteredByVeh = !!searchVehicle.trim();
       const vehLabel = isFilteredByVeh ? searchVehicle.trim().toUpperCase() : 'All Vehicles';
 
-      const csvLines: string[] = [];
-      // Summary Block in CSV
-      csvLines.push(`"CHARVIK STAFFING CONSULTANCY - MILEAGE & FUELING REPORT"`);
-      csvLines.push(`"Vehicle Filter","${vehLabel}"`);
-      csvLines.push(`"Total Matching Records Found","${filteredEntries.length}"`);
-      csvLines.push(`"Total Liters Pumped","${totalLiters.toFixed(2)} L"`);
-      csvLines.push(`"Total Fuel Cost","Rs. ${totalFuelCost.toLocaleString('en-IN')}"`);
-      csvLines.push(`"Exported Date","${new Date().toLocaleString()}"`);
-      csvLines.push(''); // Blank separator line
-
-      // Table Header
       const headers = [
         'S.No',
         'Date',
@@ -532,36 +522,30 @@ export const DailyKilometers: React.FC = () => {
         'Fuel Station',
         'Remarks'
       ];
-      csvLines.push(headers.map((h) => `"${h}"`).join(','));
 
-      // Table Rows
-      filteredEntries.forEach((e, idx) => {
-        const row = [
-          idx + 1,
-          e.date,
-          e.vehicle_number,
-          e.route,
-          e.last_fuel_km,
-          e.end_trip_km,
-          e.total_km,
-          `${e.fuel_liters} L`,
-          `${e.mileage_km_l} KM/L`,
-          e.fuel_cost || 0,
-          e.station || '—',
-          e.remarks || '—'
-        ];
-        csvLines.push(row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(','));
-      });
+      const rows = filteredEntries.map((e, idx) => [
+        idx + 1,
+        e.date,
+        e.vehicle_number,
+        e.route,
+        e.last_fuel_km,
+        e.end_trip_km,
+        e.total_km,
+        `${e.fuel_liters} L`,
+        `${e.mileage_km_l} KM/L`,
+        e.fuel_cost || 0,
+        e.station || '—',
+        e.remarks || '—'
+      ]);
 
-      const csvBlob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(csvBlob);
-      const link = document.createElement('a');
       const safeVehName = isFilteredByVeh ? searchVehicle.trim().replace(/[^a-zA-Z0-9]/g, '_') : 'All';
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Mileage_Fueling_${safeVehName}_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      exportTableToExcel({
+        title: 'Mileage & Fueling Fleet Report',
+        subtitle: `Vehicle: ${vehLabel} | Total Records: ${filteredEntries.length} | Total Liters: ${totalLiters.toFixed(2)} L | Total Cost: Rs ${totalFuelCost.toLocaleString('en-IN')}`,
+        filename: `Mileage_Fueling_${safeVehName}`,
+        headers,
+        rows
+      });
       success(`Exported ${filteredEntries.length} fueling record(s) for ${vehLabel} to Excel!`);
     } catch {
       error('Failed to export Excel report.');

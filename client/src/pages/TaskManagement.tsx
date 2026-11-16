@@ -35,6 +35,7 @@ import {
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
+import { exportTableToExcel } from '../utils/exportToExcel';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -895,18 +896,6 @@ export const TaskManagement: React.FC = () => {
       const isFilteredByVeh = !!search.trim();
       const vehLabel = isFilteredByVeh ? search.trim().toUpperCase() : 'All Vehicles';
 
-      const csvLines: string[] = [];
-      csvLines.push(`"CHARVIK STAFFING CONSULTANCY - TRIP MANAGEMENT FLEET DUTY REPORT"`);
-      csvLines.push(`"Vehicle / Search Filter","${vehLabel}"`);
-      csvLines.push(`"Staff Category","${staffCategoryFilter}"`);
-      csvLines.push(`"Vehicle Status","${vehicleStatusFilter}"`);
-      csvLines.push(`"Payment Status","${paymentStatusFilter}"`);
-      csvLines.push(`"Origin / Destination","${routeOriginFilter} -> ${destinationFilter}"`);
-      csvLines.push(`"Date Range","${fromDateFilter || selectedDate} to ${toDateFilter || selectedDate}"`);
-      csvLines.push(`"Total Matching Trips Found","${filteredDateTrips.length}"`);
-      csvLines.push(`"Exported At","${new Date().toLocaleString()}"`);
-      csvLines.push('');
-
       const headers = [
         'S.No',
         'Trip Start Date',
@@ -925,39 +914,34 @@ export const TaskManagement: React.FC = () => {
         'Operator Commission (Rs)',
         'Trip Remarks'
       ];
-      csvLines.push(headers.map((h) => `"${h}"`).join(','));
 
-      filteredDateTrips.forEach((t, idx) => {
-        const row = [
-          idx + 1,
-          t.trip_start_date,
-          t.vehicle_number,
-          t.service_number || '',
-          t.route_corridor,
-          t.vehicle_status,
-          t.operator_organizer || '',
-          t.driver1?.employee_name || '',
-          t.driver2?.employee_name || '',
-          t.helper?.employee_name || '',
-          t.captain?.employee_name || '',
-          t.duty_status || '',
-          t.payment_status || 'Pending',
-          t.trip_amount || '',
-          t.operator_commission || '',
-          t.trip_remarks || ''
-        ];
-        csvLines.push(row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(','));
-      });
+      const rows = filteredDateTrips.map((t, idx) => [
+        idx + 1,
+        t.trip_start_date,
+        t.vehicle_number,
+        t.service_number || '',
+        t.route_corridor,
+        t.vehicle_status,
+        t.operator_organizer || '',
+        t.driver1?.employee_name || '',
+        t.driver2?.employee_name || '',
+        t.helper?.employee_name || '',
+        t.captain?.employee_name || '',
+        t.duty_status || '',
+        t.payment_status || 'Pending',
+        Number(t.trip_amount) || 0,
+        Number(t.operator_commission) || 0,
+        t.trip_remarks || ''
+      ]);
 
-      const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
       const safeVeh = isFilteredByVeh ? search.trim().replace(/[^a-zA-Z0-9]/g, '_') : 'All';
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Trips_Duties_${safeVeh}_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      exportTableToExcel({
+        title: 'Trip Management Fleet Duty Report',
+        subtitle: `Vehicle: ${vehLabel} | Range: ${fromDateFilter || selectedDate} to ${toDateFilter || selectedDate} | Total Matching Trips: ${filteredDateTrips.length}`,
+        filename: `Trips_Duties_${safeVeh}`,
+        headers,
+        rows
+      });
       success(`Exported ${filteredDateTrips.length} trip record(s) for ${vehLabel} to Excel!`);
     } catch {
       error('Failed to export Excel report.');

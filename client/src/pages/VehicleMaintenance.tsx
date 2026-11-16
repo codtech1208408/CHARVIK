@@ -36,6 +36,7 @@ import {
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import * as XLSX from 'xlsx';
 
 interface ServiceItem {
   key: string;
@@ -725,54 +726,63 @@ export const VehicleMaintenance: React.FC = () => {
         });
       });
 
-      // Generate clean Excel-compatible CSV export with UTF-8 BOM
-      const lines: string[] = [];
-      lines.push('"CHARVIK FLEET MAINTENANCE OVERVIEW"');
-      lines.push(`"Exported At","${new Date().toLocaleString()}"`);
-      lines.push(`"Total Fleet Vehicles","${vehicles.length}"`);
-      lines.push('');
+      // Generate clean Multi-Sheet Excel Workbook (.xlsx) with auto-fit columns
+      const wb = XLSX.utils.book_new();
 
-      lines.push('"=== 1. FLEET SUMMARY ==="');
-      if (summaryRows.length > 0) {
-        const h1 = Object.keys(summaryRows[0]);
-        lines.push(h1.map((k) => `"${k}"`).join(','));
-        summaryRows.forEach((row: any) => {
-          lines.push(h1.map((k) => `"${String(row[k] ?? '').replace(/"/g, '""')}"`).join(','));
+      const autoFitCols = (ws: XLSX.WorkSheet, data: any[]) => {
+        if (!data || data.length === 0) return;
+        const keys = Object.keys(data[0]);
+        ws['!cols'] = keys.map((key) => {
+          let maxLen = key.length;
+          for (let i = 0; i < data.length; i++) {
+            const valStr = String(data[i]?.[key] ?? '');
+            if (valStr.length > maxLen) maxLen = valStr.length;
+          }
+          return { wch: Math.min(Math.max(maxLen + 4, 14), 55) };
         });
-      }
-      lines.push('');
 
-      lines.push('"=== 2. SERVICE STATUS (9 SERVICES) ==="');
-      if (serviceStatusRows.length > 0) {
-        const h2 = Object.keys(serviceStatusRows[0]);
-        lines.push(h2.map((k) => `"${k}"`).join(','));
-        serviceStatusRows.forEach((row: any) => {
-          lines.push(h2.map((k) => `"${String(row[k] ?? '').replace(/"/g, '""')}"`).join(','));
-        });
-      }
-      lines.push('');
+        // Enforce text formatting for registration, chassis, engine, dates
+        const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+        for (let R = 1; R <= range.e.r; ++R) {
+          for (let C = 0; C <= range.e.c; ++C) {
+            const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+            if (!cell || cell.v === undefined || cell.v === null) continue;
+            const strVal = String(cell.v).trim();
+            const colHeader = String(keys[C] || '').toLowerCase();
+            if (
+              colHeader.includes('no') ||
+              colHeader.includes('chassis') ||
+              colHeader.includes('engine') ||
+              colHeader.includes('date') ||
+              colHeader.includes('phone') ||
+              /^\d{10,}$/.test(strVal)
+            ) {
+              cell.t = 's';
+              cell.v = strVal;
+              cell.z = '@';
+            }
+          }
+        }
+      };
 
-      lines.push('"=== 3. MAINTENANCE HISTORY ==="');
-      if (allHistoryRows.length > 0) {
-        const h3 = Object.keys(allHistoryRows[0]);
-        lines.push(h3.map((k) => `"${k}"`).join(','));
-        allHistoryRows.forEach((row: any) => {
-          lines.push(h3.map((k) => `"${String(row[k] ?? '').replace(/"/g, '""')}"`).join(','));
-        });
-      } else {
-        lines.push('"No completed maintenance history records found"');
-      }
+      // 1. Fleet Summary Sheet
+      const ws1 = XLSX.utils.json_to_sheet(summaryRows);
+      autoFitCols(ws1, summaryRows);
+      XLSX.utils.book_append_sheet(wb, ws1, 'Fleet Summary');
 
-      const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Fleet_Maintenance_Overview_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      success('Fleet maintenance overview exported successfully!');
+      // 2. Service Status Sheet
+      const ws2 = XLSX.utils.json_to_sheet(serviceStatusRows);
+      autoFitCols(ws2, serviceStatusRows);
+      XLSX.utils.book_append_sheet(wb, ws2, 'Service Status');
+
+      // 3. Maintenance History Sheet
+      const historyData = allHistoryRows.length > 0 ? allHistoryRows : [{ 'Status': 'No completed maintenance history records found' }];
+      const ws3 = XLSX.utils.json_to_sheet(historyData);
+      autoFitCols(ws3, historyData);
+      XLSX.utils.book_append_sheet(wb, ws3, 'Maintenance History');
+
+      XLSX.writeFile(wb, `Fleet_Maintenance_Overview_${new Date().toISOString().split('T')[0]}.xlsx`);
+      success('Fleet maintenance overview exported to Excel (.xlsx) successfully!');
     } catch (err: any) {
       error(err.message || 'Failed to export Excel report');
     }

@@ -27,6 +27,7 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
 import { formatEmployeeId } from '../utils/employeeCode';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 interface OrganizerPayment {
   id: number;
@@ -412,7 +413,7 @@ export const Earnings: React.FC = () => {
     }
   };
 
-  // Export to Excel / CSV
+  // Export to Excel (.xlsx)
   const handleExportCSV = () => {
     if (staffLedgerRecords.length === 0) {
       error('No financial records to export.');
@@ -422,23 +423,22 @@ export const Earnings: React.FC = () => {
     const headers = ['Employee ID', 'Full Name', 'Category', 'Tasks Handled', 'Salary Earned (Rs)', 'Pending Due (Rs)', 'Settled Total (Rs)'];
     const rows = staffLedgerRecords.map((r) => [
       formatEmployeeId(r.employee_code, r.role),
-      `"${r.full_name}"`,
+      r.full_name,
       r.role,
       r.tasksHandled,
-      r.salaryEarned,
-      r.pendingDue,
-      r.settledTotal
+      Number(r.salaryEarned) || 0,
+      Number(r.pendingDue) || 0,
+      Number(r.settledTotal) || 0
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Charvik_Staff_Earnings_Ledger_${period}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    success('Financial ledger exported to CSV successfully.');
+    exportTableToExcel({
+      title: 'Charvik Staff Earnings & Financial Ledger',
+      subtitle: `Period: ${period} | Staff Count: ${staffLedgerRecords.length} | Export Date: ${new Date().toLocaleDateString('en-IN')}`,
+      filename: `Charvik_Staff_Earnings_Ledger_${period}`,
+      headers,
+      rows
+    });
+    success('Financial ledger exported to Excel (.xlsx) successfully.');
   };
 
   return (

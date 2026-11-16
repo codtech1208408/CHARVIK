@@ -11,6 +11,7 @@ import { useToast } from "../components/common/Toast";
 import { PrintButton } from "../components/common/PrintButton";
 import { printSheet } from "../utils/printSheet";
 import { formatEmployeeId } from "../utils/employeeCode";
+import { exportTableToExcel } from "../utils/exportToExcel";
 
 interface TripEntry {
   id: number | string;
@@ -591,23 +592,24 @@ export const EmployeePayments: React.FC = () => {
       t.date,
       t.vehicle_number,
       t.service_number || "-",
-      `"${t.route_corridor}"`,
-      t.salary,
-      t.advance,
-      t.balance_due,
+      t.route_corridor,
+      Number(t.salary) || 0,
+      Number(t.advance) || 0,
+      Number(t.balance_due) || 0,
       t.isPaid ? "Settled" : "Pending"
     ]);
-    const csv = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csv));
-    link.setAttribute("download", `${selectedEmployeeRecord.full_name}_Payment_Ledger_${period}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    success(`Exported payment ledger for ${selectedEmployeeRecord.full_name}`);
+
+    exportTableToExcel({
+      title: `Employee Payment Ledger - ${selectedEmployeeRecord.full_name}`,
+      subtitle: `Role: ${selectedEmployeeRecord.role} • ID: ${formatEmployeeId(selectedEmployeeRecord.employee_code, selectedEmployeeRecord.role)} • Period: ${period}`,
+      filename: `${selectedEmployeeRecord.full_name}_Payment_Ledger_${period}`,
+      headers,
+      rows
+    });
+    success(`Exported payment ledger for ${selectedEmployeeRecord.full_name} to Excel!`);
   };
 
-  // Export CSV for all employees directory
+  // Export Excel for all employees directory
   const handleExportAllCSV = () => {
     if (filteredEmployees.length === 0) {
       error("No employee records to export.");
@@ -627,24 +629,25 @@ export const EmployeePayments: React.FC = () => {
     ];
     const rows = filteredEmployees.map((e, i) => [
       i + 1,
-      `"${e.full_name}"`,
-      e.employee_code,
+      e.full_name,
+      formatEmployeeId(e.employee_code, e.role),
       e.role,
       e.phone || "-",
       e.tasksHandled,
-      e.salaryEarned,
-      e.advancePaid,
-      e.pendingDue,
+      Number(e.salaryEarned) || 0,
+      Number(e.advancePaid) || 0,
+      Number(e.pendingDue) || 0,
       e.pendingDue === 0 ? "Settled" : "Pending Due"
     ]);
-    const csv = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csv));
-    link.setAttribute("download", `All_Employee_Payments_${period}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    success(`Exported all employee payments ledger`);
+
+    exportTableToExcel({
+      title: "All Employee Payments & Settlement Ledger",
+      subtitle: `Period: ${period} • Total Employees: ${filteredEmployees.length}`,
+      filename: `All_Employee_Payments_${period}`,
+      headers,
+      rows
+    });
+    success(`Exported all employee payments ledger to Excel!`);
   };
 
   const handleSelectEmployee = (record: EmployeePaymentRecord) => {

@@ -1,8 +1,4 @@
-/**
- * Universal Excel / CSV Exporter for Charvik tables
- * Generates an Excel-ready CSV with UTF-8 BOM so native Microsoft Excel,
- * Google Sheets, and LibreOffice open it flawlessly with proper column alignment.
- */
+import * as XLSX from 'xlsx';
 
 export interface ExportExcelOptions {
   /** ID of the table or container element to extract from */
@@ -13,21 +9,31 @@ export interface ExportExcelOptions {
   subtitle?: string;
   /** Filename without extension (defaults to sanitized title) */
   filename?: string;
+  /** Sheet name inside the workbook (max 31 chars) */
+  sheetName?: string;
   /** Optional custom headers if bypassing DOM */
   headers?: string[];
   /** Optional custom data rows if bypassing DOM */
-  rows?: (string | number)[][];
+  rows?: (string | number | null | undefined)[][];
 }
 
+/**
+ * Universal High-Definition Excel (.xlsx) Exporter for Charvik tables.
+ * Generates true Microsoft Excel Workbooks (.xlsx) with:
+ *  - Auto-calculated generous column widths (no text truncation or overlap)
+ *  - Text format enforcement for phone numbers, UTRs, account numbers, and dates (prevents 8.52E+09 and ########)
+ *  - Merged official Charvik letterhead banner
+ *  - Clean sequence and cell alignment
+ */
 export function exportTableToExcel(options: ExportExcelOptions): void {
-  const { elementId, title, subtitle, filename, headers: directHeaders, rows: directRows } = options;
+  const { elementId, title, subtitle, filename, sheetName, headers: directHeaders, rows: directRows } = options;
 
   let finalHeaders: string[] = [];
-  let finalRows: string[][] = [];
+  let finalRows: (string | number)[][] = [];
 
   if (directHeaders && directRows) {
     finalHeaders = directHeaders;
-    finalRows = directRows.map((r) => r.map((cell) => String(cell ?? '')));
+    finalRows = directRows.map((r) => r.map((cell) => cell ?? ''));
   } else if (elementId) {
     const el = document.getElementById(elementId);
     if (!el) {
@@ -51,6 +57,7 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
         const text = (th.textContent || '').replace(/\s+/g, ' ').trim();
         if (
           text.toLowerCase().includes('action') ||
+          text.toLowerCase().includes('proof') ||
           th.classList.contains('no-print') ||
           th.getAttribute('data-no-print') !== null
         ) {
@@ -76,30 +83,25 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
       }
       if (tds.length === 0) return;
 
-      const rowData: string[] = [];
+      const rowData: (string | number)[] = [];
       tds.forEach((td, idx) => {
         if (actionIndices.has(idx)) return;
         if (td.classList.contains('no-print') || td.getAttribute('data-no-print') !== null) return;
 
         // Clone cell to strip interactive buttons or badges before reading text
         const cellClone = td.cloneNode(true) as HTMLElement;
-        cellClone.querySelectorAll('button, .no-print, [data-no-print], svg').forEach((el) => el.remove());
+        cellClone.querySelectorAll('button, .no-print, [data-no-print], svg').forEach((elem) => elem.remove());
 
         // Clean inner text (remove newlines, collapse spaces)
-        let cellText = (cellClone.innerText || cellClone.textContent || '')
+        const cellText = (cellClone.innerText || cellClone.textContent || '')
           .replace(/\r?\n|\r/g, ' ')
           .replace(/\s+/g, ' ')
           .trim();
 
-        // If cell has leading + or - or = that could trigger formula injection in Excel, sanitize
-        if (cellText.startsWith('=') || cellText.startsWith('+')) {
-          cellText = `'${cellText}`;
-        }
-
         rowData.push(cellText);
       });
 
-      if (rowData.some((c) => c.length > 0)) {
+      if (rowData.some((c) => String(c).length > 0)) {
         finalRows.push(rowData);
       }
     });
@@ -111,20 +113,19 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
   }
 
   const colCount = Math.max(finalHeaders.length, 1);
-  const padRow = (firstCell: string) => {
-    const row = [firstCell];
-    for (let i = 1; i < colCount; i++) row.push('""');
-    return row.join(',');
-  };
 
-  // Construct Excel CSV with Official Charvik Header Block
-  const csvLines: string[] = [];
-  csvLines.push(padRow('"CHARVIK STAFFING CONSULTANCY"'));
-  csvLines.push(padRow('"STAFFING | MANPOWER SOLUTIONS | FLEET MAINTENANCE SUPPORT | OPERATIONAL SERVICES"'));
-  csvLines.push(padRow(`"${title.replace(/"/g, '""')}"`));
+  // Build the 2D Array of Sheet data:
+  const wsData: any[][] = [];
+  wsData.push(['CHARVIK STAFFING CONSULTANCY']);
+  wsData.push(['STAFFING | MANPOWER SOLUTIONS | FLEET MAINTENANCE SUPPORT | OPERATIONAL SERVICES']);
+  wsData.push([title]);
+
+  let metaRowIdx = 3;
   if (subtitle) {
-    csvLines.push(padRow(`"${subtitle.replace(/"/g, '""')}"`));
+    wsData.push([subtitle]);
+    metaRowIdx++;
   }
+
   const dateStr = new Date().toLocaleDateString('en-IN', {
     day: '2-digit',
     month: 'short',
@@ -135,36 +136,124 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
     minute: '2-digit',
     hour12: true
   });
-  csvLines.push(padRow(`"Export Date: ${dateStr} | Time: ${timeStr}"`));
-  csvLines.push(padRow('""')); // Blank separator row
+  wsData.push([`Export Date: ${dateStr} | Time: ${timeStr}`]);
+  wsData.push([]); // Empty spacing row
 
-  // Add Table Headers
-  csvLines.push(finalHeaders.map((h) => `"${h.replace(/"/g, '""')}"`).join(','));
+  // Table Headers row index
+  const headerRowIdx = wsData.length;
+  wsData.push(finalHeaders);
 
-  // Add Table Rows
+  // Table Data rows
   finalRows.forEach((row) => {
-    // Ensure row matches colCount
-    const rowCells = [...row];
-    while (rowCells.length < colCount) rowCells.push('');
-    csvLines.push(rowCells.map((val) => `"${val.replace(/"/g, '""')}"`).join(','));
+    // Pad row if shorter than header count
+    const r = [...row];
+    while (r.length < colCount) r.push('');
+    wsData.push(r);
   });
 
-  // UTF-8 BOM prefix '\uFEFF' ensures Microsoft Excel opens unicode characters and text without mojibake
-  const csvBlob = new Blob(['\uFEFF' + csvLines.join('\r\n')], {
-    type: 'text/csv;charset=utf-8;'
-  });
+  // Convert to Excel Worksheet
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-  const url = URL.createObjectURL(csvBlob);
-  const link = document.createElement('a');
-  const safeName = (filename || title)
+  // Configure cell merges for the top branding/letterhead rows
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
+    { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: colCount - 1 } }
+  ];
+  if (subtitle) {
+    ws['!merges'].push({ s: { r: 3, c: 0 }, e: { r: 3, c: colCount - 1 } });
+  }
+  ws['!merges'].push({ s: { r: metaRowIdx, c: 0 }, e: { r: metaRowIdx, c: colCount - 1 } });
+
+  // Calculate Auto-Column Widths to completely prevent text overlapping or cutoffs:
+  const colWidths: number[] = [];
+  for (let c = 0; c < colCount; c++) {
+    const headerLen = String(finalHeaders[c] || '').length;
+    let maxCellLen = 0;
+    for (let r = 0; r < finalRows.length; r++) {
+      const cellVal = String(finalRows[r]?.[c] ?? '');
+      if (cellVal.length > maxCellLen) {
+        maxCellLen = cellVal.length;
+      }
+    }
+
+    // Generous base width with padding
+    let width = Math.max(headerLen, maxCellLen) + 5;
+
+    // Specific domain keywords that need extra breathing room
+    const hLower = String(finalHeaders[c] || '').toLowerCase();
+    if (hLower.includes('date') || hLower.includes('time')) width = Math.max(width, 18);
+    if (hLower.includes('phone') || hLower.includes('mobile') || hLower.includes('contact')) width = Math.max(width, 18);
+    if (hLower.includes('bus') || hLower.includes('vehicle')) width = Math.max(width, 18);
+    if (hLower.includes('route') || hLower.includes('corridor') || hLower.includes('city')) width = Math.max(width, 24);
+    if (hLower.includes('name') || hLower.includes('client') || hLower.includes('party') || hLower.includes('vendor')) width = Math.max(width, 22);
+    if (hLower.includes('amount') || hLower.includes('cost') || hLower.includes('rate') || hLower.includes('salary') || hLower.includes('total') || hLower.includes('balance')) width = Math.max(width, 16);
+    if (hLower.includes('status')) width = Math.max(width, 16);
+    if (hLower.includes('license') || hLower.includes('aadhaar') || hLower.includes('pan') || hLower.includes('gst')) width = Math.max(width, 20);
+    if (hLower.includes('account') || hLower.includes('ifsc') || hLower.includes('bank') || hLower.includes('upi')) width = Math.max(width, 22);
+    if (hLower.includes('desc') || hLower.includes('remark') || hLower.includes('notes') || hLower.includes('address') || hLower.includes('complaint')) width = Math.max(width, 36);
+
+    // Hard bounds: min 14, max 65
+    width = Math.min(Math.max(width, 14), 65);
+    colWidths.push(width);
+  }
+  ws['!cols'] = colWidths.map((w) => ({ wch: w }));
+
+  // Enforce explicit Text cell type for identifiers, dates, phone numbers, codes
+  // Prevents Microsoft Excel from displaying scientific notation (e.g. 8.52E+09) or '########'
+  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+  for (let R = headerRowIdx + 1; R <= range.e.r; ++R) {
+    for (let C = 0; C <= range.e.c; ++C) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      const cell = ws[cellAddress];
+      if (!cell || cell.v === undefined || cell.v === null) continue;
+
+      const strVal = String(cell.v).trim();
+      const colHeader = String(finalHeaders[C] || '').toLowerCase();
+
+      const isIdentifierOrDate =
+        colHeader.includes('phone') ||
+        colHeader.includes('mobile') ||
+        colHeader.includes('contact') ||
+        colHeader.includes('account') ||
+        colHeader.includes('aadhaar') ||
+        colHeader.includes('pan') ||
+        colHeader.includes('ifsc') ||
+        colHeader.includes('utr') ||
+        colHeader.includes('ref') ||
+        colHeader.includes('date') ||
+        colHeader.includes('time') ||
+        colHeader.includes('vehicle') ||
+        colHeader.includes('license') ||
+        colHeader.includes('card') ||
+        colHeader.includes('code') ||
+        colHeader.includes('service nu') ||
+        colHeader.includes('trip') ||
+        /^\d{10,}$/.test(strVal) || // 10+ digits: phone number, account number, Aadhaar
+        /^\+?\d[\d -]{8,}$/.test(strVal) ||
+        /^\d{4}-\d{2}-\d{2}/.test(strVal) ||
+        /^\d{2}[-/]\d{2}[-/]\d{4}/.test(strVal);
+
+      if (isIdentifierOrDate) {
+        cell.t = 's'; // Force string type in Excel
+        cell.v = strVal;
+        cell.z = '@'; // Explicit text format
+      }
+    }
+  }
+
+  // Create Workbook and save as real .xlsx
+  const wb = XLSX.utils.book_new();
+  const safeSheetName = (sheetName || title || 'Sheet1')
+    .replace(/[\\/*?:[\]]/g, '')
+    .slice(0, 31);
+  XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
+
+  const safeFileName = (filename || title)
     .replace(/[^a-zA-Z0-9_\- ]/g, '')
     .trim()
     .replace(/\s+/g, '_');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `${safeName}_${new Date().toISOString().split('T')[0]}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
+  const dateSuffix = new Date().toISOString().split('T')[0];
 
+  XLSX.writeFile(wb, `${safeFileName}_${dateSuffix}.xlsx`);
+}

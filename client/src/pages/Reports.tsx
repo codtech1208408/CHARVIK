@@ -15,6 +15,7 @@ import type { Bus as BusType } from '../types';
 import { Badge } from '../components/common/Badge';
 import { useToast } from '../components/common/Toast';
 import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export const Reports: React.FC = () => {
   const { success, error } = useToast();
@@ -64,50 +65,36 @@ export const Reports: React.FC = () => {
   };
 
   const exportCSV = () => {
-    if (!reportData.results || reportData.results.length === 0) {
-      error('No data available to export');
-      return;
-    }
-    const headers = Object.keys(reportData.results[0]);
-    const csvRows = [
-      headers.join(','),
-      ...reportData.results.map((row: any) =>
-        headers.map((h) => `"${String(row[h] || '').replace(/"/g, '""')}"`).join(',')
-      )
-    ];
-    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Charvik_${activeReport}_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    success('Report exported to CSV successfully!');
+    exportExcel();
   };
 
   const exportExcel = () => {
-    // Export CSV with Excel BOM for seamless native spreadsheet viewing
     if (!reportData.results || reportData.results.length === 0) {
       error('No data available to export');
       return;
     }
-    const headers = Object.keys(reportData.results[0]);
-    const csvContent = '\uFEFF' + [
-      headers.join(','),
-      ...reportData.results.map((row: any) =>
-        headers.map((h) => `"${String(row[h] || '').replace(/"/g, '""')}"`).join(',')
-      )
-    ].join('\n');
-    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Charvik_${activeReport}_${new Date().toISOString().split('T')[0]}.xls`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    success('Report exported to Excel spreadsheet!');
+    const rawHeaders = Object.keys(reportData.results[0]);
+    const formattedHeaders = rawHeaders.map((h) =>
+      h.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+    );
+    const rows = reportData.results.map((row: any) =>
+      rawHeaders.map((h) => {
+        const val = row[h];
+        if (val === null || val === undefined) return '—';
+        if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+        return val;
+      })
+    );
+
+    const reportMeta = reportCategories.find((r) => r.id === activeReport);
+    exportTableToExcel({
+      title: `CHARVIK - ${reportMeta?.label?.toUpperCase() || 'ANALYTICS & AUDIT REPORT'}`,
+      subtitle: `Report ID: ${activeReport} | Total Records: ${reportData.results.length} | Generated: ${new Date().toLocaleDateString('en-IN')}`,
+      filename: `Charvik_${activeReport}`,
+      headers: formattedHeaders,
+      rows
+    });
+    success('Report exported to Excel (.xlsx) successfully!');
   };
 
   const currentReportMeta = reportCategories.find((r) => r.id === activeReport);

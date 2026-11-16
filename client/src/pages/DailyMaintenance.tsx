@@ -33,6 +33,7 @@ import { SearchableSelect, type SearchOption } from '../components/common/Search
 import type { Bus as BusType } from '../types';
 import type { DailyMaintenanceRecord } from '../services/seedData';
 import { PrintButton } from '../components/common/PrintButton';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export const DailyMaintenance: React.FC = () => {
   const { user } = useAuth();
@@ -278,15 +279,9 @@ export const DailyMaintenance: React.FC = () => {
     }
   };
 
-  // Export to Excel / CSV with UTF-8 BOM
+  // Export to Excel (.xlsx)
   const handleExportCSV = () => {
     try {
-      const lines: string[] = [];
-      lines.push('"CHARVIK STAFFING CONSULTANCY - DAILY VEHICLE MAINTENANCE"');
-      lines.push(`"Exported At","${new Date().toLocaleString()}"`);
-      lines.push(`"Total Records","${filteredRecords.length}"`);
-      lines.push('');
-
       const headers = [
         'S.No',
         'Date',
@@ -298,9 +293,8 @@ export const DailyMaintenance: React.FC = () => {
         'Amount (Rs)',
         'Attached Invoices Count'
       ];
-      lines.push(headers.map((h) => `"${h}"`).join(','));
 
-      filteredRecords.forEach((r, idx) => {
+      const rows = filteredRecords.map((r, idx) => {
         let pCount = 0;
         if (Array.isArray(r.photos)) pCount = r.photos.length;
         else if (typeof r.photos_json === 'string') {
@@ -309,32 +303,29 @@ export const DailyMaintenance: React.FC = () => {
           } catch { }
         }
 
-        const row = [
+        return [
           idx + 1,
           r.date,
           r.vehicle_number,
           r.km || 0,
-          r.showroom_name || '',
-          r.complaints || '',
-          r.other || '',
+          r.showroom_name || '—',
+          r.complaints || '—',
+          r.other || '—',
           r.amount || 0,
           pCount
         ];
-        lines.push(row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
       });
 
-      const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Daily_Maintenance_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      success('Exported daily maintenance records to Excel / CSV');
+      exportTableToExcel({
+        title: 'CHARVIK - DAILY VEHICLE MAINTENANCE LOG',
+        subtitle: `Total Maintenance Records: ${filteredRecords.length} | Exported: ${new Date().toLocaleDateString('en-IN')}`,
+        filename: 'Daily_Vehicle_Maintenance',
+        headers,
+        rows
+      });
+      success('Exported daily maintenance records to Excel (.xlsx)');
     } catch {
-      error('Failed to export CSV report');
+      error('Failed to export Excel report');
     }
   };
 

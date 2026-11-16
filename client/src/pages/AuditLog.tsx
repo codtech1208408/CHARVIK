@@ -5,6 +5,7 @@ import {
   Filter,
   Trash2,
   Download,
+  FileSpreadsheet,
   ShieldCheck,
   RotateCw,
   RefreshCw,
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react';
 import { auditLogger, type AuditLogEntry } from '../services/auditLogger';
 import { useToast } from '../components/common/Toast';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export const AuditLog: React.FC = () => {
   const { success, error } = useToast();
@@ -101,23 +103,22 @@ export const AuditLog: React.FC = () => {
     const headers = ['S.No', 'Timestamp', 'User', 'Module', 'Action Type', 'Description'];
     const rows = filteredLogs.map((l, idx) => [
       idx + 1,
-      `"${l.formatted_time || l.timestamp}"`,
-      `"${l.user || 'Admin'}"`,
-      `"${l.module || '-'}"`,
-      `"${l.action_type || '-'}"`,
-      `"${(l.description || '').replace(/"/g, '""')}"`
+      l.formatted_time || l.timestamp || '',
+      l.user || 'Admin',
+      l.module || '-',
+      l.action_type || '-',
+      l.description || ''
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `charvik_audit_log_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    exportTableToExcel({
+      title: 'Charvik System Audit Log & Activity Trail',
+      subtitle: `Total Logged Events: ${filteredLogs.length} | Export Date: ${new Date().toLocaleDateString('en-IN')}`,
+      filename: 'charvik_audit_log',
+      headers,
+      rows
+    });
 
-    success('Audit logs downloaded as CSV');
+    success('Audit logs exported to Excel successfully!');
   };
 
   return (
@@ -145,10 +146,11 @@ export const AuditLog: React.FC = () => {
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={handleExportCsv}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 shadow-2xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-2xs transition-all cursor-pointer"
+            title="Export Audit Logs to Excel"
           >
-            <Download className="w-3.5 h-3.5 text-slate-500" />
-            <span>Export CSV</span>
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Export Excel</span>
           </button>
 
           <button
