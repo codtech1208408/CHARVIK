@@ -233,18 +233,28 @@ export const ChandrikaFinance: React.FC = () => {
 
   return (
     <div className="space-y-5 pb-12 font-sans select-none">
-      {/* 1. Top Greeting & Date Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            Welcome, Admin <span className="inline-block">👋</span>
-          </h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Here is your finance summary for today
-          </p>
+      {/* 1. Top Greeting & Date Header with Chandrika Finance Logo */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="bg-gradient-to-r from-blue-50/90 via-amber-50/40 to-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-200/80 shadow-2xs shrink-0 flex items-center justify-center">
+            <img
+              src="/chandrika-finance-logo.png"
+              alt="Chandrika Finance"
+              className="h-10 sm:h-12 md:h-14 w-auto object-contain"
+            />
+          </div>
+          <div className="hidden sm:block h-10 w-px bg-slate-200" />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              Welcome, Admin <span className="inline-block">👋</span>
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Here is your finance summary for today
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-slate-200/90 shadow-2xs text-xs font-bold text-slate-700 w-fit">
+        <div className="flex items-center gap-2 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/90 shadow-2xs text-xs font-bold text-slate-700 w-fit self-start md:self-auto shrink-0">
           <Calendar className="w-4 h-4 text-blue-600" />
           <span>14 Nov 2026, Sat</span>
         </div>

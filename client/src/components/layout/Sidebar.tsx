@@ -305,6 +305,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Chandrika Finance',
       route: '/admin/chandrika-finance',
       icon: Landmark,
+      imageSrc: '/chandrika-finance-logo.png',
       activeRoutes: ['/admin/chandrika-finance', '/admin/finance']
     },
     {
