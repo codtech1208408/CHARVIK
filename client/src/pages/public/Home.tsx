@@ -85,28 +85,32 @@ export const Home: React.FC = () => {
       image: '/assets/home-banner-1.jpg',
       title: 'Bus Staff & Fleet Support Services',
       bgColor: 'bg-[#002859]',
-      link: '/services#fleet-supply'
+      link: '/services#fleet-supply',
+      objectPosition: 'object-center'
     },
     {
       id: 2,
       image: '/assets/home-banner-2.jpg',
       title: 'Complete Workforce & Fleet Support for Bus Operations',
       bgColor: 'bg-[#dbe7f5]',
-      link: '/contact'
+      link: '/contact',
+      objectPosition: 'object-center'
     },
     {
       id: 3,
       image: '/assets/home-banner-3.jpg',
       title: '24/7 Mobile Fleet Maintenance & Breakdown Services',
       bgColor: 'bg-[#07193d]',
-      link: '/services#maintenance-fleet'
+      link: '/services#maintenance-fleet',
+      objectPosition: 'object-[center_30%]'
     },
     {
       id: 4,
       image: '/assets/home-banner-4.jpg',
       title: 'Executive Corporate Shuttles & Luxury Bus Rentals',
       bgColor: 'bg-white',
-      link: '/services#bus-rental'
+      link: '/services#bus-rental',
+      objectPosition: 'object-[center_30%]'
     }
   ];
 
@@ -149,7 +153,7 @@ export const Home: React.FC = () => {
                   <img
                     src={banner.image}
                     alt={banner.title}
-                    className="w-full h-full object-cover object-center select-none"
+                    className={`w-full h-full object-cover ${banner.objectPosition || 'object-center'} select-none`}
                     loading={index === 0 ? 'eager' : 'lazy'}
                   />
                 </Link>
