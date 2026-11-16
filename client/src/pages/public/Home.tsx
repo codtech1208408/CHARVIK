@@ -124,10 +124,10 @@ export const Home: React.FC = () => {
 
   return (
     <div className="overflow-hidden">
-      {/* 1. FULL-WIDTH 4-BANNER AUTO-SCROLLER */}
+      {/* 1. FULL-WIDTH 4-BANNER AUTO-SCROLLER (FULL PAGE, ZERO WHITE SPACE) */}
       <section className="relative w-full overflow-hidden select-none bg-slate-950">
         <div
-          className="relative w-full h-[220px] sm:h-[320px] md:h-[400px] lg:h-[480px] xl:h-[540px] overflow-hidden group"
+          className="relative w-full h-[calc(100vh-5rem)] min-h-[560px] max-h-[880px] overflow-hidden group"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
@@ -137,18 +137,19 @@ export const Home: React.FC = () => {
             return (
               <div
                 key={banner.id}
-                className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
-                  }`}
+                className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                  isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+                }`}
               >
                 <Link
                   to={banner.link}
-                  className={`block w-full h-full flex items-center justify-center ${banner.bgColor} cursor-pointer`}
+                  className="block w-full h-full cursor-pointer relative"
                   title={banner.title}
                 >
                   <img
                     src={banner.image}
                     alt={banner.title}
-                    className="w-full h-full object-contain object-center select-none"
+                    className="w-full h-full object-cover object-center select-none"
                     loading={index === 0 ? 'eager' : 'lazy'}
                   />
                 </Link>
