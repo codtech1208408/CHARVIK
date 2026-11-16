@@ -879,8 +879,8 @@ export const CaptainAuditRecord: React.FC = () => {
                       <td className="py-2 px-3 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isFullyPassed
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
-                              : 'bg-amber-50 text-amber-700 border border-amber-200/60'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200/60'
                             }`}
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
@@ -898,8 +898,8 @@ export const CaptainAuditRecord: React.FC = () => {
                       <td className="py-2 px-3 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold tracking-wider font-extrabold ${rec.overall_status === 'Passed'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-rose-100 text-rose-800'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-rose-100 text-rose-800'
                             }`}
                         >
                           {rec.overall_status === 'Passed' ? (
@@ -1419,8 +1419,8 @@ export const CaptainAuditRecord: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-black uppercase ${viewRecord.overall_status === 'Passed'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-rose-100 text-rose-800'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-rose-100 text-rose-800'
                     }`}
                 >
                   Status: {viewRecord.overall_status}
@@ -1535,8 +1535,8 @@ export const CaptainAuditRecord: React.FC = () => {
                           <td className="py-2 px-2.5 text-center break-words">
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-black uppercase inline-block ${a.status === 'OK'
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : 'bg-rose-100 text-rose-800'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-rose-100 text-rose-800'
                                 }`}
                             >
                               {a.status}
