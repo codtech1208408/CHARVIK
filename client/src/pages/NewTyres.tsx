@@ -587,9 +587,9 @@ export const NewTyres: React.FC = () => {
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-blue-900 hover:bg-blue-50 text-xs font-black shadow-md transition-all cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-black shadow-sm transition-all cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-4 h-4 text-blue-800" />
+            <Plus className="w-4 h-4 text-slate-900" />
             <span>+ Add New Tyre Stock</span>
           </button>
         </div>
@@ -598,49 +598,61 @@ export const NewTyres: React.FC = () => {
         <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
-      {/* Metric Cards (Matching Admin Dashboard Glowing Palette) */}
+      {/* Metric Cards - Vibrant Colorful Gradients matching user reference */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
-        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-black text-blue-900 uppercase tracking-wider">Total Tyres</p>
-            <p className="text-3xl font-black text-blue-950 mt-1 font-mono">{stats.total}</p>
-            <p className="text-xs text-blue-700/80 font-medium">Registered units</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
-            <Disc className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-black text-emerald-900 uppercase tracking-wider">Vehicles Covered</p>
-            <p className="text-3xl font-black text-emerald-800 mt-1 font-mono">{stats.uniqueVehicles}</p>
-            <p className="text-xs text-emerald-700/80 font-medium">Fleet equipped</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
-            <Bus className="w-6 h-6" />
+        {/* Card 1: TOTAL TYRES (Vibrant Amber-Orange Gradient) */}
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white p-5 rounded-3xl shadow-lg shadow-amber-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Disc className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[11px] font-black text-amber-100 uppercase tracking-wider">TOTAL TYRES</p>
+              <p className="text-2xl sm:text-3xl font-black text-white mt-0.5 font-mono">{stats.total}</p>
+              <p className="text-xs text-amber-100/90 font-medium">Registered units</p>
+            </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#E0F2FE] via-[#BAE6FD] to-[#7DD3FC] border-2 border-[#38BDF8] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-black text-sky-950 uppercase tracking-wider">Total Logged KM</p>
-            <p className="text-2xl sm:text-3xl font-black text-sky-950 mt-1 font-mono">{stats.totalKm.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-sky-800 font-bold">Cumulative mileage</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center shrink-0 shadow-md shadow-sky-500/20">
-            <Gauge className="w-6 h-6" />
+        {/* Card 2: VEHICLES COVERED (Vibrant Emerald Green Gradient) */}
+        <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white p-5 rounded-3xl shadow-lg shadow-emerald-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Bus className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[11px] font-black text-emerald-100 uppercase tracking-wider">VEHICLES COVERED</p>
+              <p className="text-2xl sm:text-3xl font-black text-white mt-0.5 font-mono">{stats.uniqueVehicles}</p>
+              <p className="text-xs text-emerald-100/90 font-medium">Fleet equipped</p>
+            </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#F6F0FE] via-[#FAF5FF] to-[#E9DBFC] border-2 border-[#D8B4FE] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-black text-purple-950 uppercase tracking-wider">Tyre Brands</p>
-            <p className="text-3xl font-black text-purple-900 mt-1 font-mono">{stats.brandsCount}</p>
-            <p className="text-xs text-purple-700/80 font-medium">Active manufacturers</p>
+        {/* Card 3: TOTAL LOGGED KM (Vibrant Sky-Blue Gradient) */}
+        <div className="bg-gradient-to-r from-sky-400 to-blue-600 text-white p-5 rounded-3xl shadow-lg shadow-blue-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Gauge className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[11px] font-black text-sky-100 uppercase tracking-wider">TOTAL LOGGED KM</p>
+              <p className="text-2xl sm:text-3xl font-black text-white mt-0.5 font-mono">{stats.totalKm.toLocaleString('en-IN')}</p>
+              <p className="text-xs text-sky-100/90 font-bold">Cumulative mileage</p>
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#8B5CF6] to-[#6D28D9] text-white flex items-center justify-center shrink-0 shadow-md shadow-purple-500/20">
-            <Package className="w-6 h-6" />
+        </div>
+
+        {/* Card 4: TYRE BRANDS (Vibrant Purple-Violet Gradient) */}
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-5 rounded-3xl shadow-lg shadow-purple-900/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Package className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[11px] font-black text-purple-100 uppercase tracking-wider">TYRE BRANDS</p>
+              <p className="text-2xl sm:text-3xl font-black text-white mt-0.5 font-mono">{stats.brandsCount}</p>
+              <p className="text-xs text-purple-100/90 font-medium">Active manufacturers</p>
+            </div>
           </div>
         </div>
       </div>
@@ -678,8 +690,8 @@ export const NewTyres: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
+            <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white font-black border-b border-indigo-900/30">
+              <tr className="text-white font-black text-xs uppercase tracking-wider">
                 <th className="py-2.5 px-3 text-center">S.No</th>
                 <th className="py-2.5 px-3">Purchase Date</th>
                 <th className="py-2.5 px-3">Vehicle Number</th>

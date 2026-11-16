@@ -45,6 +45,7 @@ export interface NavSubItem {
   label: string;
   route: string;
   icon: any;
+  iconColor?: string;
   activeRoutes?: string[];
 }
 
@@ -52,6 +53,8 @@ export interface NavItemLeaf {
   label: string;
   route: string;
   icon: any;
+  iconColor?: string;
+  activeGradient?: string;
   imageSrc?: string;
   hasLiveBadge?: boolean;
   activeRoutes?: string[];
@@ -158,32 +161,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Admin Vehicle Management Subtabs (8 modules)
   const adminVehicleManagementSubItems: NavSubItem[] = [
-    { label: 'Route Management', route: '/admin/routes', icon: Navigation, activeRoutes: ['/admin/routes'] },
-    { label: 'Trip Management', route: '/admin/tasks', icon: ClipboardList, activeRoutes: ['/admin/tasks', '/admin/trips'] },
-    { label: 'Operator Management', route: '/admin/organizers', icon: Building2, activeRoutes: ['/admin/organizers', '/admin/operators'] },
-    { label: 'Employee Registration', route: '/admin/employee-registration', icon: UserPlus, activeRoutes: ['/admin/employee-registration', '/admin/employees', '/admin/drivers', '/admin/support-staff'] },
-    { label: 'Employee Payments', route: '/admin/employee-payments', icon: IndianRupee, activeRoutes: ['/admin/employee-payments'] },
-    { label: 'Earnings', route: '/admin/earnings', icon: TrendingUp, activeRoutes: ['/admin/earnings'] },
-    { label: 'Record Management', route: '/admin/records', icon: FileText, activeRoutes: ['/admin/records', '/admin/record-management', '/admin/record'] },
-    { label: 'Captain Audit Record', route: '/admin/captain-audit', icon: ShieldCheck, activeRoutes: ['/admin/captain-audit', '/captain/audit-record'] },
+    { label: 'Route Management', route: '/admin/routes', icon: Navigation, iconColor: 'text-blue-500', activeRoutes: ['/admin/routes'] },
+    { label: 'Trip Management', route: '/admin/tasks', icon: ClipboardList, iconColor: 'text-indigo-500', activeRoutes: ['/admin/tasks', '/admin/trips'] },
+    { label: 'Operator Management', route: '/admin/organizers', icon: Building2, iconColor: 'text-amber-500', activeRoutes: ['/admin/organizers', '/admin/operators'] },
+    { label: 'Employee Registration', route: '/admin/employee-registration', icon: UserPlus, iconColor: 'text-emerald-500', activeRoutes: ['/admin/employee-registration', '/admin/employees', '/admin/drivers', '/admin/support-staff'] },
+    { label: 'Employee Payments', route: '/admin/employee-payments', icon: IndianRupee, iconColor: 'text-emerald-600', activeRoutes: ['/admin/employee-payments'] },
+    { label: 'Earnings', route: '/admin/earnings', icon: TrendingUp, iconColor: 'text-purple-500', activeRoutes: ['/admin/earnings'] },
+    { label: 'Record Management', route: '/admin/records', icon: FileText, iconColor: 'text-cyan-500', activeRoutes: ['/admin/records', '/admin/record-management', '/admin/record'] },
+    { label: 'Captain Audit Record', route: '/admin/captain-audit', icon: ShieldCheck, iconColor: 'text-blue-600', activeRoutes: ['/admin/captain-audit', '/captain/audit-record'] },
   ];
 
   // Admin Vehicle Maintenance Subtabs
   const adminVehicleMaintenanceSubItems: NavSubItem[] = [
-    { label: 'Fleet Maintenance Overview', route: '/admin/vehicle-maintenance', icon: Gauge, activeRoutes: ['/admin/vehicle-maintenance'] },
-    { label: 'Daily Vehicle Maintenance', route: '/admin/vehicle-maintenance-card', icon: Wrench, activeRoutes: ['/admin/vehicle-maintenance-card', '/admin/job-card', '/admin/daily-maintenance'] },
-    { label: 'Vehicle Registration', route: '/admin/vehicles', icon: Bus, activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management'] },
-    { label: 'Daily Vehicle Checkup', route: '/admin/daily-vehicle-checkup', icon: ClipboardCheck, activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition'] },
-    { label: 'Mileage & Fueling', route: '/admin/mileage-fueling', icon: Fuel, activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers'] },
-    { label: 'New Tyres', route: '/admin/new-tyres', icon: Disc, activeRoutes: ['/admin/new-tyres', '/admin/tyres/new'] },
-    { label: 'Product Management', route: '/admin/products', icon: Package, activeRoutes: ['/admin/products', '/admin/product-management'] },
+    { label: 'Fleet Maintenance Overview', route: '/admin/vehicle-maintenance', icon: Gauge, iconColor: 'text-amber-500', activeRoutes: ['/admin/vehicle-maintenance'] },
+    { label: 'Daily Vehicle Maintenance', route: '/admin/vehicle-maintenance-card', icon: Wrench, iconColor: 'text-blue-500', activeRoutes: ['/admin/vehicle-maintenance-card', '/admin/job-card', '/admin/daily-maintenance'] },
+    { label: 'Vehicle Registration', route: '/admin/vehicles', icon: Bus, iconColor: 'text-purple-600', activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management'] },
+    { label: 'Daily Vehicle Checkup', route: '/admin/daily-vehicle-checkup', icon: ClipboardCheck, iconColor: 'text-violet-600', activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition'] },
+    { label: 'Mileage & Fueling', route: '/admin/mileage-fueling', icon: Fuel, iconColor: 'text-amber-500', activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers'] },
+    { label: 'New Tyres', route: '/admin/new-tyres', icon: Disc, iconColor: 'text-orange-500', activeRoutes: ['/admin/new-tyres', '/admin/tyres/new'] },
+    { label: 'Product Management', route: '/admin/products', icon: Package, iconColor: 'text-pink-600', activeRoutes: ['/admin/products', '/admin/product-management'] },
   ];
 
   // Admin Vyshnavi Travels Subtabs
   const adminVyshnaviTravelsSubItems: NavSubItem[] = [
-    { label: 'Travels Statement & Billing', route: '/admin/vyshnavi-travels', icon: FileText, activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi'] },
-    { label: 'Service Records', route: '/admin/vyshnavi-travels?tab=records', icon: ClipboardList, activeRoutes: ['/admin/vyshnavi-travels?tab=records'] },
-    { label: 'Operator Income & Expense', route: '/admin/income-expense', icon: IndianRupee, activeRoutes: ['/admin/income-expense'] },
+    { label: 'Travels Statement & Billing', route: '/admin/vyshnavi-travels', icon: FileText, iconColor: 'text-teal-500', activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi'] },
+    { label: 'Service Records', route: '/admin/vyshnavi-travels?tab=records', icon: ClipboardList, iconColor: 'text-blue-500', activeRoutes: ['/admin/vyshnavi-travels?tab=records'] },
+    { label: 'Operator Income & Expense', route: '/admin/income-expense', icon: IndianRupee, iconColor: 'text-emerald-500', activeRoutes: ['/admin/income-expense'] },
   ];
 
   // Operator Subtabs
@@ -233,6 +236,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Dashboard',
       route: '/admin/dashboard',
       icon: LayoutGrid,
+      iconColor: 'text-sky-400',
+      activeGradient: 'bg-gradient-to-r from-blue-600 to-indigo-600',
       hasLiveBadge: true,
       activeRoutes: ['/admin/dashboard']
     },
@@ -240,6 +245,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Employee Management',
       route: '/admin/routes',
       icon: Users,
+      iconColor: 'text-cyan-400',
+      activeGradient: 'bg-gradient-to-r from-blue-600 to-indigo-600',
       activeRoutes: [
         '/admin/routes',
         '/admin/tasks',
@@ -262,6 +269,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Vehicle Maintenance',
       route: '/admin/vehicle-maintenance',
       icon: Wrench,
+      iconColor: 'text-blue-400',
+      activeGradient: 'bg-gradient-to-r from-blue-600 to-indigo-600',
       activeRoutes: [
         '/admin/vehicle-maintenance',
         '/admin/vehicle-maintenance-card',
@@ -287,30 +296,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Vyshnavi Travels',
       route: '/admin/vyshnavi-travels',
       icon: Bus,
+      iconColor: 'text-teal-400',
+      activeGradient: 'bg-gradient-to-r from-teal-500 to-emerald-600',
       activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi']
     },
     {
       label: 'Website Inquiries',
       route: '/admin/inquiries',
       icon: Bell,
+      iconColor: 'text-indigo-400',
+      activeGradient: 'bg-gradient-to-r from-violet-600 to-purple-600',
       activeRoutes: ['/admin/inquiries']
     },
     {
       label: 'Donations',
       route: '/admin/donations',
       icon: HeartHandshake,
+      iconColor: 'text-rose-400',
+      activeGradient: 'bg-gradient-to-r from-pink-500 to-rose-600',
       activeRoutes: ['/admin/donations', '/admin/donation']
     },
     {
       label: 'Chandrika Finance',
       route: '/admin/chandrika-finance',
       icon: Landmark,
+      iconColor: 'text-amber-400',
+      activeGradient: 'bg-gradient-to-r from-amber-500 to-orange-600',
       activeRoutes: ['/admin/chandrika-finance', '/admin/finance']
     },
     {
       label: 'Audit Log',
       route: '/admin/audit-log',
       icon: History,
+      iconColor: 'text-violet-400',
+      activeGradient: 'bg-gradient-to-r from-indigo-600 to-purple-700',
       hasLiveBadge: true,
       activeRoutes: ['/admin/audit-log']
     },
@@ -318,6 +337,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Income & Expense',
       route: '/admin/income-expense',
       icon: IndianRupee,
+      iconColor: 'text-emerald-400',
+      activeGradient: 'bg-gradient-to-r from-emerald-600 to-teal-700',
       activeRoutes: ['/admin/income-expense', '/admin/income-and-expense']
     }
   ];
@@ -550,9 +571,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {/* Sidebar Drawer - Always w-[88px] compact vertical rail */}
+      {/* Sidebar Drawer - Deep Navy background with vibrant colorful tabs matching user reference images */}
       <aside
-        className={`fixed bottom-0 left-0 bg-[#FFFFFF] text-slate-800 flex flex-col transition-all duration-300 border-r border-slate-200/90 shadow-sm w-[88px] ${isMobileOpen
+        className={`fixed bottom-0 left-0 bg-[#0B1E3B] text-white flex flex-col transition-all duration-300 border-r border-[#152B4D] shadow-2xl w-[88px] ${isMobileOpen
           ? 'top-0 z-50 translate-x-0 shadow-2xl'
           : isVisible
             ? 'top-[88px] z-30 -translate-x-full lg:translate-x-0'
@@ -561,10 +582,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         {/* Mobile Close Button (shown only on mobile drawer) */}
         {isMobileOpen && (
-          <div className="lg:hidden p-2.5 border-b border-slate-100 flex items-center justify-end">
+          <div className="lg:hidden p-2.5 border-b border-white/10 flex items-center justify-end">
             <button
               onClick={() => setIsMobileOpen(false)}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               title="Close Menu"
             >
               <X className="w-4 h-4" />
@@ -579,6 +600,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const active = isTabActive(item);
             const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
             const isFlyoutOpen = activeFlyout?.route === item.route;
+            const activeGradient = item.activeGradient || 'bg-gradient-to-r from-blue-600 to-indigo-600';
 
             return (
               <div
@@ -587,8 +609,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={(e) => handleTabClick(e, item)}
                 onMouseEnter={(e) => handleTabHover(e, item)}
                 className={`w-full flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all cursor-pointer group relative ${active || isFlyoutOpen
-                  ? 'bg-[#142B4A] text-white shadow-md shadow-[#142B4A]/25'
-                  : 'text-slate-600 hover:bg-blue-50/80 hover:text-[#142B4A]'
+                  ? `${activeGradient} text-white shadow-lg shadow-black/30 scale-[1.02]`
+                  : 'text-slate-300 hover:bg-white/10 hover:text-white'
                   }`}
               >
                 {item.imageSrc ? (
@@ -601,16 +623,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 ) : (
                   <Icon
-                    className={`w-5 h-5 mb-1 transition-transform group-hover:scale-110 ${active || isFlyoutOpen ? 'text-white' : 'text-[#2563EB]'
+                    className={`w-5 h-5 mb-1 transition-transform group-hover:scale-110 ${active || isFlyoutOpen ? 'text-white' : item.iconColor || 'text-sky-400'
                       }`}
                   />
                 )}
-                <span className="text-[10px] font-bold text-center leading-tight line-clamp-2 max-w-[76px]">
+                <span className={`text-[10px] font-bold text-center leading-tight line-clamp-2 max-w-[76px] ${active || isFlyoutOpen ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
                   {item.label}
                 </span>
                 {hasSubItems && (
                   <span
-                    className={`w-1.5 h-1.5 rounded-full mt-1 ${active || isFlyoutOpen ? 'bg-sky-300' : 'bg-blue-500'
+                    className={`w-1.5 h-1.5 rounded-full mt-1 ${active || isFlyoutOpen ? 'bg-white shadow-xs' : 'bg-sky-400'
                       }`}
                   />
                 )}
@@ -619,13 +641,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </div>
 
-        {/* Footer Area: Actions (Compact Rail Footer) */}
-        <div className="p-1.5 border-t border-slate-100 bg-slate-50/60 shrink-0 flex flex-col items-center space-y-1.5">
+        {/* Footer Area: Actions (Deep Navy Rail Footer) */}
+        <div className="p-1.5 border-t border-[#152B4D] bg-[#07152B] shrink-0 flex flex-col items-center space-y-1.5">
           {/* Operator Mode: Return to Admin Dashboard */}
           {isOperator ? (
             <button
               onClick={handleReturnToAdmin}
-              className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all cursor-pointer group"
+              className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm transition-all cursor-pointer group"
               title="Return to Admin Dashboard"
             >
               <ArrowLeft className="w-5 h-5 mb-1 text-white group-hover:-translate-x-0.5 transition-transform" />
@@ -637,11 +659,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             /* Admin Mode: View Operator Dashboard */
             <button
               onClick={handleOpenOperator}
-              className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-blue-200 bg-blue-50/70 hover:bg-blue-100 hover:border-blue-400 text-blue-900 shadow-xs transition-all cursor-pointer group"
+              className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 text-slate-200 shadow-xs transition-all cursor-pointer group"
               title="View Operator Dashboard"
             >
-              <ShieldCheck className="w-5 h-5 mb-1 text-[#2563EB] group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold text-center leading-tight text-slate-800">
+              <ShieldCheck className="w-5 h-5 mb-1 text-sky-400 group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] font-bold text-center leading-tight text-slate-200">
                 Operator
               </span>
             </button>
@@ -652,38 +674,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
             to="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 hover:border-slate-300 text-slate-700 shadow-xs transition-all cursor-pointer group"
+            className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 text-slate-200 shadow-xs transition-all cursor-pointer group"
             title="View Public Website"
           >
-            <ExternalLink className="w-5 h-5 mb-1 text-emerald-600 group-hover:scale-110 transition-transform" />
-            <span className="text-[10px] font-bold text-center leading-tight text-slate-800">
+            <ExternalLink className="w-5 h-5 mb-1 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-bold text-center leading-tight text-slate-200">
               Public Site
             </span>
           </Link>
 
-          {/* Sign Out */}
+          {/* Sign Out (Vibrant Red Pill matching screenshots) */}
           <button
             onClick={handleLogout}
-            className="w-full flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer group"
+            className="w-full flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white shadow-md shadow-red-900/40 transition-all cursor-pointer group"
             title="Sign Out"
           >
-            <LogOut className="w-4 h-4 mb-0.5 text-rose-500 group-hover:scale-110 transition-transform" />
-            <span className="text-[9px] font-bold text-center leading-tight">
+            <LogOut className="w-4 h-4 mb-0.5 text-white group-hover:scale-110 transition-transform" />
+            <span className="text-[9px] font-black text-center leading-tight text-white">
               Sign Out
             </span>
           </button>
         </div>
       </aside>
 
-      {/* Subtabs Menu - Clean borderless list matching reference video, NO box container */}
+      {/* Subtabs Menu - Clean rounded white card with left triangle arrow matching Image 7 & 8 */}
       {activeFlyout && (
         <div
           data-flyout-container
-          style={{ top: `${activeFlyout.top}px`, left: '88px' }}
-          className="fixed z-[9999] bg-white/95 backdrop-blur-md py-1.5 px-1 min-w-[200px] max-w-[270px] animate-fadeIn"
+          style={{ top: `${activeFlyout.top}px`, left: '96px' }}
+          className="fixed z-[9999] bg-white text-slate-800 py-2.5 px-2 min-w-[220px] max-w-[280px] rounded-2xl shadow-2xl border border-slate-100 animate-fadeIn before:content-[''] before:absolute before:top-4 before:-left-2 before:w-0 before:h-0 before:border-y-8 before:border-y-transparent before:border-r-8 before:border-r-white"
         >
-          {/* Subtabs List - Seamless list of navigation links */}
-          <div className="flex flex-col space-y-0.5">
+          {/* Subtabs List - Seamless list of navigation links with distinct vibrant icon colors */}
+          <div className="flex flex-col space-y-1">
             {activeFlyout.item.subItems?.map((sub) => {
               const SubIcon = sub.icon;
               const subActive = isSubActive(sub);
@@ -696,12 +718,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActiveFlyout(null);
                     setIsMobileOpen(false);
                   }}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 text-xs transition-colors ${subActive
-                    ? 'text-blue-600 font-bold'
-                    : 'text-slate-800 hover:text-blue-600 font-medium'
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all group ${subActive
+                    ? 'bg-blue-50 text-blue-700 font-bold shadow-xs'
+                    : 'text-slate-800 hover:bg-slate-50 hover:text-blue-600'
                     }`}
                 >
-                  <SubIcon className={`w-4 h-4 shrink-0 ${subActive ? 'text-blue-600' : 'text-slate-500'}`} />
+                  <SubIcon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${sub.iconColor || 'text-blue-600'}`} />
                   <span className="truncate">{sub.label}</span>
                 </NavLink>
               );

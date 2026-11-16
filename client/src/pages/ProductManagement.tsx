@@ -1007,16 +1007,16 @@ export const ProductManagement: React.FC = () => {
             <button
               type="button"
               onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-md text-xs font-bold shadow-xs transition-all cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer whitespace-nowrap"
             >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
+              <FileSpreadsheet className="w-4 h-4 text-white" />
               <span>Export Excel</span>
             </button>
 
             <button
               type="button"
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-md text-xs font-bold shadow-xs transition-all cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer whitespace-nowrap"
             >
               <Printer className="w-4 h-4 text-white" />
               <span>Print</span>
@@ -1025,9 +1025,9 @@ export const ProductManagement: React.FC = () => {
             <button
               type="button"
               onClick={handleOpenReceiveModal}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-blue-900 hover:bg-blue-50 text-xs font-black shadow-md transition-all cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-extrabold shadow-sm transition-all cursor-pointer whitespace-nowrap"
             >
-              <Plus className="w-4 h-4 text-blue-800" />
+              <Plus className="w-4 h-4 text-slate-900" />
               <span>+ Receive Product</span>
             </button>
           </div>
@@ -1038,70 +1038,79 @@ export const ProductManagement: React.FC = () => {
       </div>
 
       {/* =========================================================================
-          2. TOP KPI CARDS (Products, Received, Used, Stock)
+          2. TOP KPI CARDS (Products, Received, Used, Stock) - Vibrant Colorful Gradients
          ========================================================================= */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: PRODUCTS */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between hover:shadow-md transition-all">
-          <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">PRODUCTS</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-[#142B4A] mt-1 tracking-tight">
-              {totalProductsCount}
-            </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">Unique spare part lines</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-slate-100 text-[#142B4A] flex items-center justify-center shrink-0">
-            <Package className="w-6 h-6 text-blue-600" />
-          </div>
-        </div>
-
-        {/* Card 2: RECEIVED */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between hover:shadow-md transition-all">
-          <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">RECEIVED</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-blue-600 mt-1 tracking-tight">
-              {totalReceivedCount}
-            </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">
-              {totalReusedCount > 0 ? (
-                <span className="text-purple-700 font-bold">
-                  {totalReceivedCount - totalReusedCount} New • {totalReusedCount} Reused
-                </span>
-              ) : (
-                'Cumulative units received'
-              )}
-            </p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <Layers className="w-6 h-6" />
+        {/* Card 1: PRODUCTS (Vibrant Indigo-Purple Gradient) */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-3xl p-5 shadow-lg shadow-purple-900/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Package className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-purple-100 uppercase tracking-wider">Products</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight">
+                {totalProductsCount}
+              </h3>
+              <p className="text-[11px] text-purple-100/90 font-medium mt-0.5">Unique spare part lines</p>
+            </div>
           </div>
         </div>
 
-        {/* Card 3: USED */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between hover:shadow-md transition-all">
-          <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">USED</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-rose-600 mt-1 tracking-tight">
-              {totalUsedCount}
-            </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">Fitted on fleet vehicles</p>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-            <Wrench className="w-6 h-6" />
+        {/* Card 2: RECEIVED (Vibrant Emerald-Teal Gradient) */}
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-3xl p-5 shadow-lg shadow-emerald-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Layers className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-emerald-100 uppercase tracking-wider">Received</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight">
+                {totalReceivedCount}
+              </h3>
+              <p className="text-[11px] text-emerald-100/90 font-medium mt-0.5">
+                {totalReusedCount > 0 ? (
+                  <span>{totalReceivedCount - totalReusedCount} New • {totalReusedCount} Reused</span>
+                ) : (
+                  'Cumulative units received'
+                )}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Card 4: STOCK */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between hover:shadow-md transition-all">
-          <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">STOCK UNITS</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-emerald-600 mt-1 tracking-tight">
-              {totalStockCount}
-            </h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-1">Available in warehouse</p>
+        {/* Card 3: USED (Vibrant Amber-Orange Gradient) */}
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-3xl p-5 shadow-lg shadow-amber-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Wrench className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-amber-100 uppercase tracking-wider">Used</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight">
+                {totalUsedCount}
+              </h3>
+              <p className="text-[11px] text-amber-100/90 font-medium mt-0.5">Fitted on fleet vehicles</p>
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-6 h-6" />
+        </div>
+
+        {/* Card 4: STOCK (Vibrant Sky-Blue Gradient) */}
+        <div className="bg-gradient-to-r from-sky-400 to-blue-600 text-white rounded-3xl p-5 shadow-lg shadow-blue-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <CheckCircle2 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-sky-100 uppercase tracking-wider">Stock Units</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight">
+                {totalStockCount}
+              </h3>
+              <p className="text-[11px] text-sky-100/90 font-medium mt-0.5">Available in warehouse</p>
+            </div>
+          </div>
+          <div className="w-8 h-8 rounded-full bg-emerald-400 text-slate-900 flex items-center justify-center font-black text-xs shrink-0 shadow-xs hidden sm:flex">
+            ✓
           </div>
         </div>
       </div>
@@ -1193,7 +1202,7 @@ export const ProductManagement: React.FC = () => {
         {/* Inventory Records Table */}
         <div id="product-inventory-table-container" className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#DCE6F1] text-black font-bold border-b border-slate-300">
+            <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white font-black border-b border-indigo-900/30">
               <tr>
                 <th className="py-2.5 px-3 text-center w-12 border-r border-slate-300">S.NO</th>
                 <th className="py-2.5 px-3 border-r border-slate-300">PRODUCT / PART NUMBER</th>
@@ -1412,7 +1421,7 @@ export const ProductManagement: React.FC = () => {
         {/* Vehicle Usage History Table */}
         <div id="spare-usage-table-container" className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#DCE6F1] text-black font-bold border-b border-slate-300">
+            <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white font-black border-b border-indigo-900/30">
               <tr>
                 <th className="py-2.5 px-3 text-center w-12 border-r border-slate-300">S.NO</th>
                 <th className="py-2.5 px-3 border-r border-slate-300">DATE</th>

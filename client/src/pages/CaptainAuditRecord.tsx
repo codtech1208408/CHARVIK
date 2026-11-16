@@ -541,9 +541,9 @@ export const CaptainAuditRecord: React.FC = () => {
 
           <button
             onClick={handleOpenNewForm}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 rounded-xl font-black text-xs shadow-md transition-all cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-2 px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-slate-900 rounded-xl font-extrabold text-xs shadow-sm transition-all cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-4 h-4 text-blue-800" />
+            <Plus className="w-4 h-4 text-slate-900" />
             <span>+ Submit Audit Record</span>
           </button>
         </div>
@@ -562,57 +562,69 @@ export const CaptainAuditRecord: React.FC = () => {
         </div>
       )}
 
-      {/* KPI Stat Cards (Matching Admin Dashboard Glowing Palette) */}
+      {/* KPI Stat Cards - Vibrant Gradients matching user reference */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-black text-blue-900 uppercase tracking-wider block">
-              Total Audits
-            </span>
-            <span className="text-2xl sm:text-3xl font-black text-blue-950 font-mono block">{metrics.total}</span>
-            <span className="text-xs text-blue-700/80 font-medium block">Inspections logged</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-black text-emerald-900 uppercase tracking-wider block">
-              Passed (All OK)
-            </span>
-            <span className="text-2xl sm:text-3xl font-black text-emerald-800 font-mono block">{metrics.passed}</span>
-            <span className="text-xs text-emerald-700/80 font-medium block">100% compliant</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
-            <CheckCircle2 className="w-6 h-6" />
+        {/* Card 1: Total Audits (Vibrant Blue) */}
+        <div className="bg-gradient-to-r from-sky-400 to-blue-600 text-white p-5 rounded-3xl shadow-lg shadow-blue-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Bus className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-black text-sky-100 uppercase tracking-wider block">
+                TOTAL AUDITS
+              </span>
+              <span className="text-2xl sm:text-3xl font-black text-white font-mono block">{metrics.total}</span>
+              <span className="text-xs text-sky-100/90 font-medium block">Inspections logged</span>
+            </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#FFF1F2] via-[#FFF5F6] to-[#FFE2E5] border-2 border-[#FDA4AF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-black text-rose-950 uppercase tracking-wider block">
-              Needs Attention
-            </span>
-            <span className="text-2xl sm:text-3xl font-black text-rose-800 font-mono block">{metrics.flagged}</span>
-            <span className="text-xs text-rose-700/80 font-medium block">Deficiencies noted</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F43F5E] to-[#E11D48] text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20">
-            <AlertCircle className="w-6 h-6" />
+        {/* Card 2: Passed (All OK) (Vibrant Emerald Green) */}
+        <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white p-5 rounded-3xl shadow-lg shadow-emerald-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <CheckCircle2 className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-black text-emerald-100 uppercase tracking-wider block">
+                PASSED (ALL OK)
+              </span>
+              <span className="text-2xl sm:text-3xl font-black text-white font-mono block">{metrics.passed}</span>
+              <span className="text-xs text-emerald-100/90 font-medium block">100% compliant</span>
+            </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#EEF2FF] via-[#E0E7FF] to-[#C7D2FE] border-2 border-[#818CF8] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div className="space-y-1">
-            <span className="text-xs font-black text-indigo-950 uppercase tracking-wider block">
-              Today's Audits
-            </span>
-            <span className="text-2xl sm:text-3xl font-black text-indigo-950 font-mono block">{metrics.todayAudits}</span>
-            <span className="text-xs text-indigo-800 font-medium block">Active date shifts</span>
+        {/* Card 3: Needs Attention (Vibrant Rose Red) */}
+        <div className="bg-gradient-to-r from-rose-500 to-red-600 text-white p-5 rounded-3xl shadow-lg shadow-rose-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <AlertCircle className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-black text-rose-100 uppercase tracking-wider block">
+                NEEDS ATTENTION
+              </span>
+              <span className="text-2xl sm:text-3xl font-black text-white font-mono block">{metrics.flagged}</span>
+              <span className="text-xs text-rose-100/90 font-medium block">Deficiencies noted</span>
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6366F1] to-[#4F46E5] text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20">
-            <Clock className="w-6 h-6" />
+        </div>
+
+        {/* Card 4: Today's Audits (Vibrant Indigo-Purple) */}
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-5 rounded-3xl shadow-lg shadow-purple-900/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Calendar className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-black text-purple-100 uppercase tracking-wider block">
+                TODAY'S AUDITS
+              </span>
+              <span className="text-2xl sm:text-3xl font-black text-white font-mono block">{metrics.todayAudits}</span>
+              <span className="text-xs text-purple-100/90 font-medium block">Active date shifts</span>
+            </div>
           </div>
         </div>
       </div>
@@ -684,8 +696,8 @@ export const CaptainAuditRecord: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-200/80 uppercase tracking-wider text-xs font-bold tracking-wider">
+            <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white">
+              <tr className="text-white font-black border-b border-indigo-900/30 uppercase tracking-wider text-xs">
                 <th className="py-2.5 px-3 w-12 text-center">S.No</th>
                 <th className="py-2.5 px-3">Date & Time</th>
                 <th className="py-2.5 px-3">Bus Number</th>

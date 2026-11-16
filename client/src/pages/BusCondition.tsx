@@ -870,42 +870,60 @@ export const BusCondition: React.FC = () => {
         <div className="absolute -right-8 -top-8 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
-      {/* KPI Cards (Matching Admin Dashboard Glowing Palette) */}
+      {/* KPI Cards - Vibrant Gradients matching user reference */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-black text-blue-900 uppercase tracking-wider">Total Reports Recorded</p>
-            <p className="text-3xl font-black text-blue-950 tracking-tight mt-1 font-mono">{inspections.length}</p>
-            <p className="text-[11px] font-semibold text-blue-700/80 mt-0.5">Pre-trip logs</p>
+        {/* Card 1: TOTAL REPORTS RECORDED (Vibrant Blue Gradient) */}
+        <div className="bg-gradient-to-r from-sky-400 to-blue-600 text-white p-5 rounded-3xl shadow-lg shadow-blue-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shadow-inner shrink-0">
+              <ClipboardList className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-sky-100 uppercase tracking-wider">TOTAL REPORTS RECORDED</p>
+              <p className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-0.5 font-mono">{inspections.length}</p>
+              <p className="text-[11px] font-semibold text-sky-100/90 mt-0.5">Pre-trip logs</p>
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
-            <ClipboardList className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-[#EAFBF1] via-[#F2FCF6] to-[#D7F7E6] border-2 border-[#A5F0C5] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-black text-[#059669] uppercase tracking-wider">Fit for Service</p>
-            <p className="text-3xl font-black text-[#047857] tracking-tight mt-1 font-mono">
-              {inspections.filter((i) => i.roadworthiness_status === 'Fit for Service').length}
-            </p>
-            <p className="text-[11px] font-semibold text-emerald-700/80 mt-0.5">Passed full checklist</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
-            <CheckCircle2 className="w-6 h-6" />
+          <div className="w-9 h-9 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 font-bold">
+            →
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#FFF1F2] via-[#FFF5F6] to-[#FFE2E5] border-2 border-[#FDA4AF] p-5 rounded-3xl shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-black text-[#E11D48] uppercase tracking-wider">Defects &amp; Attention</p>
-            <p className="text-3xl font-black text-[#BE123C] tracking-tight mt-1 font-mono">
-              {inspections.filter((i) => i.roadworthiness_status !== 'Fit for Service').length}
-            </p>
-            <p className="text-[11px] font-semibold text-rose-700/80 mt-0.5">Deficiencies noted</p>
+        {/* Card 2: FIT FOR SERVICE (Vibrant Emerald Green Gradient) */}
+        <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white p-5 rounded-3xl shadow-lg shadow-emerald-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shadow-inner shrink-0">
+              <Wrench className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-emerald-100 uppercase tracking-wider">FIT FOR SERVICE</p>
+              <p className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-0.5 font-mono">
+                {inspections.filter((i) => i.roadworthiness_status === 'Fit for Service').length}
+              </p>
+              <p className="text-[11px] font-semibold text-emerald-100/90 mt-0.5">Passed full checklist</p>
+            </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F43F5E] to-[#E11D48] text-white flex items-center justify-center shadow-md shadow-rose-500/20 shrink-0">
-            <AlertCircle className="w-6 h-6" />
+          <div className="w-9 h-9 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 font-bold">
+            ✓
+          </div>
+        </div>
+
+        {/* Card 3: DEFECTS & ATTENTION (Vibrant Crimson Red Gradient) */}
+        <div className="bg-gradient-to-r from-rose-500 to-red-600 text-white p-5 rounded-3xl shadow-lg shadow-rose-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shadow-inner shrink-0">
+              <AlertCircle className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-rose-100 uppercase tracking-wider">DEFECTS &amp; ATTENTION</p>
+              <p className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-0.5 font-mono">
+                {inspections.filter((i) => i.roadworthiness_status !== 'Fit for Service').length}
+              </p>
+              <p className="text-[11px] font-semibold text-rose-100/90 mt-0.5">Deficiencies noted</p>
+            </div>
+          </div>
+          <div className="w-9 h-9 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 font-bold text-sm">
+            !
           </div>
         </div>
       </div>
@@ -945,7 +963,7 @@ export const BusCondition: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm" style={{ minWidth: '750px' }}>
-            <thead className="bg-[#142B4A]/5 text-[#142B4A] uppercase font-bold tracking-wider text-xs border-b border-slate-200">
+            <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white uppercase font-black tracking-wider text-xs border-b border-indigo-900/30">
               <tr>
                 <th className="py-2.5 px-3 w-12 text-center">S.NO</th>
                 <th className="py-2.5 px-3 min-w-[95px]">DATE</th>

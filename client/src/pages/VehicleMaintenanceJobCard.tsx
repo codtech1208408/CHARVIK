@@ -501,35 +501,67 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
 
-        {/* 4 Stats KPIs */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-6 border-t border-white/15">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15">
-            <span className="text-[11px] font-bold text-slate-200 uppercase tracking-wider block">Total Job Cards</span>
-            <div className="text-2xl sm:text-3xl font-black text-white mt-1">{cards.length}</div>
-            <span className="text-[10px] text-yellow-300 font-semibold">Workshop registered</span>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15">
-            <span className="text-[11px] font-bold text-slate-200 uppercase tracking-wider block">Total Parts Cost</span>
-            <div className="text-2xl sm:text-3xl font-black text-emerald-300 mt-1">
-              ₹{overallPartsCost.toLocaleString('en-IN')}
+      {/* 4 Stats KPIs - Vibrant Colorful Gradients matching user reference */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Job Cards (Vibrant Amber-Orange) */}
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white rounded-3xl p-5 shadow-lg shadow-amber-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <ClipboardList className="w-6 h-6 text-white" />
             </div>
-            <span className="text-[10px] text-slate-200 font-semibold">Consumables &amp; Spares</span>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15">
-            <span className="text-[11px] font-bold text-slate-200 uppercase tracking-wider block">Fleet Operators</span>
-            <div className="text-2xl sm:text-3xl font-black text-white mt-1">{operatorNames.length}</div>
-            <span className="text-[10px] text-yellow-300 font-semibold">Active Fleet Owners</span>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15">
-            <span className="text-[11px] font-bold text-slate-200 uppercase tracking-wider block">Latest Card</span>
-            <div className="text-xl sm:text-2xl font-black text-yellow-300 mt-1 font-mono truncate">
-              {cards[0]?.job_card_no || 'None'}
+            <div>
+              <p className="text-[11px] font-black text-amber-100 uppercase tracking-wider">TOTAL JOB CARDS</p>
+              <div className="text-2xl sm:text-3xl font-black text-white mt-0.5">{cards.length}</div>
+              <p className="text-[11px] text-amber-100/90 font-medium">Workshop registered</p>
             </div>
-            <span className="text-[10px] text-slate-200 font-semibold">Recent Maintenance</span>
+          </div>
+        </div>
+
+        {/* Card 2: Total Parts Cost (Vibrant Emerald-Green) */}
+        <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-3xl p-5 shadow-lg shadow-emerald-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <IndianRupee className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-emerald-100 uppercase tracking-wider">TOTAL PARTS COST</p>
+              <div className="text-2xl sm:text-3xl font-black text-white mt-0.5">
+                ₹{overallPartsCost.toLocaleString('en-IN')}
+              </div>
+              <p className="text-[11px] text-emerald-100/90 font-medium">Consumables &amp; Spares</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Fleet Operators (Vibrant Electric Blue) */}
+        <div className="bg-gradient-to-r from-sky-400 to-blue-600 text-white rounded-3xl p-5 shadow-lg shadow-blue-500/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Users className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-black text-sky-100 uppercase tracking-wider">FLEET OPERATORS</p>
+              <div className="text-2xl sm:text-3xl font-black text-white mt-0.5">{operatorNames.length}</div>
+              <p className="text-[11px] text-sky-100/90 font-medium">Active Fleet Owners</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Latest Card (Vibrant Magenta-Purple) */}
+        <div className="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-3xl p-5 shadow-lg shadow-purple-900/20 flex items-center justify-between hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-inner">
+              <Wrench className="w-6 h-6 text-white" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-black text-purple-100 uppercase tracking-wider">LATEST CARD</p>
+              <div className="text-xl sm:text-2xl font-black text-white mt-0.5 font-mono truncate">
+                {cards[0]?.job_card_no || 'None'}
+              </div>
+              <p className="text-[11px] text-purple-100/90 font-medium">Recent Maintenance</p>
+            </div>
           </div>
         </div>
       </div>
@@ -615,8 +647,8 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-black uppercase tracking-wider text-slate-600">
+              <thead className="bg-gradient-to-r from-[#2563EB] via-[#4F46E5] to-[#7C3AED] text-white">
+                <tr className="text-[11px] font-black uppercase tracking-wider text-white">
                   <th className="p-3.5 pl-5">Job Card No</th>
                   <th className="p-3.5">Date</th>
                   <th className="p-3.5">Vehicle No</th>
