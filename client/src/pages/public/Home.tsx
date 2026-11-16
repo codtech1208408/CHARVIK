@@ -12,9 +12,13 @@ import {
   Phone,
   MessageCircle,
   ChevronRight,
+  ChevronLeft,
   Sparkles,
   MapPin,
-  CalendarCheck
+  CalendarCheck,
+  UserCheck,
+  Star,
+  Check
 } from 'lucide-react';
 
 export const Home: React.FC = () => {
@@ -74,77 +78,137 @@ export const Home: React.FC = () => {
     },
   ];
 
-  // 4 Full-Page Banners with 2.5s Auto-Scroll
+  // 5 Public Website Banners (Buses, Drivers, Captains, Supervisors, and Complete Crew Staffing)
   const [currentSlide, setCurrentSlide] = React.useState(0);
 
   const heroBanners = [
     {
       id: 1,
-      image: '/assets/fleet1.jpg',
+      image: '/assets/crew-staffing-banner-hd.png',
       badge: 'Premier Commercial Fleet & Crew Solutions',
       titleHighlight: 'Reliable Fleets.',
       titleMain: 'Professional Crews. Seamless Journeys.',
       description:
         'Charvik Staffing Consultancy delivers comprehensive bus rentals, turnkey corporate fleet supply, certified drivers & captains, and maintenance-backed mobility operations across India.',
       primaryBtn: { text: 'Request a Fleet Quote', link: '/contact' },
+      navLabel: 'Fleet & All Crew',
+      spotlightRole: 'Full Crew & Fleet Division',
+      spotlightTitle: 'Complete Mobility & Staffing',
+      spotlightImg: '/assets/crew-staffing-banner-hd.png',
+      spotlightPoints: [
+        '30+ Modern Commercial Buses',
+        'Drivers, Captains & Helpers',
+        '24/7 Breakdown & Mobile Squads'
+      ],
       metrics: [
         { label: 'Buses in Fleet', value: '30+' },
-        { label: 'Verified Drivers', value: '100%' },
+        { label: 'Verified Staff', value: '100%' },
         { label: 'Breakdown Support', value: '24/7' },
       ],
     },
     {
       id: 2,
-      image: '/assets/fleet2.jpg',
-      badge: 'Dedicated Corporate Employee Commute',
-      titleHighlight: 'Punctual Shuttles.',
-      titleMain: 'Tech Park & Corporate Transit Solutions.',
+      image: '/assets/driver-hero-banner.jpg',
+      badge: '100% Police-Verified Driver Supply',
+      titleHighlight: 'Professional Drivers.',
+      titleMain: 'Skilled Heavy-Vehicle Drivers For Your Buses.',
       description:
-        'Customized shift routing, luxury air-conditioned coaches, and GPS-monitored routes tailored for IT hubs, multinational corporations, and manufacturing plants.',
-      primaryBtn: { text: 'Explore Fleet Supply', link: '/services#fleet-supply' },
+        'Licensed heavy passenger vehicle (HTV/HMV) drivers with defensive driving credentials, mandatory annual medical screenings, and background-verified records.',
+      primaryBtn: { text: 'Hire Verified Drivers', link: '/services#driver-provision' },
+      navLabel: 'Bus Drivers',
+      spotlightRole: 'Commercial Heavy Vehicle Driver',
+      spotlightTitle: 'Police-Verified Chauffeur',
+      spotlightImg: '/assets/crew-driver-hd.png',
+      spotlightPoints: [
+        'Valid Commercial HTV/HMV License',
+        'Annual Medical & Vision Audits',
+        'Defensive Passenger Driving Certified'
+      ],
       metrics: [
-        { label: 'On-Time Punctuality', value: '99.8%' },
-        { label: 'Dedicated Account Lead', value: '1-on-1' },
-        { label: 'Custom Rosters', value: '24/7' },
+        { label: 'Police Verified', value: '100%' },
+        { label: 'Medical Audits', value: 'Annual' },
+        { label: 'Accident Record', value: 'Zero' },
       ],
     },
     {
       id: 3,
-      image: '/assets/fleet3.jpg',
-      badge: 'Expansive Depot Capacity & Fleet Hire',
-      titleHighlight: '30+ Modern Buses.',
-      titleMain: 'Ready for Instant Commercial Deployment.',
+      image: '/assets/captain-hero-banner.jpg',
+      badge: 'Certified Bus Captain Supply',
+      titleHighlight: 'Experienced Captains.',
+      titleMain: 'Courteous & Disciplined Highway Transit.',
       description:
-        'High-capacity luxury coaches and standard buses for educational institutions, infrastructure project corridors, event conventions, and pilgrim journeys.',
-      primaryBtn: { text: 'View Bus Rentals', link: '/services#bus-rental' },
+        'Experienced bus captains trained in passenger courtesy, long-distance route management, and emergency response for corporate shuttles and luxury interstate touring.',
+      primaryBtn: { text: 'Captain Provision', link: '/services#driver-provision' },
+      navLabel: 'Bus Captains',
+      spotlightRole: 'Certified Bus Captain',
+      spotlightTitle: 'Elite Route Captain',
+      spotlightImg: '/assets/crew-captain-hd.png',
+      spotlightPoints: [
+        '10+ Years Highway Transit Mastery',
+        'Passenger Courtesy & Protocol Trained',
+        'First-Aid & Emergency Response Ready'
+      ],
       metrics: [
-        { label: 'Seating Options', value: '36 - 55' },
-        { label: 'State & National Permits', value: 'All India' },
-        { label: 'Instant Allocation', value: 'Direct' },
+        { label: 'Highway Experience', value: '10+ Yrs' },
+        { label: 'Passenger Courtesy', value: 'Trained' },
+        { label: 'Punctuality SLA', value: '99.8%' },
       ],
     },
     {
       id: 4,
-      image: '/assets/fleet4.jpg',
-      badge: 'Zero-Breakdown Commitment & Certified Crew',
-      titleHighlight: 'Maintenance-Backed.',
-      titleMain: 'Safe Buses & Police-Verified Captains.',
+      image: '/assets/fleet1.jpg',
+      badge: '30+ Modern Commercial Buses',
+      titleHighlight: 'Commercial Fleet Supply.',
+      titleMain: 'Luxury Coaches Ready For Immediate Deployment.',
       description:
-        'Every vehicle undergoes routine computerized tyre audits, scheduled oil replacement, AC performance checks, and is operated by background-verified licensed drivers.',
-      primaryBtn: { text: 'Maintenance Protocols', link: '/services#maintenance-fleet' },
+        'Expansive depot capacity of 36 to 55-seater air-conditioned executive buses for corporate employee commute, IT park shuttles, institutional routes, and special events.',
+      primaryBtn: { text: 'View Bus Rentals', link: '/services#bus-rental' },
+      navLabel: 'Fleet Buses',
+      spotlightRole: 'Executive Passenger Coach',
+      spotlightTitle: '36 – 55 Seater Luxury Bus',
+      spotlightImg: '/assets/fleet1.jpg',
+      spotlightPoints: [
+        'Ergonomic Reclining Push-Back Seats',
+        'Climate-Controlled AC & Sanitized',
+        'All-India Commercial Road Permits'
+      ],
       metrics: [
-        { label: 'Preventive Care', value: 'Daily' },
-        { label: 'Mobile Repair Squads', value: 'On-Call' },
-        { label: 'Verified Crew', value: '100%' },
+        { label: 'Seating Options', value: '36 - 55' },
+        { label: 'All-India Permits', value: 'Active' },
+        { label: 'Sanitized & Inspected', value: '100%' },
+      ],
+    },
+    {
+      id: 5,
+      image: '/assets/supervisor-hero-banner.jpg',
+      badge: 'Depot & Route Operations Staff',
+      titleHighlight: 'Qualified Supervisors.',
+      titleMain: 'Seamless Depot & On-Board Staff Management.',
+      description:
+        'Dedicated route supervisors and skilled helpers managing passenger boarding, digital ticket validation, fleet dispatch, and on-time adherence.',
+      primaryBtn: { text: 'Explore Operations', link: '/services#fleet-supply' },
+      navLabel: 'Supervisors & Helpers',
+      spotlightRole: 'Fleet Supervisor & Crew',
+      spotlightTitle: 'Operations & Ground Crew',
+      spotlightImg: '/assets/crew-supervisor-hd.png',
+      spotlightPoints: [
+        'Real-Time Route & Shift Dispatch',
+        'Dedicated Client Account Coordination',
+        '24/7 Ground Support & Helper Staff'
+      ],
+      metrics: [
+        { label: 'Route Monitoring', value: 'Live' },
+        { label: 'Dedicated Leads', value: '1-on-1' },
+        { label: 'Shift Coverage', value: '24/7' },
       ],
     },
   ];
 
-  // Auto-advance banner every 2.5 seconds (2-3 seconds requirement)
+  // Auto-advance banner every 3.5 seconds
   React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroBanners.length);
-    }, 2500);
+    }, 3500);
     return () => clearInterval(interval);
   }, [heroBanners.length]);
 
@@ -153,10 +217,10 @@ export const Home: React.FC = () => {
 
   return (
     <div className="overflow-hidden">
-      {/* 1. FULL-WIDTH 4-BANNER AUTO-SCROLLER (PURE BRIGHT IMAGES, NO BLACK OVERLAY) */}
-      <section className="relative w-full bg-slate-100 overflow-hidden select-none">
-        <div className="relative w-full h-[calc(100vh-6rem)] min-h-[580px] max-h-[850px] overflow-hidden">
-          {/* Render all 4 banners with smooth crossfade and professional left-aligned text */}
+      {/* 1. FULL-WIDTH MULTI-BANNER AUTO-SCROLLER (BUSES, DRIVERS & EMPLOYEE CREW) */}
+      <section className="relative w-full bg-slate-900 overflow-hidden select-none">
+        <div className="relative w-full h-[calc(100vh-6rem)] min-h-[620px] max-h-[850px] overflow-hidden">
+          {/* Render all banners with smooth crossfade */}
           {heroBanners.map((banner, index) => {
             const isActive = index === currentSlide;
             return (
@@ -166,61 +230,109 @@ export const Home: React.FC = () => {
                   isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                {/* Pure high-resolution commercial bus background */}
+                {/* Background Image: Buses / Driver / Captain / Crew Banner */}
                 <img
                   src={banner.image}
                   alt={banner.titleMain}
                   className="w-full h-full object-cover object-center"
                 />
 
-                {/* Professional cinematic left gradient for crisp, elegant text visibility */}
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-900/40 to-transparent flex items-center z-20">
+                {/* Professional gradient overlay for crisp readability */}
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/60 to-slate-950/40 flex items-center z-20">
                   <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 w-full">
-                    <div className="max-w-xl text-white space-y-4 sm:space-y-5">
-                      {/* Category Badge */}
-                      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-600/90 text-white text-xs font-bold uppercase tracking-wider shadow-sm">
-                        <Sparkles className="w-3.5 h-3.5 text-blue-200 animate-pulse" />
-                        <span>{banner.badge}</span>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                      {/* Left: Text & Call-To-Actions */}
+                      <div className="lg:col-span-7 text-white space-y-4 sm:space-y-5">
+                        {/* Category Badge */}
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-600/90 text-white text-xs font-bold uppercase tracking-wider shadow-sm">
+                          <Sparkles className="w-3.5 h-3.5 text-blue-200 animate-pulse" />
+                          <span>{banner.badge}</span>
+                        </div>
+
+                        {/* Main Title */}
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight drop-shadow-md">
+                          <span className="text-sky-300 block">{banner.titleHighlight}</span>
+                          {banner.titleMain}
+                        </h2>
+
+                        {/* Description */}
+                        <p className="text-sm sm:text-base text-slate-100 font-normal leading-relaxed drop-shadow max-w-xl">
+                          {banner.description}
+                        </p>
+
+                        {/* Action Buttons */}
+                        <div className="pt-2 flex flex-wrap items-center gap-3">
+                          <Link
+                            to={banner.primaryBtn.link}
+                            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg transition-transform hover:-translate-y-0.5"
+                          >
+                            <span>{banner.primaryBtn.text}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+
+                          <a
+                            href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition-transform hover:-translate-y-0.5"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span>WhatsApp Enquiry</span>
+                          </a>
+
+                          <a
+                            href="tel:+919876543210"
+                            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-xs bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-md transition-all"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-blue-300" />
+                            <span>Call Us</span>
+                          </a>
+                        </div>
+
+                        {/* Key Metrics */}
+                        <div className="pt-4 flex items-center gap-6 border-t border-white/15">
+                          {banner.metrics.map((m) => (
+                            <div key={m.label}>
+                              <div className="text-xl font-black text-sky-300">{m.value}</div>
+                              <div className="text-[11px] text-slate-300 font-semibold">{m.label}</div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
 
-                      {/* Main Title */}
-                      <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight drop-shadow-md">
-                        <span className="text-sky-300 block">{banner.titleHighlight}</span>
-                        {banner.titleMain}
-                      </h2>
+                      {/* Right: Glassmorphic Spotlight Card showing the actual staff member or bus */}
+                      <div className="hidden lg:flex lg:col-span-5 justify-end">
+                        <div className="w-80 rounded-2xl bg-white/10 backdrop-blur-md p-4 border border-white/20 shadow-2xl space-y-3 text-white">
+                          <div className="relative rounded-xl overflow-hidden aspect-[4/3] bg-slate-800 border border-white/10">
+                            <img
+                              src={banner.spotlightImg}
+                              alt={banner.spotlightTitle}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute top-2 left-2 bg-blue-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-xs flex items-center gap-1">
+                              <ShieldCheck className="w-3 h-3 text-emerald-300" />
+                              <span>Verified Charvik Staff</span>
+                            </div>
+                          </div>
 
-                      {/* Description */}
-                      <p className="text-sm sm:text-base text-slate-100 font-normal leading-relaxed drop-shadow max-w-lg">
-                        {banner.description}
-                      </p>
+                          <div>
+                            <span className="text-[10px] font-bold text-sky-300 uppercase tracking-wider block">
+                              {banner.spotlightRole}
+                            </span>
+                            <h4 className="text-base font-black text-white mt-0.5">
+                              {banner.spotlightTitle}
+                            </h4>
+                          </div>
 
-                      {/* Call-to-Action Buttons */}
-                      <div className="pt-2 flex flex-wrap items-center gap-3">
-                        <Link
-                          to={banner.primaryBtn.link}
-                          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg transition-transform hover:-translate-y-0.5"
-                        >
-                          <span>{banner.primaryBtn.text}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
-
-                        <a
-                          href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition-transform hover:-translate-y-0.5"
-                        >
-                          <MessageCircle className="w-4 h-4" />
-                          <span>WhatsApp Enquiry</span>
-                        </a>
-
-                        <a
-                          href="tel:+919876543210"
-                          className="inline-flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-xs bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-md transition-all"
-                        >
-                          <Phone className="w-3.5 h-3.5 text-blue-300" />
-                          <span>Call Us</span>
-                        </a>
+                          <div className="space-y-1.5 pt-1 text-xs text-slate-200">
+                            {banner.spotlightPoints.map((pt, pIdx) => (
+                              <div key={pIdx} className="flex items-center gap-2">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                <span>{pt}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -229,109 +341,215 @@ export const Home: React.FC = () => {
             );
           })}
 
-          {/* Slide Indicator Dots at Bottom-Right */}
-          <div className="absolute bottom-6 right-6 sm:right-10 z-30 flex items-center gap-2 bg-slate-900/60 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/20 shadow-lg">
+          {/* Previous / Next Arrow Controls */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-slate-900/60 hover:bg-blue-600 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all cursor-pointer shadow-lg"
+            aria-label="Previous Slide"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-slate-900/60 hover:bg-blue-600 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all cursor-pointer shadow-lg"
+            aria-label="Next Slide"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          {/* Interactive Slide Tabs Navigation at Bottom */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 sm:gap-2 bg-slate-950/70 backdrop-blur-md px-3 py-2 rounded-2xl border border-white/20 shadow-xl max-w-[95%] overflow-x-auto">
             {heroBanners.map((banner, index) => {
               const isActive = index === currentSlide;
               return (
                 <button
                   key={banner.id}
                   onClick={() => setCurrentSlide(index)}
-                  className={`transition-all rounded-full ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     isActive
-                      ? 'w-7 h-2 bg-blue-500 shadow-sm'
-                      : 'w-2 h-2 bg-white/40 hover:bg-white/70'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'text-slate-300 hover:text-white hover:bg-white/10'
                   }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
+                >
+                  <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-sky-200' : 'bg-slate-400'}`}></span>
+                  <span>{banner.navLabel}</span>
+                </button>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* 2. HERO CONTENT & ENQUIRY SECTION (BELOW THE BANNER - CRISP, BRIGHT, LIKE BEFORE) */}
-      <section className="bg-white border-b border-slate-200/80 py-12 lg:py-16">
+      {/* 2. OPERATIONAL WORKFORCE & FLEET SHOWCASE (HD CARDS OF DRIVERS, CAPTAINS, HELPERS, SUPERVISORS & BUSES) */}
+      <section className="py-16 sm:py-20 bg-white border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl space-y-6" data-aos="fade-up">
-            {/* Top Category Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold tracking-wide uppercase">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-              <span>Premier Commercial Fleet & Crew Solutions</span>
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-[#142B4A] leading-tight">
-              Reliable Fleets.{' '}
-              <span className="text-blue-600">Professional Crews.</span>{' '}
-              Seamless Journeys.
-            </h1>
-
-            {/* Subtext description */}
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-              Charvik Staffing Consultancy delivers comprehensive bus rentals, turnkey corporate fleet supply, certified drivers & captains, and maintenance-backed mobility operations across India.
+          <div className="text-center max-w-3xl mx-auto mb-12" data-aos="fade-up">
+            <span className="text-xs font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-200">
+              Fleet Staffing & Operations
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#142B4A] mt-3 tracking-tight">
+              Our Operational Crew & Vehicle Portfolio
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base mt-2">
+              Background-verified drivers, licensed highway captains, safety-first helpers, qualified operations supervisors, and certified commercial buses ready for turnkey deployment.
             </p>
+          </div>
 
-            {/* Action & Enquiry Buttons */}
-            <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-4">
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <span>Request a Fleet Quote</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-
-              <a
-                href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>WhatsApp Enquiry</span>
-              </a>
-
-              <a
-                href="tel:+919876543210"
-                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm bg-slate-50 hover:bg-slate-100 text-[#142B4A] border border-slate-300 transition-all"
-              >
-                <Phone className="w-4 h-4 text-blue-600" />
-                <span>Call Us (+91 98765 43210)</span>
-              </a>
+          {/* 5 HD Showcase Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Card 1: Driver Supply */}
+            <div
+              className="rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between"
+              data-aos="fade-up"
+              data-aos-delay="50"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                <img
+                  src="/assets/crew-driver-hd.png"
+                  alt="Driver Supply - Professional Drivers for Your Buses"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                  100% Police Verified
+                </div>
+              </div>
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 group-hover:text-blue-600 transition-colors">
+                    Driver Supply
+                  </h3>
+                  <p className="text-xs text-blue-600 font-semibold mt-0.5">
+                    Professional Drivers for Your Buses
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                    Heavy-vehicle certified drivers with defensive driving licenses and annual health fitness checks.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600">
+                  <Link to="/services#driver-provision" className="hover:underline flex items-center gap-1">
+                    <span>Enquire Drivers</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
             </div>
 
-            {/* Trust Metrics Bar */}
-            <div className="pt-8 border-t border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-6">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                <p className="text-2xl sm:text-3xl font-black text-[#142B4A]">30+</p>
-                <p className="text-xs font-bold text-slate-700 mt-1">Buses in Fleet</p>
-                <p className="text-[11px] text-slate-500">AC & Non-AC coaches</p>
+            {/* Card 2: Helper Supply */}
+            <div
+              className="rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between"
+              data-aos="fade-up"
+              data-aos-delay="100"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                <img
+                  src="/assets/crew-helper-hd.png"
+                  alt="Helper Supply - Skilled Helpers for Your Operations"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                  Safety Certified
+                </div>
               </div>
-
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                <p className="text-2xl sm:text-3xl font-black text-blue-600">100%</p>
-                <p className="text-xs font-bold text-slate-700 mt-1">Verified Drivers</p>
-                <p className="text-[11px] text-slate-500">Police & medical cleared</p>
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 group-hover:text-blue-600 transition-colors">
+                    Helper Supply
+                  </h3>
+                  <p className="text-xs text-emerald-600 font-semibold mt-0.5">
+                    Skilled Helpers for Your Operations
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                    Courteous conductors and helpers dedicated to passenger assistance, boarding, and baggage support.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-600">
+                  <Link to="/services#driver-provision" className="hover:underline flex items-center gap-1">
+                    <span>Enquire Helpers</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
+            </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                <p className="text-2xl sm:text-3xl font-black text-emerald-600">24/7</p>
-                <p className="text-xs font-bold text-slate-700 mt-1">Breakdown Support</p>
-                <p className="text-[11px] text-slate-500">Mobile repair units</p>
+            {/* Card 3: Bus Captain Supply */}
+            <div
+              className="rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between"
+              data-aos="fade-up"
+              data-aos-delay="150"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                <img
+                  src="/assets/crew-captain-hd.png"
+                  alt="Bus Captain Supply - Experienced Captains for Your Buses"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 left-3 bg-purple-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                  Highway Certified
+                </div>
               </div>
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 group-hover:text-purple-600 transition-colors">
+                    Bus Captain Supply
+                  </h3>
+                  <p className="text-xs text-purple-600 font-semibold mt-0.5">
+                    Experienced Captains for Your Buses
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                    Senior captains delivering passenger etiquette, emergency readiness, and smooth highway transit.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-600">
+                  <Link to="/services#driver-provision" className="hover:underline flex items-center gap-1">
+                    <span>Enquire Captains</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                <p className="text-2xl sm:text-3xl font-black text-[#142B4A]">99.8%</p>
-                <p className="text-xs font-bold text-slate-700 mt-1">Punctual Trips</p>
-                <p className="text-[11px] text-slate-500">On-time SLA guarantee</p>
+            {/* Card 4: Supervisor Supply */}
+            <div
+              className="rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col justify-between"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                <img
+                  src="/assets/crew-supervisor-hd.png"
+                  alt="Supervisor Supply - Qualified Supervisors for Better Management"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 left-3 bg-amber-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                  Operations Lead
+                </div>
+              </div>
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 group-hover:text-amber-600 transition-colors">
+                    Supervisor Supply
+                  </h3>
+                  <p className="text-xs text-amber-600 font-semibold mt-0.5">
+                    Qualified Supervisors for Better Management
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                    On-ground coordinators managing shift timings, route rosters, maintenance schedules, and dispatch.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-600">
+                  <Link to="/services#fleet-supply" className="hover:underline flex items-center gap-1">
+                    <span>Enquire Supervisors</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. COMPANY INTRODUCTION */}
+      {/* 3. COMPANY INTRODUCTION */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -340,8 +558,8 @@ export const Home: React.FC = () => {
               <div className="relative">
                 <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-200">
                   <img
-                    src="/assets/fleet3.jpg"
-                    alt="Charvik Operations"
+                    src="/assets/crew-staffing-banner-hd.png"
+                    alt="Charvik Operations & Staff"
                     className="w-full h-80 sm:h-96 object-cover"
                   />
                 </div>
@@ -406,7 +624,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. CORE SERVICES SHOWCASE */}
+      {/* 4. CORE SERVICES SHOWCASE */}
       <section className="py-20 bg-[#F5F7FB] border-y border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14" data-aos="fade-up">
@@ -496,7 +714,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. WHY CHOOSE US */}
+      {/* 5. WHY CHOOSE US */}
       <section className="py-20 bg-gradient-to-b from-[#F5F7FB] to-white border-t border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14" data-aos="fade-up">
@@ -590,3 +808,5 @@ export const Home: React.FC = () => {
     </div>
   );
 };
+
+export default Home;

@@ -18,7 +18,15 @@ export const About: React.FC = () => {
   return (
     <div className="overflow-hidden">
       {/* 1. Page Header Banner */}
-      <section className="bg-gradient-to-r from-[#0c1b30] via-[#142B4A] to-[#1E3A5F] text-white py-16 sm:py-20 relative">
+      <section className="relative text-white py-16 sm:py-24 overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/assets/crew-staffing-banner-hd.png"
+            alt="Charvik Fleet & Crew Banner"
+            className="w-full h-full object-cover object-center opacity-25"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0c1b30]/95 via-[#142B4A]/90 to-[#1E3A5F]/85"></div>
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <div className="mb-4">
             <Link
@@ -87,7 +95,7 @@ export const About: React.FC = () => {
               <div className="relative">
                 <div className="rounded-2xl overflow-hidden shadow-xl border border-slate-200">
                   <img
-                    src="/assets/fleet2.jpg"
+                    src="/assets/crew-staffing-banner-hd.png"
                     alt="Charvik Staffing Team & Fleet"
                     className="w-full h-96 object-cover"
                   />
