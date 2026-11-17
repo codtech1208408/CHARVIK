@@ -273,7 +273,7 @@ export const About: React.FC = () => {
             </Link>
 
             <a
-              href="https://wa.me/919396151527?text=Hello%20Charvik%2C%20I%20would%20like%20to%20know%20more%20about%20your%20company."
+              href="https://wa.me/919505151527?text=Hello%20Charvik%2C%20I%20would%20like%20to%20know%20more%20about%20your%20company."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg transition"
@@ -283,11 +283,11 @@ export const About: React.FC = () => {
             </a>
 
             <a
-              href="tel:+919876543210"
+              href="tel:+919505151527"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 transition"
             >
               <Phone className="w-4 h-4 text-blue-400" />
-              <span>Call Us</span>
+              <span>Call Us (+91 95051 51527)</span>
             </a>
           </div>
         </div>

@@ -671,8 +671,9 @@ ON CONFLICT (email_or_username) DO NOTHING;
 INSERT INTO application_settings (key, value, description)
 VALUES 
   ('company_name', 'Charvik Staffing Consultancy', 'Official business name'),
-  ('company_email', 'contact@charvikstaffing.com', 'Company contact email'),
-  ('company_phone', '+91 98765 43210', 'Primary phone line'),
+  ('company_email', 'charvikstaffingconsulrancy@gmail.com', 'Company contact email'),
+  ('company_phone', '+91 95051 51527', 'Primary phone line'),
+  ('office_address', 'NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana', 'Head office address'),
   ('cloud_storage_provider', 'Cloudinary', 'Active document and photo storage provider'),
   ('database_provider', 'Supabase PostgreSQL', 'Active cloud database provider')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;

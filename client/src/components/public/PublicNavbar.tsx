@@ -119,7 +119,7 @@ export const PublicNavbar: React.FC = () => {
                 </Link>
 
                 <a
-                  href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
+                  href="https://wa.me/919505151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition"
@@ -129,11 +129,11 @@ export const PublicNavbar: React.FC = () => {
                 </a>
 
                 <a
-                  href="tel:+919876543210"
+                  href="tel:+919505151527"
                   className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition"
                 >
                   <Phone className="w-4 h-4" />
-                  Call Directly (+91 98765 43210)
+                  Call Directly (+91 95051 51527)
                 </a>
               </div>
             </div>

@@ -2177,7 +2177,7 @@ export const VyshnaviTravels: React.FC = () => {
                   type="tel"
                   value={recordForm.bill_to_phone}
                   onChange={(e) => setRecordForm({ ...recordForm, bill_to_phone: e.target.value })}
-                  placeholder="e.g. 9396151527"
+                  placeholder="e.g. 9505151527"
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none"
                 />
               </div>

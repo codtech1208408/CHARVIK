@@ -2915,7 +2915,7 @@ export const BASE_STAFF_CREDENTIALS: any[] = [
     "status": "Active",
     "created_at": "2026-10-26 07:14:51",
     "updated_at": "2026-10-26 07:14:51",
-    "phone_number": "9876543210",
+    "phone_number": "9505151527",
     "categories": null
   },
   {
@@ -2941,19 +2941,19 @@ export const BASE_APP_SETTINGS: any = [
   },
   {
     "key": "company_email",
-    "value": "contact@charvikstaffing.com",
+    "value": "charvikstaffingconsulrancy@gmail.com",
     "description": "Company contact email",
     "updated_at": "2026-10-16 17:01:55"
   },
   {
     "key": "company_phone",
-    "value": "+91 98765 43210",
+    "value": "+91 95051 51527",
     "description": "Primary phone",
     "updated_at": "2026-10-16 17:01:55"
   },
   {
     "key": "office_address",
-    "value": "Plot 42, Transport Nagar, Vijayawada, Andhra Pradesh - 520007",
+    "value": "NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana",
     "description": "Head office address",
     "updated_at": "2026-10-16 17:01:55"
   },

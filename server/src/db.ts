@@ -1290,7 +1290,7 @@ export function initDatabase() {
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
           'VT-REC-2026-001', '2026-11-08', "Oct'26", 'Sri Krishna Travels', 'Hyderabad, Telangana',
-          '9396151527', '36AABCY5013H1Z2', sampleItems, 7, 110000,
+          '9505151527', '36AABCY5013H1Z2', sampleItems, 7, 110000,
           'One Lakh Ten Thousand Rupees Only', 70000, 40000, 'Partial',
           'Kotak Mahindra Bank', 'Vyshnavi Travels', '2848153146', 'KKBK0007460', 'VANAS',
           '9000202241@ybl', 'Fleet staffing and trip operational billing for October.'

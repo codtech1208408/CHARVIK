@@ -413,7 +413,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
         ? selectedAlertForMessage.bus.driver_phone || ''
         : recipientType === 'custom'
         ? customPhone
-        : '919876543210';
+        : '919505151527';
     const cleanPhone = targetPhone.replace(/\D/g, '');
     const finalPhone = cleanPhone.startsWith('91') ? cleanPhone : cleanPhone ? `91${cleanPhone}` : '';
     const url = finalPhone
@@ -1776,7 +1776,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                     Super Admin Manager
                   </p>
                   <p className="text-[10px] text-slate-400 font-mono">
-                    +91 98765 43210
+                    +91 95051 51527
                   </p>
                 </button>
 

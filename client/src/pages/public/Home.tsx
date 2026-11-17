@@ -242,7 +242,7 @@ export const Home: React.FC = () => {
               </Link>
 
               <a
-                href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
+                href="https://wa.me/919505151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20your%20services."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
@@ -252,11 +252,11 @@ export const Home: React.FC = () => {
               </a>
 
               <a
-                href="tel:+919876543210"
+                href="tel:+919505151527"
                 className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl font-bold text-sm bg-slate-50 hover:bg-slate-100 text-[#142B4A] border border-slate-300 transition-all"
               >
                 <Phone className="w-4 h-4 text-blue-600" />
-                <span>Call Us (+91 98765 43210)</span>
+                <span>Call Us (+91 95051 51527)</span>
               </a>
             </div>
 
@@ -435,7 +435,7 @@ export const Home: React.FC = () => {
 
               <div className="mt-6 flex flex-col gap-2">
                 <a
-                  href="https://wa.me/919396151527?text=Hello%20Charvik%2C%20I%20have%20a%20custom%20transportation%20requirement."
+                  href="https://wa.me/919505151527?text=Hello%20Charvik%2C%20I%20have%20a%20custom%20transportation%20requirement."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition"
@@ -518,7 +518,7 @@ export const Home: React.FC = () => {
 
             <div className="flex flex-wrap items-center justify-center gap-4">
               <a
-                href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20booking%20buses."
+                href="https://wa.me/919505151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20to%20enquire%20about%20booking%20buses."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl transition-transform hover:-translate-y-0.5"
@@ -528,11 +528,11 @@ export const Home: React.FC = () => {
               </a>
 
               <a
-                href="tel:+919876543210"
+                href="tel:+919505151527"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-blue-600 hover:bg-blue-500 text-white shadow-xl transition-transform hover:-translate-y-0.5"
               >
                 <Phone className="w-5 h-5" />
-                <span>Call +91 98765 43210</span>
+                <span>Call +91 95051 51527</span>
               </a>
 
               <Link

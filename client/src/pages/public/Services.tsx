@@ -252,7 +252,7 @@ export const Services: React.FC = () => {
                   {/* Actions */}
                   <div className="pt-3 flex flex-wrap items-center gap-3">
                     <a
-                      href={`https://wa.me/919396151527?text=${encodeURIComponent(service.whatsappMsg)}`}
+                      href={`https://wa.me/919505151527?text=${encodeURIComponent(service.whatsappMsg)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
@@ -262,11 +262,11 @@ export const Services: React.FC = () => {
                     </a>
 
                     <a
-                      href="tel:+919876543210"
+                      href="tel:+919505151527"
                       className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-xs transition"
                     >
                       <Phone className="w-4 h-4 text-blue-600" />
-                      <span>Call for Rates</span>
+                      <span>Call for Rates (+91 95051 51527)</span>
                     </a>
 
                     <Link
@@ -304,11 +304,11 @@ export const Services: React.FC = () => {
             </Link>
 
             <a
-              href="tel:+919876543210"
+              href="tel:+919505151527"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 transition"
             >
               <Phone className="w-4 h-4 text-blue-400" />
-              <span>Direct Hotline: +91 98765 43210</span>
+              <span>Direct Hotline: +91 95051 51527</span>
             </a>
           </div>
         </div>

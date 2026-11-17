@@ -80,20 +80,20 @@ export const Contact: React.FC = () => {
               Need Instant Answers?
             </span>
             <a
-              href="https://wa.me/919396151527?text=Hello%20Charvik%2C%20I%20have%20an%20urgent%20fleet%20requirement."
+              href="https://wa.me/919505151527?text=Hello%20Charvik%2C%20I%20have%20an%20urgent%20fleet%20requirement."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp Direct (+91 93961 51527)</span>
+              <span>WhatsApp Direct (+91 95051 51527)</span>
             </a>
             <a
-              href="tel:+919876543210"
+              href="tel:+919505151527"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition"
             >
               <Phone className="w-4 h-4" />
-              <span>Call Helpline Directly</span>
+              <span>Call Helpline Directly (+91 95051 51527)</span>
             </a>
           </div>
         </div>
@@ -127,7 +127,7 @@ export const Contact: React.FC = () => {
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm">Head Office Location</h4>
                     <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                      Plot 42, Transport Nagar, Vijayawada, Andhra Pradesh - 520007, India
+                      NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana
                     </p>
                   </div>
                 </div>
@@ -140,12 +140,9 @@ export const Contact: React.FC = () => {
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm">Phone Numbers</h4>
                     <p className="text-xs text-slate-600 mt-1">
-                      <a href="tel:+919876543210" className="font-semibold text-blue-600 hover:underline">
-                        +91 98765 43210
-                      </a> (Primary Fleet Booking)
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      +91 98765 43211 (Maintenance & Support Desk)
+                      <a href="tel:+919505151527" className="font-semibold text-blue-600 hover:underline">
+                        +91 95051 51527
+                      </a> (Primary Booking & Helpdesk)
                     </p>
                   </div>
                 </div>
@@ -158,12 +155,9 @@ export const Contact: React.FC = () => {
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm">Email Address</h4>
                     <p className="text-xs text-slate-600 mt-1">
-                      <a href="mailto:contact@charvikstaffing.com" className="font-semibold text-blue-600 hover:underline">
-                        contact@charvikstaffing.com
+                      <a href="mailto:charvikstaffingconsulrancy@gmail.com" className="font-semibold text-blue-600 hover:underline">
+                        charvikstaffingconsulrancy@gmail.com
                       </a>
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      support@charvikstaffing.com
                     </p>
                   </div>
                 </div>
@@ -253,7 +247,7 @@ export const Contact: React.FC = () => {
                           required
                           value={formData.phone}
                           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="e.g. +91 98765 00000"
+                          placeholder="e.g. +91 95051 51527"
                           className="w-full text-xs p-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none transition"
                         />
                       </div>
@@ -347,7 +341,7 @@ export const Contact: React.FC = () => {
           <div className="rounded-2xl overflow-hidden shadow-lg border border-slate-200 h-96">
             <iframe
               title="Charvik Fleet Location Map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d122410.0526978456!2d80.56948510834313!3d16.510313426294793!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a35eff9482d944b%3A0x939b7e84ab4a0265!2sVijayawada%2C%20Andhra%20Pradesh!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+              src="https://maps.google.com/maps?q=NH65%2C+opp.+Bajaj+Electronic%2C+beside+Kakinada+Subbayya+Gari+Hotel%2C+Agamaiah+Nagar+Colony%2C+Bank+Colony%2C+L.+B.+Nagar%2C+Vanasthalipuram%2C+Hyderabad%2C+Telangana&t=&z=15&ie=UTF8&iwloc=&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0 }}

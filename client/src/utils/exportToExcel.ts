@@ -118,9 +118,10 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
   const wsData: any[][] = [];
   wsData.push(['CHARVIK STAFFING CONSULTANCY']);
   wsData.push(['STAFFING | MANPOWER SOLUTIONS | FLEET MAINTENANCE SUPPORT | OPERATIONAL SERVICES']);
+  wsData.push(['NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana | Phone: 9505151527 | Email: charvikstaffingconsulrancy@gmail.com']);
   wsData.push([title]);
 
-  let metaRowIdx = 3;
+  let metaRowIdx = 4;
   if (subtitle) {
     wsData.push([subtitle]);
     metaRowIdx++;
@@ -193,10 +194,11 @@ export function exportTableToExcel(options: ExportExcelOptions): void {
   ws['!merges'] = [
     { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
     { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } },
-    { s: { r: 2, c: 0 }, e: { r: 2, c: colCount - 1 } }
+    { s: { r: 2, c: 0 }, e: { r: 2, c: colCount - 1 } },
+    { s: { r: 3, c: 0 }, e: { r: 3, c: colCount - 1 } }
   ];
   if (subtitle) {
-    ws['!merges'].push({ s: { r: 3, c: 0 }, e: { r: 3, c: colCount - 1 } });
+    ws['!merges'].push({ s: { r: 4, c: 0 }, e: { r: 4, c: colCount - 1 } });
   }
   ws['!merges'].push({ s: { r: metaRowIdx, c: 0 }, e: { r: metaRowIdx, c: colCount - 1 } });
 

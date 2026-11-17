@@ -411,7 +411,7 @@ export const Settings: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-700 mb-1">Contact Email</label>
                 <input
                   type="email"
-                  value={settings.company_email || 'contact@charvikstaffing.com'}
+                  value={settings.company_email || 'charvikstaffingconsulrancy@gmail.com'}
                   onChange={(e) => handleInputChange('company_email', e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                 />
@@ -423,7 +423,7 @@ export const Settings: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-700 mb-1">Primary Phone</label>
                 <input
                   type="text"
-                  value={settings.company_phone || '+91 98765 43210'}
+                  value={settings.company_phone || '+91 95051 51527'}
                   onChange={(e) => handleInputChange('company_phone', e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                 />
@@ -444,7 +444,7 @@ export const Settings: React.FC = () => {
               <label className="block text-xs font-bold text-slate-700 mb-1">Head Office Address</label>
               <textarea
                 rows={2}
-                value={settings.office_address || 'Plot 42, Transport Nagar, Vijayawada, Andhra Pradesh - 520007'}
+                value={settings.office_address || 'NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana'}
                 onChange={(e) => handleInputChange('office_address', e.target.value)}
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
               />
@@ -857,7 +857,7 @@ export const Settings: React.FC = () => {
                           pattern="[0-9]{10}"
                           value={newStaff.phone_number}
                           onChange={(e) => setNewStaff({ ...newStaff, phone_number: e.target.value })}
-                          placeholder="e.g. 9876543210 (10 digits)"
+                          placeholder="e.g. 9505151527 (10 digits)"
                           className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 font-mono font-bold"
                           required
                         />

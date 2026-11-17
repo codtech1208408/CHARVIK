@@ -1015,7 +1015,7 @@ export const RecordManagement: React.FC = () => {
                     type="text"
                     value={formData.bill_to_phone || ''}
                     onChange={(e) => setFormData({ ...formData, bill_to_phone: e.target.value })}
-                    placeholder="e.g. 9396151527"
+                    placeholder="e.g. 9505151527"
                     className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
                   />
                 </div>

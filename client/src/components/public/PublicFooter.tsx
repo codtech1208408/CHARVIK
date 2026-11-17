@@ -23,7 +23,7 @@ export const PublicFooter: React.FC = () => {
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <a
-              href="https://wa.me/919396151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20a%20quote%20for%20bus%20rental%20%2F%20fleet%20supply."
+              href="https://wa.me/919505151527?text=Hello%20Charvik%20Fleet%2C%20I%20would%20like%20a%20quote%20for%20bus%20rental%20%2F%20fleet%20supply."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg transition-transform hover:-translate-y-0.5"
@@ -33,11 +33,11 @@ export const PublicFooter: React.FC = () => {
             </a>
 
             <a
-              href="tel:+919876543210"
+              href="tel:+919505151527"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm bg-white hover:bg-slate-100 text-[#142B4A] shadow-lg transition-transform hover:-translate-y-0.5"
             >
               <Phone className="w-4 h-4 text-blue-600" />
-              Call +91 98765 43210
+              Call +91 95051 51527
             </a>
           </div>
         </div>
@@ -139,18 +139,18 @@ export const PublicFooter: React.FC = () => {
             <ul className="space-y-3 text-xs text-slate-300">
               <li className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                <span>Plot 42, Transport Nagar, Vijayawada, Andhra Pradesh - 520007</span>
+                <span>NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-blue-400 shrink-0" />
-                <a href="tel:+919876543210" className="hover:text-white transition-colors">
-                  +91 98765 43210
+                <a href="tel:+919505151527" className="hover:text-white transition-colors">
+                  +91 95051 51527
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-blue-400 shrink-0" />
-                <a href="mailto:contact@charvikstaffing.com" className="hover:text-white transition-colors">
-                  contact@charvikstaffing.com
+                <a href="mailto:charvikstaffingconsulrancy@gmail.com" className="hover:text-white transition-colors">
+                  charvikstaffingconsulrancy@gmail.com
                 </a>
               </li>
               <li className="flex items-center gap-2.5">

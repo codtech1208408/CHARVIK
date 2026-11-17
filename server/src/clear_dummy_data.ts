@@ -47,7 +47,7 @@ export async function clearAllDummyData() {
   db.prepare(`
     INSERT INTO administrators (name, email_or_username, phone_number, password_hash, role, status)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run('Admin Manager', 'admin@charvik.com', '9876543210', adminHash, 'Super Admin', 'Active');
+  `).run('Admin Manager', 'admin@charvik.com', '9505151527', adminHash, 'Super Admin', 'Active');
 
   db.prepare(`
     INSERT INTO administrators (name, email_or_username, phone_number, password_hash, role, status)

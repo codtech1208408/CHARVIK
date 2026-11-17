@@ -115,7 +115,7 @@ export const IncomeExpense: React.FC = () => {
     try {
       const saved = localStorage.getItem('charvik_custom_income_categories');
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return INCOME_SUGGESTIONS;
   });
 
@@ -123,7 +123,7 @@ export const IncomeExpense: React.FC = () => {
     try {
       const saved = localStorage.getItem('charvik_custom_expense_categories');
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return EXPENSE_SUGGESTIONS;
   });
 
@@ -896,15 +896,14 @@ export const IncomeExpense: React.FC = () => {
                 key={t}
                 type="button"
                 onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  typeFilter === t
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${typeFilter === t
                     ? t === 'Income'
                       ? 'bg-emerald-600 text-white shadow-xs'
                       : t === 'Expense'
-                      ? 'bg-rose-600 text-white shadow-xs'
-                      : 'bg-slate-900 text-white shadow-xs'
+                        ? 'bg-rose-600 text-white shadow-xs'
+                        : 'bg-slate-900 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 {t === 'Income' ? '+ Income' : t === 'Expense' ? '- Expense' : 'All'}
               </button>
@@ -1015,11 +1014,10 @@ export const IncomeExpense: React.FC = () => {
                       </td>
                       <td className="py-3 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                            isIncome
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${isIncome
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                               : 'bg-rose-50 text-rose-700 border border-rose-200'
-                          }`}
+                            }`}
                         >
                           {isIncome ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
                           <span>{t.transaction_type}</span>
@@ -1131,11 +1129,10 @@ export const IncomeExpense: React.FC = () => {
                     category: incomeCategories.includes(prev.category) ? prev.category : (incomeCategories[0] || 'Trip Advance / Booking')
                   }));
                 }}
-                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  formData.transaction_type === 'Income'
+                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${formData.transaction_type === 'Income'
                     ? 'bg-emerald-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>+ Income (Money In)</span>
@@ -1150,11 +1147,10 @@ export const IncomeExpense: React.FC = () => {
                     category: expenseCategories.includes(prev.category) ? prev.category : (expenseCategories[0] || 'Diesel / Fuel')
                   }));
                 }}
-                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  formData.transaction_type === 'Expense'
+                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${formData.transaction_type === 'Expense'
                     ? 'bg-rose-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <Minus className="w-3.5 h-3.5" />
                 <span>- Expense (Money Out)</span>
@@ -1318,9 +1314,8 @@ export const IncomeExpense: React.FC = () => {
                                   setFormData((prev) => ({ ...prev, category: cat }));
                                   setIsCategoryManagerOpen(false);
                                 }}
-                                className={`text-left font-semibold truncate hover:text-blue-600 cursor-pointer flex-1 ${
-                                  formData.category === cat ? 'text-blue-700 font-bold' : 'text-slate-800'
-                                }`}
+                                className={`text-left font-semibold truncate hover:text-blue-600 cursor-pointer flex-1 ${formData.category === cat ? 'text-blue-700 font-bold' : 'text-slate-800'
+                                  }`}
                               >
                                 {cat}
                                 {formData.category === cat && (
@@ -1472,11 +1467,10 @@ export const IncomeExpense: React.FC = () => {
             </button>
             <button
               type="submit"
-              className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1.5 ${
-                formData.transaction_type === 'Income'
+              className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1.5 ${formData.transaction_type === 'Income'
                   ? 'bg-emerald-600 hover:bg-emerald-700'
                   : 'bg-rose-600 hover:bg-rose-700'
-              }`}
+                }`}
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{editingItem ? 'Update Record' : `Save ${formData.transaction_type}`}</span>
@@ -1683,22 +1677,20 @@ export const IncomeExpense: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStandaloneCatType('Income')}
-                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  standaloneCatType === 'Income'
+                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${standaloneCatType === 'Income'
                     ? 'bg-emerald-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <span>Income Categories ({incomeCategories.length})</span>
               </button>
               <button
                 type="button"
                 onClick={() => setStandaloneCatType('Expense')}
-                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  standaloneCatType === 'Expense'
+                className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${standaloneCatType === 'Expense'
                     ? 'bg-rose-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <span>Expense Categories ({expenseCategories.length})</span>
               </button>

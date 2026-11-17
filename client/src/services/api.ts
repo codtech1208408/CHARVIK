@@ -491,14 +491,14 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
 
     // Super Admin
     if (
-      ['admin@charvik.com', 'admin', 'administrator', '9876543210'].includes(identifier) &&
+      ['admin@charvik.com', 'admin', 'administrator', '9505151527', '9876543210'].includes(identifier) &&
       ['admin123', 'adminpassword'].includes(password)
     ) {
       matchedUser = {
         id: 1,
         name: 'Admin Manager',
         email: 'admin@charvik.com',
-        phone_number: '9876543210',
+        phone_number: '9505151527',
         role: 'Super Admin',
         status: 'Active'
       };
@@ -1520,7 +1520,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
             })) as any;
         }
         const defaults = [
-          { id: 1, name: 'Admin Manager', email_or_username: 'admin@charvik.com', phone_number: '9876543210', role: 'Super Admin', status: 'Active', categories: allCategoryNames }
+          { id: 1, name: 'Admin Manager', email_or_username: 'admin@charvik.com', phone_number: '9505151527', role: 'Super Admin', status: 'Active', categories: allCategoryNames }
         ];
         setLocalCollection('staff_credentials', defaults);
         return defaults as any;

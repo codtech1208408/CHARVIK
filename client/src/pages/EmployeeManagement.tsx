@@ -1077,7 +1077,7 @@ export const EmployeeManagement: React.FC = () => {
             </label>
             <input
               type="tel"
-              placeholder="e.g. 9876543210"
+              placeholder="e.g. 9505151527"
               value={newStaffMobile}
               onChange={(e) => setNewStaffMobile(e.target.value)}
               className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500 font-mono"
