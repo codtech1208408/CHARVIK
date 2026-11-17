@@ -289,6 +289,61 @@ export const ChandrikaFinance: React.FC = () => {
     return Math.max(48, customers.length + 45);
   });
 
+  // Core Financial Aggregates (matching the user's exact balance values)
+  const [totalInvestment, setTotalInvestment] = useState(5000000);
+  const [totalLoanGiven, setTotalLoanGiven] = useState(3250000);
+  const [totalPrincipalReceived, setTotalPrincipalReceived] = useState(800000);
+  const [totalInterestReceived, setTotalInterestReceived] = useState(325000);
+  const [todayCollection, setTodayCollection] = useState(85000);
+  const [thisMonthCollection, setThisMonthCollection] = useState(1240000);
+  const [thisMonthInterest, setThisMonthInterest] = useState(210000);
+
+  // Dynamic Outstanding calculation
+  const totalOutstanding = useMemo(() => {
+    return Math.max(0, totalLoanGiven - totalPrincipalReceived);
+  }, [totalLoanGiven, totalPrincipalReceived]);
+
+  // Modals
+  const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
+  const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
+
+  // Form states
+  const [investmentForm, setInvestmentForm] = useState({ investor: '', amount: '', mode: 'Bank' as 'UPI' | 'Bank' | 'Cash', notes: '' });
+  const [loanForm, setLoanForm] = useState({ customerName: '', amount: '', mode: 'Cash' as 'UPI' | 'Bank' | 'Cash', notes: '' });
+  const [collectionForm, setCollectionForm] = useState({ customerName: '', type: 'Collection (Principal)' as 'Collection (Principal)' | 'Collection (Interest)', amount: '', mode: 'UPI' as 'UPI' | 'Bank' | 'Cash', notes: '' });
+
+  // View All Search
+  const [viewAllSearch, setViewAllSearch] = useState('');
+
+  // Handle Add Investment
+  const handleAddInvestment = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = parseFloat(investmentForm.amount);
+    if (isNaN(amt) || amt <= 0) {
+      toastError('Please enter a valid investment amount.');
+      return;
+    }
+    setTotalInvestment((prev) => prev + amt);
+    setTransactions((prev) => [
+      {
+        id: Date.now(),
+        date: '14 Nov 2026',
+        customerName: investmentForm.investor || 'Partner Investment',
+        type: 'Investment Added',
+        amount: amt,
+        mode: investmentForm.mode,
+        notes: investmentForm.notes
+      },
+      ...prev
+    ]);
+    success(`Investment of ₹${amt.toLocaleString('en-IN')} added successfully!`);
+    setIsInvestmentModalOpen(false);
+    setInvestmentForm({ investor: '', amount: '', mode: 'Bank', notes: '' });
+  };
+
   // Save customers to localStorage
   useEffect(() => {
     try {
