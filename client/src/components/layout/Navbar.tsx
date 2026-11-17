@@ -27,15 +27,17 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isCaptain = location.pathname.startsWith('/captain');
   const isOperator = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
 
-  const activeUser = (() => {
+  const activeUser = useMemo(() => {
+    const userRoleStr = String(user?.role || '').toLowerCase();
     if (isOperator) {
-      if (user && (user.role.toLowerCase().includes('operator') || user.role.toLowerCase().includes('support'))) {
+      if (user && (userRoleStr.includes('operator') || userRoleStr.includes('support'))) {
         return user;
       }
       try {
         const s = localStorage.getItem('charvik_user');
         const parsed = s ? JSON.parse(s) : null;
-        if (parsed && (parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support'))) {
+        const parsedRole = String(parsed?.role || '').toLowerCase();
+        if (parsed && (parsedRole.includes('operator') || parsedRole.includes('support'))) {
           return parsed;
         }
       } catch { }
@@ -47,13 +49,14 @@ export const Navbar: React.FC<NavbarProps> = ({
       };
     }
     if (isCaptain) {
-      if (user && user.role.toLowerCase().includes('captain')) {
+      if (user && userRoleStr.includes('captain')) {
         return user;
       }
       try {
         const s = localStorage.getItem('charvik_user');
         const parsed = s ? JSON.parse(s) : null;
-        if (parsed && parsed.role.toLowerCase().includes('captain')) {
+        const parsedRole = String(parsed?.role || '').toLowerCase();
+        if (parsed && parsedRole.includes('captain')) {
           return parsed;
         }
       } catch { }
@@ -64,13 +67,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         role: 'Captain'
       };
     }
-    if (user && user.role.toLowerCase().includes('admin')) {
+    if (user && userRoleStr.includes('admin')) {
       return user;
     }
     try {
       const s = localStorage.getItem('charvik_user');
       const parsed = s ? JSON.parse(s) : null;
-      if (parsed && parsed.role.toLowerCase().includes('admin')) {
+      const parsedRole = String(parsed?.role || '').toLowerCase();
+      if (parsed && parsedRole.includes('admin')) {
         return parsed;
       }
     } catch { }
@@ -80,7 +84,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       email: 'admin@charvik.com',
       role: 'Super Admin'
     };
-  })();
+  }, [user, isOperator, isCaptain]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notifications, setNotifications] = useState<any>({

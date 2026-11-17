@@ -415,45 +415,49 @@ export const Sidebar: React.FC<SidebarProps> = ({
     navigate('/operator/dashboard');
   };
 
-  const activeUser = (() => {
+  const activeUser = useMemo(() => {
+    const userRoleStr = String(user?.role || '').toLowerCase();
     if (isOperator) {
-      if (user && (user.role.toLowerCase().includes('operator') || user.role.toLowerCase().includes('support'))) {
+      if (user && (userRoleStr.includes('operator') || userRoleStr.includes('support'))) {
         return user;
       }
       try {
         const s = localStorage.getItem('charvik_user');
         const parsed = s ? JSON.parse(s) : null;
-        if (parsed && (parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support'))) {
+        const parsedRole = String(parsed?.role || '').toLowerCase();
+        if (parsed && (parsedRole.includes('operator') || parsedRole.includes('support'))) {
           return parsed;
         }
       } catch { }
       return DEFAULT_OPERATOR;
     }
     if (isCaptain) {
-      if (user && user.role.toLowerCase().includes('captain')) {
+      if (user && userRoleStr.includes('captain')) {
         return user;
       }
       try {
         const s = localStorage.getItem('charvik_user');
         const parsed = s ? JSON.parse(s) : null;
-        if (parsed && parsed.role.toLowerCase().includes('captain')) {
+        const parsedRole = String(parsed?.role || '').toLowerCase();
+        if (parsed && parsedRole.includes('captain')) {
           return parsed;
         }
       } catch { }
       return { id: 2, name: 'Captain Lead', email: 'captain@charvik.com', role: 'Captain' };
     }
-    if (user && user.role.toLowerCase().includes('admin')) {
+    if (user && userRoleStr.includes('admin')) {
       return user;
     }
     try {
       const s = localStorage.getItem('charvik_user');
       const parsed = s ? JSON.parse(s) : null;
-      if (parsed && parsed.role.toLowerCase().includes('admin')) {
+      const parsedRole = String(parsed?.role || '').toLowerCase();
+      if (parsed && parsedRole.includes('admin')) {
         return parsed;
       }
     } catch { }
     return DEFAULT_ADMIN;
-  })();
+  }, [user, isOperator, isCaptain]);
 
   const userRole = (activeUser?.role || '').toLowerCase();
   const isAdmin = !isOperator && !isCaptain && userRole.includes('admin');

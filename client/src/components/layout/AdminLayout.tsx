@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
@@ -17,73 +17,76 @@ export const AdminLayout: React.FC = () => {
   const prevPathRef = useRef<string>(location.pathname);
 
   useEffect(() => {
-    AOS.init({
-      duration: 500,
-      once: true,
-      easing: 'ease-out-cubic',
-    });
+    try {
+      AOS.init({
+        duration: 500,
+        once: true,
+        easing: 'ease-out-cubic',
+      });
+    } catch (e) {
+      console.warn('AOS init warning:', e);
+    }
   }, []);
 
   useEffect(() => {
-    AOS.refresh();
+    try {
+      AOS.refresh();
+    } catch (e) {
+      console.warn('AOS refresh warning:', e);
+    }
   }, [location.pathname]);
 
   const isCaptainPortal = location.pathname.startsWith('/captain');
   const isOperatorPortal = location.pathname.startsWith('/operator') || location.pathname.startsWith('/supporter');
   const isAdminPortal = location.pathname.startsWith('/admin') || (!isCaptainPortal && !isOperatorPortal);
 
-  const DEFAULT_ADMIN = {
+  const DEFAULT_ADMIN = useMemo(() => ({
     id: 1,
     name: 'Admin Manager',
     email: 'admin@charvik.com',
     email_or_username: 'admin@charvik.com',
     role: 'Super Admin',
     categories: ALL_CATEGORY_NAMES
-  };
+  }), []);
 
-  const DEFAULT_OPERATOR = {
+  const DEFAULT_OPERATOR = useMemo(() => ({
     id: 7,
     name: 'NEELAM HARISH',
     email: 'neelam.harish@charvik.com',
     email_or_username: 'neelam.harish@charvik.com',
     role: 'Operator',
     categories: ['Route Management', 'Trip Management', 'AC Maintenance']
-  };
+  }), []);
 
-  const DEFAULT_CAPTAIN = {
+  const DEFAULT_CAPTAIN = useMemo(() => ({
     id: 2,
     name: 'Captain Lead',
     email: 'captain@charvik.com',
     email_or_username: 'captain@charvik.com',
     phone_number: '9701055555',
     role: 'Captain'
-  };
+  }), []);
 
   // Synchronous resolution guaranteeing that /admin opens Admin Dashboard and /operator opens Operator Dashboard
-  const activeUser = (() => {
+  const activeUser = useMemo(() => {
     try {
       const s = localStorage.getItem('charvik_user');
       const parsed = s ? JSON.parse(s) : null;
-      if (parsed && parsed.role) {
+      const parsedRole = String(parsed?.role || '').toLowerCase();
+      if (parsed && parsedRole) {
         if (isOperatorPortal) {
-          const isOp = parsed.role.toLowerCase().includes('operator') || parsed.role.toLowerCase().includes('support');
+          const isOp = parsedRole.includes('operator') || parsedRole.includes('support');
           if (isOp) return parsed;
-          localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_OPERATOR));
-          localStorage.setItem('charvik_token', 'charvik_cloud_token_operator_session');
           return DEFAULT_OPERATOR;
         }
         if (isCaptainPortal) {
-          const isCap = parsed.role.toLowerCase().includes('captain');
+          const isCap = parsedRole.includes('captain');
           if (isCap) return parsed;
-          localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_CAPTAIN));
-          localStorage.setItem('charvik_token', 'charvik_cloud_token_captain_session');
           return DEFAULT_CAPTAIN;
         }
         if (isAdminPortal) {
-          const isAdm = parsed.role.toLowerCase().includes('admin');
+          const isAdm = parsedRole.includes('admin');
           if (isAdm) return parsed;
-          localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_ADMIN));
-          localStorage.setItem('charvik_token', 'charvik_cloud_token_admin_session');
           return DEFAULT_ADMIN;
         }
         return parsed;
@@ -91,20 +94,10 @@ export const AdminLayout: React.FC = () => {
     } catch { }
 
     // Default to the dedicated account corresponding to the URL
-    if (isOperatorPortal) {
-      localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_OPERATOR));
-      localStorage.setItem('charvik_token', 'charvik_cloud_token_operator_session');
-      return DEFAULT_OPERATOR;
-    }
-    if (isCaptainPortal) {
-      localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_CAPTAIN));
-      localStorage.setItem('charvik_token', 'charvik_cloud_token_captain_session');
-      return DEFAULT_CAPTAIN;
-    }
-    localStorage.setItem('charvik_user', JSON.stringify(DEFAULT_ADMIN));
-    localStorage.setItem('charvik_token', 'charvik_cloud_token_admin_session');
+    if (isOperatorPortal) return DEFAULT_OPERATOR;
+    if (isCaptainPortal) return DEFAULT_CAPTAIN;
     return DEFAULT_ADMIN;
-  })();
+  }, [isOperatorPortal, isCaptainPortal, isAdminPortal, DEFAULT_ADMIN, DEFAULT_OPERATOR, DEFAULT_CAPTAIN]);
 
   // Role-Based Access Guards
   const userRole = (activeUser?.role || '').toLowerCase();
@@ -201,12 +194,24 @@ export const AdminLayout: React.FC = () => {
     };
   }, [isAdmin, location.pathname]);
 
-  // Synchronize active portal user into AuthContext state
+  // Synchronize active portal user into AuthContext state and persist token
   useEffect(() => {
-    if (activeUser && (!user || user.role !== activeUser.role || user.name !== activeUser.name)) {
-      setUser(activeUser);
+    if (activeUser) {
+      try {
+        localStorage.setItem('charvik_user', JSON.stringify(activeUser));
+        if (isAdminPortal) {
+          localStorage.setItem('charvik_token', 'charvik_cloud_token_admin_session');
+        } else if (isCaptainPortal) {
+          localStorage.setItem('charvik_token', 'charvik_cloud_token_captain_session');
+        } else if (isOperatorPortal) {
+          localStorage.setItem('charvik_token', 'charvik_cloud_token_operator_session');
+        }
+      } catch { }
+      if (!user || user.role !== activeUser.role || user.name !== activeUser.name) {
+        setUser(activeUser);
+      }
     }
-  }, [location.pathname, activeUser, user, setUser]);
+  }, [activeUser, user, setUser, isAdminPortal, isCaptainPortal, isOperatorPortal]);
 
   // 2. NOW SAFELY EXECUTE CONDITIONAL RENDERS & REDIRECTS (AFTER ALL HOOKS)
   const isUserAuthenticated = isAuthenticated || !!activeUser;
@@ -302,22 +307,26 @@ export const AdminLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F0F4F9] flex flex-col">
       {/* Full-width Top Navigation Header - Fixed at Top */}
-      <Navbar
-        onMobileToggle={() => setIsMobileOpen(true)}
-        onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
-        pageTitle={getPageTitle()}
-        isSidebarVisible={isSidebarVisible}
-      />
+      <ErrorBoundary fallbackTitle="Top Navigation Bar">
+        <Navbar
+          onMobileToggle={() => setIsMobileOpen(true)}
+          onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
+          pageTitle={getPageTitle()}
+          isSidebarVisible={isSidebarVisible}
+        />
+      </ErrorBoundary>
 
       <div className="flex-1 flex flex-row pt-[88px] relative">
         {/* Sidebar - Positioned under Top Header */}
-        <Sidebar
-          isVisible={isSidebarVisible}
-          onToggleVisibility={() => setIsSidebarVisible(!isSidebarVisible)}
-          isMobileOpen={isMobileOpen}
-          setIsMobileOpen={setIsMobileOpen}
-          isPinned={true}
-        />
+        <ErrorBoundary fallbackTitle="Sidebar Navigation">
+          <Sidebar
+            isVisible={isSidebarVisible}
+            onToggleVisibility={() => setIsSidebarVisible(!isSidebarVisible)}
+            isMobileOpen={isMobileOpen}
+            setIsMobileOpen={setIsMobileOpen}
+            isPinned={true}
+          />
+        </ErrorBoundary>
 
         {/* Main Content Area */}
         <div
