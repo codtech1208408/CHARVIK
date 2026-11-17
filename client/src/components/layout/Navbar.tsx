@@ -163,42 +163,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Vertical Divider */}
         <div className="h-8 w-[1.5px] bg-slate-300 mx-1 shrink-0" />
 
-        {/* Charvik brand logo matching exact lockup with crisp bold slogan */}
+        {/* Charvik brand logo - unified master lockup with bold, perfectly aligned slogan */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex flex-col items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-1 group select-none"
+          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer select-none py-1 group"
           title="Charvik Staffing Consultancy"
         >
-          {/* Main Logo Icon + CHARVIK Brand Mark */}
           <img
-            src="/logo-top.png?v=2"
-            alt="Charvik Staffing Consultancy"
-            className="h-[50px] sm:h-[56px] w-auto object-contain transition-transform group-hover:scale-[1.01]"
+            src="/logo-navbar.png?v=5"
+            alt="Charvik Staffing Consultancy - Your Talent | Our Support | A Brighter Future"
+            className="h-[74px] sm:h-[80px] w-auto object-contain transition-transform group-hover:scale-[1.01]"
           />
-
-          {/* STAFFING CONSULTANCY with Orange Accent Flanking Bars */}
-          <div className="flex items-center justify-center gap-1.5 sm:gap-2 w-full mt-0.5">
-            <span className="h-[2px] w-6 sm:w-10 bg-[#FF7A00] rounded-full shrink-0"></span>
-            <span 
-              className="text-[11.5px] sm:text-[13px] font-black text-[#0B2545] tracking-[0.2em] uppercase whitespace-nowrap"
-              style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', textRendering: 'geometricPrecision' }}
-            >
-              STAFFING CONSULTANCY
-            </span>
-            <span className="h-[2px] w-6 sm:w-10 bg-[#FF7A00] rounded-full shrink-0"></span>
-          </div>
-
-          {/* Crisp, Bold, 100% Legible Brand Slogan */}
-          <div 
-            className="text-[10px] sm:text-[11.5px] font-black text-[#071B33] tracking-[0.05em] uppercase whitespace-nowrap mt-0.5 flex items-center justify-center"
-            style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', textRendering: 'geometricPrecision' }}
-          >
-            <span>YOUR TALENT</span>
-            <span className="text-[#FF7A00] font-black mx-1.5 sm:mx-2 text-[11px] sm:text-[12px]">|</span>
-            <span>OUR SUPPORT</span>
-            <span className="text-[#FF7A00] font-black mx-1.5 sm:mx-2 text-[11px] sm:text-[12px]">|</span>
-            <span>A BRIGHTER FUTURE</span>
-          </div>
         </Link>
 
         {/* Operator Mode: Quick Return to Admin Button */}
