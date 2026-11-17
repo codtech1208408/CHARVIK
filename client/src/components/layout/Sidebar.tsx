@@ -570,8 +570,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className={`fixed bottom-0 left-0 bg-[#0B1E3B] text-white flex flex-col transition-all duration-300 border-r border-[#152B4D] shadow-2xl w-[88px] ${isMobileOpen
           ? 'top-0 z-50 translate-x-0 shadow-2xl'
           : isVisible
-            ? 'top-[96px] z-30 -translate-x-full lg:translate-x-0'
-            : 'top-[96px] z-30 -translate-x-full'
+            ? 'top-[100px] z-30 -translate-x-full lg:translate-x-0'
+            : 'top-[100px] z-30 -translate-x-full'
           }`}
       >
         {/* Mobile Close Button (shown only on mobile drawer) */}

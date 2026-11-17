@@ -139,7 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-[96px] bg-white text-slate-800 z-40 flex items-center justify-between px-3 sm:px-6 shadow-[0_4px_16px_rgba(0,114,229,0.06)] border-y-2 border-[#0072E5]">
+    <header className="fixed top-0 left-0 right-0 h-[100px] bg-white text-slate-800 z-40 flex items-center justify-between px-3 sm:px-6 shadow-[0_4px_16px_rgba(0,114,229,0.06)] border-y-2 border-[#0072E5]">
       {/* Background Graphic Swooshes and Borders */}
       <HeaderWaveBackground />
 
@@ -163,16 +163,16 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Vertical Divider */}
         <div className="h-8 w-[1.5px] bg-slate-300 mx-1 shrink-0" />
 
-        {/* Charvik brand logo - unified master lockup with bold, perfectly aligned slogan */}
+        {/* Charvik brand logo - unified master lockup with bold, enlarged logo and slogan */}
         <Link
           to={`${basePrefix}/dashboard`}
           className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer select-none py-1 group"
           title="Charvik Staffing Consultancy"
         >
           <img
-            src="/logo-navbar.png?v=5"
+            src="/logo-navbar.png?v=6"
             alt="Charvik Staffing Consultancy - Your Talent | Our Support | A Brighter Future"
-            className="h-[74px] sm:h-[80px] w-auto object-contain transition-transform group-hover:scale-[1.01]"
+            className="h-[84px] sm:h-[90px] w-auto object-contain transition-transform group-hover:scale-[1.01]"
           />
         </Link>
 
