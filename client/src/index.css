@@ -201,6 +201,7 @@
   .admin-data-page,
   div[class*="pl-[88px]"],
   div[class*="pt-[88px]"],
+  div[class*="pt-[96px]"],
   div[class*="lg:pl-"],
   div[class*="pb-24"] {
     padding: 0 !important;

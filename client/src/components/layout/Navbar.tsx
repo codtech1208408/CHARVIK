@@ -139,7 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-[88px] bg-white text-slate-800 z-40 flex items-center justify-between px-3 sm:px-6 shadow-[0_4px_16px_rgba(0,114,229,0.06)] border-y-2 border-[#0072E5]">
+    <header className="fixed top-0 left-0 right-0 h-[96px] bg-white text-slate-800 z-40 flex items-center justify-between px-3 sm:px-6 shadow-[0_4px_16px_rgba(0,114,229,0.06)] border-y-2 border-[#0072E5]">
       {/* Background Graphic Swooshes and Borders */}
       <HeaderWaveBackground />
 
@@ -166,31 +166,37 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Charvik brand logo matching exact lockup with crisp bold slogan */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex flex-col items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-0.5 group select-none"
+          className="flex flex-col items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-1 group select-none"
           title="Charvik Staffing Consultancy"
         >
           {/* Main Logo Icon + CHARVIK Brand Mark */}
           <img
-            src="/logo-top.png?v=1"
+            src="/logo-top.png?v=2"
             alt="Charvik Staffing Consultancy"
-            className="h-[44px] sm:h-[48px] w-auto object-contain transition-transform group-hover:scale-[1.01]"
+            className="h-[50px] sm:h-[56px] w-auto object-contain transition-transform group-hover:scale-[1.01]"
           />
 
           {/* STAFFING CONSULTANCY with Orange Accent Flanking Bars */}
           <div className="flex items-center justify-center gap-1.5 sm:gap-2 w-full mt-0.5">
-            <span className="h-[1.5px] w-5 sm:w-8 bg-[#FF7A00] rounded-full shrink-0"></span>
-            <span className="text-[10px] sm:text-[11px] font-black text-[#0B2545] tracking-[0.18em] uppercase whitespace-nowrap">
+            <span className="h-[2px] w-6 sm:w-10 bg-[#FF7A00] rounded-full shrink-0"></span>
+            <span 
+              className="text-[11.5px] sm:text-[13px] font-black text-[#0B2545] tracking-[0.2em] uppercase whitespace-nowrap"
+              style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', textRendering: 'geometricPrecision' }}
+            >
               STAFFING CONSULTANCY
             </span>
-            <span className="h-[1.5px] w-5 sm:w-8 bg-[#FF7A00] rounded-full shrink-0"></span>
+            <span className="h-[2px] w-6 sm:w-10 bg-[#FF7A00] rounded-full shrink-0"></span>
           </div>
 
           {/* Crisp, Bold, 100% Legible Brand Slogan */}
-          <div className="text-[8.5px] sm:text-[9.5px] font-black text-[#0B2545] tracking-[0.12em] uppercase whitespace-nowrap mt-0.5">
+          <div 
+            className="text-[10px] sm:text-[11.5px] font-black text-[#071B33] tracking-[0.05em] uppercase whitespace-nowrap mt-0.5 flex items-center justify-center"
+            style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', textRendering: 'geometricPrecision' }}
+          >
             <span>YOUR TALENT</span>
-            <span className="text-[#FF7A00] font-bold mx-1.5">|</span>
+            <span className="text-[#FF7A00] font-black mx-1.5 sm:mx-2 text-[11px] sm:text-[12px]">|</span>
             <span>OUR SUPPORT</span>
-            <span className="text-[#FF7A00] font-bold mx-1.5">|</span>
+            <span className="text-[#FF7A00] font-black mx-1.5 sm:mx-2 text-[11px] sm:text-[12px]">|</span>
             <span>A BRIGHTER FUTURE</span>
           </div>
         </Link>

@@ -316,7 +316,7 @@ export const AdminLayout: React.FC = () => {
         />
       </ErrorBoundary>
 
-      <div className="flex-1 flex flex-row pt-[88px] relative">
+      <div className="flex-1 flex flex-row pt-[96px] relative">
         {/* Sidebar - Positioned under Top Header */}
         <ErrorBoundary fallbackTitle="Sidebar Navigation">
           <Sidebar
