@@ -162,13 +162,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Charvik brand logo matching exact lockup with crisp bold slogan */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-1 group select-none"
+          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-0.5 group select-none"
           title="Charvik Staffing Consultancy"
         >
           <img
-            src="/logo-exact.png?v=5"
+            src="/logo-exact.png?v=8"
             alt="Charvik Staffing Consultancy"
-            className="h-[72px] sm:h-[78px] lg:h-[80px] w-auto max-w-[280px] sm:max-w-[340px] lg:max-w-[400px] object-contain transition-transform group-hover:scale-[1.02]"
+            className="h-[68px] sm:h-[72px] lg:h-[76px] w-auto max-w-[280px] sm:max-w-[340px] lg:max-w-[400px] object-contain transition-transform group-hover:scale-[1.02]"
           />
         </Link>
 
