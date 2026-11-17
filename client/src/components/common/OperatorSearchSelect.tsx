@@ -8,8 +8,7 @@ import {
   User,
   Phone,
   MapPin,
-  FileText,
-  Sparkles
+  FileText
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { BASE_FLEET_ORGANIZERS } from '../../services/seedData';
@@ -250,11 +249,6 @@ export const OperatorSearchSelect: React.FC<OperatorSearchSelectProps> = ({
     });
   };
 
-  // Quick Chips (top 3 popular operators)
-  const quickChips = useMemo(() => {
-    return registeredOperators.slice(0, 3);
-  }, [registeredOperators]);
-
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {/* Label and Live Header */}
@@ -319,28 +313,6 @@ export const OperatorSearchSelect: React.FC<OperatorSearchSelectProps> = ({
             <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-600' : ''}`} />
           </button>
         </div>
-      </div>
-
-      {/* Quick Select Chips */}
-      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-        <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-amber-500" />
-          <span>Quick Select:</span>
-        </span>
-        {quickChips.map((chip) => (
-          <button
-            key={chip.id}
-            type="button"
-            onClick={() => handleSelect(chip)}
-            className={`text-[10.5px] px-2 py-0.5 rounded-lg border font-bold transition-all cursor-pointer ${
-              value.toLowerCase() === chip.name.toLowerCase()
-                ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
-                : 'bg-slate-50 hover:bg-blue-50 text-slate-700 border-slate-200 hover:border-blue-300'
-            }`}
-          >
-            {chip.name}
-          </button>
-        ))}
       </div>
 
       {/* Dropdown Menu with Instant Search Option */}
