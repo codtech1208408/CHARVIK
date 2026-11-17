@@ -145,7 +145,6 @@ export const AdminLayout: React.FC = () => {
     if (p.includes('/repairs')) return 'Repairs & Service';
     if (p.includes('/bus-condition')) return isOperatorPortal ? 'Cleaning Management' : 'Bus Condition Inspection';
     if (p.includes('/reports')) return 'Fleet & Operational Reports';
-    if (p.includes('/audit-log')) return 'Audit Log & History';
     if (p.includes('/settings')) return 'Application & System Settings';
     return isCaptainPortal ? 'Captain Portal' : isOperatorPortal ? 'Operator Portal' : 'Admin Panel';
   };

@@ -50,7 +50,6 @@ import { VyshnaviTravels } from './pages/VyshnaviTravels';
 import { SupporterTasks } from './pages/SupporterTasks';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
-import { AuditLog } from './pages/AuditLog';
 import { IncomeExpense } from './pages/IncomeExpense';
 
 export function App() {
@@ -133,7 +132,7 @@ export function App() {
               <Route path="drivers/new" element={<DriverRegistration />} />
               <Route path="support-staff/new" element={<SupportStaffRegistration />} />
               <Route path="reports" element={<Reports />} />
-              <Route path="audit-log" element={<AuditLog />} />
+              <Route path="audit-log" element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="income-expense" element={<IncomeExpense />} />
               <Route path="income-and-expense" element={<IncomeExpense />} />
               <Route path="settings" element={<Settings />} />

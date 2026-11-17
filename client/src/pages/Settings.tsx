@@ -6,7 +6,6 @@ import {
   Wrench,
   Bell,
   Database,
-  History,
   Save,
   CheckCircle2,
   ShieldCheck,
@@ -34,7 +33,7 @@ export const Settings: React.FC = () => {
   const { user } = useAuth();
   const { success, error } = useToast();
 
-  const [activeTab, setActiveTab] = useState<'company' | 'financial_control' | 'maintenance' | 'account' | 'notifications' | 'audit' | 'staff_access'>('company');
+  const [activeTab, setActiveTab] = useState<'company' | 'financial_control' | 'maintenance' | 'account' | 'notifications' | 'staff_access'>('company');
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [staffCredentials, setStaffCredentials] = useState<any[]>([]);
@@ -193,7 +192,7 @@ export const Settings: React.FC = () => {
             <span>Application Settings & Administration</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Configure company branding, maintenance intervals, warning alerts, and inspect audit logs.
+            Configure company branding, maintenance intervals, warning alerts, and staff credentials.
           </p>
         </div>
       </div>
@@ -207,7 +206,6 @@ export const Settings: React.FC = () => {
           { id: 'staff_access', label: 'Operator & Crew Logins', icon: Users },
           { id: 'account', label: 'Admin Security', icon: Lock },
           { id: 'notifications', label: 'Alert Preferences', icon: Bell },
-          { id: 'audit', label: 'Audit Trail Logs', icon: History },
         ].map((t) => {
           const Icon = t.icon;
           return (
@@ -636,45 +634,6 @@ export const Settings: React.FC = () => {
                   </span>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* AUDIT LOGS */}
-        {activeTab === 'audit' && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-sm font-bold text-[#142B4A]">
-                System Audit Trail (Security & Odometer Records)
-              </h3>
-              <span className="text-[11px] text-slate-500 font-semibold">{auditLogs.length} Events Logged</span>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="text-slate-400 border-b border-slate-100">
-                    <th className="py-2 w-14 text-center">S.NO</th>
-                    <th className="py-2">Timestamp</th>
-                    <th className="py-2">Action</th>
-                    <th className="py-2">Module</th>
-                    <th className="py-2">Details</th>
-                    <th className="py-2">User</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {auditLogs.map((log, idx) => (
-                    <tr key={log.id}>
-                      <td className="py-2 font-bold text-slate-500 text-center">{idx + 1}</td>
-                      <td className="py-2 font-mono text-[11px] text-slate-500">{log.created_at}</td>
-                      <td className="py-2 font-bold text-slate-900">{log.action}</td>
-                      <td className="py-2 font-semibold text-blue-700">{log.module}</td>
-                      <td className="py-2 text-slate-600">{log.details}</td>
-                      <td className="py-2 font-medium text-slate-900">{log.user_name}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </div>
         )}

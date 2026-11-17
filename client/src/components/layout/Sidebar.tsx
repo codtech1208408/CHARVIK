@@ -31,7 +31,6 @@ import {
   IndianRupee,
   Snowflake,
   ClipboardCheck,
-  History,
   FileText,
   Gauge,
   HeartHandshake,
@@ -323,15 +322,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       iconColor: 'text-amber-400',
       activeGradient: 'bg-gradient-to-r from-amber-500 to-orange-600',
       activeRoutes: ['/admin/chandrika-finance', '/admin/finance']
-    },
-    {
-      label: 'Audit Log',
-      route: '/admin/audit-log',
-      icon: History,
-      iconColor: 'text-violet-400',
-      activeGradient: 'bg-gradient-to-r from-indigo-600 to-purple-700',
-      hasLiveBadge: true,
-      activeRoutes: ['/admin/audit-log']
     },
     {
       label: 'Income & Expense',
