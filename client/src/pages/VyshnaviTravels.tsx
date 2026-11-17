@@ -39,6 +39,7 @@ import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
 import { exportTableToExcel } from '../utils/exportToExcel';
+import { OperatorSearchSelect } from '../components/common/OperatorSearchSelect';
 import type { VyshnaviRecord, VyshnaviTransaction, VyshnaviServiceItem, Bus as BusType } from '../types';
 import vyshnaviLogo from '../assets/vyshnavi-logo.png';
 
@@ -2157,17 +2158,22 @@ export const VyshnaviTravels: React.FC = () => {
               <span>2. Bill To (Client / Organization Details)</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Company / Client Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
+              <div className="sm:col-span-2">
+                <OperatorSearchSelect
+                  label="Company / Client Name"
                   required
                   value={recordForm.bill_to_name}
-                  onChange={(e) => setRecordForm({ ...recordForm, bill_to_name: e.target.value })}
+                  onChange={(val) => setRecordForm({ ...recordForm, bill_to_name: val })}
+                  onSelectOperator={(op) => {
+                    setRecordForm((prev) => ({
+                      ...prev,
+                      bill_to_name: op.name,
+                      bill_to_phone: op.phone || prev.bill_to_phone || '',
+                      bill_to_address: op.address || prev.bill_to_address || '',
+                      bill_to_pan: op.gstOrPan || prev.bill_to_pan || ''
+                    }));
+                  }}
                   placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none"
                 />
               </div>
 

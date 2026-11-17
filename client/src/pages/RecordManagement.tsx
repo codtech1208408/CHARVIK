@@ -27,6 +27,7 @@ import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
 import { exportTableToExcel } from '../utils/exportToExcel';
+import { OperatorSearchSelect } from '../components/common/OperatorSearchSelect';
 
 export interface RecordItem {
   id: string;
@@ -997,15 +998,23 @@ export const RecordManagement: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Company / Client Name *</label>
-                  <input
-                    type="text"
+                <div className="sm:col-span-2">
+                  <OperatorSearchSelect
+                    label="Company / Client Name"
                     required
                     value={formData.bill_to_name || ''}
-                    onChange={(e) => setFormData({ ...formData, bill_to_name: e.target.value })}
+                    onChange={(val) => setFormData({ ...formData, bill_to_name: val })}
+                    onSelectOperator={(op) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        bill_to_name: op.name,
+                        bill_to_phone: op.phone || prev.bill_to_phone || '',
+                        bill_to_address: op.address || prev.bill_to_address || '',
+                        bill_to_pan: op.gstOrPan || prev.bill_to_pan || '',
+                        operator_name: op.contactPerson || op.name || prev.operator_name || ''
+                      }));
+                    }}
                     placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 outline-none"
                   />
                 </div>
 
@@ -1016,7 +1025,7 @@ export const RecordManagement: React.FC = () => {
                     value={formData.bill_to_phone || ''}
                     onChange={(e) => setFormData({ ...formData, bill_to_phone: e.target.value })}
                     placeholder="e.g. 9505151527"
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
+                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none text-xs"
                   />
                 </div>
 
