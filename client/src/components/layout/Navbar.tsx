@@ -166,14 +166,33 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Charvik brand logo matching exact lockup with crisp bold slogan */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-0.5 group select-none"
+          className="flex flex-col items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer py-0.5 group select-none"
           title="Charvik Staffing Consultancy"
         >
+          {/* Main Logo Icon + CHARVIK Brand Mark */}
           <img
-            src="/logo-exact.png?v=11"
+            src="/logo-top.png?v=1"
             alt="Charvik Staffing Consultancy"
-            className="h-[68px] sm:h-[72px] lg:h-[76px] w-auto max-w-[300px] sm:max-w-[360px] lg:max-w-[420px] object-contain transition-transform group-hover:scale-[1.02]"
+            className="h-[44px] sm:h-[48px] w-auto object-contain transition-transform group-hover:scale-[1.01]"
           />
+
+          {/* STAFFING CONSULTANCY with Orange Accent Flanking Bars */}
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 w-full mt-0.5">
+            <span className="h-[1.5px] w-5 sm:w-8 bg-[#FF7A00] rounded-full shrink-0"></span>
+            <span className="text-[10px] sm:text-[11px] font-black text-[#0B2545] tracking-[0.18em] uppercase whitespace-nowrap">
+              STAFFING CONSULTANCY
+            </span>
+            <span className="h-[1.5px] w-5 sm:w-8 bg-[#FF7A00] rounded-full shrink-0"></span>
+          </div>
+
+          {/* Crisp, Bold, 100% Legible Brand Slogan */}
+          <div className="text-[8.5px] sm:text-[9.5px] font-black text-[#0B2545] tracking-[0.12em] uppercase whitespace-nowrap mt-0.5">
+            <span>YOUR TALENT</span>
+            <span className="text-[#FF7A00] font-bold mx-1.5">|</span>
+            <span>OUR SUPPORT</span>
+            <span className="text-[#FF7A00] font-bold mx-1.5">|</span>
+            <span>A BRIGHTER FUTURE</span>
+          </div>
         </Link>
 
         {/* Operator Mode: Quick Return to Admin Button */}
