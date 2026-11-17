@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calendar,
   IndianRupee,
@@ -12,15 +12,36 @@ import {
   Zap,
   Plus,
   ArrowRight,
+  ArrowLeft,
   UserPlus,
   CalendarPlus,
   X,
   CheckCircle2,
   Filter,
   Download,
-  Search
+  Search,
+  User,
+  FileText,
+  Landmark,
+  ShieldCheck,
+  Phone,
+  Mail,
+  MapPin,
+  CreditCard,
+  Upload,
+  Eye,
+  Printer,
+  Trash2,
+  Check,
+  FileCheck,
+  Building,
+  Image,
+  AlertCircle,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useToast } from '../components/common/Toast';
+import { printSheet } from '../utils/printSheet';
+import { exportMultiSheetExcel } from '../utils/exportToExcel';
 
 export interface FinanceTransaction {
   id: string | number;
@@ -34,13 +55,69 @@ export interface FinanceTransaction {
 
 export interface FinanceCustomer {
   id: string | number;
+  customerCode: string;
   name: string;
+  fatherName?: string;
+  gender: string;
+  dob?: string;
   phone: string;
+  altPhone?: string;
+  email?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  occupation?: string;
+  monthlyIncome?: number | string;
+  profilePhoto?: string;
+
+  // KYC
+  aadhaarNumber?: string;
+  aadhaarFrontDoc?: string;
+  aadhaarBackDoc?: string;
+  panNumber?: string;
+  panDoc?: string;
+  otherDocType?: string;
+  otherDocNumber?: string;
+  otherDocFile?: string;
+  kycStatus?: 'Verified' | 'Pending Verification';
+
+  // Loan Terms
   loanAmount: number;
-  principalPaid: number;
   interestRate: number;
-  outstanding: number;
+  repaymentFrequency?: 'Monthly' | 'Weekly' | 'Daily';
+  loanTermMonths?: number;
   startDate: string;
+  disbursementMode?: 'Cash' | 'Bank' | 'UPI';
+  securityType?: string;
+  securityDetails?: string;
+  securityDoc?: string;
+
+  // Bank
+  bankName?: string;
+  accountHolderName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  branch?: string;
+  upiId?: string;
+  bankProofDoc?: string;
+
+  // Guarantor & Reference
+  guarantorName?: string;
+  guarantorRelation?: string;
+  guarantorPhone?: string;
+  guarantorAadhaar?: string;
+  guarantorAddress?: string;
+  guarantorDoc?: string;
+  ref1Name?: string;
+  ref1Phone?: string;
+  ref2Name?: string;
+  ref2Phone?: string;
+  internalRemarks?: string;
+
+  // Balance
+  principalPaid: number;
+  outstanding: number;
 }
 
 export const ChandrikaFinance: React.FC = () => {
@@ -77,76 +154,528 @@ export const ChandrikaFinance: React.FC = () => {
     }
   ]);
 
-  // Customers State (48 customers)
-  const [customerCount, setCustomerCount] = useState(48);
-
-  // Core Financial Aggregates (matching the user's exact screenshot values)
-  const [totalInvestment, setTotalInvestment] = useState(5000000);
-  const [totalLoanGiven, setTotalLoanGiven] = useState(3250000);
-  const [totalPrincipalReceived, setTotalPrincipalReceived] = useState(800000);
-  const [totalInterestReceived, setTotalInterestReceived] = useState(325000);
-  const [todayCollection, setTodayCollection] = useState(85000);
-  const [thisMonthCollection, setThisMonthCollection] = useState(1240000);
-  const [thisMonthInterest, setThisMonthInterest] = useState(210000);
-
-  // Dynamic Outstanding calculation
-  const totalOutstanding = useMemo(() => {
-    return Math.max(0, totalLoanGiven - totalPrincipalReceived);
-  }, [totalLoanGiven, totalPrincipalReceived]);
-
-  // Modals
-  const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
-  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
-  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
-  const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
-
-  // Form states
-  const [investmentForm, setInvestmentForm] = useState({ investor: '', amount: '', mode: 'Bank' as 'UPI' | 'Bank' | 'Cash', notes: '' });
-  const [customerForm, setCustomerForm] = useState({ name: '', phone: '', loanAmount: '', interestRate: '2.0', notes: '' });
-  const [loanForm, setLoanForm] = useState({ customerName: '', amount: '', mode: 'Cash' as 'UPI' | 'Bank' | 'Cash', notes: '' });
-  const [collectionForm, setCollectionForm] = useState({ customerName: '', type: 'Collection (Principal)' as 'Collection (Principal)' | 'Collection (Interest)', amount: '', mode: 'UPI' as 'UPI' | 'Bank' | 'Cash', notes: '' });
-
-  // View All Search
-  const [viewAllSearch, setViewAllSearch] = useState('');
-
-  // Handle Add Investment
-  const handleAddInvestment = (e: React.FormEvent) => {
-    e.preventDefault();
-    const amt = parseFloat(investmentForm.amount);
-    if (isNaN(amt) || amt <= 0) {
-      toastError('Please enter a valid investment amount.');
-      return;
+  // Customers State (Initialized from localStorage or default seed)
+  const SEED_CUSTOMERS: FinanceCustomer[] = [
+    {
+      id: 1,
+      customerCode: 'CF-1001',
+      name: 'Ramesh Kumar',
+      fatherName: 'K. Satyanarayana',
+      gender: 'Male',
+      dob: '1988-05-12',
+      phone: '9848012345',
+      altPhone: '9848054321',
+      email: 'ramesh.kumar@gmail.com',
+      address: 'H.No 4-22, Agamaiah Nagar, Vanasthalipuram',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      pincode: '500070',
+      occupation: 'Fleet Transport Contractor',
+      monthlyIncome: 75000,
+      aadhaarNumber: '7845 1290 3412',
+      panNumber: 'ABCDE1234F',
+      kycStatus: 'Verified',
+      loanAmount: 500000,
+      interestRate: 2.0,
+      repaymentFrequency: 'Monthly',
+      loanTermMonths: 12,
+      startDate: '2026-05-10',
+      disbursementMode: 'Bank',
+      securityType: 'Promissory Note',
+      securityDetails: 'Original signed promissory note and stamp paper',
+      bankName: 'Kotak Mahindra Bank',
+      accountHolderName: 'Ramesh Kumar',
+      accountNumber: '2848153146',
+      ifscCode: 'KKBK0007460',
+      branch: 'Vanasthalipuram, Hyderabad',
+      upiId: '9848012345@ybl',
+      guarantorName: 'M. Srinivas Rao',
+      guarantorRelation: 'Brother',
+      guarantorPhone: '9848099887',
+      guarantorAadhaar: '6543 2109 8765',
+      guarantorAddress: 'L.B. Nagar, Hyderabad',
+      ref1Name: 'G. Krishna',
+      ref1Phone: '9848011223',
+      internalRemarks: 'Existing borrower with good credit repayment history',
+      principalPaid: 200000,
+      outstanding: 300000
+    },
+    {
+      id: 2,
+      customerCode: 'CF-1002',
+      name: 'Suresh Reddy',
+      fatherName: 'S. Narsimha Reddy',
+      gender: 'Male',
+      dob: '1985-09-24',
+      phone: '9848098765',
+      address: 'Plot 18, Bank Colony, Hayathnagar',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      pincode: '500071',
+      occupation: 'Commercial Vehicle Owner',
+      monthlyIncome: 90000,
+      aadhaarNumber: '8912 3456 7890',
+      panNumber: 'FGHIJ5678K',
+      kycStatus: 'Verified',
+      loanAmount: 800000,
+      interestRate: 2.0,
+      repaymentFrequency: 'Monthly',
+      loanTermMonths: 24,
+      startDate: '2026-06-15',
+      disbursementMode: 'Bank',
+      securityType: 'Cheque',
+      securityDetails: 'SBI blank signed guarantee cheque No. 392011',
+      bankName: 'State Bank of India',
+      accountHolderName: 'Suresh Reddy',
+      accountNumber: '30492817263',
+      ifscCode: 'SBIN0004567',
+      branch: 'L.B. Nagar',
+      upiId: '9848098765@sbi',
+      guarantorName: 'V. Prabhakar',
+      guarantorRelation: 'Colleague',
+      guarantorPhone: '9848077665',
+      ref1Name: 'K. Mohan',
+      ref1Phone: '9848033445',
+      principalPaid: 450000,
+      outstanding: 350000
+    },
+    {
+      id: 3,
+      customerCode: 'CF-1003',
+      name: 'Anil Verma',
+      fatherName: 'R. Ram Verma',
+      gender: 'Male',
+      dob: '1992-02-18',
+      phone: '9848045678',
+      address: 'Flat 302, Sai Residency, Dilsukhnagar',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      pincode: '500060',
+      occupation: 'Automobile Workshop Proprietor',
+      monthlyIncome: 60000,
+      aadhaarNumber: '4567 8901 2345',
+      panNumber: 'KLMNO9012P',
+      kycStatus: 'Verified',
+      loanAmount: 200000,
+      interestRate: 2.0,
+      repaymentFrequency: 'Monthly',
+      loanTermMonths: 6,
+      startDate: '2026-11-14',
+      disbursementMode: 'Cash',
+      securityType: 'Promissory Note',
+      bankName: 'HDFC Bank',
+      accountHolderName: 'Anil Verma',
+      accountNumber: '50100234567890',
+      ifscCode: 'HDFC0001234',
+      branch: 'Dilsukhnagar',
+      upiId: 'anilverma@okaxis',
+      principalPaid: 0,
+      outstanding: 200000
     }
-    setTotalInvestment((prev) => prev + amt);
-    setTransactions((prev) => [
-      {
-        id: Date.now(),
-        date: '14 Nov 2026',
-        customerName: investmentForm.investor || 'Partner Investment',
-        type: 'Investment Added',
-        amount: amt,
-        mode: investmentForm.mode,
-        notes: investmentForm.notes
-      },
-      ...prev
-    ]);
-    success(`Investment of ₹${amt.toLocaleString('en-IN')} added successfully!`);
-    setIsInvestmentModalOpen(false);
-    setInvestmentForm({ investor: '', amount: '', mode: 'Bank', notes: '' });
+  ];
+
+  const [customers, setCustomers] = useState<FinanceCustomer[]>(() => {
+    try {
+      const saved = localStorage.getItem('charvik_chandrika_finance_customers');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SEED_CUSTOMERS;
+  });
+
+  const [customerCount, setCustomerCount] = useState<number>(() => {
+    return Math.max(48, customers.length + 45);
+  });
+
+  // Save customers to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('charvik_chandrika_finance_customers', JSON.stringify(customers));
+    } catch {}
+  }, [customers]);
+
+  // Stepper state for customer registration
+  const [currentCustomerStep, setCurrentCustomerStep] = useState(1);
+
+  const createBlankCustomerForm = (nextIdx: number) => ({
+    // Step 1: Personal Information
+    customerCode: `CF-${String(nextIdx).padStart(4, '0')}`,
+    profilePhoto: '',
+    name: '',
+    fatherName: '',
+    gender: 'Male',
+    dob: '',
+    phone: '',
+    altPhone: '',
+    email: '',
+    address: '',
+    city: 'Hyderabad',
+    state: 'Telangana',
+    pincode: '500070',
+    occupation: '',
+    monthlyIncome: '',
+
+    // Step 2: KYC & Identity Documents
+    aadhaarNumber: '',
+    aadhaarFrontDoc: '',
+    aadhaarBackDoc: '',
+    panNumber: '',
+    panDoc: '',
+    otherDocType: 'Voter ID',
+    otherDocNumber: '',
+    otherDocFile: '',
+    kycStatus: 'Verified' as 'Verified' | 'Pending Verification',
+
+    // Step 3: Loan & Security Terms
+    loanAmount: '',
+    interestRate: '2.0',
+    repaymentFrequency: 'Monthly' as 'Monthly' | 'Weekly' | 'Daily',
+    loanTermMonths: '12',
+    disbursementDate: new Date().toISOString().split('T')[0],
+    disbursementMode: 'Cash' as 'Cash' | 'Bank' | 'UPI',
+    securityType: 'Promissory Note',
+    securityDetails: '',
+    securityDoc: '',
+
+    // Step 4: Bank Details
+    bankName: '',
+    accountHolderName: '',
+    accountNumber: '',
+    ifscCode: '',
+    branch: 'Hyderabad',
+    upiId: '',
+    bankProofDoc: '',
+
+    // Step 5: Guarantor & References
+    guarantorName: '',
+    guarantorRelation: '',
+    guarantorPhone: '',
+    guarantorAadhaar: '',
+    guarantorAddress: '',
+    guarantorDoc: '',
+    ref1Name: '',
+    ref1Phone: '',
+    ref2Name: '',
+    ref2Phone: '',
+    internalRemarks: ''
+  });
+
+  const [customerForm, setCustomerForm] = useState(() => createBlankCustomerForm(customerCount + 1));
+
+  // Handle file uploads (converts file to base64 for instant preview)
+  const handleCustomerFileUpload = (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCustomerForm((prev) => ({ ...prev, [field]: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
   };
 
-  // Handle Add Customer
-  const handleAddCustomer = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Print Official Customer Registration & KYC Sheet
+  const handlePrintCustomerKYC = (cust: FinanceCustomer) => {
+    const reportHtml = `
+      <div style="font-family: Arial, sans-serif; padding: 24px; color: #0f172a; max-width: 800px; margin: 0 auto; line-height: 1.45;">
+        <!-- Header Banner -->
+        <div style="border-bottom: 2px solid #1E3A8A; padding-bottom: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <h1 style="margin: 0; color: #1E3A8A; font-size: 22px; font-weight: 900; letter-spacing: 0.5px;">CHANDRIKA FINANCE</h1>
+            <p style="margin: 3px 0 0; color: #475569; font-size: 11px; font-weight: bold; text-transform: uppercase;">A Unit of Charvik Staffing & Operational Services</p>
+            <p style="margin: 3px 0 0; color: #64748b; font-size: 10px;">NH65, opp. Bajaj Electronic, L.B. Nagar, Vanasthalipuram, Hyderabad | Phone: 9505151527</p>
+            <div style="display: inline-block; margin-top: 8px; padding: 3px 10px; background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 6px; font-size: 11px; font-weight: bold; color: #3730A3;">
+              OFFICIAL BORROWER REGISTRATION & KYC ENROLLMENT DOSSIER
+            </div>
+          </div>
+          <div style="text-align: right;">
+            ${
+              cust.profilePhoto
+                ? `<img src="${cust.profilePhoto}" style="width: 85px; height: 95px; object-fit: cover; border: 2px solid #CBD5E1; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />`
+                : `<div style="width: 85px; height: 95px; border: 2px dashed #CBD5E1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center; padding: 4px;">AFFIX BORROWER PHOTO</div>`
+            }
+            <div style="margin-top: 5px; font-family: monospace; font-size: 12px; font-weight: bold; color: #1E3A8A;">${cust.customerCode || 'CF-1000'}</div>
+          </div>
+        </div>
+
+        <!-- Section 1: Borrower Personal Profile -->
+        <div style="margin-bottom: 16px;">
+          <div style="background: #F1F5F9; padding: 6px 12px; font-size: 11px; font-weight: 900; color: #1E293B; text-transform: uppercase; border-left: 4px solid #1E3A8A; margin-bottom: 8px;">
+            1. Borrower Personal & Contact Profile
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">Full Name:</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #0f172a; width: 28%;">${cust.name}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">Father / Guardian:</td>
+              <td style="padding: 5px 8px; color: #0f172a; width: 28%;">${cust.fatherName || '—'}</td>
+            </tr>
+            <tr style="background: #FAFAFA;">
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Gender:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.gender}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Date of Birth:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.dob || '—'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Primary Mobile:</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #0f172a;">${cust.phone}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Alternative Phone:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.altPhone || '—'}</td>
+            </tr>
+            <tr style="background: #FAFAFA;">
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Occupation / Trade:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.occupation || '—'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Monthly Income:</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #047857;">${cust.monthlyIncome ? `₹ ${Number(cust.monthlyIncome).toLocaleString('en-IN')}` : '—'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Residential Address:</td>
+              <td colspan="3" style="padding: 5px 8px; color: #0f172a;">${cust.address || '—'}, ${cust.city || 'Hyderabad'}, ${cust.state || 'Telangana'} ${cust.pincode ? `- ${cust.pincode}` : ''}</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Section 2: Identity & KYC Verification -->
+        <div style="margin-bottom: 16px;">
+          <div style="background: #F1F5F9; padding: 6px 12px; font-size: 11px; font-weight: 900; color: #1E293B; text-transform: uppercase; border-left: 4px solid #1E3A8A; margin-bottom: 8px;">
+            2. Identity & KYC Verification Particulars
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">Aadhaar Card No:</td>
+              <td style="padding: 5px 8px; font-weight: bold; font-family: monospace; color: #0f172a; width: 28%;">${cust.aadhaarNumber || '—'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">PAN Card No:</td>
+              <td style="padding: 5px 8px; font-weight: bold; font-family: monospace; color: #0f172a; width: 28%;">${cust.panNumber || '—'}</td>
+            </tr>
+            <tr style="background: #FAFAFA;">
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">KYC Status:</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: ${cust.kycStatus === 'Verified' ? '#047857' : '#D97706'};">${cust.kycStatus || 'Verified'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Enrollment Date:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.startDate || new Date().toISOString().split('T')[0]}</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Section 3: Loan Parameters & Collateral Security -->
+        <div style="margin-bottom: 16px;">
+          <div style="background: #F1F5F9; padding: 6px 12px; font-size: 11px; font-weight: 900; color: #1E293B; text-transform: uppercase; border-left: 4px solid #1E3A8A; margin-bottom: 8px;">
+            3. Loan Terms, Interest & Security Parameters
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">Sanctioned Loan:</td>
+              <td style="padding: 5px 8px; font-weight: 900; color: #1E3A8A; font-size: 13px; width: 28%;">₹ ${Number(cust.loanAmount || 0).toLocaleString('en-IN')}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">Monthly Interest Rate:</td>
+              <td style="padding: 5px 8px; font-weight: 900; color: #047857; width: 28%;">${cust.interestRate || '2.0'}% per month</td>
+            </tr>
+            <tr style="background: #FAFAFA;">
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Repayment Frequency:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.repaymentFrequency || 'Monthly'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Loan Term:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.loanTermMonths || 12} Months</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Collateral / Security:</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #0f172a;">${cust.securityType || 'Promissory Note'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Security Particulars:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.securityDetails || 'Standard agreement executed'}</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Section 4: Bank Account & Payout Details -->
+        <div style="margin-bottom: 16px;">
+          <div style="background: #F1F5F9; padding: 6px 12px; font-size: 11px; font-weight: 900; color: #1E293B; text-transform: uppercase; border-left: 4px solid #1E3A8A; margin-bottom: 8px;">
+            4. Bank Account & Settlement Channel
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">Bank Name:</td>
+              <td style="padding: 5px 8px; color: #0f172a; width: 28%;">${cust.bankName || '—'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">Account Holder:</td>
+              <td style="padding: 5px 8px; color: #0f172a; width: 28%;">${cust.accountHolderName || cust.name}</td>
+            </tr>
+            <tr style="background: #FAFAFA;">
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Account Number:</td>
+              <td style="padding: 5px 8px; font-family: monospace; font-weight: bold; color: #0f172a;">${cust.accountNumber || '—'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">IFSC Code:</td>
+              <td style="padding: 5px 8px; font-family: monospace; font-weight: bold; color: #0f172a;">${cust.ifscCode || '—'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Branch:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.branch || '—'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">UPI ID:</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #0f172a;">${cust.upiId || '—'}</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Section 5: Guarantor & Contact References -->
+        <div style="margin-bottom: 24px;">
+          <div style="background: #F1F5F9; padding: 6px 12px; font-size: 11px; font-weight: 900; color: #1E293B; text-transform: uppercase; border-left: 4px solid #1E3A8A; margin-bottom: 8px;">
+            5. Guarantor (Surety) & Personal References
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">Guarantor Name:</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #0f172a; width: 28%;">${cust.guarantorName || '—'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569; width: 22%;">Relationship:</td>
+              <td style="padding: 5px 8px; color: #0f172a; width: 28%;">${cust.guarantorRelation || '—'}</td>
+            </tr>
+            <tr style="background: #FAFAFA;">
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Guarantor Mobile:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.guarantorPhone || '—'}</td>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Guarantor Aadhaar:</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${cust.guarantorAadhaar || '—'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Reference Contact:</td>
+              <td colspan="3" style="padding: 5px 8px; color: #0f172a;">${cust.ref1Name || '—'} ${cust.ref1Phone ? `(${cust.ref1Phone})` : ''}</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Borrower Undertaking -->
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 10px 14px; border-radius: 8px; font-size: 9.5px; color: #475569; line-height: 1.4; margin-bottom: 30px;">
+          <strong>Declaration:</strong> I hereby declare that all information furnished herein is true, complete, and authentic. I agree to repay the principal and agreed monthly interest installment punctually as per the repayment schedule of Chandrika Finance.
+        </div>
+
+        <!-- Signature Blocks -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-top: 15px;">
+          <div style="text-align: center; width: 220px;">
+            <div style="border-bottom: 1.5px solid #0f172a; height: 40px; margin-bottom: 6px;"></div>
+            <p style="margin: 0; font-size: 11px; font-weight: bold; color: #0f172a;">Signature of Borrower</p>
+            <p style="margin: 2px 0 0; font-size: 9px; color: #64748b;">(${cust.name})</p>
+          </div>
+
+          <div style="text-align: center; width: 220px;">
+            <div style="border-bottom: 1.5px solid #0f172a; height: 40px; margin-bottom: 6px;"></div>
+            <p style="margin: 0; font-size: 11px; font-weight: bold; color: #0f172a;">Authorized Signatory</p>
+            <p style="margin: 2px 0 0; font-size: 9px; color: #64748b;">For CHANDRIKA FINANCE</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    printSheet({
+      title: `CUSTOMER REGISTRATION & KYC DOSSIER - ${cust.name}`,
+      subtitle: `Chandrika Finance • Customer Code: ${cust.customerCode || cust.id}`,
+      orientation: 'portrait',
+      hideMetaBar: true,
+      htmlContent: reportHtml
+    });
+  };
+
+  // Handle Save / Submit Customer Registration
+  const handleSaveCustomer = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
     if (!customerForm.name.trim()) {
-      toastError('Please enter the customer name.');
+      toastError('Please enter Customer Full Name in Step 1.');
+      setCurrentCustomerStep(1);
       return;
     }
+    if (!customerForm.phone.trim()) {
+      toastError('Please enter Customer Mobile Number in Step 1.');
+      setCurrentCustomerStep(1);
+      return;
+    }
+
+    const loanAmt = parseFloat(customerForm.loanAmount) || 0;
+    const rateVal = parseFloat(customerForm.interestRate) || 2.0;
+
+    const newCustomer: FinanceCustomer = {
+      id: Date.now(),
+      customerCode: customerForm.customerCode || `CF-${String(customerCount + 1).padStart(4, '0')}`,
+      name: customerForm.name.trim(),
+      fatherName: customerForm.fatherName.trim(),
+      gender: customerForm.gender,
+      dob: customerForm.dob,
+      phone: customerForm.phone.trim(),
+      altPhone: customerForm.altPhone.trim(),
+      email: customerForm.email.trim(),
+      address: customerForm.address.trim(),
+      city: customerForm.city.trim() || 'Hyderabad',
+      state: customerForm.state.trim() || 'Telangana',
+      pincode: customerForm.pincode.trim(),
+      occupation: customerForm.occupation.trim(),
+      monthlyIncome: customerForm.monthlyIncome,
+      profilePhoto: customerForm.profilePhoto,
+
+      // KYC
+      aadhaarNumber: customerForm.aadhaarNumber.trim(),
+      aadhaarFrontDoc: customerForm.aadhaarFrontDoc,
+      aadhaarBackDoc: customerForm.aadhaarBackDoc,
+      panNumber: customerForm.panNumber.trim(),
+      panDoc: customerForm.panDoc,
+      otherDocType: customerForm.otherDocType,
+      otherDocNumber: customerForm.otherDocNumber.trim(),
+      otherDocFile: customerForm.otherDocFile,
+      kycStatus: customerForm.kycStatus,
+
+      // Loan Terms
+      loanAmount: loanAmt,
+      interestRate: rateVal,
+      repaymentFrequency: customerForm.repaymentFrequency,
+      loanTermMonths: parseInt(customerForm.loanTermMonths) || 12,
+      startDate: customerForm.disbursementDate || new Date().toISOString().split('T')[0],
+      disbursementMode: customerForm.disbursementMode,
+      securityType: customerForm.securityType,
+      securityDetails: customerForm.securityDetails.trim(),
+      securityDoc: customerForm.securityDoc,
+
+      // Bank
+      bankName: customerForm.bankName.trim(),
+      accountHolderName: customerForm.accountHolderName.trim() || customerForm.name.trim(),
+      accountNumber: customerForm.accountNumber.trim(),
+      ifscCode: customerForm.ifscCode.trim(),
+      branch: customerForm.branch.trim(),
+      upiId: customerForm.upiId.trim(),
+      bankProofDoc: customerForm.bankProofDoc,
+
+      // Guarantor & References
+      guarantorName: customerForm.guarantorName.trim(),
+      guarantorRelation: customerForm.guarantorRelation.trim(),
+      guarantorPhone: customerForm.guarantorPhone.trim(),
+      guarantorAadhaar: customerForm.guarantorAadhaar.trim(),
+      guarantorAddress: customerForm.guarantorAddress.trim(),
+      guarantorDoc: customerForm.guarantorDoc,
+      ref1Name: customerForm.ref1Name.trim(),
+      ref1Phone: customerForm.ref1Phone.trim(),
+      ref2Name: customerForm.ref2Name.trim(),
+      ref2Phone: customerForm.ref2Phone.trim(),
+      internalRemarks: customerForm.internalRemarks.trim(),
+
+      // Balances
+      principalPaid: 0,
+      outstanding: loanAmt
+    };
+
+    // If loan amount is sanctioned, record a Loan Given transaction
+    if (loanAmt > 0) {
+      setTotalLoanGiven((prev) => prev + loanAmt);
+      setTransactions((prev) => [
+        {
+          id: Date.now(),
+          date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          customerName: newCustomer.name,
+          type: 'Loan Given',
+          amount: loanAmt,
+          mode: customerForm.disbursementMode === 'Bank' ? 'Bank' : customerForm.disbursementMode === 'UPI' ? 'UPI' : 'Cash',
+          notes: `New borrower financing sanctioned (${newCustomer.customerCode} • ${rateVal}% interest)`
+        },
+        ...prev
+      ]);
+    }
+
+    setCustomers((prev) => [newCustomer, ...prev]);
     setCustomerCount((prev) => prev + 1);
-    success(`Customer ${customerForm.name} registered successfully!`);
+
+    success(`Customer ${newCustomer.name} (${newCustomer.customerCode}) registered successfully!`);
     setIsCustomerModalOpen(false);
-    setCustomerForm({ name: '', phone: '', loanAmount: '', interestRate: '2.0', notes: '' });
+    setCurrentCustomerStep(1);
+    setCustomerForm(createBlankCustomerForm(customerCount + 2));
   };
 
   // Handle Loan Given
@@ -218,6 +747,180 @@ export const ChandrikaFinance: React.FC = () => {
     setCollectionForm({ customerName: '', type: 'Collection (Principal)', amount: '', mode: 'UPI', notes: '' });
   };
 
+  // Customers Directory state & search
+  const [isCustomersDirectoryOpen, setIsCustomersDirectoryOpen] = useState(false);
+  const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+
+  // Filtered directory customers
+  const filteredDirectoryCustomers = useMemo(() => {
+    if (!customerSearchQuery.trim()) return customers;
+    const q = customerSearchQuery.toLowerCase();
+    return customers.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        (c.customerCode && c.customerCode.toLowerCase().includes(q)) ||
+        (c.phone && c.phone.toLowerCase().includes(q)) ||
+        (c.occupation && c.occupation.toLowerCase().includes(q)) ||
+        (c.city && c.city.toLowerCase().includes(q)) ||
+        (c.panNumber && c.panNumber.toLowerCase().includes(q))
+    );
+  }, [customers, customerSearchQuery]);
+
+  // Export all finance data into professionally formatted multi-sheet Excel
+  const handleExportExcel = () => {
+    try {
+      const customerRows = customers.map((c, idx) => [
+        idx + 1,
+        c.customerCode || `CF-${String(c.id).padStart(4, '0')}`,
+        c.name,
+        c.phone || '—',
+        c.aadhaarNumber || '—',
+        c.panNumber || '—',
+        c.occupation || '—',
+        c.monthlyIncome ? `₹ ${Number(c.monthlyIncome).toLocaleString('en-IN')}` : '—',
+        `₹ ${Number(c.loanAmount || 0).toLocaleString('en-IN')}`,
+        `${c.interestRate || 2.0}%`,
+        c.repaymentFrequency || 'Monthly',
+        `${c.loanTermMonths || 12} Months`,
+        `₹ ${Number(c.outstanding || 0).toLocaleString('en-IN')}`,
+        c.kycStatus || 'Verified'
+      ]);
+
+      const txRows = transactions.map((t, idx) => [
+        idx + 1,
+        t.date,
+        t.customerName,
+        t.type,
+        `₹ ${Number(t.amount).toLocaleString('en-IN')}`,
+        t.mode,
+        t.notes || '—'
+      ]);
+
+      exportMultiSheetExcel({
+        filename: `Chandrika_Finance_Report_${new Date().toISOString().split('T')[0]}`,
+        sheets: [
+          {
+            sheetName: 'Customers Directory',
+            title: 'CHANDRIKA FINANCE - REGISTERED BORROWERS & LOAN STATUS',
+            subtitle: `Total Customers: ${customerCount} | Total Loan Given: ₹ ${totalLoanGiven.toLocaleString('en-IN')} | Total Outstanding: ₹ ${totalOutstanding.toLocaleString('en-IN')}`,
+            headers: [
+              'S.No',
+              'Customer Code',
+              'Full Name',
+              'Phone',
+              'Aadhaar Number',
+              'PAN Number',
+              'Occupation',
+              'Monthly Income',
+              'Loan Amount',
+              'Interest Rate',
+              'Repayment Frequency',
+              'Term',
+              'Outstanding Balance',
+              'KYC Status'
+            ],
+            rows: customerRows
+          },
+          {
+            sheetName: 'Transactions Register',
+            title: 'CHANDRIKA FINANCE - TRANSACTIONS & COLLECTIONS REGISTER',
+            subtitle: `Total Investment: ₹ ${totalInvestment.toLocaleString('en-IN')} | Total Principal Received: ₹ ${totalPrincipalReceived.toLocaleString('en-IN')} | Interest Received: ₹ ${totalInterestReceived.toLocaleString('en-IN')}`,
+            headers: ['S.No', 'Date', 'Customer Name', 'Transaction Type', 'Amount (₹)', 'Payment Mode', 'Notes / Remarks'],
+            rows: txRows
+          }
+        ]
+      });
+      success('Finance report exported to Excel successfully!');
+    } catch (err: any) {
+      error(`Export failed: ${err.message || 'Unknown error'}`);
+    }
+  };
+
+  // Print Summary Statement Report
+  const handlePrintSummaryReport = () => {
+    const content = `
+      <div style="font-family: Arial, sans-serif; padding: 24px; color: #1e293b;">
+        <div style="border-bottom: 2px solid #142B4A; padding-bottom: 12px; margin-bottom: 20px;">
+          <h1 style="color: #142B4A; font-size: 20px; font-weight: 900; margin: 0;">CHANDRIKA FINANCE</h1>
+          <p style="font-size: 11px; color: #64748b; margin: 4px 0 0;">Comprehensive Finance Portfolio & Loan Summary Statement</p>
+          <p style="font-size: 10px; color: #94a3b8; margin: 2px 0 0;">Generated on: ${new Date().toLocaleString('en-IN')}</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
+          <div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">Total Investment</div>
+            <div style="font-size: 16px; font-weight: 900; color: #4338ca; margin-top: 4px;">₹ ${totalInvestment.toLocaleString('en-IN')}</div>
+          </div>
+          <div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">Total Loan Given</div>
+            <div style="font-size: 16px; font-weight: 900; color: #0284c7; margin-top: 4px;">₹ ${totalLoanGiven.toLocaleString('en-IN')}</div>
+          </div>
+          <div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">Principal Received</div>
+            <div style="font-size: 16px; font-weight: 900; color: #16a34a; margin-top: 4px;">₹ ${totalPrincipalReceived.toLocaleString('en-IN')}</div>
+          </div>
+          <div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div style="font-size: 10px; color: #64748b; font-weight: bold; text-transform: uppercase;">Total Outstanding</div>
+            <div style="font-size: 16px; font-weight: 900; color: #dc2626; margin-top: 4px;">₹ ${totalOutstanding.toLocaleString('en-IN')}</div>
+          </div>
+        </div>
+
+        <h3 style="font-size: 14px; font-weight: bold; color: #0f172a; margin: 16px 0 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Registered Borrowers Directory</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 24px;">
+          <thead>
+            <tr style="background: #142B4A; color: white; text-align: left;">
+              <th style="padding: 6px 8px;">Code</th>
+              <th style="padding: 6px 8px;">Customer Name</th>
+              <th style="padding: 6px 8px;">Phone</th>
+              <th style="padding: 6px 8px;">Loan Amount</th>
+              <th style="padding: 6px 8px;">Rate</th>
+              <th style="padding: 6px 8px;">Outstanding</th>
+              <th style="padding: 6px 8px;">KYC Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${customers.map((c) => `
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 6px 8px; font-family: monospace; font-weight: bold;">${c.customerCode || 'CF-' + c.id}</td>
+                <td style="padding: 6px 8px; font-weight: bold;">${c.name}</td>
+                <td style="padding: 6px 8px;">${c.phone || '—'}</td>
+                <td style="padding: 6px 8px;">₹ ${Number(c.loanAmount || 0).toLocaleString('en-IN')}</td>
+                <td style="padding: 6px 8px;">${c.interestRate || 2.0}%</td>
+                <td style="padding: 6px 8px; font-weight: bold; color: #dc2626;">₹ ${Number(c.outstanding || 0).toLocaleString('en-IN')}</td>
+                <td style="padding: 6px 8px;">${c.kycStatus || 'Verified'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <h3 style="font-size: 14px; font-weight: bold; color: #0f172a; margin: 16px 0 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">Recent Transactions</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+          <thead>
+            <tr style="background: #142B4A; color: white; text-align: left;">
+              <th style="padding: 6px 8px;">Date</th>
+              <th style="padding: 6px 8px;">Customer Name</th>
+              <th style="padding: 6px 8px;">Type</th>
+              <th style="padding: 6px 8px;">Amount</th>
+              <th style="padding: 6px 8px;">Mode</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${transactions.slice(0, 10).map((t) => `
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 6px 8px;">${t.date}</td>
+                <td style="padding: 6px 8px; font-weight: bold;">${t.customerName}</td>
+                <td style="padding: 6px 8px;">${t.type}</td>
+                <td style="padding: 6px 8px; font-weight: bold;">₹ ${Number(t.amount).toLocaleString('en-IN')}</td>
+                <td style="padding: 6px 8px;">${t.mode}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+    printSheet('CHANDRIKA FINANCE - FINANCIAL STATEMENT & LOAN DIRECTORY', content);
+  };
+
   // Filtered view all transactions
   const filteredViewAllTransactions = useMemo(() => {
     return transactions.filter((t) =>
@@ -254,9 +957,38 @@ export const ChandrikaFinance: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/90 shadow-2xs text-xs font-bold text-slate-700 w-fit self-start md:self-auto shrink-0">
-          <Calendar className="w-4 h-4 text-blue-600" />
-          <span>14 Nov 2026, Sat</span>
+        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto shrink-0">
+          <button
+            onClick={() => setIsCustomersDirectoryOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-xl text-xs font-black transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+            title="View full borrowers directory"
+          >
+            <Users className="w-4 h-4 text-blue-600" />
+            <span>Customers ({customerCount})</span>
+          </button>
+          
+          <button
+            onClick={handleExportExcel}
+            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-black transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+            title="Export full finance data to Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>Export Excel</span>
+          </button>
+
+          <button
+            onClick={handlePrintSummaryReport}
+            className="flex items-center gap-1.5 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/80 rounded-xl text-xs font-black transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+            title="Print Finance Summary Report"
+          >
+            <Printer className="w-4 h-4 text-purple-600" />
+            <span>Print Report</span>
+          </button>
+
+          <div className="flex items-center gap-2 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/90 shadow-2xs text-xs font-bold text-slate-700">
+            <Calendar className="w-4 h-4 text-blue-600" />
+            <span>14 Nov 2026, Sat</span>
+          </div>
         </div>
       </div>
 
@@ -386,18 +1118,27 @@ export const ChandrikaFinance: React.FC = () => {
         </div>
 
         {/* Total Customers */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center gap-3.5 hover:shadow-xs transition-shadow">
-          <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100/80 text-blue-600 flex items-center justify-center shrink-0">
-            <Users className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <div>
-            <span className="text-[11px] font-bold text-slate-500 block">
-              Total Customers
-            </span>
-            <div className="text-xl font-black text-slate-900 tracking-tight mt-0.5">
-              {customerCount}
+        <div
+          onClick={() => setIsCustomersDirectoryOpen(true)}
+          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between hover:shadow-xs hover:border-blue-300 transition-all cursor-pointer group"
+          title="Click to view all registered customers"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <Users className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-slate-500 block">
+                Total Customers
+              </span>
+              <div className="text-xl font-black text-slate-900 tracking-tight mt-0.5">
+                {customerCount}
+              </div>
             </div>
           </div>
+          <span className="text-[10px] font-black text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            View All →
+          </span>
         </div>
       </div>
 
@@ -772,75 +1513,909 @@ export const ChandrikaFinance: React.FC = () => {
         </div>
       )}
 
-      {/* Modal 2: Add Customer */}
+      {/* Modal 2: Add Customer (Matching Comprehensive Employee Registration Format) */}
       {isCustomerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <UserPlus className="w-5 h-5" />
-                <h3 className="text-base font-black">Register New Finance Customer</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+            {/* 1. Modal Top Banner */}
+            <div className="px-6 py-4 bg-gradient-to-r from-[#142B4A] via-blue-900 to-indigo-950 text-white flex items-center justify-between shrink-0 shadow-md">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-blue-200 shadow-inner">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black tracking-tight flex items-center gap-2">
+                    <span>Register New Finance Customer</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/30 text-blue-200 border border-blue-400/40">
+                      {customerForm.customerCode || 'CF-1001'}
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-blue-200/90 font-medium">
+                    Chandrika Finance • Comprehensive borrower profile, KYC verification, loan terms & bank records
+                  </p>
+                </div>
               </div>
-              <button onClick={() => setIsCustomerModalOpen(false)} className="text-white/80 hover:text-white cursor-pointer">
-                <X className="w-5 h-5" />
+              <button
+                type="button"
+                onClick={() => setIsCustomerModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <form onSubmit={handleAddCustomer} className="p-6 space-y-4 text-xs">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Customer Full Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. K. Venkatesh"
-                  value={customerForm.name}
-                  onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs focus:ring-2 focus:ring-blue-500/20"
-                />
-              </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  placeholder="e.g. 9848012345"
-                  value={customerForm.phone}
-                  onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs focus:ring-2 focus:ring-blue-500/20"
-                />
+            {/* 2. Horizontal Stepper Bar (Matching DriverRegistration format) */}
+            <div className="bg-slate-50/90 px-6 py-3.5 border-b border-slate-200 overflow-x-auto shrink-0">
+              <div className="flex items-center justify-between min-w-[560px] relative max-w-3xl mx-auto">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 w-full -z-0"></div>
+                {[
+                  { number: 1, title: 'Personal Info', icon: User },
+                  { number: 2, title: 'KYC & Identity', icon: FileText },
+                  { number: 3, title: 'Loan Terms', icon: IndianRupee },
+                  { number: 4, title: 'Bank Account', icon: Landmark },
+                  { number: 5, title: 'Guarantor & Refs', icon: ShieldCheck }
+                ].map((st) => {
+                  const Icon = st.icon;
+                  const isDone = st.number < currentCustomerStep;
+                  const isCurrent = st.number === currentCustomerStep;
+                  return (
+                    <div
+                      key={st.number}
+                      onClick={() => setCurrentCustomerStep(st.number)}
+                      className="flex flex-col items-center relative z-10 cursor-pointer group"
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
+                          isCurrent
+                            ? 'bg-blue-600 text-white ring-4 ring-blue-100 scale-105'
+                            : isDone
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-white text-slate-400 border border-slate-300 group-hover:border-slate-400'
+                        }`}
+                      >
+                        {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
+                      </div>
+                      <span
+                        className={`text-[10.5px] font-bold mt-1 whitespace-nowrap ${
+                          isCurrent ? 'text-blue-700 font-black' : isDone ? 'text-slate-800' : 'text-slate-400'
+                        }`}
+                      >
+                        {st.title}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
+            </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Interest Rate (% per month)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="e.g. 2.0"
-                  value={customerForm.interestRate}
-                  onChange={(e) => setCustomerForm({ ...customerForm, interestRate: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs focus:ring-2 focus:ring-blue-500/20"
-                />
-              </div>
+            {/* 3. Stepper Form Content */}
+            <form onSubmit={handleSaveCustomer} className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+              {/* ==================== STEP 1: PERSONAL INFORMATION ==================== */}
+              {currentCustomerStep === 1 && (
+                <div className="space-y-5 animate-in fade-in">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#142B4A] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
+                    <User className="w-3.5 h-3.5 text-blue-300" />
+                    <span>Step 1: Personal Information (Borrower Biodata)</span>
+                  </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2.5">
+                  {/* Profile Photo Upload */}
+                  <div className="p-4 bg-blue-50/30 border border-blue-100 rounded-2xl flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-white border-2 border-dashed border-blue-300 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
+                      {customerForm.profilePhoto ? (
+                        <img src={customerForm.profilePhoto} alt="Profile Photo" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-8 h-8 text-blue-300" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs font-bold text-slate-800 mb-0.5">Borrower Profile Photo</label>
+                      <p className="text-[11px] text-slate-500 mb-2">Upload passport-size photograph or portrait of the customer</p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleCustomerFileUpload('profilePhoto', e)}
+                        className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#142B4A] file:text-white hover:file:bg-blue-900 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Customer Code */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Customer ID / Code <span className="text-rose-500">*</span></span>
+                      </label>
+                      <input
+                        type="text"
+                        value={customerForm.customerCode}
+                        onChange={(e) => setCustomerForm({ ...customerForm, customerCode: e.target.value })}
+                        placeholder="e.g. CF-1001"
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-blue-200 bg-blue-50/30 font-mono font-bold text-blue-700 outline-none"
+                        required
+                      />
+                    </div>
+
+                    {/* Customer Full Name */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <User className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Full Name (As per Aadhaar) <span className="text-rose-500">*</span></span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. K. Venkatesh"
+                        value={customerForm.name}
+                        onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20"
+                      />
+                    </div>
+
+                    {/* Father / Husband Name */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <Users className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Father / Guardian Name</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. K. Satyanarayana"
+                        value={customerForm.fatherName}
+                        onChange={(e) => setCustomerForm({ ...customerForm, fatherName: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    {/* Gender */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>
+                      <select
+                        value={customerForm.gender}
+                        onChange={(e) => setCustomerForm({ ...customerForm, gender: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 outline-none"
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    {/* Date of Birth */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Date of Birth</span>
+                      </label>
+                      <input
+                        type="date"
+                        value={customerForm.dob}
+                        onChange={(e) => setCustomerForm({ ...customerForm, dob: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-medium text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    {/* Primary Mobile */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <Phone className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Primary Mobile Number <span className="text-rose-500">*</span></span>
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        placeholder="e.g. 9848012345"
+                        value={customerForm.phone}
+                        onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20 font-mono"
+                      />
+                    </div>
+
+                    {/* Alternative Mobile */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Alternative Mobile</span>
+                      </label>
+                      <input
+                        type="tel"
+                        maxLength={10}
+                        placeholder="e.g. 9848054321"
+                        value={customerForm.altPhone}
+                        onChange={(e) => setCustomerForm({ ...customerForm, altPhone: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none font-mono"
+                      />
+                    </div>
+
+                    {/* Email Address */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <Mail className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Email Address</span>
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="e.g. customer@gmail.com"
+                        value={customerForm.email}
+                        onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    {/* Occupation / Trade */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <Building className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Occupation / Trade</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Transport Contractor / Business"
+                        value={customerForm.occupation}
+                        onChange={(e) => setCustomerForm({ ...customerForm, occupation: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Residential Address & Location */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Residential Address (Door No, Street, Colony)</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. H.No 4-22, Agamaiah Nagar Colony, Bank Colony, Vanasthalipuram"
+                        value={customerForm.address}
+                        onChange={(e) => setCustomerForm({ ...customerForm, address: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">City & State</label>
+                      <input
+                        type="text"
+                        placeholder="Hyderabad, Telangana"
+                        value={`${customerForm.city}, ${customerForm.state}`}
+                        onChange={(e) => {
+                          const parts = e.target.value.split(',');
+                          setCustomerForm({ ...customerForm, city: parts[0]?.trim() || '', state: parts[1]?.trim() || '' });
+                        }}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ==================== STEP 2: KYC & IDENTITY DOCUMENTS ==================== */}
+              {currentCustomerStep === 2 && (
+                <div className="space-y-5 animate-in fade-in">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#142B4A] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
+                    <FileText className="w-3.5 h-3.5 text-blue-300" />
+                    <span>Step 2: Identity Documents & KYC Verification</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Aadhaar Number */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Aadhaar Number (12 Digits) <span className="text-rose-500">*</span></span>
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={14}
+                        placeholder="e.g. 7845 1290 3412"
+                        value={customerForm.aadhaarNumber}
+                        onChange={(e) => setCustomerForm({ ...customerForm, aadhaarNumber: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20"
+                      />
+                    </div>
+
+                    {/* PAN Card Number */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <FileCheck className="w-3.5 h-3.5 text-blue-600" />
+                        <span>PAN Card Number (10 Characters)</span>
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={10}
+                        placeholder="e.g. ABCDE1234F"
+                        value={customerForm.panNumber}
+                        onChange={(e) => setCustomerForm({ ...customerForm, panNumber: e.target.value.toUpperCase() })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono font-bold text-slate-800 outline-none uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Document Upload Boxes */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                    {/* Aadhaar Front */}
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 block mb-0.5">Aadhaar Card (Front)</span>
+                        <p className="text-[10.5px] text-slate-500 mb-2">Upload photo / scan of front side</p>
+                      </div>
+                      {customerForm.aadhaarFrontDoc ? (
+                        <div className="relative w-full h-24 rounded-xl border border-slate-300 overflow-hidden group">
+                          <img src={customerForm.aadhaarFrontDoc} alt="Aadhaar Front" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setCustomerForm({ ...customerForm, aadhaarFrontDoc: '' })}
+                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-xs"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => handleCustomerFileUpload('aadhaarFrontDoc', e)}
+                          className="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#142B4A] file:text-white cursor-pointer"
+                        />
+                      )}
+                    </div>
+
+                    {/* Aadhaar Back */}
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 block mb-0.5">Aadhaar Card (Back)</span>
+                        <p className="text-[10.5px] text-slate-500 mb-2">Upload address side scan</p>
+                      </div>
+                      {customerForm.aadhaarBackDoc ? (
+                        <div className="relative w-full h-24 rounded-xl border border-slate-300 overflow-hidden group">
+                          <img src={customerForm.aadhaarBackDoc} alt="Aadhaar Back" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setCustomerForm({ ...customerForm, aadhaarBackDoc: '' })}
+                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-xs"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => handleCustomerFileUpload('aadhaarBackDoc', e)}
+                          className="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#142B4A] file:text-white cursor-pointer"
+                        />
+                      )}
+                    </div>
+
+                    {/* PAN Card Photo */}
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 block mb-0.5">PAN Card Document</span>
+                        <p className="text-[10.5px] text-slate-500 mb-2">Upload scanned PAN card copy</p>
+                      </div>
+                      {customerForm.panDoc ? (
+                        <div className="relative w-full h-24 rounded-xl border border-slate-300 overflow-hidden group">
+                          <img src={customerForm.panDoc} alt="PAN Doc" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setCustomerForm({ ...customerForm, panDoc: '' })}
+                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-xs"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => handleCustomerFileUpload('panDoc', e)}
+                          className="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#142B4A] file:text-white cursor-pointer"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* KYC Status & Secondary Proof */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Secondary Identification (Optional)</label>
+                      <select
+                        value={customerForm.otherDocType}
+                        onChange={(e) => setCustomerForm({ ...customerForm, otherDocType: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 outline-none"
+                      >
+                        <option value="Voter ID">Voter ID Card (EPIC)</option>
+                        <option value="Ration Card">Ration Card</option>
+                        <option value="Electricity Bill">Electricity / Utility Bill</option>
+                        <option value="Driving Licence">Driving Licence</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">KYC Verification Status</label>
+                      <select
+                        value={customerForm.kycStatus}
+                        onChange={(e: any) => setCustomerForm({ ...customerForm, kycStatus: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 outline-none"
+                      >
+                        <option value="Verified">Verified (Documents Checked & Approved)</option>
+                        <option value="Pending Verification">Pending Verification (Under Review)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ==================== STEP 3: LOAN TERMS & SECURITY ==================== */}
+              {currentCustomerStep === 3 && (
+                <div className="space-y-5 animate-in fade-in">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#142B4A] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
+                    <IndianRupee className="w-3.5 h-3.5 text-blue-300" />
+                    <span>Step 3: Loan Parameters, Interest & Collateral Security</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Sanctioned Loan Amount */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <IndianRupee className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Sanctioned Loan Amount (₹)</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1000"
+                        placeholder="e.g. 200000"
+                        value={customerForm.loanAmount}
+                        onChange={(e) => setCustomerForm({ ...customerForm, loanAmount: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-black text-blue-700 outline-none focus:ring-2 focus:ring-blue-500/20"
+                      />
+                    </div>
+
+                    {/* Interest Rate */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <Percent className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Monthly Interest Rate (% per month)</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="e.g. 2.0"
+                        value={customerForm.interestRate}
+                        onChange={(e) => setCustomerForm({ ...customerForm, interestRate: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-black text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      />
+                    </div>
+
+                    {/* Repayment Frequency */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Repayment Frequency</label>
+                      <select
+                        value={customerForm.repaymentFrequency}
+                        onChange={(e: any) => setCustomerForm({ ...customerForm, repaymentFrequency: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 outline-none"
+                      >
+                        <option value="Monthly">Monthly Installments</option>
+                        <option value="Weekly">Weekly Collections</option>
+                        <option value="Daily">Daily Collections</option>
+                      </select>
+                    </div>
+
+                    {/* Loan Term (Months) */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Loan Tenure / Duration (Months)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="e.g. 12"
+                        value={customerForm.loanTermMonths}
+                        onChange={(e) => setCustomerForm({ ...customerForm, loanTermMonths: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    {/* Disbursement Date */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Disbursement Date</label>
+                      <input
+                        type="date"
+                        value={customerForm.disbursementDate}
+                        onChange={(e) => setCustomerForm({ ...customerForm, disbursementDate: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-medium text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    {/* Disbursement Mode */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Disbursement Mode</label>
+                      <select
+                        value={customerForm.disbursementMode}
+                        onChange={(e: any) => setCustomerForm({ ...customerForm, disbursementMode: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 outline-none"
+                      >
+                        <option value="Cash">Cash Handover</option>
+                        <option value="Bank">Bank Transfer / NEFT</option>
+                        <option value="UPI">UPI / Instant Transfer</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Security / Collateral Details */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                    <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">Security & Collateral Particulars</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Collateral / Security Type</label>
+                        <select
+                          value={customerForm.securityType}
+                          onChange={(e) => setCustomerForm({ ...customerForm, securityType: e.target.value })}
+                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 outline-none"
+                        >
+                          <option value="Promissory Note">Promissory Note (Pro-Note Signed)</option>
+                          <option value="Cheque">Signed Security Cheque</option>
+                          <option value="Vehicle">Vehicle RC / Hypothecation</option>
+                          <option value="Property">Property Deed / Land Documents</option>
+                          <option value="Gold">Gold Pledge</option>
+                          <option value="Personal Guarantee">Personal Guarantor Undertaking</option>
+                          <option value="None">Unsecured / None</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Cheque / Collateral Specifics</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Cheque No. 492019, HDFC Bank, blank guarantee cheque"
+                          value={customerForm.securityDetails}
+                          onChange={(e) => setCustomerForm({ ...customerForm, securityDetails: e.target.value })}
+                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Upload Security / Promissory Document Scan</label>
+                      {customerForm.securityDoc ? (
+                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2 rounded-xl">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Security document scan uploaded</span>
+                          <button
+                            type="button"
+                            onClick={() => setCustomerForm({ ...customerForm, securityDoc: '' })}
+                            className="ml-auto text-rose-600 hover:text-rose-800 cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => handleCustomerFileUpload('securityDoc', e)}
+                          className="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:bg-[#142B4A] file:text-white cursor-pointer"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ==================== STEP 4: BANK ACCOUNT DETAILS ==================== */}
+              {currentCustomerStep === 4 && (
+                <div className="space-y-5 animate-in fade-in">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#142B4A] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
+                    <Landmark className="w-3.5 h-3.5 text-blue-300" />
+                    <span>Step 4: Bank Account & Payout Details</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Bank Name */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <Building className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Bank Name</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Kotak Mahindra Bank / SBI"
+                        value={customerForm.bankName}
+                        onChange={(e) => setCustomerForm({ ...customerForm, bankName: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    {/* Account Holder Name */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <User className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Account Holder Name</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={customerForm.name || 'e.g. K. Venkatesh'}
+                        value={customerForm.accountHolderName}
+                        onChange={(e) => setCustomerForm({ ...customerForm, accountHolderName: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    {/* Account Number */}
+                    <div>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                        <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Bank Account Number</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 2848153146"
+                        value={customerForm.accountNumber}
+                        onChange={(e) => setCustomerForm({ ...customerForm, accountNumber: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono font-bold text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    {/* IFSC Code */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">IFSC Code</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. KKBK0007460"
+                        value={customerForm.ifscCode}
+                        onChange={(e) => setCustomerForm({ ...customerForm, ifscCode: e.target.value.toUpperCase() })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono font-bold text-slate-800 outline-none uppercase"
+                      />
+                    </div>
+
+                    {/* Branch */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Branch Name</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Vanasthalipuram, Hyderabad"
+                        value={customerForm.branch}
+                        onChange={(e) => setCustomerForm({ ...customerForm, branch: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                      />
+                    </div>
+
+                    {/* UPI ID */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">UPI ID (PhonePe / GPay / Paytm)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 9848012345@ybl"
+                        value={customerForm.upiId}
+                        onChange={(e) => setCustomerForm({ ...customerForm, upiId: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bank Proof Upload */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 block mb-0.5">Bank Passbook / Cancelled Cheque</span>
+                      <p className="text-[10.5px] text-slate-500">Upload account proof document for direct settlement</p>
+                    </div>
+                    {customerForm.bankProofDoc ? (
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Proof Uploaded</span>
+                        <button
+                          type="button"
+                          onClick={() => setCustomerForm({ ...customerForm, bankProofDoc: '' })}
+                          className="text-rose-600 hover:text-rose-800 cursor-pointer text-xs ml-1"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => handleCustomerFileUpload('bankProofDoc', e)}
+                        className="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:bg-[#142B4A] file:text-white cursor-pointer"
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ==================== STEP 5: GUARANTOR & REFERENCES ==================== */}
+              {currentCustomerStep === 5 && (
+                <div className="space-y-5 animate-in fade-in">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#142B4A] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-300" />
+                    <span>Step 5: Guarantor (Surety) & Personal References</span>
+                  </div>
+
+                  {/* Guarantor Details Card */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                    <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">Guarantor (Surety) Information</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Guarantor Full Name</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. M. Srinivas Rao"
+                          value={customerForm.guarantorName}
+                          onChange={(e) => setCustomerForm({ ...customerForm, guarantorName: e.target.value })}
+                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-800 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Relationship with Borrower</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Brother / Business Partner"
+                          value={customerForm.guarantorRelation}
+                          onChange={(e) => setCustomerForm({ ...customerForm, guarantorRelation: e.target.value })}
+                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Guarantor Mobile Number</label>
+                        <input
+                          type="tel"
+                          maxLength={10}
+                          placeholder="e.g. 9848099887"
+                          value={customerForm.guarantorPhone}
+                          onChange={(e) => setCustomerForm({ ...customerForm, guarantorPhone: e.target.value })}
+                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono font-bold text-slate-800 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Guarantor Aadhaar / ID No</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 6543 2109 8765"
+                          value={customerForm.guarantorAadhaar}
+                          onChange={(e) => setCustomerForm({ ...customerForm, guarantorAadhaar: e.target.value })}
+                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono font-medium text-slate-800 outline-none"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Guarantor Address</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Plot 12, L.B. Nagar, Hyderabad"
+                          value={customerForm.guarantorAddress}
+                          onChange={(e) => setCustomerForm({ ...customerForm, guarantorAddress: e.target.value })}
+                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Personal References */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                    <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">Personal & Business References</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">Reference 1 Name</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. G. Krishna"
+                            value={customerForm.ref1Name}
+                            onChange={(e) => setCustomerForm({ ...customerForm, ref1Name: e.target.value })}
+                            className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">Reference 1 Phone</label>
+                          <input
+                            type="tel"
+                            maxLength={10}
+                            placeholder="e.g. 9848011223"
+                            value={customerForm.ref1Phone}
+                            onChange={(e) => setCustomerForm({ ...customerForm, ref1Phone: e.target.value })}
+                            className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 font-mono font-medium text-slate-800 outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">Reference 2 Name</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. T. Srinivas"
+                            value={customerForm.ref2Name}
+                            onChange={(e) => setCustomerForm({ ...customerForm, ref2Name: e.target.value })}
+                            className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">Reference 2 Phone</label>
+                          <input
+                            type="tel"
+                            maxLength={10}
+                            placeholder="e.g. 9848044556"
+                            value={customerForm.ref2Phone}
+                            onChange={(e) => setCustomerForm({ ...customerForm, ref2Phone: e.target.value })}
+                            className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 font-mono font-medium text-slate-800 outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Internal Credit Remarks */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Internal Officer Remarks / Credit Assessment</label>
+                    <textarea
+                      rows={2}
+                      placeholder="e.g. Neighbor enquiry verified, business shop visited in Vanasthalipuram, approved for disbursement."
+                      value={customerForm.internalRemarks}
+                      onChange={(e) => setCustomerForm({ ...customerForm, internalRemarks: e.target.value })}
+                      className="w-full text-xs p-3 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Modal Action Navigation Footer */}
+              <div className="pt-4 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsCustomerModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-xs cursor-pointer"
-                >
-                  Save Customer
-                </button>
+
+                <div className="flex items-center gap-2.5">
+                  {currentCustomerStep > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setCurrentCustomerStep((prev) => Math.max(1, prev - 1))}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Back</span>
+                    </button>
+                  )}
+
+                  {currentCustomerStep < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (currentCustomerStep === 1) {
+                          if (!customerForm.name.trim()) {
+                            toastError('Please enter Customer Full Name before continuing.');
+                            return;
+                          }
+                          if (!customerForm.phone.trim()) {
+                            toastError('Please enter Customer Mobile Number before continuing.');
+                            return;
+                          }
+                        }
+                        setCurrentCustomerStep((prev) => Math.min(5, prev + 1));
+                      }}
+                      className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-xs hover:shadow transition-all cursor-pointer"
+                    >
+                      <span>Next Step</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Submit Customer Registration</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -1100,6 +2675,233 @@ export const ChandrikaFinance: React.FC = () => {
             <div className="p-4 border-t border-slate-200 flex justify-end">
               <button
                 onClick={() => setIsViewAllModalOpen(false)}
+                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 6: Customers Directory & KYC Dossier Manager */}
+      {isCustomersDirectoryOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-[#142B4A] text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-blue-200">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black tracking-tight">Registered Borrowers & Customers Directory</h3>
+                  <p className="text-[11px] text-blue-200/80 font-medium">
+                    Chandrika Finance customer records, loan balances, KYC documentation, and printable dossiers
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsCustomersDirectoryOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Filter & Action Toolbar */}
+            <div className="p-4 bg-slate-50 border-b border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+              <div className="relative w-full sm:w-80">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by name, code, phone, PAN, city..."
+                  value={customerSearchQuery}
+                  onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-blue-500 font-medium"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button
+                  onClick={handleExportExcel}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                  title="Export to Excel"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                  <span>Export</span>
+                </button>
+                <button
+                  onClick={handlePrintSummaryReport}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                  title="Print Report"
+                >
+                  <Printer className="w-4 h-4 text-purple-600" />
+                  <span>Print</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsCustomersDirectoryOpen(false);
+                    setCurrentCustomerStep(1);
+                    setCustomerForm(createBlankCustomerForm(customerCount + 1));
+                    setIsCustomerModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-[#142B4A] hover:bg-[#1a385f] text-white rounded-xl text-xs font-black shadow-xs cursor-pointer transition-all"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>+ Add Customer</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Customers Table / Grid */}
+            <div className="overflow-y-auto flex-1 p-4">
+              {filteredDirectoryCustomers.length === 0 ? (
+                <div className="py-16 text-center text-slate-400">
+                  <Users className="w-12 h-12 mx-auto text-slate-300 stroke-[1.5] mb-2" />
+                  <p className="text-sm font-bold text-slate-600">No customers found</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Try searching with a different name or phone number</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100 border border-slate-200 rounded-2xl overflow-hidden">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100/80 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                        <th className="py-3 px-3.5">Customer / Borrower</th>
+                        <th className="py-3 px-3.5">Contact & Location</th>
+                        <th className="py-3 px-3.5">KYC Identity</th>
+                        <th className="py-3 px-3.5">Sanctioned Loan</th>
+                        <th className="py-3 px-3.5">Outstanding Balance</th>
+                        <th className="py-3 px-3.5">KYC Status</th>
+                        <th className="py-3 px-3.5 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {filteredDirectoryCustomers.map((c) => (
+                        <tr key={c.id} className="hover:bg-blue-50/40 transition-colors">
+                          {/* Name & Photo */}
+                          <td className="py-3 px-3.5">
+                            <div className="flex items-center gap-3">
+                              {c.profilePhoto ? (
+                                <img
+                                  src={c.profilePhoto}
+                                  alt={c.name}
+                                  className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0 shadow-2xs"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-2xs">
+                                  {c.name.charAt(0)}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <div className="font-bold text-slate-900 leading-tight">{c.name}</div>
+                                <div className="text-[10.5px] font-mono text-blue-700 font-bold mt-0.5">
+                                  {c.customerCode || `CF-${String(c.id).padStart(4, '0')}`}
+                                </div>
+                                {c.occupation && (
+                                  <div className="text-[10px] text-slate-400 truncate">{c.occupation}</div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Contact */}
+                          <td className="py-3 px-3.5">
+                            <div className="font-semibold text-slate-800 flex items-center gap-1.5">
+                              <Phone className="w-3 h-3 text-slate-400" />
+                              <span>{c.phone || '—'}</span>
+                            </div>
+                            <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-slate-400" />
+                              <span className="truncate max-w-[140px]">{c.city || 'Hyderabad'}, {c.state || 'Telangana'}</span>
+                            </div>
+                          </td>
+
+                          {/* KYC IDs */}
+                          <td className="py-3 px-3.5">
+                            <div className="font-mono text-[11px] font-bold text-slate-700">
+                              Aadhaar: {c.aadhaarNumber || '—'}
+                            </div>
+                            <div className="font-mono text-[10.5px] text-slate-500 mt-0.5">
+                              PAN: {c.panNumber || '—'}
+                            </div>
+                          </td>
+
+                          {/* Sanctioned Loan */}
+                          <td className="py-3 px-3.5">
+                            <div className="font-black text-slate-900">
+                              ₹ {Number(c.loanAmount || 0).toLocaleString('en-IN')}
+                            </div>
+                            <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
+                              @{c.interestRate || 2.0}% / mo ({c.repaymentFrequency || 'Monthly'})
+                            </div>
+                          </td>
+
+                          {/* Outstanding */}
+                          <td className="py-3 px-3.5">
+                            <div className="font-black text-rose-600 text-sm">
+                              ₹ {Number(c.outstanding || 0).toLocaleString('en-IN')}
+                            </div>
+                            <div className="text-[10px] text-slate-500">
+                              Paid: ₹ {Number(c.principalPaid || 0).toLocaleString('en-IN')}
+                            </div>
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-3 px-3.5">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
+                                c.kycStatus === 'Verified'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}
+                            >
+                              <ShieldCheck className="w-3 h-3" />
+                              <span>{c.kycStatus || 'Verified'}</span>
+                            </span>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3 px-3.5 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => handlePrintCustomerKYC(c)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold cursor-pointer transition-colors border border-blue-200/80"
+                                title="Print Official KYC Sheet"
+                              >
+                                <Printer className="w-3.5 h-3.5" />
+                                <span>Print KYC</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Are you sure you want to remove customer ${c.name}?`)) {
+                                    setCustomers((prev) => prev.filter((item) => item.id !== c.id));
+                                    setCustomerCount((prev) => Math.max(0, prev - 1));
+                                    success(`Customer ${c.name} removed`);
+                                  }
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                                title="Delete Customer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+              <span className="text-xs font-bold text-slate-500">
+                Showing {filteredDirectoryCustomers.length} of {customers.length} registered borrowers
+              </span>
+              <button
+                onClick={() => setIsCustomersDirectoryOpen(false)}
                 className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer"
               >
                 Close

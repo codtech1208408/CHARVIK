@@ -815,8 +815,8 @@ export const DonationManagement: React.FC = () => {
                     <div
                       style={{ height: `${m.pct}%` }}
                       className={`w-full max-w-[34px] rounded-t-lg transition-all duration-500 ${isLatest
-                          ? 'bg-blue-600 hover:bg-blue-700 shadow-sm'
-                          : 'bg-blue-300/80 hover:bg-blue-400'
+                        ? 'bg-blue-600 hover:bg-blue-700 shadow-sm'
+                        : 'bg-blue-300/80 hover:bg-blue-400'
                         }`}
                       title={`${m.label}: ₹${m.amount.toLocaleString('en-IN')}`}
                     ></div>
@@ -1162,10 +1162,10 @@ export const DonationManagement: React.FC = () => {
                       {/* PAYMENT MODE */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-bold ${donation.payment_mode === 'Cash'
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200/80'
-                            : donation.payment_mode === 'UPI'
-                              ? 'bg-purple-50 text-purple-700 border border-purple-200/80'
-                              : 'bg-blue-50 text-blue-700 border border-blue-200/80'
+                          ? 'bg-amber-50 text-amber-700 border border-amber-200/80'
+                          : donation.payment_mode === 'UPI'
+                            ? 'bg-purple-50 text-purple-700 border border-purple-200/80'
+                            : 'bg-blue-50 text-blue-700 border border-blue-200/80'
                           }`}>
                           {donation.payment_mode || 'Cash'}
                         </span>
