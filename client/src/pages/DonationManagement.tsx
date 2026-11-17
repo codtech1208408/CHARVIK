@@ -547,22 +547,43 @@ export const DonationManagement: React.FC = () => {
 
   // Quick Action: Download Excel Summary
   const handleExportCSV = () => {
-    const headers = ['Receipt ID', 'Donor Name', 'Amount (Rs)', 'Date', 'Received By Staff', 'Staff Code', 'Staff Role', 'Payment Mode', 'Notes / Purpose'];
-    const rows = donations.map((d) => [
-      `DON-${String(d.id).padStart(5, '0')}`,
-      d.donor_name || '',
+    const listToExport = filteredDonations && filteredDonations.length > 0 ? filteredDonations : donations;
+    if (listToExport.length === 0) {
+      error('No donation records found to export');
+      return;
+    }
+
+    const calculatedTotal = listToExport.reduce((sum, item) => sum + (Number(item.amount) || 0), 0) || stats.totalAmount || 0;
+
+    const headers = [
+      'S.No',
+      'Receipt ID',
+      'Donor Name',
+      'Amount (Rs)',
+      'Date',
+      'Received By Staff',
+      'Staff Code',
+      'Staff Role',
+      'Payment Mode',
+      'Notes / Purpose'
+    ];
+
+    const rows = listToExport.map((d, idx) => [
+      idx + 1,
+      `#DON-${String(d.id).padStart(5, '0')}`,
+      d.donor_name || '—',
       Number(d.amount) || 0,
-      d.donation_date,
-      d.received_by_employee_name || '',
-      d.received_by_employee_code || '',
-      d.received_by_employee_role || '',
+      d.donation_date || '—',
+      d.received_by_employee_name || '—',
+      d.received_by_employee_code || '—',
+      d.received_by_employee_role || 'Staff',
       d.payment_mode || 'Cash',
-      d.notes || ''
+      d.notes || '—'
     ]);
 
     exportTableToExcel({
       title: 'Charvik Charity & Donations Registry',
-      subtitle: `Total Donations: ${donations.length} | Cumulative Value: Rs ${totalAmount.toLocaleString('en-IN')}`,
+      subtitle: `Total Donations: ${listToExport.length} | Cumulative Value: ₹ ${calculatedTotal.toLocaleString('en-IN')}`,
       headers,
       rows
     });
@@ -572,22 +593,23 @@ export const DonationManagement: React.FC = () => {
   const handleExportSingleDonationExcel = (donation: DonationRecord) => {
     const headers = ['Field', 'Details'];
     const rows = [
-      ['Receipt Number', `DON-${String(donation.id).padStart(5, '0')}`],
+      ['Receipt Number', `#DON-${String(donation.id).padStart(5, '0')}`],
       ['Date', donation.donation_date],
       ['Donor Name', donation.donor_name],
-      ['Amount (Rs)', `Rs ${Number(donation.amount).toLocaleString('en-IN')}`],
+      ['Amount (Rs)', `₹ ${Number(donation.amount).toLocaleString('en-IN')}`],
       ['Payment Mode', donation.payment_mode || 'Cash'],
-      ['Received By Staff', `${donation.received_by_employee_name || ''} (${donation.received_by_employee_code || ''})`],
+      ['Received By Staff', `${donation.received_by_employee_name || '—'} (${donation.received_by_employee_code || '—'})`],
       ['Staff Designation', donation.received_by_employee_role || 'Staff'],
       ['Purpose / Cause', donation.notes || 'Charitable Welfare Contribution']
     ];
 
     exportTableToExcel({
       title: `Official Donation Receipt - DON-${String(donation.id).padStart(5, '0')}`,
-      subtitle: `Benefactor: ${donation.donor_name} • Date: ${donation.donation_date} • Amount: Rs ${Number(donation.amount).toLocaleString('en-IN')}`,
+      subtitle: `Benefactor: ${donation.donor_name} • Date: ${donation.donation_date} • Amount: ₹ ${Number(donation.amount).toLocaleString('en-IN')}`,
       headers,
       rows
     });
+    success(`Donation receipt #${donation.id} exported to Excel!`);
   };
 
   return (
