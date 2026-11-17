@@ -36,6 +36,7 @@ import {
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
+import { exportMultiSheetExcel } from '../utils/exportToExcel';
 import * as XLSX from 'xlsx';
 
 interface ServiceItem {
@@ -675,113 +676,130 @@ export const VehicleMaintenance: React.FC = () => {
     }
   };
 
-  // Export Excel (Matching 3-sheet format shown in frame 3)
+  // Export Excel (Matching 3-sheet format with professional Charvik styling & alignment)
   const handleExportExcel = () => {
     try {
-      const summaryRows = vehicles.map((v) => ({
-        'Registration No': v.registration_number,
-        'Bus Model': v.model,
-        'Chassis No': v.chassis_number || '—',
-        'Engine No': v.engine_number || '—',
-        'Current Odometer (KM)': v.current_odometer_km,
-        'Last Service Date': v.last_service_date || '—',
-        'Last Service Odometer (KM)': v.last_service_km || 0,
-        'Parking Location': v.parking_location || '—',
-        'Driver': v.driver_name || '—',
-        'Operations Manager': v.operations_manager || '—',
-        'Status': v.status
-      }));
+      const summaryHeaders = [
+        'S.No',
+        'Registration No',
+        'Bus Model',
+        'Chassis No',
+        'Engine No',
+        'Current Odometer',
+        'Last Service Date',
+        'Last Service Odometer',
+        'Parking Location',
+        'Driver',
+        'Operations Manager',
+        'Status'
+      ];
 
-      const serviceStatusRows: any[] = [];
+      const summaryRows = vehicles.map((v, idx) => [
+        idx + 1,
+        v.registration_number || '—',
+        v.model || '—',
+        v.chassis_number || '—',
+        v.engine_number || '—',
+        `${Number(v.current_odometer_km || 0).toLocaleString('en-IN')} KM`,
+        v.last_service_date || '—',
+        v.last_service_km ? `${Number(v.last_service_km).toLocaleString('en-IN')} KM` : '—',
+        v.parking_location || '—',
+        v.driver_name || '—',
+        v.operations_manager || '—',
+        v.status || 'Active'
+      ]);
+
+      const serviceStatusHeaders = [
+        'S.No',
+        'Registration No',
+        'Bus Model',
+        'Service Name',
+        'Interval',
+        'Last Done KM',
+        'Last Done Date',
+        'Next Due',
+        'Status',
+        'Status Details'
+      ];
+
+      const serviceStatusRows: (string | number)[][] = [];
+      let sIdx = 1;
       vehicles.forEach((v) => {
         v.services.forEach((s) => {
-          serviceStatusRows.push({
-            'Registration No': v.registration_number,
-            'Bus Model': v.model,
-            'Service Name': s.name,
-            'Interval': s.intervalLabel,
-            'Last Done KM': s.lastDoneKm || '—',
-            'Last Done Date': s.lastDoneDate || '—',
-            'Next Due (KM / Date)': s.intervalType === 'km' ? `${s.nextDueKm.toLocaleString('en-IN')} KM` : s.nextDueDate,
-            'Status': s.status,
-            'Status Details': s.statusText
-          });
+          serviceStatusRows.push([
+            sIdx++,
+            v.registration_number || '—',
+            v.model || '—',
+            s.name || '—',
+            s.intervalLabel || '—',
+            s.lastDoneKm ? `${Number(s.lastDoneKm).toLocaleString('en-IN')} KM` : '—',
+            s.lastDoneDate || '—',
+            s.intervalType === 'km' ? `${Number(s.nextDueKm || 0).toLocaleString('en-IN')} KM` : (s.nextDueDate || '—'),
+            s.status || '—',
+            s.statusText || '—'
+          ]);
         });
       });
 
-      const allHistoryRows: any[] = [];
+      const historyHeaders = [
+        'S.No',
+        'Registration No',
+        'Completion Date',
+        'Service Type',
+        'Odometer KM',
+        'Next Due',
+        'Cost (Rs)',
+        'Workshop',
+        'Mechanic',
+        'Remarks'
+      ];
+
+      const allHistoryRows: (string | number)[][] = [];
+      let hIdx = 1;
       vehicles.forEach((v) => {
         (v.history || []).forEach((h) => {
-          allHistoryRows.push({
-            'Registration No': v.registration_number,
-            'Date': h.completion_date,
-            'Service': h.service_type,
-            'Odometer KM': h.odometer_km,
-            'Next Due': h.next_due_km ? `${h.next_due_km} KM` : (h.next_due_date || '—'),
-            'Cost (₹)': h.cost,
-            'Workshop': h.workshop || '—',
-            'Mechanic': h.mechanic_name || '—',
-            'Remarks': h.remarks || '—'
-          });
+          allHistoryRows.push([
+            hIdx++,
+            v.registration_number || '—',
+            h.completion_date || '—',
+            h.service_type || '—',
+            h.odometer_km ? `${Number(h.odometer_km).toLocaleString('en-IN')} KM` : '—',
+            h.next_due_km ? `${Number(h.next_due_km).toLocaleString('en-IN')} KM` : (h.next_due_date || '—'),
+            Number(h.cost) || 0,
+            h.workshop || '—',
+            h.mechanic_name || '—',
+            h.remarks || '—'
+          ]);
         });
       });
 
-      // Generate clean Multi-Sheet Excel Workbook (.xlsx) with auto-fit columns
-      const wb = XLSX.utils.book_new();
-
-      const autoFitCols = (ws: XLSX.WorkSheet, data: any[]) => {
-        if (!data || data.length === 0) return;
-        const keys = Object.keys(data[0]);
-        ws['!cols'] = keys.map((key) => {
-          let maxLen = key.length;
-          for (let i = 0; i < data.length; i++) {
-            const valStr = String(data[i]?.[key] ?? '');
-            if (valStr.length > maxLen) maxLen = valStr.length;
+      exportMultiSheetExcel({
+        filename: 'Fleet_Maintenance_Overview',
+        sheets: [
+          {
+            sheetName: 'Fleet Summary',
+            title: 'Fleet Vehicles Maintenance Summary',
+            subtitle: `Total Vehicles: ${vehicles.length} | Monitored Fleet Asset Register`,
+            headers: summaryHeaders,
+            rows: summaryRows
+          },
+          {
+            sheetName: 'Service Status',
+            title: 'Fleet Service Intervals & Due Status',
+            subtitle: `Service Schedules & Inspection Status across ${vehicles.length} Vehicles`,
+            headers: serviceStatusHeaders,
+            rows: serviceStatusRows
+          },
+          {
+            sheetName: 'Maintenance History',
+            title: 'Completed Maintenance Logs & Work Records',
+            subtitle: `Logged Maintenance Services: ${allHistoryRows.length} Records`,
+            headers: historyHeaders,
+            rows: allHistoryRows.length > 0 ? allHistoryRows : [[1, '—', '—', 'No completed maintenance history records found', '—', '—', 0, '—', '—', '—']]
           }
-          return { wch: Math.min(Math.max(maxLen + 4, 14), 55) };
-        });
+        ]
+      });
 
-        // Enforce text formatting for registration, chassis, engine, dates
-        const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-        for (let R = 1; R <= range.e.r; ++R) {
-          for (let C = 0; C <= range.e.c; ++C) {
-            const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
-            if (!cell || cell.v === undefined || cell.v === null) continue;
-            const strVal = String(cell.v).trim();
-            const colHeader = String(keys[C] || '').toLowerCase();
-            if (
-              colHeader.includes('no') ||
-              colHeader.includes('chassis') ||
-              colHeader.includes('engine') ||
-              colHeader.includes('date') ||
-              colHeader.includes('phone') ||
-              /^\d{10,}$/.test(strVal)
-            ) {
-              cell.t = 's';
-              cell.v = strVal;
-              cell.z = '@';
-            }
-          }
-        }
-      };
-
-      // 1. Fleet Summary Sheet
-      const ws1 = XLSX.utils.json_to_sheet(summaryRows);
-      autoFitCols(ws1, summaryRows);
-      XLSX.utils.book_append_sheet(wb, ws1, 'Fleet Summary');
-
-      // 2. Service Status Sheet
-      const ws2 = XLSX.utils.json_to_sheet(serviceStatusRows);
-      autoFitCols(ws2, serviceStatusRows);
-      XLSX.utils.book_append_sheet(wb, ws2, 'Service Status');
-
-      // 3. Maintenance History Sheet
-      const historyData = allHistoryRows.length > 0 ? allHistoryRows : [{ 'Status': 'No completed maintenance history records found' }];
-      const ws3 = XLSX.utils.json_to_sheet(historyData);
-      autoFitCols(ws3, historyData);
-      XLSX.utils.book_append_sheet(wb, ws3, 'Maintenance History');
-
-      XLSX.writeFile(wb, `Fleet_Maintenance_Overview_${new Date().toISOString().split('T')[0]}.xlsx`);
       success('Fleet maintenance overview exported to Excel (.xlsx) successfully!');
     } catch (err: any) {
       error(err.message || 'Failed to export Excel report');
