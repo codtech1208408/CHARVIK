@@ -491,12 +491,15 @@ export const ChandrikaFinance: React.FC = () => {
       <div style="font-family: Arial, sans-serif; padding: 24px; color: #0f172a; max-width: 800px; margin: 0 auto; line-height: 1.45;">
         <!-- Header Banner -->
         <div style="border-bottom: 2px solid #1E3A8A; padding-bottom: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
-          <div>
-            <h1 style="margin: 0; color: #1E3A8A; font-size: 22px; font-weight: 900; letter-spacing: 0.5px;">CHANDRIKA FINANCE</h1>
-            <p style="margin: 3px 0 0; color: #475569; font-size: 11px; font-weight: bold; text-transform: uppercase;">A Unit of Charvik Staffing & Operational Services</p>
-            <p style="margin: 3px 0 0; color: #64748b; font-size: 10px;">NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana | Phone: 9505151527 | Email: charvikstaffingconsulrancy@gmail.com</p>
-            <div style="display: inline-block; margin-top: 8px; padding: 3px 10px; background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 6px; font-size: 11px; font-weight: bold; color: #3730A3;">
-              OFFICIAL BORROWER REGISTRATION & KYC ENROLLMENT DOSSIER
+          <div style="display: flex; align-items: flex-start; gap: 14px;">
+            <img src="/chandrika-finance-logo.png" alt="Chandrika Finance" style="height: 52px; width: auto; object-fit: contain; display: block;" onerror="this.src='/chandrika-finance-logo-transparent.png'" />
+            <div>
+              <h1 style="margin: 0; color: #1E3A8A; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">CHANDRIKA FINANCE</h1>
+              <p style="margin: 3px 0 0; color: #64748b; font-size: 10px; font-weight: 600;">NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana</p>
+              <p style="margin: 2px 0 0; color: #64748b; font-size: 10px;">Phone: 9505151527 | Email: charvikstaffingconsulrancy@gmail.com</p>
+              <div style="display: inline-block; margin-top: 6px; padding: 3px 10px; background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 6px; font-size: 10.5px; font-weight: bold; color: #3730A3;">
+                OFFICIAL BORROWER REGISTRATION & KYC ENROLLMENT DOSSIER
+              </div>
             </div>
           </div>
           <div style="text-align: right;">
@@ -672,6 +675,7 @@ export const ChandrikaFinance: React.FC = () => {
       subtitle: `Chandrika Finance • Customer Code: ${cust.customerCode || cust.id}`,
       orientation: 'portrait',
       hideMetaBar: true,
+      hideHeader: true,
       htmlContent: reportHtml
     });
   };
@@ -1014,11 +1018,39 @@ export const ChandrikaFinance: React.FC = () => {
   // Print Summary Statement Report
   const handlePrintSummaryReport = () => {
     const content = `
-      <div style="font-family: Arial, sans-serif; padding: 24px; color: #1e293b;">
-        <div style="border-bottom: 2px solid #142B4A; padding-bottom: 12px; margin-bottom: 20px;">
-          <h1 style="color: #142B4A; font-size: 20px; font-weight: 900; margin: 0;">CHANDRIKA FINANCE</h1>
-          <p style="font-size: 11px; color: #64748b; margin: 4px 0 0;">Comprehensive Finance Portfolio & Loan Summary Statement</p>
-          <p style="font-size: 10px; color: #94a3b8; margin: 2px 0 0;">Generated on: ${new Date().toLocaleString('en-IN')}</p>
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #1e293b;">
+        <!-- Chandrika Finance Exclusive Letterhead Banner (Logo Only) -->
+        <div style="border: 2px solid #0056b3; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; background: #ffffff;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <img src="/chandrika-finance-logo.png" alt="Chandrika Finance" style="height: 55px; width: auto; object-fit: contain; display: block;" onerror="this.src='/chandrika-finance-logo-transparent.png'" />
+              <div>
+                <div style="font-size: 16px; font-weight: 900; color: #1e3a8a; letter-spacing: 0.5px;">CHANDRIKA FINANCE</div>
+                <div style="font-size: 10.5px; font-weight: 700; color: #64748b; letter-spacing: 0.3px;">FINANCIAL & MICRO-LENDING SOLUTIONS</div>
+              </div>
+            </div>
+            <div style="text-align: right; font-size: 10.5px; color: #334155; line-height: 1.45;">
+              <div style="color: #0f172a; font-weight: 800;">📞 Phone: 9505151527</div>
+              <div style="color: #0f172a; font-weight: 800;">✉️ Email: charvikstaffingconsulrancy@gmail.com</div>
+              <div style="color: #64748b; font-size: 9.5px; margin-top: 3px;">Date: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} | Time: ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+            </div>
+          </div>
+          <div style="font-size: 9.5px; color: #475569; text-align: center; background: #f8fafc; padding: 5px 10px; border-radius: 4px; border: 1px solid #e2e8f0; font-weight: 600;">
+            📍 NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana
+          </div>
+        </div>
+
+        <!-- Document Sub-Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #142B4A; padding-bottom: 8px; margin-bottom: 18px;">
+          <div>
+            <h2 style="color: #142B4A; font-size: 15px; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+              Financial Portfolio & Loan Summary Statement
+            </h2>
+            <p style="font-size: 10.5px; color: #64748b; margin: 3px 0 0;">Comprehensive record of loans disbursed, principal collections, and borrower directory</p>
+          </div>
+          <div style="background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; padding: 3px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; text-transform: uppercase;">
+            Official Statement
+          </div>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
@@ -1093,7 +1125,14 @@ export const ChandrikaFinance: React.FC = () => {
         </table>
       </div>
     `;
-    printSheet('CHANDRIKA FINANCE - FINANCIAL STATEMENT & LOAN DIRECTORY', content);
+    printSheet({
+      title: 'CHANDRIKA FINANCE - FINANCIAL STATEMENT & LOAN DIRECTORY',
+      subtitle: 'Finance Portfolio & Registered Borrowers Directory',
+      orientation: 'portrait',
+      hideHeader: true,
+      hideMetaBar: true,
+      htmlContent: content
+    });
   };
 
   // Filtered view all transactions
