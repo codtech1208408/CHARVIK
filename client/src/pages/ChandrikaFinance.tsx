@@ -159,7 +159,93 @@ export interface FinanceCustomer {
 
   // Balance
   principalPaid: number;
+  interestPaid?: number;
   outstanding: number;
+}
+
+export interface CustomerFinancials {
+  principalRemaining: number;
+  totalPrincipalPaid: number;
+  totalInterestPaid: number;
+  monthlyInterest: number;
+  monthsElapsed: number;
+  totalInterestAccrued: number;
+  unpaidInterest: number;
+  totalOutstanding: number;
+}
+
+export function computeCustomerFinancials(
+  customer: FinanceCustomer,
+  allTransactions: FinanceTransaction[] = []
+): CustomerFinancials {
+  const loanAmt = Number(customer.loanAmount) || 0;
+  const rate = Number(customer.interestRate) || 2.0;
+
+  // Filter transactions for this customer
+  const custName = (customer.name || '').trim().toLowerCase();
+  const custCode = (customer.customerCode || '').trim().toLowerCase();
+  const txs = allTransactions.filter((t) => {
+    const tName = (t.customerName || '').trim().toLowerCase();
+    return (tName && tName === custName) || (custCode && tName.includes(custCode));
+  });
+
+  // Calculate principal paid (seed + tx)
+  const txPrincipal = txs
+    .filter((t) => t.type && t.type.toLowerCase().includes('principal'))
+    .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  const totalPrincipalPaid = Math.min(loanAmt, (customer.principalPaid || 0) + txPrincipal);
+  const principalRemaining = Math.max(0, loanAmt - totalPrincipalPaid);
+
+  // Calculate elapsed months since disbursement/startDate
+  let monthsElapsed = 0;
+  if (customer.startDate) {
+    try {
+      const start = new Date(customer.startDate);
+      const now = new Date();
+      if (!isNaN(start.getTime())) {
+        const yearDiff = now.getFullYear() - start.getFullYear();
+        const monthDiff = now.getMonth() - start.getMonth();
+        let m = yearDiff * 12 + monthDiff;
+        if (now.getDate() < start.getDate()) {
+          m = Math.max(0, m - 1);
+        }
+        monthsElapsed = Math.max(0, m);
+      }
+    } catch {
+      monthsElapsed = 0;
+    }
+  }
+
+  // Monthly interest amount on remaining principal balance at the agreed monthly interest rate
+  const monthlyInterest = Math.round((principalRemaining * rate) / 100);
+
+  // Calculate interest paid (seed + tx)
+  const txInterest = txs
+    .filter(
+      (t) =>
+        t.type &&
+        (t.type.toLowerCase().includes('interest') || t.type.toLowerCase().includes('month of interest'))
+    )
+    .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  const totalInterestPaid = (customer.interestPaid || 0) + txInterest;
+
+  // Total interest accrued over elapsed months
+  const totalInterestAccrued = Math.round(monthsElapsed * monthlyInterest);
+  const unpaidInterest = Math.max(0, totalInterestAccrued - totalInterestPaid);
+
+  // Live Balance Outstanding: remaining principal + unpaid monthly interest
+  const totalOutstanding = principalRemaining + unpaidInterest;
+
+  return {
+    principalRemaining,
+    totalPrincipalPaid,
+    totalInterestPaid,
+    monthlyInterest,
+    monthsElapsed,
+    totalInterestAccrued,
+    unpaidInterest,
+    totalOutstanding
+  };
 }
 
 export const ChandrikaFinance: React.FC = () => {
@@ -340,10 +426,16 @@ export const ChandrikaFinance: React.FC = () => {
   const [thisMonthCollection, setThisMonthCollection] = useState(1240000);
   const [thisMonthInterest, setThisMonthInterest] = useState(210000);
 
-  // Dynamic Outstanding calculation
-  const totalOutstanding = useMemo(() => {
-    return Math.max(0, totalLoanGiven - totalPrincipalReceived);
-  }, [totalLoanGiven, totalPrincipalReceived]);
+  // Dynamic Outstanding calculation (updates automatically each month with accrued interest according to interest percentage)
+  const totalDynamicOutstanding = useMemo(() => {
+    const custSum = customers.reduce((sum, c) => {
+      const f = computeCustomerFinancials(c, transactions);
+      return sum + f.totalOutstanding;
+    }, 0);
+    return Math.max(custSum, totalLoanGiven - totalPrincipalReceived);
+  }, [customers, transactions, totalLoanGiven, totalPrincipalReceived]);
+
+  const totalOutstanding = totalDynamicOutstanding;
 
   // Modals
   const [isInvestmentModalOpen, setIsInvestmentModalOpen] = useState(false);
@@ -351,6 +443,7 @@ export const ChandrikaFinance: React.FC = () => {
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
   const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false);
+  const [viewAllActiveTab, setViewAllActiveTab] = useState<'balance' | 'transactions'>('transactions');
 
   // Form states
   const [investmentForm, setInvestmentForm] = useState({ investor: '', amount: '', mode: 'Bank' as 'UPI' | 'Bank' | 'Cash', notes: '' });
@@ -488,6 +581,7 @@ export const ChandrikaFinance: React.FC = () => {
 
   // Print Official Customer Registration & KYC Sheet
   const handlePrintCustomerKYC = (cust: FinanceCustomer) => {
+    const f = computeCustomerFinancials(cust, transactions);
     const reportHtml = `
       <div style="font-family: Arial, sans-serif; padding: 24px; color: #0f172a; max-width: 800px; margin: 0 auto; line-height: 1.45;">
         <!-- Header Banner -->
@@ -593,6 +687,12 @@ export const ChandrikaFinance: React.FC = () => {
               <td style="padding: 5px 8px; font-weight: bold; color: #0f172a;">${cust.securityType || 'Promissory Note'}</td>
               <td style="padding: 5px 8px; font-weight: bold; color: #475569;">Security Particulars:</td>
               <td style="padding: 5px 8px; color: #0f172a;">${cust.securityDetails || 'Standard agreement executed'}</td>
+            </tr>
+            <tr style="background: #FFFBEB; border-top: 1.5px solid #FDE68A;">
+              <td style="padding: 6px 8px; font-weight: bold; color: #92400E;">Monthly Interest Accrual:</td>
+              <td style="padding: 6px 8px; font-weight: bold; color: #92400E;">₹ ${f.monthlyInterest.toLocaleString('en-IN')} / mo</td>
+              <td style="padding: 6px 8px; font-weight: bold; color: #92400E;">Current Balance Outstanding:</td>
+              <td style="padding: 6px 8px; font-weight: 900; color: #DC2626; font-size: 12px;">₹ ${f.totalOutstanding.toLocaleString('en-IN')} (${f.monthsElapsed} mo elapsed)</td>
             </tr>
           </table>
         </div>
@@ -982,6 +1082,7 @@ export const ChandrikaFinance: React.FC = () => {
     } else if (activeTabParam === 'collections') {
       setIsCollectionModalOpen(true);
     } else if (activeTabParam === 'balance') {
+      setViewAllActiveTab('balance');
       setIsViewAllModalOpen(true);
     }
   }, [activeTabParam]);
@@ -1004,22 +1105,25 @@ export const ChandrikaFinance: React.FC = () => {
   // Export all finance data into professionally formatted multi-sheet Excel
   const handleExportExcel = () => {
     try {
-      const customerRows = customers.map((c, idx) => [
-        idx + 1,
-        c.customerCode || `CF-${String(c.id).padStart(4, '0')}`,
-        c.name,
-        c.phone || '—',
-        c.aadhaarNumber || '—',
-        c.panNumber || '—',
-        c.occupation || '—',
-        c.monthlyIncome ? `₹ ${Number(c.monthlyIncome).toLocaleString('en-IN')}` : '—',
-        `₹ ${Number(c.loanAmount || 0).toLocaleString('en-IN')}`,
-        `${c.interestRate || 2.0}%`,
-        c.repaymentFrequency || 'Monthly',
-        `${c.loanTermMonths || 12} Months`,
-        `₹ ${Number(c.outstanding || 0).toLocaleString('en-IN')}`,
-        c.kycStatus || 'Verified'
-      ]);
+      const customerRows = customers.map((c, idx) => {
+        const f = computeCustomerFinancials(c, transactions);
+        return [
+          idx + 1,
+          c.customerCode || `CF-${String(c.id).padStart(4, '0')}`,
+          c.name,
+          c.phone || '—',
+          c.aadhaarNumber || '—',
+          c.panNumber || '—',
+          c.occupation || '—',
+          c.monthlyIncome ? `₹ ${Number(c.monthlyIncome).toLocaleString('en-IN')}` : '—',
+          `₹ ${Number(c.loanAmount || 0).toLocaleString('en-IN')}`,
+          `${c.interestRate || 2.0}% / mo`,
+          c.repaymentFrequency || 'Monthly',
+          `${c.loanTermMonths || 12} Months`,
+          `₹ ${f.totalOutstanding.toLocaleString('en-IN')}`,
+          c.kycStatus || 'Verified'
+        ];
+      });
 
       const txRows = transactions.map((t, idx) => [
         idx + 1,
@@ -1142,17 +1246,20 @@ export const ChandrikaFinance: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            ${customers.map((c) => `
+            ${customers.map((c) => {
+              const f = computeCustomerFinancials(c, transactions);
+              return `
               <tr style="border-bottom: 1px solid #e2e8f0;">
                 <td style="padding: 6px 8px; font-family: monospace; font-weight: bold;">${c.customerCode || 'CF-' + c.id}</td>
                 <td style="padding: 6px 8px; font-weight: bold;">${c.name}</td>
                 <td style="padding: 6px 8px;">${c.phone || '—'}</td>
                 <td style="padding: 6px 8px;">₹ ${Number(c.loanAmount || 0).toLocaleString('en-IN')}</td>
-                <td style="padding: 6px 8px;">${c.interestRate || 2.0}%</td>
-                <td style="padding: 6px 8px; font-weight: bold; color: #dc2626;">₹ ${Number(c.outstanding || 0).toLocaleString('en-IN')}</td>
+                <td style="padding: 6px 8px;">${c.interestRate || 2.0}% / mo</td>
+                <td style="padding: 6px 8px; font-weight: bold; color: #dc2626;">₹ ${f.totalOutstanding.toLocaleString('en-IN')}</td>
                 <td style="padding: 6px 8px;">${c.kycStatus || 'Verified'}</td>
               </tr>
-            `).join('')}
+              `;
+            }).join('')}
           </tbody>
         </table>
 
@@ -1199,6 +1306,19 @@ export const ChandrikaFinance: React.FC = () => {
       t.mode.toLowerCase().includes(viewAllSearch.toLowerCase())
     );
   }, [transactions, viewAllSearch]);
+
+  // Filtered balance customers for modal view
+  const filteredBalanceCustomers = useMemo(() => {
+    if (!viewAllSearch.trim()) return customers;
+    const q = viewAllSearch.toLowerCase();
+    return customers.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        (c.customerCode && c.customerCode.toLowerCase().includes(q)) ||
+        (c.phone && c.phone.toLowerCase().includes(q)) ||
+        (c.city && c.city.toLowerCase().includes(q))
+    );
+  }, [customers, viewAllSearch]);
 
   // Donut chart percentage calculations
   const principalPct = totalLoanGiven > 0 ? ((totalPrincipalReceived / totalLoanGiven) * 100).toFixed(1) : '24.6';
@@ -1325,18 +1445,30 @@ export const ChandrikaFinance: React.FC = () => {
         </div>
 
         {/* Total Outstanding (Red Gradient) */}
-        <div className="bg-gradient-to-r from-[#e52d27] to-[#b31217] text-white p-4 rounded-2xl shadow-sm flex items-center gap-3.5 hover:shadow-md transition-shadow">
-          <div className="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center font-black text-lg shrink-0 shadow-xs backdrop-blur-xs">
-            <RefreshCw className="w-6 h-6 stroke-[2.4]" />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[11px] font-bold text-white/80 block uppercase tracking-wide truncate">
-              Total Outstanding
-            </span>
-            <div className="text-xl sm:text-2xl font-black text-white tracking-tight mt-0.5 truncate">
-              ₹ {totalOutstanding.toLocaleString('en-IN')}
+        <div
+          onClick={() => {
+            setViewAllActiveTab('balance');
+            setIsViewAllModalOpen(true);
+          }}
+          className="bg-gradient-to-r from-[#e52d27] to-[#b31217] text-white p-4 rounded-2xl shadow-sm flex items-center justify-between gap-3 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view full borrower balance & interest accrual breakdown"
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-12 h-12 rounded-full bg-white/20 text-white flex items-center justify-center font-black text-lg shrink-0 shadow-xs backdrop-blur-xs group-hover:scale-105 transition-transform">
+              <RefreshCw className="w-6 h-6 stroke-[2.4]" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[11px] font-bold text-white/80 block uppercase tracking-wide truncate">
+                Total Outstanding
+              </span>
+              <div className="text-xl sm:text-2xl font-black text-white tracking-tight mt-0.5 truncate">
+                ₹ {totalOutstanding.toLocaleString('en-IN')}
+              </div>
             </div>
           </div>
+          <span className="hidden sm:inline-block px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-[10px] font-black uppercase tracking-wider backdrop-blur-xs shrink-0">
+            View Breakdown
+          </span>
         </div>
       </div>
 
@@ -1599,7 +1731,10 @@ export const ChandrikaFinance: React.FC = () => {
               <h3 className="text-sm font-black text-slate-800 tracking-tight">Recent Transactions</h3>
             </div>
             <button
-              onClick={() => setIsViewAllModalOpen(true)}
+              onClick={() => {
+                setViewAllActiveTab('transactions');
+                setIsViewAllModalOpen(true);
+              }}
               className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
             >
               <span>View All</span>
@@ -2318,6 +2453,28 @@ export const ChandrikaFinance: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Live Monthly Interest & Balance Accrual Information Banner */}
+                  {Number(customerForm.loanAmount) > 0 && (
+                    <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-emerald-50 border border-blue-200/90 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-2xs">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+                          ₹
+                        </div>
+                        <div>
+                          <div className="font-black text-slate-900 text-xs sm:text-sm">
+                            Monthly Interest Accrual: <span className="text-emerald-700">₹ {((Number(customerForm.loanAmount || 0) * (Number(customerForm.interestRate) || 2.0)) / 100).toLocaleString('en-IN')}</span> / month
+                          </div>
+                          <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                            Calculated at {customerForm.interestRate || '2.0'}% per month. The borrower's balance outstanding will automatically update each month according to this percentage.
+                          </p>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 shadow-2xs">
+                        Auto-Update Active
+                      </span>
+                    </div>
+                  )}
+
                   {/* Security / Collateral Details */}
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
                     <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">Security & Collateral Particulars</span>
@@ -2933,80 +3090,273 @@ export const ChandrikaFinance: React.FC = () => {
         </div>
       )}
 
-      {/* Modal 5: View All Transactions */}
+      {/* Modal 5: Balance / Outstanding & View All Transactions */}
       {isViewAllModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]">
+          <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
             <div className="px-6 py-4 bg-[#0B2545] text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ClipboardList className="w-5 h-5 text-blue-300" />
-                <h3 className="text-base font-black">All Finance Transactions</h3>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-blue-300">
+                  <RefreshCw className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black tracking-tight">Chandrika Finance — Balance & Transactions</h3>
+                  <p className="text-[11px] text-blue-200/80">
+                    Live balance auto-updates every month with interest accrual based on repayment rate
+                  </p>
+                </div>
               </div>
-              <button onClick={handleCloseViewAllModal} className="text-white/80 hover:text-white cursor-pointer">
+              <button onClick={handleCloseViewAllModal} className="text-white/80 hover:text-white cursor-pointer p-1.5 rounded-lg hover:bg-white/10">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-4 border-b border-slate-200 flex items-center justify-between gap-4">
-              <div className="relative flex-1">
+            {/* Sub-Tabs Selector */}
+            <div className="bg-slate-50 border-b border-slate-200 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setViewAllActiveTab('balance')}
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
+                    viewAllActiveTab === 'balance'
+                      ? 'bg-rose-600 text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  <Percent className="w-3.5 h-3.5" />
+                  <span>Balance / Outstanding</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+                    viewAllActiveTab === 'balance' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700 font-bold'
+                  }`}>
+                    Auto-Accrual
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewAllActiveTab('transactions')}
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
+                    viewAllActiveTab === 'transactions'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  <ClipboardList className="w-3.5 h-3.5" />
+                  <span>All Transactions History</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+                    viewAllActiveTab === 'transactions' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700 font-bold'
+                  }`}>
+                    {transactions.length}
+                  </span>
+                </button>
+              </div>
+
+              {/* Search Filter */}
+              <div className="relative w-full sm:w-72">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Search customer, type, or mode..."
+                  placeholder={viewAllActiveTab === 'balance' ? "Search borrower by name or code..." : "Search customer, type, or mode..."}
                   value={viewAllSearch}
                   onChange={(e) => setViewAllSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-xs text-slate-800"
+                  className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-blue-500"
                 />
               </div>
-              <span className="text-xs font-bold text-slate-500 whitespace-nowrap">
-                {filteredViewAllTransactions.length} Transactions
-              </span>
             </div>
 
-            <div className="overflow-y-auto flex-1 p-4">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-2.5 px-3">Date</th>
-                    <th className="py-2.5 px-3">Customer Name</th>
-                    <th className="py-2.5 px-3">Type</th>
-                    <th className="py-2.5 px-3">Amount</th>
-                    <th className="py-2.5 px-3 text-right">Mode</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-xs">
-                  {filteredViewAllTransactions.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">{t.date}</td>
-                      <td className="py-3 px-3 whitespace-nowrap font-bold text-slate-900">{t.customerName}</td>
-                      <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">
-                        <div>{t.type}</div>
-                        {t.monthOfInterest && (
-                          <span className="inline-block mt-0.5 text-[9.5px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.2 rounded">
-                            Month: {t.monthOfInterest}
-                          </span>
+            {/* Modal Body */}
+            <div className="overflow-y-auto flex-1 p-6 space-y-4">
+              {viewAllActiveTab === 'balance' ? (
+                <>
+                  {/* Summary metric banner */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Loan Given</span>
+                      <span className="text-base font-black text-slate-900">₹ {totalLoanGiven.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                      <span className="text-[10px] uppercase font-bold text-emerald-700 block">Principal Repaid</span>
+                      <span className="text-base font-black text-emerald-800">₹ {totalPrincipalReceived.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                      <span className="text-[10px] uppercase font-bold text-amber-700 block">Monthly Interest Accrued</span>
+                      <span className="text-base font-black text-amber-800">
+                        ₹ {customers.reduce((s, c) => s + computeCustomerFinancials(c, transactions).totalInterestAccrued, 0).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <div className="bg-rose-50 border border-rose-200 rounded-xl p-3">
+                      <span className="text-[10px] uppercase font-bold text-rose-700 block">Live Total Outstanding</span>
+                      <span className="text-base font-black text-rose-800">₹ {totalOutstanding.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+
+                  {/* Information Banner */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-xl p-3.5 flex items-start gap-3 text-xs text-slate-700">
+                    <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-bold text-blue-900">
+                        Monthly Interest Percentage Auto-Update System
+                      </p>
+                      <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                        Each borrower's balance outstanding automatically accrues interest each calendar month according to their contracted monthly interest rate (e.g., 2.0% / mo) from their disbursement date. Any interest collections logged clear the unpaid accrued interest, while principal collections reduce the underlying principal.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Borrowers Balance Table */}
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-[10.5px] font-bold text-slate-600 uppercase tracking-wider">
+                          <th className="py-3 px-3.5">Borrower</th>
+                          <th className="py-3 px-3">Sanctioned Loan</th>
+                          <th className="py-3 px-3">Interest Rate</th>
+                          <th className="py-3 px-3">Elapsed Time</th>
+                          <th className="py-3 px-3">Accrued Interest</th>
+                          <th className="py-3 px-3">Principal Due</th>
+                          <th className="py-3 px-3">Balance Outstanding</th>
+                          <th className="py-3 px-3 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-xs">
+                        {filteredBalanceCustomers.length === 0 ? (
+                          <tr>
+                            <td colSpan={8} className="py-8 text-center text-slate-400 font-medium">
+                              No customer records found matching your search.
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredBalanceCustomers.map((c) => {
+                            const f = computeCustomerFinancials(c, transactions);
+                            return (
+                              <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
+                                <td className="py-3 px-3.5">
+                                  <div className="font-black text-slate-900">{c.name}</div>
+                                  <div className="text-[10px] text-slate-500 font-mono">
+                                    {c.customerCode || `CF-${c.id}`} • {c.phone || 'No phone'}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3">
+                                  <div className="font-bold text-slate-800">
+                                    ₹ {Number(c.loanAmount || 0).toLocaleString('en-IN')}
+                                  </div>
+                                  <div className="text-[10px] text-slate-500">
+                                    Disbursed: {c.startDate || 'N/A'}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3">
+                                  <div className="font-bold text-blue-700">
+                                    {c.interestRate || 2.0}% / month
+                                  </div>
+                                  <div className="text-[10px] text-slate-500">
+                                    ₹ {f.monthlyInterest.toLocaleString('en-IN')} / mo
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3">
+                                  <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                                    {f.monthsElapsed} month{f.monthsElapsed === 1 ? '' : 's'} elapsed
+                                  </span>
+                                </td>
+                                <td className="py-3 px-3">
+                                  <div className="font-bold text-amber-700">
+                                    ₹ {f.unpaidInterest.toLocaleString('en-IN')} due
+                                  </div>
+                                  <div className="text-[10px] text-slate-500">
+                                    Accrued: ₹ {f.totalInterestAccrued.toLocaleString('en-IN')}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3">
+                                  <div className="font-bold text-slate-800">
+                                    ₹ {f.principalRemaining.toLocaleString('en-IN')}
+                                  </div>
+                                  <div className="text-[10px] text-slate-500">
+                                    Paid: ₹ {f.totalPrincipalPaid.toLocaleString('en-IN')}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3">
+                                  <div className="font-black text-rose-600 text-sm">
+                                    ₹ {f.totalOutstanding.toLocaleString('en-IN')}
+                                  </div>
+                                  <div className="text-[9.5px] text-emerald-700 font-bold">
+                                    Auto-calculated
+                                  </div>
+                                </td>
+                                <td className="py-3 px-3 text-right">
+                                  <button
+                                    onClick={() => handlePrintCustomerKYC(c)}
+                                    className="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100 cursor-pointer inline-flex items-center gap-1 text-[11px] font-bold"
+                                    title="Print Borrower Loan & Interest Statement"
+                                  >
+                                    <Printer className="w-3.5 h-3.5" />
+                                    <span>Print</span>
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
                         )}
-                      </td>
-                      <td className="py-3 px-3 whitespace-nowrap font-black text-slate-900">
-                        ₹ {t.amount.toLocaleString('en-IN')}
-                      </td>
-                      <td className="py-3 px-3 whitespace-nowrap text-right">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${t.mode === 'UPI'
-                            ? 'bg-purple-100 text-purple-700'
-                            : t.mode === 'Bank'
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-emerald-100 text-emerald-700'
-                          }`}>
-                          {t.mode}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                /* All Transactions Table */
+                <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <th className="py-2.5 px-3">Date</th>
+                        <th className="py-2.5 px-3">Customer Name</th>
+                        <th className="py-2.5 px-3">Type</th>
+                        <th className="py-2.5 px-3">Amount</th>
+                        <th className="py-2.5 px-3 text-right">Mode</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {filteredViewAllTransactions.map((t) => (
+                        <tr key={t.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">{t.date}</td>
+                          <td className="py-3 px-3 whitespace-nowrap font-bold text-slate-900">{t.customerName}</td>
+                          <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">
+                            <div>{t.type}</div>
+                            {t.monthOfInterest && (
+                              <span className="inline-block mt-0.5 text-[9.5px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.2 rounded">
+                                Month: {t.monthOfInterest}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap font-black text-slate-900">
+                            ₹ {t.amount.toLocaleString('en-IN')}
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap text-right">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                t.mode === 'UPI'
+                                  ? 'bg-purple-100 text-purple-700'
+                                  : t.mode === 'Bank'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-emerald-100 text-emerald-700'
+                              }`}
+                            >
+                              {t.mode}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
-            <div className="p-4 border-t border-slate-200 flex justify-end">
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-200 flex items-center justify-between bg-slate-50">
+              <span className="text-xs text-slate-500 font-medium">
+                {viewAllActiveTab === 'balance'
+                  ? `${filteredBalanceCustomers.length} registered borrowers with auto-updating monthly interest`
+                  : `${filteredViewAllTransactions.length} recorded finance transactions`}
+              </span>
               <button
                 onClick={handleCloseViewAllModal}
                 className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer"
@@ -3173,12 +3523,28 @@ export const ChandrikaFinance: React.FC = () => {
 
                           {/* Outstanding */}
                           <td className="py-3 px-3.5">
-                            <div className="font-black text-rose-600 text-sm">
-                              ₹ {Number(c.outstanding || 0).toLocaleString('en-IN')}
-                            </div>
-                            <div className="text-[10px] text-slate-500">
-                              Paid: ₹ {Number(c.principalPaid || 0).toLocaleString('en-IN')}
-                            </div>
+                            {(() => {
+                              const f = computeCustomerFinancials(c, transactions);
+                              return (
+                                <>
+                                  <div className="font-black text-rose-600 text-sm">
+                                    ₹ {f.totalOutstanding.toLocaleString('en-IN')}
+                                  </div>
+                                  <div className="text-[10px] text-slate-500 flex flex-col gap-0.5 mt-0.5">
+                                    <span>Principal Due: ₹ {f.principalRemaining.toLocaleString('en-IN')}</span>
+                                    {f.unpaidInterest > 0 ? (
+                                      <span className="text-amber-700 font-bold">
+                                        + Interest ({f.monthsElapsed} mo @ {c.interestRate || 2}%): ₹ {f.unpaidInterest.toLocaleString('en-IN')}
+                                      </span>
+                                    ) : f.monthsElapsed > 0 ? (
+                                      <span className="text-emerald-600 font-bold">Interest paid up to date</span>
+                                    ) : (
+                                      <span className="text-slate-400">Current month (₹ {f.monthlyInterest.toLocaleString('en-IN')}/mo)</span>
+                                    )}
+                                  </div>
+                                </>
+                              );
+                            })()}
                           </td>
 
                           {/* Status */}
