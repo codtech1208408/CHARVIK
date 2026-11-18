@@ -42,15 +42,56 @@ import {
 import { useToast } from '../components/common/Toast';
 import { printSheet } from '../utils/printSheet';
 import { exportMultiSheetExcel } from '../utils/exportToExcel';
+import { CustomerSearchSelect } from '../components/common/CustomerSearchSelect';
+
+export const AVAILABLE_MONTHS = [
+  'November 2026',
+  'October 2026',
+  'September 2026',
+  'August 2026',
+  'July 2026',
+  'June 2026',
+  'May 2026',
+  'April 2026',
+  'March 2026',
+  'February 2026',
+  'January 2026',
+  'December 2025',
+  'November 2025',
+  'October 2025',
+  'September 2025',
+  'August 2025',
+  'July 2025',
+  'June 2025',
+  'May 2025',
+  'April 2025',
+  'March 2025',
+  'February 2025',
+  'January 2025',
+  'December 2026'
+];
+
+export const formatDisplayDate = (dStr?: string) => {
+  if (!dStr) return '18 Nov 2026';
+  try {
+    const d = new Date(dStr);
+    if (isNaN(d.getTime())) return dStr;
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch {
+    return dStr;
+  }
+};
 
 export interface FinanceTransaction {
   id: string | number;
   date: string;
   customerName: string;
-  type: 'Collection (Interest)' | 'Collection (Principal)' | 'Loan Given' | 'Investment Added';
+  type: 'Collection (Interest)' | 'Collection (Principal)' | 'Loan Given' | 'Investment Added' | 'Month of Interest' | string;
   amount: number;
   mode: 'UPI' | 'Bank' | 'Cash';
   notes?: string;
+  monthOfInterest?: string;
+  paymentDate?: string;
 }
 
 export interface FinanceCustomer {
@@ -312,8 +353,22 @@ export const ChandrikaFinance: React.FC = () => {
 
   // Form states
   const [investmentForm, setInvestmentForm] = useState({ investor: '', amount: '', mode: 'Bank' as 'UPI' | 'Bank' | 'Cash', notes: '' });
-  const [loanForm, setLoanForm] = useState({ customerName: '', amount: '', mode: 'Cash' as 'UPI' | 'Bank' | 'Cash', notes: '' });
-  const [collectionForm, setCollectionForm] = useState({ customerName: '', type: 'Collection (Principal)' as 'Collection (Principal)' | 'Collection (Interest)', amount: '', mode: 'UPI' as 'UPI' | 'Bank' | 'Cash', notes: '' });
+  const [loanForm, setLoanForm] = useState({
+    customerName: '',
+    amount: '',
+    paymentDate: new Date().toISOString().split('T')[0],
+    mode: 'Cash' as 'UPI' | 'Bank' | 'Cash',
+    notes: ''
+  });
+  const [collectionForm, setCollectionForm] = useState({
+    customerName: '',
+    type: 'Collection (Principal)' as 'Collection (Principal)' | 'Collection (Interest)' | 'Month of Interest',
+    monthOfInterest: 'November 2026',
+    paymentDate: new Date().toISOString().split('T')[0],
+    amount: '',
+    mode: 'UPI' as 'UPI' | 'Bank' | 'Cash',
+    notes: ''
+  });
 
   // View All Search
   const [viewAllSearch, setViewAllSearch] = useState('');
@@ -738,7 +793,7 @@ export const ChandrikaFinance: React.FC = () => {
     e.preventDefault();
     const amt = parseFloat(loanForm.amount);
     if (!loanForm.customerName.trim()) {
-      toastError('Please enter the customer name.');
+      toastError('Please enter or select the customer name.');
       return;
     }
     if (isNaN(amt) || amt <= 0) {
@@ -746,21 +801,48 @@ export const ChandrikaFinance: React.FC = () => {
       return;
     }
     setTotalLoanGiven((prev) => prev + amt);
+    const displayDate = formatDisplayDate(loanForm.paymentDate);
+
     setTransactions((prev) => [
       {
         id: Date.now(),
-        date: '14 Nov 2026',
+        date: displayDate,
         customerName: loanForm.customerName.trim(),
         type: 'Loan Given',
         amount: amt,
         mode: loanForm.mode,
-        notes: loanForm.notes
+        notes: loanForm.notes,
+        paymentDate: loanForm.paymentDate
       },
       ...prev
     ]);
+
+    // Update customer loan amount & outstanding balance if customer exists
+    setCustomers((prev) =>
+      prev.map((c) => {
+        const matches =
+          loanForm.customerName.includes(c.name) ||
+          loanForm.customerName.includes(c.customerCode);
+        if (matches) {
+          return {
+            ...c,
+            loanAmount: (c.loanAmount || 0) + amt,
+            outstanding: (c.outstanding || 0) + amt
+          };
+        }
+        return c;
+      })
+    );
+
     success(`Loan of ₹${amt.toLocaleString('en-IN')} disbursed to ${loanForm.customerName}!`);
     setIsLoanModalOpen(false);
-    setLoanForm({ customerName: '', amount: '', mode: 'Cash', notes: '' });
+    setLoanForm({
+      customerName: '',
+      amount: '',
+      paymentDate: new Date().toISOString().split('T')[0],
+      mode: 'Cash',
+      notes: ''
+    });
   };
 
   // Handle Add Collection
@@ -768,7 +850,7 @@ export const ChandrikaFinance: React.FC = () => {
     e.preventDefault();
     const amt = parseFloat(collectionForm.amount);
     if (!collectionForm.customerName.trim()) {
-      toastError('Please enter the customer name.');
+      toastError('Please enter or select the customer name.');
       return;
     }
     if (isNaN(amt) || amt <= 0) {
@@ -776,7 +858,9 @@ export const ChandrikaFinance: React.FC = () => {
       return;
     }
 
-    if (collectionForm.type === 'Collection (Principal)') {
+    const isInterest = collectionForm.type === 'Collection (Interest)' || collectionForm.type === 'Month of Interest';
+
+    if (!isInterest) {
       setTotalPrincipalReceived((prev) => prev + amt);
     } else {
       setTotalInterestReceived((prev) => prev + amt);
@@ -785,21 +869,58 @@ export const ChandrikaFinance: React.FC = () => {
     setTodayCollection((prev) => prev + amt);
     setThisMonthCollection((prev) => prev + amt);
 
+    const displayDate = formatDisplayDate(collectionForm.paymentDate);
+    const monthNote = isInterest ? `Month of Interest: ${collectionForm.monthOfInterest}` : '';
+
     setTransactions((prev) => [
       {
         id: Date.now(),
-        date: '14 Nov 2026',
+        date: displayDate,
         customerName: collectionForm.customerName.trim(),
         type: collectionForm.type,
         amount: amt,
         mode: collectionForm.mode,
         notes: collectionForm.notes
+          ? `${collectionForm.notes}${monthNote ? ' • ' + monthNote : ''}`
+          : monthNote || undefined,
+        monthOfInterest: isInterest ? collectionForm.monthOfInterest : undefined,
+        paymentDate: collectionForm.paymentDate
       },
       ...prev
     ]);
-    success(`${collectionForm.type} of ₹${amt.toLocaleString('en-IN')} recorded!`);
+
+    // Update customer's principal/outstanding if it's principal collection
+    if (!isInterest) {
+      setCustomers((prev) =>
+        prev.map((c) => {
+          const matches =
+            collectionForm.customerName.includes(c.name) ||
+            collectionForm.customerName.includes(c.customerCode);
+          if (matches) {
+            const newPrincipal = (c.principalPaid || 0) + amt;
+            const newOutstanding = Math.max(0, (c.outstanding || 0) - amt);
+            return {
+              ...c,
+              principalPaid: newPrincipal,
+              outstanding: newOutstanding
+            };
+          }
+          return c;
+        })
+      );
+    }
+
+    success(`${collectionForm.type} of ₹${amt.toLocaleString('en-IN')} recorded successfully!`);
     setIsCollectionModalOpen(false);
-    setCollectionForm({ customerName: '', type: 'Collection (Principal)', amount: '', mode: 'UPI', notes: '' });
+    setCollectionForm({
+      customerName: '',
+      type: 'Collection (Principal)',
+      monthOfInterest: 'November 2026',
+      paymentDate: new Date().toISOString().split('T')[0],
+      amount: '',
+      mode: 'UPI',
+      notes: ''
+    });
   };
 
   // Customers Directory state & search
@@ -1408,7 +1529,14 @@ export const ChandrikaFinance: React.FC = () => {
                   <tr key={t.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">{t.date}</td>
                     <td className="py-3 px-3 whitespace-nowrap font-bold text-slate-900">{t.customerName}</td>
-                    <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">{t.type}</td>
+                    <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">
+                      <div>{t.type}</div>
+                      {t.monthOfInterest && (
+                        <span className="inline-block mt-0.5 text-[9.5px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.2 rounded">
+                          Month: {t.monthOfInterest}
+                        </span>
+                      )}
+                    </td>
                     <td className="py-3 px-3 whitespace-nowrap font-black text-slate-900">
                       ₹ {t.amount.toLocaleString('en-IN')}
                     </td>
@@ -2491,17 +2619,27 @@ export const ChandrikaFinance: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleAddLoan} className="p-6 space-y-4 text-xs">
+              {/* 1. Registered Customer Search & Auto-Select */}
+              <CustomerSearchSelect
+                label="Customer / Borrower Name"
+                required
+                value={loanForm.customerName}
+                onChange={(val) => setLoanForm({ ...loanForm, customerName: val })}
+                customers={customers}
+                placeholder="Search or select registered borrower..."
+              />
+
+              {/* 2. Payment / Disbursement Date */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Customer / Borrower Name <span className="text-rose-500">*</span>
+                  Payment / Disbursement Date <span className="text-rose-500">*</span>
                 </label>
                 <input
-                  type="text"
+                  type="date"
                   required
-                  placeholder="e.g. Anil Verma"
-                  value={loanForm.customerName}
-                  onChange={(e) => setLoanForm({ ...loanForm, customerName: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs focus:ring-2 focus:ring-amber-500/20"
+                  value={loanForm.paymentDate}
+                  onChange={(e) => setLoanForm({ ...loanForm, paymentDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs bg-white focus:ring-2 focus:ring-amber-500/20"
                 />
               </div>
 
@@ -2582,20 +2720,17 @@ export const ChandrikaFinance: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleAddCollection} className="p-6 space-y-4 text-xs">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Customer Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Suresh Reddy"
-                  value={collectionForm.customerName}
-                  onChange={(e) => setCollectionForm({ ...collectionForm, customerName: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs focus:ring-2 focus:ring-purple-500/20"
-                />
-              </div>
+              {/* 1. Registered Customer Search & Auto-Select with (ID) in bracket */}
+              <CustomerSearchSelect
+                label="Customer Name"
+                required
+                value={collectionForm.customerName}
+                onChange={(val) => setCollectionForm({ ...collectionForm, customerName: val })}
+                customers={customers}
+                placeholder="Search or select registered customer..."
+              />
 
+              {/* 2. Collection Type */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                   Collection Type <span className="text-rose-500">*</span>
@@ -2603,13 +2738,59 @@ export const ChandrikaFinance: React.FC = () => {
                 <select
                   value={collectionForm.type}
                   onChange={(e: any) => setCollectionForm({ ...collectionForm, type: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs bg-white"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs bg-white focus:ring-2 focus:ring-purple-500/20"
                 >
                   <option value="Collection (Principal)">Collection (Principal)</option>
                   <option value="Collection (Interest)">Collection (Interest)</option>
+                  <option value="Month of Interest">Month of Interest</option>
                 </select>
               </div>
 
+              {/* 3. Month of Interest (shown when Interest or Month of Interest is selected) */}
+              {(collectionForm.type === 'Collection (Interest)' || collectionForm.type === 'Month of Interest') && (
+                <div className="bg-purple-50/70 border border-purple-200 p-3 rounded-xl space-y-1.5 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-black text-purple-900 uppercase tracking-wider">
+                      Select Month of Interest <span className="text-rose-500">*</span>
+                    </label>
+                    <span className="text-[10px] font-bold text-purple-700 bg-purple-100/90 border border-purple-200 px-2 py-0.5 rounded-full">
+                      Which month they gave
+                    </span>
+                  </div>
+                  <select
+                    required
+                    value={collectionForm.monthOfInterest}
+                    onChange={(e) => setCollectionForm({ ...collectionForm, monthOfInterest: e.target.value })}
+                    className="w-full px-3 py-2 border border-purple-300 rounded-xl font-black text-purple-900 text-xs bg-white focus:ring-2 focus:ring-purple-500/20"
+                  >
+                    {AVAILABLE_MONTHS.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10.5px] text-purple-700 font-semibold flex items-center gap-1">
+                    <span>✨ Recording interest collection for:</span>
+                    <strong className="underline font-black">{collectionForm.monthOfInterest}</strong>
+                  </p>
+                </div>
+              )}
+
+              {/* 4. Payment Given Date */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Payment Given Date <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={collectionForm.paymentDate}
+                  onChange={(e) => setCollectionForm({ ...collectionForm, paymentDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs bg-white focus:ring-2 focus:ring-purple-500/20"
+                />
+              </div>
+
+              {/* 5. Amount */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                   Amount (₹) <span className="text-rose-500">*</span>
@@ -2625,6 +2806,7 @@ export const ChandrikaFinance: React.FC = () => {
                 />
               </div>
 
+              {/* 6. Payment Mode */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                   Payment Mode
@@ -2706,7 +2888,14 @@ export const ChandrikaFinance: React.FC = () => {
                     <tr key={t.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">{t.date}</td>
                       <td className="py-3 px-3 whitespace-nowrap font-bold text-slate-900">{t.customerName}</td>
-                      <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">{t.type}</td>
+                      <td className="py-3 px-3 whitespace-nowrap text-slate-600 font-medium">
+                        <div>{t.type}</div>
+                        {t.monthOfInterest && (
+                          <span className="inline-block mt-0.5 text-[9.5px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.2 rounded">
+                            Month: {t.monthOfInterest}
+                          </span>
+                        )}
+                      </td>
                       <td className="py-3 px-3 whitespace-nowrap font-black text-slate-900">
                         ₹ {t.amount.toLocaleString('en-IN')}
                       </td>
