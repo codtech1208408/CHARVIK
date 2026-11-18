@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Calendar,
   IndianRupee,
@@ -395,7 +396,7 @@ export const ChandrikaFinance: React.FC = () => {
       ...prev
     ]);
     success(`Investment of ₹${amt.toLocaleString('en-IN')} added successfully!`);
-    setIsInvestmentModalOpen(false);
+    handleCloseInvestmentModal();
     setInvestmentForm({ investor: '', amount: '', mode: 'Bank', notes: '' });
   };
 
@@ -838,7 +839,7 @@ export const ChandrikaFinance: React.FC = () => {
     );
 
     success(`Loan of ₹${amt.toLocaleString('en-IN')} disbursed to ${loanForm.customerName}!`);
-    setIsLoanModalOpen(false);
+    handleCloseLoanModal();
     setLoanForm({
       customerName: '',
       amount: '',
@@ -914,7 +915,7 @@ export const ChandrikaFinance: React.FC = () => {
     }
 
     success(`${collectionForm.type} of ₹${amt.toLocaleString('en-IN')} recorded successfully!`);
-    setIsCollectionModalOpen(false);
+    handleCloseCollectionModal();
     setCollectionForm({
       customerName: '',
       type: 'Collection (Principal)',
@@ -929,6 +930,61 @@ export const ChandrikaFinance: React.FC = () => {
   // Customers Directory state & search
   const [isCustomersDirectoryOpen, setIsCustomersDirectoryOpen] = useState(false);
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
+
+  // Subtabs URL query handler for sidebar flyout navigation
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTabParam = searchParams.get('tab');
+
+  const clearTabParam = () => {
+    if (searchParams.get('tab')) {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
+  const handleCloseInvestmentModal = () => {
+    setIsInvestmentModalOpen(false);
+    clearTabParam();
+  };
+
+  const handleCloseCustomerModal = () => {
+    setIsCustomerModalOpen(false);
+    clearTabParam();
+  };
+
+  const handleCloseCustomersDirectory = () => {
+    setIsCustomersDirectoryOpen(false);
+    clearTabParam();
+  };
+
+  const handleCloseLoanModal = () => {
+    setIsLoanModalOpen(false);
+    clearTabParam();
+  };
+
+  const handleCloseCollectionModal = () => {
+    setIsCollectionModalOpen(false);
+    clearTabParam();
+  };
+
+  const handleCloseViewAllModal = () => {
+    setIsViewAllModalOpen(false);
+    clearTabParam();
+  };
+
+  useEffect(() => {
+    if (!activeTabParam) return;
+    if (activeTabParam === 'investment') {
+      setIsInvestmentModalOpen(true);
+    } else if (activeTabParam === 'customers') {
+      setIsCustomersDirectoryOpen(true);
+    } else if (activeTabParam === 'loan') {
+      setIsLoanModalOpen(true);
+    } else if (activeTabParam === 'collections') {
+      setIsCollectionModalOpen(true);
+    } else if (activeTabParam === 'balance') {
+      setIsViewAllModalOpen(true);
+    }
+  }, [activeTabParam]);
 
   // Filtered directory customers
   const filteredDirectoryCustomers = useMemo(() => {
@@ -1651,7 +1707,7 @@ export const ChandrikaFinance: React.FC = () => {
                 <Coins className="w-5 h-5" />
                 <h3 className="text-base font-black">Record New Capital Investment</h3>
               </div>
-              <button onClick={() => setIsInvestmentModalOpen(false)} className="text-white/80 hover:text-white cursor-pointer">
+              <button onClick={handleCloseInvestmentModal} className="text-white/80 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1716,7 +1772,7 @@ export const ChandrikaFinance: React.FC = () => {
               <div className="pt-2 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setIsInvestmentModalOpen(false)}
+                  onClick={handleCloseInvestmentModal}
                   className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   Cancel
@@ -2649,7 +2705,7 @@ export const ChandrikaFinance: React.FC = () => {
                 <HandCoins className="w-5 h-5" />
                 <h3 className="text-base font-black">Disburse Loan / Amount Given</h3>
               </div>
-              <button onClick={() => setIsLoanModalOpen(false)} className="text-white/80 hover:text-white cursor-pointer">
+              <button onClick={handleCloseLoanModal} className="text-white/80 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -2724,7 +2780,7 @@ export const ChandrikaFinance: React.FC = () => {
               <div className="pt-2 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setIsLoanModalOpen(false)}
+                  onClick={handleCloseLoanModal}
                   className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   Cancel
@@ -2750,7 +2806,7 @@ export const ChandrikaFinance: React.FC = () => {
                 <CalendarPlus className="w-5 h-5" />
                 <h3 className="text-base font-black">Record Repayment Collection</h3>
               </div>
-              <button onClick={() => setIsCollectionModalOpen(false)} className="text-white/80 hover:text-white cursor-pointer">
+              <button onClick={handleCloseCollectionModal} className="text-white/80 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -2860,7 +2916,7 @@ export const ChandrikaFinance: React.FC = () => {
               <div className="pt-2 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setIsCollectionModalOpen(false)}
+                  onClick={handleCloseCollectionModal}
                   className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   Cancel
@@ -2886,7 +2942,7 @@ export const ChandrikaFinance: React.FC = () => {
                 <ClipboardList className="w-5 h-5 text-blue-300" />
                 <h3 className="text-base font-black">All Finance Transactions</h3>
               </div>
-              <button onClick={() => setIsViewAllModalOpen(false)} className="text-white/80 hover:text-white cursor-pointer">
+              <button onClick={handleCloseViewAllModal} className="text-white/80 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -2952,7 +3008,7 @@ export const ChandrikaFinance: React.FC = () => {
 
             <div className="p-4 border-t border-slate-200 flex justify-end">
               <button
-                onClick={() => setIsViewAllModalOpen(false)}
+                onClick={handleCloseViewAllModal}
                 className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer"
               >
                 Close
@@ -2980,7 +3036,7 @@ export const ChandrikaFinance: React.FC = () => {
                 </div>
               </div>
               <button
-                onClick={() => setIsCustomersDirectoryOpen(false)}
+                onClick={handleCloseCustomersDirectory}
                 className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -3178,7 +3234,7 @@ export const ChandrikaFinance: React.FC = () => {
                 Showing {filteredDirectoryCustomers.length} of {customers.length} registered borrowers
               </span>
               <button
-                onClick={() => setIsCustomersDirectoryOpen(false)}
+                onClick={handleCloseCustomersDirectory}
                 className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer"
               >
                 Close

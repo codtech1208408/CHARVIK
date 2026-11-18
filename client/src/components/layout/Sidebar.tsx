@@ -34,7 +34,10 @@ import {
   FileText,
   Gauge,
   HeartHandshake,
-  Landmark
+  Landmark,
+  Coins,
+  HandCoins,
+  CalendarPlus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
@@ -188,6 +191,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Operator Income & Expense', route: '/admin/income-expense', icon: IndianRupee, iconColor: 'text-emerald-500', activeRoutes: ['/admin/income-expense'] },
   ];
 
+  // Admin Chandrika Finance Subtabs (Except Interest, exactly matching user request)
+  const adminChandrikaFinanceSubItems: NavSubItem[] = [
+    { label: 'Finance Overview', route: '/admin/chandrika-finance', icon: Landmark, iconColor: 'text-amber-500', activeRoutes: ['/admin/chandrika-finance'] },
+    { label: 'Investment', route: '/admin/chandrika-finance?tab=investment', icon: Coins, iconColor: 'text-emerald-500', activeRoutes: ['/admin/chandrika-finance?tab=investment'] },
+    { label: 'Customers', route: '/admin/chandrika-finance?tab=customers', icon: Users, iconColor: 'text-blue-500', activeRoutes: ['/admin/chandrika-finance?tab=customers'] },
+    { label: 'Loan / Amount Given', route: '/admin/chandrika-finance?tab=loan', icon: HandCoins, iconColor: 'text-orange-500', activeRoutes: ['/admin/chandrika-finance?tab=loan'] },
+    { label: 'Collections (Daily / Monthly)', route: '/admin/chandrika-finance?tab=collections', icon: CalendarPlus, iconColor: 'text-purple-500', activeRoutes: ['/admin/chandrika-finance?tab=collections'] },
+    { label: 'Balance / Outstanding', route: '/admin/chandrika-finance?tab=balance', icon: TrendingUp, iconColor: 'text-rose-500', activeRoutes: ['/admin/chandrika-finance?tab=balance'] },
+  ];
+
   // Operator Subtabs
   const operatorDutySubItems: NavSubItem[] = [
     { label: 'Trip Management', route: '/operator/tasks', icon: ClipboardList, activeRoutes: ['/operator/tasks', '/admin/tasks', '/admin/trips'] },
@@ -321,7 +334,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Landmark,
       iconColor: 'text-amber-400',
       activeGradient: 'bg-gradient-to-r from-amber-500 to-orange-600',
-      activeRoutes: ['/admin/chandrika-finance', '/admin/finance']
+      activeRoutes: ['/admin/chandrika-finance', '/admin/finance'],
+      subItems: adminChandrikaFinanceSubItems
     },
     {
       label: 'Income & Expense',
@@ -495,18 +509,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const isSubActive = (sub: NavSubItem) => {
+    if (sub.route.includes('?')) {
+      const pureRoute = sub.route.split('?')[0];
+      const query = sub.route.split('?')[1];
+      return location.pathname === pureRoute && location.search.includes(query);
+    }
+    if (location.search && location.search !== '') {
+      return false;
+    }
     if (sub.activeRoutes && sub.activeRoutes.some((r) => {
       const pureR = r.split('?')[0];
       return location.pathname === pureR || location.pathname.startsWith(pureR + '/');
     })) {
       return true;
     }
-    const pureRoute = sub.route.split('?')[0];
-    if (sub.route.includes('?')) {
-      const query = sub.route.split('?')[1];
-      return location.pathname === pureRoute && location.search.includes(query);
-    }
-    return location.pathname === pureRoute;
+    return location.pathname === sub.route;
   };
 
   // Click handler: opens subtabs flyout panel (NO inline pushing down!)
