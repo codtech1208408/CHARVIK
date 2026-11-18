@@ -450,8 +450,14 @@ export const ChandrikaFinance: React.FC = () => {
   const [loanForm, setLoanForm] = useState({
     customerName: '',
     amount: '',
+    interestRate: '2.0',
+    repaymentFrequency: 'Monthly',
+    loanTermMonths: '12',
     paymentDate: new Date().toISOString().split('T')[0],
     mode: 'Cash' as 'UPI' | 'Bank' | 'Cash',
+    securityType: 'Promissory Note',
+    securityDetails: '',
+    securityDoc: '',
     notes: ''
   });
   const [collectionForm, setCollectionForm] = useState({
@@ -575,6 +581,16 @@ export const ChandrikaFinance: React.FC = () => {
     const reader = new FileReader();
     reader.onloadend = () => {
       setCustomerForm((prev) => ({ ...prev, [field]: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLoanFileUpload = (field: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLoanForm((prev) => ({ ...prev, [field]: reader.result as string }));
     };
     reader.readAsDataURL(file);
   };
@@ -796,9 +812,6 @@ export const ChandrikaFinance: React.FC = () => {
       return;
     }
 
-    const loanAmt = parseFloat(customerForm.loanAmount) || 0;
-    const rateVal = parseFloat(customerForm.interestRate) || 2.0;
-
     const newCustomer: FinanceCustomer = {
       id: Date.now(),
       customerCode: customerForm.customerCode || `CF-${String(customerCount + 1).padStart(4, '0')}`,
@@ -828,16 +841,16 @@ export const ChandrikaFinance: React.FC = () => {
       otherDocFile: customerForm.otherDocFile,
       kycStatus: customerForm.kycStatus,
 
-      // Loan Terms
-      loanAmount: loanAmt,
-      interestRate: rateVal,
-      repaymentFrequency: customerForm.repaymentFrequency,
-      loanTermMonths: parseInt(customerForm.loanTermMonths) || 12,
-      startDate: customerForm.disbursementDate || new Date().toISOString().split('T')[0],
-      disbursementMode: customerForm.disbursementMode,
-      securityType: customerForm.securityType,
-      securityDetails: customerForm.securityDetails.trim(),
-      securityDoc: customerForm.securityDoc,
+      // Default loan terms (to be disbursed via '+ Loan / Amount Given')
+      loanAmount: 0,
+      interestRate: 2.0,
+      repaymentFrequency: 'Monthly',
+      loanTermMonths: 12,
+      startDate: new Date().toISOString().split('T')[0],
+      disbursementMode: 'Cash',
+      securityType: 'None',
+      securityDetails: '',
+      securityDoc: '',
 
       // Bank
       bankName: customerForm.bankName.trim(),
@@ -863,25 +876,8 @@ export const ChandrikaFinance: React.FC = () => {
 
       // Balances
       principalPaid: 0,
-      outstanding: loanAmt
+      outstanding: 0
     };
-
-    // If loan amount is sanctioned, record a Loan Given transaction
-    if (loanAmt > 0) {
-      setTotalLoanGiven((prev) => prev + loanAmt);
-      setTransactions((prev) => [
-        {
-          id: Date.now(),
-          date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-          customerName: newCustomer.name,
-          type: 'Loan Given',
-          amount: loanAmt,
-          mode: customerForm.disbursementMode === 'Bank' ? 'Bank' : customerForm.disbursementMode === 'UPI' ? 'UPI' : 'Cash',
-          notes: `New borrower financing sanctioned (${newCustomer.customerCode} • ${rateVal}% interest)`
-        },
-        ...prev
-      ]);
-    }
 
     setCustomers((prev) => [newCustomer, ...prev]);
     setCustomerCount((prev) => prev + 1);
@@ -904,6 +900,7 @@ export const ChandrikaFinance: React.FC = () => {
       toastError('Please enter a valid loan amount.');
       return;
     }
+    const rateVal = parseFloat(loanForm.interestRate) || 2.0;
     setTotalLoanGiven((prev) => prev + amt);
     const displayDate = formatDisplayDate(loanForm.paymentDate);
 
@@ -915,22 +912,30 @@ export const ChandrikaFinance: React.FC = () => {
         type: 'Loan Given',
         amount: amt,
         mode: loanForm.mode,
-        notes: loanForm.notes,
+        notes: loanForm.notes || `Sanctioned loan @ ${rateVal}% / mo, tenure: ${loanForm.loanTermMonths} mos, ${loanForm.securityType}`,
         paymentDate: loanForm.paymentDate
       },
       ...prev
     ]);
 
-    // Update customer loan amount & outstanding balance if customer exists
+    // Update customer loan amount & terms
     setCustomers((prev) =>
       prev.map((c) => {
         const matches =
           loanForm.customerName.includes(c.name) ||
-          loanForm.customerName.includes(c.customerCode);
+          (c.customerCode && loanForm.customerName.includes(c.customerCode));
         if (matches) {
           return {
             ...c,
             loanAmount: (c.loanAmount || 0) + amt,
+            interestRate: rateVal,
+            repaymentFrequency: loanForm.repaymentFrequency || c.repaymentFrequency || 'Monthly',
+            loanTermMonths: parseInt(loanForm.loanTermMonths) || c.loanTermMonths || 12,
+            startDate: loanForm.paymentDate || c.startDate,
+            disbursementMode: loanForm.mode,
+            securityType: loanForm.securityType,
+            securityDetails: loanForm.securityDetails,
+            securityDoc: loanForm.securityDoc || c.securityDoc,
             outstanding: (c.outstanding || 0) + amt
           };
         }
@@ -940,13 +945,6 @@ export const ChandrikaFinance: React.FC = () => {
 
     success(`Loan of ₹${amt.toLocaleString('en-IN')} disbursed to ${loanForm.customerName}!`);
     handleCloseLoanModal();
-    setLoanForm({
-      customerName: '',
-      amount: '',
-      paymentDate: new Date().toISOString().split('T')[0],
-      mode: 'Cash',
-      notes: ''
-    });
   };
 
   // Handle Add Collection
@@ -1058,6 +1056,19 @@ export const ChandrikaFinance: React.FC = () => {
 
   const handleCloseLoanModal = () => {
     setIsLoanModalOpen(false);
+    setLoanForm({
+      customerName: '',
+      amount: '',
+      interestRate: '2.0',
+      repaymentFrequency: 'Monthly',
+      loanTermMonths: '12',
+      paymentDate: new Date().toISOString().split('T')[0],
+      mode: 'Cash',
+      securityType: 'Promissory Note',
+      securityDetails: '',
+      securityDoc: '',
+      notes: ''
+    });
     clearTabParam();
   };
 
@@ -1962,9 +1973,8 @@ export const ChandrikaFinance: React.FC = () => {
                 {[
                   { number: 1, title: 'Personal Info', icon: User },
                   { number: 2, title: 'KYC & Identity', icon: FileText },
-                  { number: 3, title: 'Loan Terms', icon: IndianRupee },
-                  { number: 4, title: 'Bank Account', icon: Landmark },
-                  { number: 5, title: 'Guarantor & Refs', icon: ShieldCheck }
+                  { number: 3, title: 'Bank Account', icon: Landmark },
+                  { number: 4, title: 'Guarantor & Refs', icon: ShieldCheck }
                 ].map((st) => {
                   const Icon = st.icon;
                   const isDone = st.number < currentCustomerStep;
@@ -2358,189 +2368,12 @@ export const ChandrikaFinance: React.FC = () => {
                 </div>
               )}
 
-              {/* ==================== STEP 3: LOAN TERMS & SECURITY ==================== */}
+              {/* ==================== STEP 3: BANK ACCOUNT DETAILS ==================== */}
               {currentCustomerStep === 3 && (
                 <div className="space-y-5 animate-in fade-in">
                   <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#142B4A] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
-                    <IndianRupee className="w-3.5 h-3.5 text-blue-300" />
-                    <span>Step 3: Loan Parameters, Interest & Collateral Security</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {/* Sanctioned Loan Amount */}
-                    <div>
-                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
-                        <IndianRupee className="w-3.5 h-3.5 text-blue-600" />
-                        <span>Sanctioned Loan Amount (₹)</span>
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1000"
-                        placeholder="e.g. 200000"
-                        value={customerForm.loanAmount}
-                        onChange={(e) => setCustomerForm({ ...customerForm, loanAmount: e.target.value })}
-                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-black text-blue-700 outline-none focus:ring-2 focus:ring-blue-500/20"
-                      />
-                    </div>
-
-                    {/* Interest Rate */}
-                    <div>
-                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
-                        <Percent className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Monthly Interest Rate (% per month)</span>
-                      </label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        placeholder="e.g. 2.0"
-                        value={customerForm.interestRate}
-                        onChange={(e) => setCustomerForm({ ...customerForm, interestRate: e.target.value })}
-                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-black text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
-                      />
-                    </div>
-
-                    {/* Repayment Frequency */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Repayment Frequency</label>
-                      <select
-                        value={customerForm.repaymentFrequency}
-                        onChange={(e: any) => setCustomerForm({ ...customerForm, repaymentFrequency: e.target.value })}
-                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 outline-none"
-                      >
-                        <option value="Monthly">Monthly Installments</option>
-                        <option value="Weekly">Weekly Collections</option>
-                        <option value="Daily">Daily Collections</option>
-                      </select>
-                    </div>
-
-                    {/* Loan Term (Months) */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Loan Tenure / Duration (Months)</label>
-                      <input
-                        type="number"
-                        min="1"
-                        placeholder="e.g. 12"
-                        value={customerForm.loanTermMonths}
-                        onChange={(e) => setCustomerForm({ ...customerForm, loanTermMonths: e.target.value })}
-                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-800 outline-none"
-                      />
-                    </div>
-
-                    {/* Disbursement Date */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Disbursement Date</label>
-                      <input
-                        type="date"
-                        value={customerForm.disbursementDate}
-                        onChange={(e) => setCustomerForm({ ...customerForm, disbursementDate: e.target.value })}
-                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-medium text-slate-800 outline-none"
-                      />
-                    </div>
-
-                    {/* Disbursement Mode */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Disbursement Mode</label>
-                      <select
-                        value={customerForm.disbursementMode}
-                        onChange={(e: any) => setCustomerForm({ ...customerForm, disbursementMode: e.target.value })}
-                        className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 outline-none"
-                      >
-                        <option value="Cash">Cash Handover</option>
-                        <option value="Bank">Bank Transfer / NEFT</option>
-                        <option value="UPI">UPI / Instant Transfer</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Live Monthly Interest & Balance Accrual Information Banner */}
-                  {Number(customerForm.loanAmount) > 0 && (
-                    <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-emerald-50 border border-blue-200/90 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-2xs">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
-                          ₹
-                        </div>
-                        <div>
-                          <div className="font-black text-slate-900 text-xs sm:text-sm">
-                            Monthly Interest Accrual: <span className="text-emerald-700">₹ {((Number(customerForm.loanAmount || 0) * (Number(customerForm.interestRate) || 2.0)) / 100).toLocaleString('en-IN')}</span> / month
-                          </div>
-                          <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                            Calculated at {customerForm.interestRate || '2.0'}% per month. The borrower's balance outstanding will automatically update each month according to this percentage.
-                          </p>
-                        </div>
-                      </div>
-                      <span className="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 shadow-2xs">
-                        Auto-Update Active
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Security / Collateral Details */}
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                    <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">Security & Collateral Particulars</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Collateral / Security Type</label>
-                        <select
-                          value={customerForm.securityType}
-                          onChange={(e) => setCustomerForm({ ...customerForm, securityType: e.target.value })}
-                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 outline-none"
-                        >
-                          <option value="Promissory Note">Promissory Note (Pro-Note Signed)</option>
-                          <option value="Cheque">Signed Security Cheque</option>
-                          <option value="Vehicle">Vehicle RC / Hypothecation</option>
-                          <option value="Property">Property Deed / Land Documents</option>
-                          <option value="Gold">Gold Pledge</option>
-                          <option value="Personal Guarantee">Personal Guarantor Undertaking</option>
-                          <option value="None">Unsecured / None</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Cheque / Collateral Specifics</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Cheque No. 492019, HDFC Bank, blank guarantee cheque"
-                          value={customerForm.securityDetails}
-                          onChange={(e) => setCustomerForm({ ...customerForm, securityDetails: e.target.value })}
-                          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Upload Security / Promissory Document Scan</label>
-                      {customerForm.securityDoc ? (
-                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2 rounded-xl">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Security document scan uploaded</span>
-                          <button
-                            type="button"
-                            onClick={() => setCustomerForm({ ...customerForm, securityDoc: '' })}
-                            className="ml-auto text-rose-600 hover:text-rose-800 cursor-pointer"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ) : (
-                        <input
-                          type="file"
-                          accept="image/*,.pdf"
-                          onChange={(e) => handleCustomerFileUpload('securityDoc', e)}
-                          className="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:bg-[#142B4A] file:text-white cursor-pointer"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ==================== STEP 4: BANK ACCOUNT DETAILS ==================== */}
-              {currentCustomerStep === 4 && (
-                <div className="space-y-5 animate-in fade-in">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#142B4A] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
                     <Landmark className="w-3.5 h-3.5 text-blue-300" />
-                    <span>Step 4: Bank Account & Payout Details</span>
+                    <span>Step 3: Bank Account & Payout Details</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2656,12 +2489,12 @@ export const ChandrikaFinance: React.FC = () => {
                 </div>
               )}
 
-              {/* ==================== STEP 5: GUARANTOR & REFERENCES ==================== */}
-              {currentCustomerStep === 5 && (
+              {/* ==================== STEP 4: GUARANTOR & REFERENCES ==================== */}
+              {currentCustomerStep === 4 && (
                 <div className="space-y-5 animate-in fade-in">
                   <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#142B4A] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
                     <ShieldCheck className="w-3.5 h-3.5 text-blue-300" />
-                    <span>Step 5: Guarantor (Surety) & Personal References</span>
+                    <span>Step 4: Guarantor (Surety) & Personal References</span>
                   </div>
 
                   {/* Guarantor Details Card */}
@@ -2816,7 +2649,7 @@ export const ChandrikaFinance: React.FC = () => {
                     </button>
                   )}
 
-                  {currentCustomerStep < 5 && (
+                  {currentCustomerStep < 4 && (
                     <button
                       type="button"
                       onClick={() => {
@@ -2830,7 +2663,7 @@ export const ChandrikaFinance: React.FC = () => {
                             return;
                           }
                         }
-                        setCurrentCustomerStep((prev) => Math.min(5, prev + 1));
+                        setCurrentCustomerStep((prev) => Math.min(4, prev + 1));
                       }}
                       className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-xs hover:shadow transition-all cursor-pointer"
                     >
@@ -2856,97 +2689,253 @@ export const ChandrikaFinance: React.FC = () => {
       {/* Modal 3: Loan / Amount Given */}
       {isLoanModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <HandCoins className="w-5 h-5" />
-                <h3 className="text-base font-black">Disburse Loan / Amount Given</h3>
+          <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white shadow-xs">
+                  <HandCoins className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black">Disburse Loan / Amount Given</h3>
+                  <p className="text-[11px] text-white/90">
+                    Chandrika Finance • Loan parameters, monthly interest rate, collateral security & disbursement
+                  </p>
+                </div>
               </div>
-              <button onClick={handleCloseLoanModal} className="text-white/80 hover:text-white cursor-pointer">
+              <button
+                onClick={handleCloseLoanModal}
+                className="text-white/80 hover:text-white cursor-pointer p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleAddLoan} className="p-6 space-y-4 text-xs">
+
+            <form onSubmit={handleAddLoan} className="flex-1 overflow-y-auto p-6 space-y-5 text-xs">
               {/* 1. Registered Customer Search & Auto-Select */}
-              <CustomerSearchSelect
-                label="Customer / Borrower Name"
-                required
-                value={loanForm.customerName}
-                onChange={(val) => setLoanForm({ ...loanForm, customerName: val })}
-                customers={customers}
-                placeholder="Search or select registered borrower..."
-              />
-
-              {/* 2. Payment / Disbursement Date */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Payment / Disbursement Date <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="date"
+              <div className="p-4 bg-amber-50/60 border border-amber-200/80 rounded-2xl space-y-2">
+                <CustomerSearchSelect
+                  label="Select Registered Borrower / Customer"
                   required
-                  value={loanForm.paymentDate}
-                  onChange={(e) => setLoanForm({ ...loanForm, paymentDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs bg-white focus:ring-2 focus:ring-amber-500/20"
+                  value={loanForm.customerName}
+                  onChange={(val, selectedCust) => {
+                    setLoanForm((prev) => ({
+                      ...prev,
+                      customerName: val,
+                      interestRate: selectedCust?.interestRate ? String(selectedCust.interestRate) : prev.interestRate,
+                      repaymentFrequency: selectedCust?.repaymentFrequency || prev.repaymentFrequency
+                    }));
+                  }}
+                  customers={customers}
+                  placeholder="Search or select registered borrower (e.g. Suresh Reddy CF-1002)..."
                 />
               </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Loan Amount (₹) <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  placeholder="e.g. 200000"
-                  value={loanForm.amount}
-                  onChange={(e) => setLoanForm({ ...loanForm, amount: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-black text-amber-600 text-xs focus:ring-2 focus:ring-amber-500/20"
-                />
+              {/* Step 3 Subheader Badge matching the user's screenshot */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#142B4A] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs">
+                <IndianRupee className="w-3.5 h-3.5 text-blue-300" />
+                <span>STEP 3: LOAN PARAMETERS, INTEREST & COLLATERAL SECURITY</span>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Disbursement Mode
-                </label>
-                <select
-                  value={loanForm.mode}
-                  onChange={(e: any) => setLoanForm({ ...loanForm, mode: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-800 text-xs bg-white"
-                >
-                  <option value="Cash">Cash</option>
-                  <option value="Bank">Bank Transfer</option>
-                  <option value="UPI">UPI</option>
-                </select>
+              {/* Loan Parameters Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Sanctioned Loan Amount */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                    <IndianRupee className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Sanctioned Loan Amount (₹) <span className="text-rose-500">*</span></span>
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    step="1000"
+                    placeholder="e.g. 200000"
+                    value={loanForm.amount}
+                    onChange={(e) => setLoanForm({ ...loanForm, amount: e.target.value })}
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-black text-blue-700 outline-none focus:ring-2 focus:ring-blue-500/20"
+                  />
+                </div>
+
+                {/* Monthly Interest Rate */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1">
+                    <Percent className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Monthly Interest Rate (% per month) <span className="text-rose-500">*</span></span>
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    step="0.1"
+                    min="0"
+                    placeholder="e.g. 2.0"
+                    value={loanForm.interestRate}
+                    onChange={(e) => setLoanForm({ ...loanForm, interestRate: e.target.value })}
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-black text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+
+                {/* Repayment Frequency */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Repayment Frequency</label>
+                  <select
+                    value={loanForm.repaymentFrequency}
+                    onChange={(e: any) => setLoanForm({ ...loanForm, repaymentFrequency: e.target.value })}
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 outline-none"
+                  >
+                    <option value="Monthly">Monthly Installments</option>
+                    <option value="Weekly">Weekly Collections</option>
+                    <option value="Daily">Daily Collections</option>
+                  </select>
+                </div>
+
+                {/* Loan Tenure (Months) */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Loan Tenure / Duration (Months)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 12"
+                    value={loanForm.loanTermMonths}
+                    onChange={(e) => setLoanForm({ ...loanForm, loanTermMonths: e.target.value })}
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-800 outline-none"
+                  />
+                </div>
+
+                {/* Disbursement Date */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Disbursement Date <span className="text-rose-500">*</span></label>
+                  <input
+                    type="date"
+                    required
+                    value={loanForm.paymentDate}
+                    onChange={(e) => setLoanForm({ ...loanForm, paymentDate: e.target.value })}
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-medium text-slate-800 outline-none"
+                  />
+                </div>
+
+                {/* Disbursement Mode */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Disbursement Mode</label>
+                  <select
+                    value={loanForm.mode}
+                    onChange={(e: any) => setLoanForm({ ...loanForm, mode: e.target.value })}
+                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 outline-none"
+                  >
+                    <option value="Cash">Cash Handover</option>
+                    <option value="Bank">Bank Transfer / NEFT</option>
+                    <option value="UPI">UPI / Instant Transfer</option>
+                  </select>
+                </div>
               </div>
 
+              {/* Live Monthly Interest & Balance Accrual Information Banner */}
+              {Number(loanForm.amount) > 0 && (
+                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-emerald-50 border border-blue-200/90 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-2xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+                      ₹
+                    </div>
+                    <div>
+                      <div className="font-black text-slate-900 text-xs sm:text-sm">
+                        Monthly Interest Accrual: <span className="text-emerald-700">₹ {((Number(loanForm.amount || 0) * (Number(loanForm.interestRate) || 2.0)) / 100).toLocaleString('en-IN')}</span> / month
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                        Calculated at {loanForm.interestRate || '2.0'}% per month. The borrower's balance outstanding will automatically update each month according to this percentage.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 shadow-2xs">
+                    Auto-Update Active
+                  </span>
+                </div>
+              )}
+
+              {/* Security & Collateral Particulars */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">Security & Collateral Particulars</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Collateral / Security Type</label>
+                    <select
+                      value={loanForm.securityType}
+                      onChange={(e) => setLoanForm({ ...loanForm, securityType: e.target.value })}
+                      className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 outline-none"
+                    >
+                      <option value="Promissory Note">Promissory Note (Pro-Note Signed)</option>
+                      <option value="Cheque">Signed Security Cheque</option>
+                      <option value="Vehicle">Vehicle RC / Hypothecation</option>
+                      <option value="Property">Property Deed / Land Documents</option>
+                      <option value="Gold">Gold Pledge</option>
+                      <option value="Personal Guarantee">Personal Guarantor Undertaking</option>
+                      <option value="None">Unsecured / None</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Cheque / Collateral Specifics</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Cheque No. 492019, HDFC Bank, blank guarantee cheque"
+                      value={loanForm.securityDetails}
+                      onChange={(e) => setLoanForm({ ...loanForm, securityDetails: e.target.value })}
+                      className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 font-medium text-slate-800 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Upload Security / Promissory Document Scan</label>
+                  {loanForm.securityDoc ? (
+                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 p-2 rounded-xl">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Security document scan uploaded</span>
+                      <button
+                        type="button"
+                        onClick={() => setLoanForm({ ...loanForm, securityDoc: '' })}
+                        className="ml-auto text-rose-600 hover:text-rose-800 cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleLoanFileUpload('securityDoc', e)}
+                      className="text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:bg-[#142B4A] file:text-white cursor-pointer"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Purpose / Remarks */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Purpose / Notes
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Purpose / Notes</label>
                 <input
                   type="text"
-                  placeholder="e.g. Commercial vehicle expansion"
+                  placeholder="e.g. Commercial vehicle expansion, business inventory financing"
                   value={loanForm.notes}
                   onChange={(e) => setLoanForm({ ...loanForm, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-slate-800 text-xs"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 outline-none"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2.5">
+              {/* Modal Action Buttons */}
+              <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2.5 shrink-0">
                 <button
                   type="button"
                   onClick={handleCloseLoanModal}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black shadow-xs cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer"
                 >
-                  Disburse Loan
+                  <HandCoins className="w-4 h-4" />
+                  <span>Sanction & Disburse Loan</span>
                 </button>
               </div>
             </form>
