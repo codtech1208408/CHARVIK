@@ -3669,64 +3669,6 @@ export const VyshnaviTravels: React.FC = () => {
                         ? 'OFFICIAL BILLING & SERVICE RECORDS STATEMENT'
                         : 'OFFICIAL INCOME & EXPENSE LEDGER STATEMENT'}
                     </h2>
-                    <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
-                      {reportPrintType === 'records'
-                        ? 'Fleet Management • Client Billing • Crew Salaries • Operational Dues'
-                        : 'Fleet Operations Cash Flow • Money In / Money Out Ledger • Voucher Records'}
-                    </p>
-                  </div>
-
-                  {/* Statement Metadata & Summary KPIs */}
-                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                    <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase block">Report Date</span>
-                      <strong className="text-slate-900 text-xs font-black">
-                        {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </strong>
-                    </div>
-                    {reportPrintType === 'records' ? (
-                      <>
-                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase block">Total Invoiced</span>
-                          <strong className="text-slate-900 text-xs font-black">
-                            ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.total_amount) || 0), 0).toLocaleString('en-IN')}
-                          </strong>
-                        </div>
-                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                          <span className="text-[10px] font-bold text-emerald-600 uppercase block">Total Received</span>
-                          <strong className="text-emerald-700 text-xs font-black">
-                            ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.received_amount) || 0), 0).toLocaleString('en-IN')}
-                          </strong>
-                        </div>
-                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                          <span className="text-[10px] font-bold text-rose-600 uppercase block">Balance Due</span>
-                          <strong className="text-rose-700 text-xs font-black">
-                            ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.balance_amount) || 0), 0).toLocaleString('en-IN')}
-                          </strong>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                          <span className="text-[10px] font-bold text-emerald-600 uppercase block">Total Income</span>
-                          <strong className="text-emerald-700 text-xs font-black">
-                            + ₹{filteredTransactions.filter(t => t.transaction_type === 'Income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0).toLocaleString('en-IN')}
-                          </strong>
-                        </div>
-                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                          <span className="text-[10px] font-bold text-rose-600 uppercase block">Total Expenses</span>
-                          <strong className="text-rose-700 text-xs font-black">
-                            - ₹{filteredTransactions.filter(t => t.transaction_type === 'Expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0).toLocaleString('en-IN')}
-                          </strong>
-                        </div>
-                        <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                          <span className="text-[10px] font-bold text-blue-600 uppercase block">Net Balance</span>
-                          <strong className="text-blue-900 text-xs font-black">
-                            ₹{(filteredTransactions.filter(t => t.transaction_type === 'Income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0) - filteredTransactions.filter(t => t.transaction_type === 'Expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0)).toLocaleString('en-IN')}
-                          </strong>
-                        </div>
-                      </>
-                    )}
                   </div>
 
                   {/* Complete Printable Table */}
