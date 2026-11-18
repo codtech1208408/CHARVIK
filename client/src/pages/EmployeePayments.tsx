@@ -833,17 +833,17 @@ export const EmployeePayments: React.FC = () => {
             </td>
             <td style="padding: 9px 10px; color: #475569; font-family: monospace;">${e.phone || "-"}</td>
             <td style="padding: 9px 8px; text-align: center; font-weight: bold; color: #1e293b;">${e.tasksHandled}</td>
-            <td style="padding: 9px 10px; text-align: right; font-weight: bold; color: #0f172a; font-family: monospace;">
+            <td style="padding: 9px 10px; text-align: right; font-weight: 800; color: #0f172a; font-family: monospace; font-size: 13px; white-space: nowrap;">
               ₹${e.salaryEarned.toLocaleString("en-IN")}
             </td>
-            <td style="padding: 9px 10px; text-align: right; font-weight: 900; color: #047857; font-family: monospace; background: #f0fdf4;">
+            <td style="padding: 9px 10px; text-align: right; font-weight: 800; color: #047857; font-family: monospace; background: #f0fdf4; font-size: 13px; white-space: nowrap;">
               ₹${paidAmount.toLocaleString("en-IN")}
             </td>
-            <td style="padding: 9px 10px; text-align: right; font-weight: 900; color: ${dueAmount > 0 ? "#e11d48" : "#64748b"}; font-family: monospace; background: ${dueAmount > 0 ? "#fff1f2" : "transparent"};">
+            <td style="padding: 9px 10px; text-align: right; font-weight: 900; color: ${dueAmount > 0 ? "#e11d48" : "#64748b"}; font-family: monospace; background: ${dueAmount > 0 ? "#fff1f2" : "transparent"}; font-size: 13px; white-space: nowrap;">
               ₹${dueAmount.toLocaleString("en-IN")}
             </td>
             <td style="padding: 9px 8px; text-align: center;">
-              <span style="background: ${statusBg}; color: ${statusColor}; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 800; border: 1px solid ${statusColor}40;">
+              <span style="background: ${statusBg}; color: ${statusColor}; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; border: 1px solid ${statusColor}40; display: inline-block;">
                 ${statusText}
               </span>
             </td>
@@ -853,23 +853,23 @@ export const EmployeePayments: React.FC = () => {
       .join("");
 
     const grandTotalRow = `
-      <tr style="background: #142B4A; color: #ffffff; font-weight: 900; font-size: 11px;">
+      <tr style="background: #142B4A; color: #ffffff; font-weight: 900; font-size: 12px;">
         <td colspan="4" style="padding: 10px 12px; text-transform: uppercase; letter-spacing: 0.5px;">
           GRAND TOTAL (${listToPrint.length} EMPLOYEES)
         </td>
-        <td style="padding: 10px 8px; text-align: center;">
+        <td style="padding: 10px 8px; text-align: center; font-weight: 900;">
           ${listToPrint.reduce((acc, e) => acc + e.tasksHandled, 0)} trips
         </td>
-        <td style="padding: 10px 10px; text-align: right; font-family: monospace;">
+        <td style="padding: 10px 10px; text-align: right; font-family: monospace; font-size: 13.5px; font-weight: 900; white-space: nowrap;">
           ₹${totalSalary.toLocaleString("en-IN")}
         </td>
-        <td style="padding: 10px 10px; text-align: right; font-family: monospace; color: #4ade80;">
+        <td style="padding: 10px 10px; text-align: right; font-family: monospace; color: #4ade80; font-size: 13.5px; font-weight: 900; white-space: nowrap;">
           ₹${totalPaid.toLocaleString("en-IN")}
         </td>
-        <td style="padding: 10px 10px; text-align: right; font-family: monospace; color: #fca5a5;">
+        <td style="padding: 10px 10px; text-align: right; font-family: monospace; color: #fca5a5; font-size: 13.5px; font-weight: 900; white-space: nowrap;">
           ₹${totalRemaining.toLocaleString("en-IN")}
         </td>
-        <td style="padding: 10px 8px; text-align: center;">
+        <td style="padding: 10px 8px; text-align: center; font-weight: 900;">
           ${totalRemaining === 0 ? "ALL SETTLED" : "DUES PENDING"}
         </td>
       </tr>
@@ -880,40 +880,35 @@ export const EmployeePayments: React.FC = () => {
       subtitle: `Overall Fleet Crew Disbursements & Outstanding Dues Summary | Total Staff: ${listToPrint.length}`,
       orientation: "landscape",
       htmlContent: `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px 24px; color: #0f172a;">
-          <div style="border-bottom: 2.5px solid #142B4A; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 4px; color: #0f172a;">
+          <div style="border-bottom: 2px solid #142B4A; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end;">
             <div>
-              <div style="font-size: 18px; font-weight: 900; color: #142B4A; letter-spacing: -0.5px;">
-                CHARVIK STAFFING CONSULTANCY
+              <div style="font-size: 15px; font-weight: 900; color: #142B4A; text-transform: uppercase;">
+                Overall Employee Payments &amp; Disbursed Salary Statement
               </div>
-              <div style="font-size: 14px; font-weight: bold; color: #334155; margin-top: 2px;">
-                Overall Employee Payments & Disbursed Salary Statement
-              </div>
-              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">
+              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
                 Fleet Operations Staff Payout Ledger • Verified Accounts Copy
               </div>
             </div>
             <div style="text-align: right; font-size: 11px; color: #475569;">
-              <div><strong>Generated Date:</strong> ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</div>
-              <div><strong>Time:</strong> ${new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</div>
               <div><strong>Staff Covered:</strong> ${listToPrint.length} of ${allEmployeeRecords.length} registered</div>
             </div>
           </div>
 
-          <div style="display: flex; gap: 14px; margin-bottom: 20px;">
-            <div style="flex: 1; padding: 12px 14px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px;">
-              <div style="font-size: 10px; font-weight: bold; color: #475569; text-transform: uppercase;">Total Salary Earned</div>
-              <div style="font-size: 17px; font-weight: 900; color: #0f172a; margin-top: 3px; font-family: monospace;">₹${totalSalary.toLocaleString("en-IN")}</div>
+          <div style="display: flex; gap: 14px; margin-bottom: 16px;">
+            <div style="flex: 1; padding: 10px 14px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px;">
+              <div style="font-size: 10.5px; font-weight: bold; color: #475569; text-transform: uppercase;">Total Salary Earned</div>
+              <div style="font-size: 18px; font-weight: 900; color: #0f172a; margin-top: 3px; font-family: monospace;">₹${totalSalary.toLocaleString("en-IN")}</div>
               <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Total task remuneration obligation</div>
             </div>
-            <div style="flex: 1; padding: 12px 14px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px;">
-              <div style="font-size: 10px; font-weight: bold; color: #15803d; text-transform: uppercase;">Total Amount Paid</div>
-              <div style="font-size: 17px; font-weight: 900; color: #166534; margin-top: 3px; font-family: monospace;">₹${totalPaid.toLocaleString("en-IN")}</div>
+            <div style="flex: 1; padding: 10px 14px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px;">
+              <div style="font-size: 10.5px; font-weight: bold; color: #15803d; text-transform: uppercase;">Total Amount Paid</div>
+              <div style="font-size: 18px; font-weight: 900; color: #166534; margin-top: 3px; font-family: monospace;">₹${totalPaid.toLocaleString("en-IN")}</div>
               <div style="font-size: 10px; color: #15803d; margin-top: 2px;">Disbursed via Bata, Advance & Settlements</div>
             </div>
-            <div style="flex: 1; padding: 12px 14px; background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px;">
-              <div style="font-size: 10px; font-weight: bold; color: #be123c; text-transform: uppercase;">Total Remaining Balance Due</div>
-              <div style="font-size: 17px; font-weight: 900; color: #9f1239; margin-top: 3px; font-family: monospace;">₹${totalRemaining.toLocaleString("en-IN")}</div>
+            <div style="flex: 1; padding: 10px 14px; background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 8px;">
+              <div style="font-size: 10.5px; font-weight: bold; color: #be123c; text-transform: uppercase;">Total Remaining Balance Due</div>
+              <div style="font-size: 18px; font-weight: 900; color: #9f1239; margin-top: 3px; font-family: monospace;">₹${totalRemaining.toLocaleString("en-IN")}</div>
               <div style="font-size: 10px; color: #be123c; margin-top: 2px;">Outstanding unpaid crew balance</div>
             </div>
           </div>
@@ -1127,16 +1122,16 @@ export const EmployeePayments: React.FC = () => {
           return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : t.date;
         })();
         return `
-          <tr style="border-bottom: 1px solid #e2e8f0; font-size: 11px;">
+          <tr style="border-bottom: 1px solid #cbd5e1; font-size: 12px;">
             <td style="padding: 8px; text-align: center; font-weight: bold; color: #64748b;">${idx + 1}</td>
-            <td style="padding: 8px 10px; font-weight: 600;">${formattedDate}</td>
+            <td style="padding: 8px 10px; font-weight: 700; white-space: nowrap;">${formattedDate}</td>
             <td style="padding: 8px 10px; font-weight: bold; color: #0f172a;">${t.route_corridor}</td>
-            <td style="padding: 8px 10px; font-family: monospace; font-weight: bold; color: #142B4A;">${t.vehicle_number}</td>
-            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: bold;">₹${t.salary.toLocaleString("en-IN")}</td>
-            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: bold; color: #166534;">₹${t.advance.toLocaleString("en-IN")}</td>
-            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 900; color: ${t.balance_due > 0 ? '#e11d48' : '#64748b'};">₹${t.balance_due.toLocaleString("en-IN")}</td>
+            <td style="padding: 8px 10px; font-family: monospace; font-weight: 800; color: #142B4A; white-space: nowrap;">${t.vehicle_number}</td>
+            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 800; font-size: 13px; white-space: nowrap;">₹${t.salary.toLocaleString("en-IN")}</td>
+            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 800; color: #166534; font-size: 13px; white-space: nowrap;">₹${t.advance.toLocaleString("en-IN")}</td>
+            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 900; color: ${t.balance_due > 0 ? '#e11d48' : '#64748b'}; font-size: 13px; white-space: nowrap;">₹${t.balance_due.toLocaleString("en-IN")}</td>
             <td style="padding: 8px; text-align: center;">
-              <span style="padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; background: ${t.isPaid ? '#ecfdf5' : '#fff1f2'}; color: ${t.isPaid ? '#047857' : '#e11d48'}; border: 1px solid ${t.isPaid ? '#a7f3d0' : '#fecdd3'};">
+              <span style="padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; background: ${t.isPaid ? '#ecfdf5' : '#fff1f2'}; color: ${t.isPaid ? '#047857' : '#e11d48'}; border: 1px solid ${t.isPaid ? '#a7f3d0' : '#fecdd3'}; display: inline-block;">
                 ${t.isPaid ? 'PAID' : 'PENDING'}
               </span>
             </td>
@@ -1148,42 +1143,45 @@ export const EmployeePayments: React.FC = () => {
     printSheet({
       title: `${r.full_name} - Trip Duty & Salary Ledger`,
       subtitle: `Official Fleet Trips Record | Staff ID: ${formatEmployeeId(r.employee_code, r.role)} | Role: ${r.role}`,
-      orientation: "landscape",
+      orientation: "portrait",
       htmlContent: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #0f172a;">
-          <div style="border-bottom: 2.5px solid #142B4A; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between;">
+        <div style="font-family: Arial, sans-serif; padding: 4px; color: #0f172a;">
+          <div style="border-bottom: 2px solid #072346; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end;">
             <div>
-              <h2 style="margin: 0; color: #142B4A; font-size: 19px; font-weight: 900;">CHARVIK STAFFING CONSULTANCY</h2>
-              <p style="margin: 2px 0 0; color: #475569; font-size: 13px;">Trip Duty Ledger: <strong>${r.full_name}</strong> (${r.role} - ${formatEmployeeId(r.employee_code, r.role)})</p>
+              <div style="font-size: 15px; font-weight: 900; color: #072346; text-transform: uppercase;">
+                ${r.full_name} — TRIP DUTY &amp; SALARY LEDGER
+              </div>
+              <div style="font-size: 11px; font-weight: 600; color: #475569; margin-top: 2px;">
+                Role: <strong>${r.role}</strong> &nbsp;|&nbsp; Staff ID: <strong>${formatEmployeeId(r.employee_code, r.role)}</strong> &nbsp;|&nbsp; Contact: <strong>${r.phone || '-'}</strong>
+              </div>
             </div>
-            <div style="text-align: right; font-size: 11px; color: #64748b;">
-              <div>Date: ${new Date().toLocaleDateString("en-IN")}</div>
-              <div>Total Trips: ${filteredTrips.length}</div>
+            <div style="text-align: right; font-size: 11px; color: #475569; font-weight: bold;">
+              Total Trips: <span style="color: #072346; font-size: 13px; font-weight: 900;">${filteredTrips.length}</span>
             </div>
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #cbd5e1;">
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; border: 1.5px solid #072346;">
             <thead>
-              <tr style="background: #142B4A; color: white; font-size: 10px; text-transform: uppercase;">
-                <th style="padding: 8px 6px; text-align: center;">#</th>
-                <th style="padding: 8px 10px; text-align: left;">Date</th>
+              <tr style="background: #072346; color: white; font-size: 11px; text-transform: uppercase;">
+                <th style="padding: 8px 6px; text-align: center; width: 35px;">#</th>
+                <th style="padding: 8px 8px; text-align: left; width: 85px;">Date</th>
                 <th style="padding: 8px 10px; text-align: left;">Task / Route</th>
-                <th style="padding: 8px 10px; text-align: left;">Vehicle No</th>
-                <th style="padding: 8px 10px; text-align: right;">Salary</th>
-                <th style="padding: 8px 10px; text-align: right;">Paid Amount</th>
-                <th style="padding: 8px 10px; text-align: right;">Remaining Due</th>
-                <th style="padding: 8px 6px; text-align: center;">Status</th>
+                <th style="padding: 8px 10px; text-align: left; width: 105px;">Vehicle No</th>
+                <th style="padding: 8px 10px; text-align: right; width: 95px;">Salary</th>
+                <th style="padding: 8px 10px; text-align: right; width: 95px;">Paid Amount</th>
+                <th style="padding: 8px 10px; text-align: right; width: 105px;">Remaining Due</th>
+                <th style="padding: 8px 6px; text-align: center; width: 75px;">Status</th>
               </tr>
             </thead>
             <tbody>
               ${tripRows}
             </tbody>
             <tfoot>
-              <tr style="background: #f1f5f9; font-weight: 900; font-size: 11px; border-top: 2px solid #cbd5e1;">
-                <td colspan="4" style="padding: 10px 12px; text-transform: uppercase;">Total (${filteredTrips.length} Trips)</td>
-                <td style="padding: 10px; text-align: right; font-family: monospace;">₹${totalSal.toLocaleString("en-IN")}</td>
-                <td style="padding: 10px; text-align: right; font-family: monospace; color: #166534;">₹${totalAdv.toLocaleString("en-IN")}</td>
-                <td style="padding: 10px; text-align: right; font-family: monospace; color: #e11d48;">₹${totalDue.toLocaleString("en-IN")}</td>
+              <tr style="background: #f1f5f9; font-weight: 900; font-size: 12px; border-top: 2px solid #072346;">
+                <td colspan="4" style="padding: 9px 12px; text-transform: uppercase; font-weight: 900; color: #072346;">Total (${filteredTrips.length} Trips)</td>
+                <td style="padding: 9px 10px; text-align: right; font-family: monospace; font-size: 13px; font-weight: 900;">₹${totalSal.toLocaleString("en-IN")}</td>
+                <td style="padding: 9px 10px; text-align: right; font-family: monospace; color: #166534; font-size: 13px; font-weight: 900;">₹${totalAdv.toLocaleString("en-IN")}</td>
+                <td style="padding: 9px 10px; text-align: right; font-family: monospace; color: #e11d48; font-size: 13px; font-weight: 900;">₹${totalDue.toLocaleString("en-IN")}</td>
                 <td></td>
               </tr>
             </tfoot>

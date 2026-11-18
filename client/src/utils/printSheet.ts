@@ -138,43 +138,89 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
         html, body {
           font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
           color: #0f172a;
-          font-size: 10.5px;
+          font-size: 11.5px;
           line-height: 1.35;
           background: #ffffff;
           width: 100% !important;
           max-width: 100% !important;
           min-width: 0 !important;
-          padding: 2px !important;
+          padding: 0 !important;
           margin: 0 !important;
           overflow: visible !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
-        /* 1. Exact Full-Width Letterhead & Sub-Banner matching Image copy 2 */
-        .charvik-exact-header-wrap {
-          width: 100% !important;
-          max-width: 100% !important;
-          margin-bottom: 5px;
+        /* 1. Official Enclosed Charvik Letterhead Container (High-Resolution Vector Format) */
+        .charvik-letterhead-container {
+          border: 2px solid #0056b3;
+          border-radius: 12px;
+          padding: 8px 14px 9px;
+          margin-bottom: 7px;
+          text-align: center;
+          background: #ffffff;
           box-sizing: border-box !important;
-        }
-        .charvik-exact-header-img {
           width: 100% !important;
-          max-width: 100% !important;
-          height: auto !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .charvik-letterhead-logo-row {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-bottom: 4px;
+        }
+        .charvik-brand-logo {
+          height: 48px !important;
+          max-height: 48px !important;
+          width: auto !important;
+          object-fit: contain !important;
           display: block;
+          margin: 0 auto;
+        }
+        .charvik-letterhead-contacts {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 12px;
+          font-size: 11px;
+          font-weight: 700;
+          color: #072346;
+          margin-bottom: 5px;
+          letter-spacing: 0.2px;
+        }
+        .charvik-contact-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .charvik-contact-sep {
+          color: #94a3b8;
+          font-weight: 400;
+        }
+        .charvik-letterhead-address-pill {
+          display: inline-block;
+          border: 1.5px solid #0056b3;
+          border-radius: 9999px;
+          padding: 2.5px 12px;
+          font-size: 10px;
+          font-weight: 700;
+          color: #072346;
+          max-width: 98%;
+          line-height: 1.35;
+          margin: 0 auto;
         }
 
         /* 2. Title & Meta Strip Box */
         .charvik-meta-bar {
           border: 1.5px solid #0056b3;
-          border-radius: 3px;
-          padding: 4.5px 10px;
+          border-radius: 4px;
+          padding: 5px 10px;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          background: #ffffff;
-          margin-bottom: 6px;
+          background: #f8fafc;
+          margin-bottom: 8px;
           width: 100% !important;
           max-width: 100% !important;
           box-sizing: border-box !important;
@@ -187,35 +233,36 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           gap: 8px;
         }
         .charvik-meta-title {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 900;
           color: #072346;
           text-transform: uppercase;
-          letter-spacing: 0.4px;
+          letter-spacing: 0.3px;
         }
         .charvik-meta-subtitle {
-          font-size: 10.5px;
+          font-size: 11px;
           font-weight: 700;
-          color: #072346;
+          color: #334155;
         }
         .charvik-meta-datetime {
-          font-size: 9.5px;
+          font-size: 10.5px;
           font-weight: 700;
-          color: #072346;
+          color: #475569;
           white-space: nowrap;
         }
 
-        /* 3. Table Styling: Zero Right-Side Overflow */
+        /* 3. Table Styling: Zero Right-Side Overflow, Bold Crisp Readable Text & Numbers */
         table, .printable-sheet table, .print-body table {
           width: 100% !important;
           max-width: 100% !important;
           min-width: 0 !important;
           border-collapse: collapse !important;
-          font-size: 9.5px !important;
-          border: 1.5px solid #0056b3 !important;
-          margin-top: 0 !important;
+          font-size: 12px !important;
+          border: 1.5px solid #072346 !important;
+          margin-top: 2px !important;
+          margin-bottom: 12px !important;
           page-break-inside: auto;
-          table-layout: fixed !important;
+          table-layout: auto !important;
           box-sizing: border-box !important;
         }
         thead {
@@ -230,24 +277,63 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           color: #ffffff !important;
           font-weight: 800 !important;
           text-transform: uppercase !important;
-          letter-spacing: 0.3px !important;
-          padding: 5px 6px !important;
-          font-size: 9px !important;
+          letter-spacing: 0.4px !important;
+          padding: 8px 10px !important;
+          font-size: 11px !important;
           border: 1px solid #072346 !important;
           text-align: left !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
-          word-break: break-word !important;
-          overflow-wrap: break-word !important;
-          white-space: normal !important;
+          word-break: normal !important;
+          white-space: nowrap !important;
           box-sizing: border-box !important;
         }
         th.text-center, td.text-center {
           text-align: center !important;
         }
+        th.text-right, td.text-right {
+          text-align: right !important;
+        }
         td {
-          padding: 5px 6px !important;
-          border: 1px solid #93c5fd !important;
+          padding: 8px 10px !important;
+          border: 1px solid #cbd5e1 !important;
+          vertical-align: middle !important;
+          font-size: 12px !important;
+          font-weight: 600 !important;
+          color: #0f172a !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          word-break: normal !important;
+          overflow-wrap: break-word !important;
+          box-sizing: border-box !important;
+          line-height: 1.35 !important;
+        }
+        /* Numeric columns & currencies stay bold, clear, and on one line */
+        td[style*="text-align: right"], td[style*="monospace"], td[style*="font-family"], td:has(span.font-mono), .tabular-nums {
+          font-variant-numeric: tabular-nums;
+          font-weight: 800;
+          white-space: nowrap !important;
+          font-size: 12.5px !important;
+        }
+        tbody tr:nth-child(even) {
+          background-color: #f8fafc !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        tfoot tr {
+          background-color: #f1f5f9 !important;
+          font-weight: 900 !important;
+          border-top: 2px solid #072346 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        tfoot td {
+          padding: 9px 10px !important;
+          font-size: 13px !important;
+          font-weight: 900 !important;
+          color: #072346 !important;
+          white-space: nowrap !important;
+        }
           vertical-align: middle !important;
           font-size: 9px !important;
           color: #0f172a !important;
@@ -307,15 +393,34 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
     </head>
     <body>
       <div class="printable-sheet" style="width: 100%; max-width: 100%; box-sizing: border-box;">
-        <!-- Exact Full-Width Header from Reference Image -->
+        <!-- Official Enclosed Charvik Letterhead Header (Crisp Vector Quality & Correct Hyderabad Contact Details) -->
         ${!hideHeader ? `
-        <div class="charvik-exact-header-wrap">
-          <img 
-            src="/charvik-exact-print-header.png?v=20261119" 
-            alt="CHARVIK STAFFING CONSULTANCY" 
-            class="charvik-exact-header-img"
-            onerror="this.src='/charvik-letterhead-header.png?v=20261119'"
-          />
+        <div class="charvik-letterhead-container">
+          <div class="charvik-letterhead-logo-row">
+            <img 
+              src="/logo-brand.png" 
+              alt="CHARVIK STAFFING CONSULTANCY" 
+              class="charvik-brand-logo"
+              onerror="this.src='/logo.png'" 
+            />
+          </div>
+          <div class="charvik-letterhead-contacts">
+            <span class="charvik-contact-item">
+              <span style="color: #0056b3;">Phone:</span> 9505151527
+            </span>
+            <span class="charvik-contact-sep">|</span>
+            <span class="charvik-contact-item">
+              <span style="color: #0056b3;">Email:</span> charvikstaffingconsulrancy@gmail.com
+            </span>
+            <span class="charvik-contact-sep">|</span>
+            <span class="charvik-contact-item">
+              <span style="color: #0056b3;">Web:</span> www.charvikstaffing.com
+            </span>
+          </div>
+          <div class="charvik-letterhead-address-pill">
+            <span style="color: #0056b3; font-weight: 800; margin-right: 4px;">Office:</span>
+            NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana
+          </div>
         </div>
         ` : ''}
 
