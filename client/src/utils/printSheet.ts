@@ -311,10 +311,10 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
         ${!hideHeader ? `
         <div class="charvik-exact-header-wrap">
           <img 
-            src="/charvik-exact-print-header.png?v=20261115" 
+            src="/charvik-exact-print-header.png?v=20261119" 
             alt="CHARVIK STAFFING CONSULTANCY" 
             class="charvik-exact-header-img"
-            onerror="this.src='/charvik-letterhead-header.png?v=20261115'"
+            onerror="this.src='/charvik-letterhead-header.png?v=20261119'"
           />
         </div>
         ` : ''}

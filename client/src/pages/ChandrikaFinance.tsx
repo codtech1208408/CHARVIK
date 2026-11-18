@@ -322,7 +322,7 @@ export const ChandrikaFinance: React.FC = () => {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch {}
+    } catch { }
     return SEED_CUSTOMERS;
   });
 
@@ -403,7 +403,7 @@ export const ChandrikaFinance: React.FC = () => {
   useEffect(() => {
     try {
       localStorage.setItem('charvik_chandrika_finance_customers', JSON.stringify(customers));
-    } catch {}
+    } catch { }
   }, [customers]);
 
   // Stepper state for customer registration
@@ -494,17 +494,16 @@ export const ChandrikaFinance: React.FC = () => {
           <div>
             <h1 style="margin: 0; color: #1E3A8A; font-size: 22px; font-weight: 900; letter-spacing: 0.5px;">CHANDRIKA FINANCE</h1>
             <p style="margin: 3px 0 0; color: #475569; font-size: 11px; font-weight: bold; text-transform: uppercase;">A Unit of Charvik Staffing & Operational Services</p>
-            <p style="margin: 3px 0 0; color: #64748b; font-size: 10px;">NH65, opp. Bajaj Electronic, L.B. Nagar, Vanasthalipuram, Hyderabad | Phone: 9505151527</p>
+            <p style="margin: 3px 0 0; color: #64748b; font-size: 10px;">NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana | Phone: 9505151527 | Email: charvikstaffingconsulrancy@gmail.com</p>
             <div style="display: inline-block; margin-top: 8px; padding: 3px 10px; background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 6px; font-size: 11px; font-weight: bold; color: #3730A3;">
               OFFICIAL BORROWER REGISTRATION & KYC ENROLLMENT DOSSIER
             </div>
           </div>
           <div style="text-align: right;">
-            ${
-              cust.profilePhoto
-                ? `<img src="${cust.profilePhoto}" style="width: 85px; height: 95px; object-fit: cover; border: 2px solid #CBD5E1; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />`
-                : `<div style="width: 85px; height: 95px; border: 2px dashed #CBD5E1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center; padding: 4px;">AFFIX BORROWER PHOTO</div>`
-            }
+            ${cust.profilePhoto
+        ? `<img src="${cust.profilePhoto}" style="width: 85px; height: 95px; object-fit: cover; border: 2px solid #CBD5E1; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />`
+        : `<div style="width: 85px; height: 95px; border: 2px dashed #CBD5E1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-align: center; padding: 4px;">AFFIX BORROWER PHOTO</div>`
+      }
             <div style="margin-top: 5px; font-family: monospace; font-size: 12px; font-weight: bold; color: #1E3A8A;">${cust.customerCode || 'CF-1000'}</div>
           </div>
         </div>
@@ -1142,7 +1141,7 @@ export const ChandrikaFinance: React.FC = () => {
             <Users className="w-4 h-4 text-blue-600" />
             <span>Customers ({customerCount})</span>
           </button>
-          
+
           <button
             onClick={handleExportExcel}
             className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 rounded-xl text-xs font-black transition-all cursor-pointer shadow-2xs hover:shadow-xs"
@@ -1541,13 +1540,12 @@ export const ChandrikaFinance: React.FC = () => {
                       ₹ {t.amount.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3 px-3 whitespace-nowrap text-right">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        t.mode === 'UPI'
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${t.mode === 'UPI'
                           ? 'bg-purple-100 text-purple-700'
                           : t.mode === 'Bank'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-emerald-100 text-emerald-700'
-                      }`}>
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-emerald-100 text-emerald-700'
+                        }`}>
                         {t.mode}
                       </span>
                     </td>
@@ -1748,20 +1746,18 @@ export const ChandrikaFinance: React.FC = () => {
                       className="flex flex-col items-center relative z-10 cursor-pointer group"
                     >
                       <div
-                        className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
-                          isCurrent
+                        className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${isCurrent
                             ? 'bg-blue-600 text-white ring-4 ring-blue-100 scale-105'
                             : isDone
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-white text-slate-400 border border-slate-300 group-hover:border-slate-400'
-                        }`}
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-white text-slate-400 border border-slate-300 group-hover:border-slate-400'
+                          }`}
                       >
                         {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                       </div>
                       <span
-                        className={`text-[10.5px] font-bold mt-1 whitespace-nowrap ${
-                          isCurrent ? 'text-blue-700 font-black' : isDone ? 'text-slate-800' : 'text-slate-400'
-                        }`}
+                        className={`text-[10.5px] font-bold mt-1 whitespace-nowrap ${isCurrent ? 'text-blue-700 font-black' : isDone ? 'text-slate-800' : 'text-slate-400'
+                          }`}
                       >
                         {st.title}
                       </span>
@@ -2900,13 +2896,12 @@ export const ChandrikaFinance: React.FC = () => {
                         ₹ {t.amount.toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3 whitespace-nowrap text-right">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          t.mode === 'UPI'
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${t.mode === 'UPI'
                             ? 'bg-purple-100 text-purple-700'
                             : t.mode === 'Bank'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-emerald-100 text-emerald-700'
-                        }`}>
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-emerald-100 text-emerald-700'
+                          }`}>
                           {t.mode}
                         </span>
                       </td>
@@ -3094,11 +3089,10 @@ export const ChandrikaFinance: React.FC = () => {
                           {/* Status */}
                           <td className="py-3 px-3.5">
                             <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${
-                                c.kycStatus === 'Verified'
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${c.kycStatus === 'Verified'
                                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                   : 'bg-amber-50 text-amber-700 border border-amber-200'
-                              }`}
+                                }`}
                             >
                               <ShieldCheck className="w-3 h-3" />
                               <span>{c.kycStatus || 'Verified'}</span>
