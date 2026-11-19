@@ -114,11 +114,11 @@ export const Home: React.FC = () => {
     },
     {
       id: 5,
-      image: '/assets/home-banner-5.jpg?v=20261119_single_v4',
+      image: '/assets/home-banner-5.jpg?v=20261119_pure_hd_v6',
       title: 'Employee Safety & Welfare Program - Employee Insurance & Donation Support',
       bgColor: 'bg-[#03152F]',
       link: '/donations',
-      objectPosition: 'object-center'
+      objectFit: 'object-fill'
     }
   ];
 
@@ -161,7 +161,7 @@ export const Home: React.FC = () => {
                   <img
                     src={banner.image}
                     alt={banner.title}
-                    className={`w-full h-full object-cover ${banner.objectPosition || 'object-center'} select-none`}
+                    className={`w-full h-full ${(banner as any).objectFit || 'object-cover'} ${banner.objectPosition || 'object-center'} select-none`}
                     loading={index === 0 ? 'eager' : 'lazy'}
                   />
                 </Link>
@@ -196,8 +196,8 @@ export const Home: React.FC = () => {
           </button>
 
           {/* Bottom Slide Indicator Controls */}
-          <div className="absolute bottom-4 inset-x-0 z-30 flex items-center justify-center gap-2 pointer-events-none">
-            <div className="flex items-center gap-2 bg-slate-950/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 shadow-md pointer-events-auto">
+          <div className="absolute bottom-2 sm:bottom-2.5 inset-x-0 z-30 flex items-center justify-center gap-2 pointer-events-none">
+            <div className="flex items-center gap-2 bg-slate-950/75 backdrop-blur-md px-3 py-1 rounded-full border border-white/15 shadow-md pointer-events-auto">
               {heroBanners.map((banner, index) => {
                 const isActive = index === currentSlide;
                 return (
