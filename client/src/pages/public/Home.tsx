@@ -114,7 +114,7 @@ export const Home: React.FC = () => {
     },
     {
       id: 5,
-      image: '/assets/home-banner-5.jpg?v=20261119_panoramic_v3',
+      image: '/assets/home-banner-5.jpg?v=20261119_single_v4',
       title: 'Employee Safety & Welfare Program - Employee Insurance & Donation Support',
       bgColor: 'bg-[#03152F]',
       link: '/donations',
