@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -46,7 +46,6 @@ import { PrintButton } from '../components/common/PrintButton';
 import { printSheet } from '../utils/printSheet';
 import { exportTableToExcel } from '../utils/exportToExcel';
 import { useAuth } from '../context/AuthContext';
-import { IncomeExpense } from './IncomeExpense';
 
 export interface DocExpiryItem {
   docKey: 'tax_valid_upto' | 'fitness_expiry' | 'insurance_expiry' | 'puc_expiry' | 'permit_expiry' | 'aitp_valid_upto';
@@ -134,34 +133,7 @@ export const BusMaster: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-
-  // URL Tab handling: ?tab=income-expense or ?tab=vehicles
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState<'vehicles' | 'income-expense'>(
-    tabParam === 'income-expense' || (typeof window !== 'undefined' && window.location.hash === '#income-expense')
-      ? 'income-expense'
-      : 'vehicles'
-  );
-
-  useEffect(() => {
-    if (tabParam === 'income-expense') {
-      setActiveTab('income-expense');
-    } else if (tabParam === 'vehicles') {
-      setActiveTab('vehicles');
-    }
-  }, [tabParam]);
-
-  const handleTabChange = (tab: 'vehicles' | 'income-expense') => {
-    setActiveTab(tab);
-    const next = new URLSearchParams(searchParams);
-    if (tab === 'income-expense') {
-      next.set('tab', 'income-expense');
-    } else {
-      next.delete('tab');
-    }
-    setSearchParams(next, { replace: true });
-  };
+  const navigate = useNavigate();
 
   // Document 1-Day Expiry Alert States
   const [dismissAlertBanner, setDismissAlertBanner] = useState(false);
@@ -602,18 +574,6 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                 <Plus className="w-4 h-4 text-blue-700" />
                 <span>+ Add New Vehicle</span>
               </button>
-              <button
-                type="button"
-                onClick={() => handleTabChange(activeTab === 'income-expense' ? 'vehicles' : 'income-expense')}
-                className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer ${
-                  activeTab === 'income-expense'
-                    ? 'bg-emerald-400 text-slate-950 font-black'
-                    : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-md border border-white/20'
-                }`}
-              >
-                <IndianRupee className="w-4 h-4" />
-                <span>{activeTab === 'income-expense' ? 'Back to Vehicles' : 'Income & Expense Ledger'}</span>
-              </button>
             </div>
           </div>
 
@@ -632,53 +592,6 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
         </div>
       </div>
 
-      {/* Primary Module Navigation Tabs: Vehicle Registration & Compliance vs Income & Expense */}
-      <div className="flex items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200/80 w-fit">
-        <button
-          type="button"
-          onClick={() => handleTabChange('vehicles')}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-            activeTab === 'vehicles'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-          }`}
-        >
-          <Bus className="w-4 h-4" />
-          <span>Vehicle Registration &amp; Compliance</span>
-          <span
-            className={`px-2 py-0.5 rounded-full text-[11px] font-black ${
-              activeTab === 'vehicles' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
-            }`}
-          >
-            {buses.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleTabChange('income-expense')}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-            activeTab === 'income-expense'
-              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/25'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-          }`}
-        >
-          <IndianRupee className="w-4 h-4" />
-          <span>Income &amp; Expense</span>
-          <span
-            className={`px-2 py-0.5 rounded-full text-[11px] font-black ${
-              activeTab === 'income-expense'
-                ? 'bg-white/20 text-white'
-                : 'bg-emerald-100 text-emerald-800'
-            }`}
-          >
-            Live Ledger
-          </span>
-        </button>
-      </div>
-
-      {activeTab === 'vehicles' ? (
-        <>
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-[#EEF5FF] via-[#F4F8FF] to-[#DBEAFF] border-2 border-[#B8D7FF] p-5 rounded-2xl shadow-xs flex items-center justify-between">
@@ -1070,7 +983,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
 
                     <div className="flex items-center space-x-1">
                       <button
-                        onClick={() => handleTabChange('income-expense')}
+                        onClick={() => navigate('/admin/income-expense')}
                         className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
                         title="Vehicle Income & Expense Ledger"
                       >
@@ -1220,7 +1133,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                       <td className="py-2 px-3 text-center">
                         <div className="flex items-center justify-center space-x-1.5">
                           <button
-                            onClick={() => handleTabChange('income-expense')}
+                            onClick={() => navigate('/admin/income-expense')}
                             className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
                             title="Vehicle Income & Expense Ledger"
                           >
@@ -1263,10 +1176,6 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
         </div>
       )}
       </div>
-      </>
-      ) : (
-        <IncomeExpense embedded={true} />
-      )}
 
       {/* Add / Edit Bus Modal */}
       <Modal

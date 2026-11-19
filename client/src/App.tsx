@@ -138,6 +138,7 @@ export function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="audit-log" element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="income-expense" element={<IncomeExpense />} />
+              <Route path="vehicle-income-expense" element={<IncomeExpense />} />
               <Route path="income-and-expense" element={<IncomeExpense />} />
               <Route path="settings" element={<Settings />} />
             </Route>
