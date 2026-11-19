@@ -293,6 +293,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         '/admin/buses',
         '/admin/vehicle-registration',
         '/admin/vehicle-management',
+        '/admin/income-expense',
+        '/admin/vehicle-income-expense',
+        '/admin/income-and-expense',
         '/admin/daily-vehicle-checkup',
         '/admin/vehicle-checkup',
         '/admin/bus-condition',
@@ -354,14 +357,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       activeGradient: 'bg-gradient-to-r from-amber-500 to-orange-600',
       activeRoutes: ['/admin/chandrika-finance', '/admin/finance'],
       subItems: adminChandrikaFinanceSubItems
-    },
-    {
-      label: 'Income & Expense',
-      route: '/admin/income-expense',
-      icon: IndianRupee,
-      iconColor: 'text-emerald-400',
-      activeGradient: 'bg-gradient-to-r from-emerald-600 to-teal-700',
-      activeRoutes: ['/admin/income-expense', '/admin/income-and-expense']
     }
   ];
 
