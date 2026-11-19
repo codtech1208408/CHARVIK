@@ -166,23 +166,6 @@ export const Donations: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-10">
-        {/* Employee Safety & Welfare Program Poster */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden mb-8 group transition-all duration-300 hover:shadow-3xl">
-          <div className="relative">
-            <img
-              src="/donation-welfare-poster.jpg"
-              alt="Charvik Employee Safety & Welfare Program - Employee Insurance & Donation Support"
-              className="w-full h-auto object-cover block cursor-pointer transition-transform duration-500 group-hover:scale-[1.01]"
-              onClick={() => openLightbox(['/donation-welfare-poster.jpg'], 0)}
-              title="Click to view full poster"
-            />
-            <div className="absolute bottom-3 right-3 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold shadow-lg pointer-events-none">
-              <Eye className="w-3.5 h-3.5 text-rose-400" />
-              <span>Click to enlarge poster</span>
-            </div>
-          </div>
-        </div>
-
         {/* Search & Filter Toolbar */}
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 p-4 sm:p-5 flex flex-col md:flex-row gap-3 items-center justify-between mb-8">
           <div className="relative w-full md:w-96">

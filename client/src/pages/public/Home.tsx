@@ -75,7 +75,7 @@ export const Home: React.FC = () => {
     },
   ];
 
-  // 4 Full-Width Promotional Banners with 3.5s Auto-Scroll & Navigation
+  // 5 Full-Width Promotional Banners with 3.5s Auto-Scroll & Navigation
   const [currentSlide, setCurrentSlide] = React.useState(0);
   const [isPaused, setIsPaused] = React.useState(false);
 
@@ -111,6 +111,14 @@ export const Home: React.FC = () => {
       bgColor: 'bg-white',
       link: '/services#bus-rental',
       objectPosition: 'object-[center_30%]'
+    },
+    {
+      id: 5,
+      image: '/assets/home-banner-5.jpg',
+      title: 'Employee Safety & Welfare Program - Employee Insurance & Donation Support',
+      bgColor: 'bg-[#002859]',
+      link: '/donations',
+      objectPosition: 'object-center'
     }
   ];
 
