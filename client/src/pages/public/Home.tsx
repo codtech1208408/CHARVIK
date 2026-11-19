@@ -15,40 +15,43 @@ import {
   ChevronRight,
   Sparkles,
   MapPin,
-  CalendarCheck
+  CalendarCheck,
+  Plane,
+  Truck,
+  Star
 } from 'lucide-react';
 
 export const Home: React.FC = () => {
   const coreServices = [
     {
-      title: 'Bus Rental & Hire',
-      desc: 'Short & long-term rentals with luxury AC or non-AC buses for corporate excursions and special events.',
-      icon: Bus,
-      link: '/services#bus-rental',
+      title: 'Travel Services',
+      desc: 'Train, bus, flight tickets, outstation cabs, tour packages & holiday planning across India.',
+      icon: Plane,
+      link: '/services#travel-services',
     },
     {
-      title: 'Fleet Supply',
-      desc: 'Turnkey fleet provision for companies, institutions, and industrial sites with customized vehicle mixes.',
+      title: 'Transport & Cargo Services',
+      desc: 'Door-to-door express parcel delivery, LTL/FTL cargo, cold-chain transit & bus charter.',
+      icon: Truck,
+      link: '/services#cargo-services',
+    },
+    {
+      title: 'Manpower Supply',
+      desc: 'Background-verified heavy vehicle drivers, bus captains, skilled helpers & fleet supervisors.',
       icon: Users,
-      link: '/services#fleet-supply',
+      link: '/services#manpower-supply',
     },
     {
-      title: 'Driver & Crew Provision',
-      desc: 'Background-verified, licensed drivers, certified bus captains, and courteous helpers.',
-      icon: Award,
-      link: '/services#driver-provision',
+      title: 'Bus 5-Star Rating Service',
+      desc: 'Comprehensive third-party bus quality, safety, comfort, AC performance & hygiene certification.',
+      icon: Star,
+      link: '/services#bus-rating',
     },
     {
-      title: 'Maintenance-Backed Operations',
-      desc: 'Preventive schedules, genuine parts replacement, and zero-breakdown operational maintenance.',
+      title: 'On-Road Breakdown Support',
+      desc: '24/7 highway emergency mechanic & electrician hiring services anywhere across India.',
       icon: Wrench,
-      link: '/services#maintenance-fleet',
-    },
-    {
-      title: 'Project / Contract Transportation',
-      desc: 'Dedicated transport logistics for ongoing contracts, industrial corridors, and event transit.',
-      icon: Clock,
-      link: '/services#project-transport',
+      link: '/services#breakdown-support',
     },
   ];
 
@@ -75,50 +78,52 @@ export const Home: React.FC = () => {
     },
   ];
 
-  // 5 Full-Width Promotional Banners with 3.5s Auto-Scroll & Navigation
+  // 6 Full-Width High-Definition Promotional Banners with 3.5s Auto-Scroll & Navigation
   const [currentSlide, setCurrentSlide] = React.useState(0);
   const [isPaused, setIsPaused] = React.useState(false);
 
   const heroBanners = [
     {
       id: 1,
-      image: '/assets/home-banner-1.jpg',
-      title: 'Bus Staff & Fleet Support Services',
-      bgColor: 'bg-[#002859]',
-      link: '/services#fleet-supply',
-      objectPosition: 'object-center'
+      image: '/assets/service-travel-banner.jpg',
+      title: 'Travel Services - Your One-Stop Travel & Holiday Partner',
+      bgColor: 'bg-[#0a4275]',
+      link: '/services#travel-services',
     },
     {
       id: 2,
-      image: '/assets/home-banner-2.jpg',
-      title: 'Complete Workforce & Fleet Support for Bus Operations',
-      bgColor: 'bg-[#dbe7f5]',
-      link: '/contact',
-      objectPosition: 'object-center'
+      image: '/assets/service-cargo-banner.jpg',
+      title: 'Transport & Cargo Services - Safe, Reliable, Fast, Pan India',
+      bgColor: 'bg-[#052b52]',
+      link: '/services#cargo-services',
     },
     {
       id: 3,
-      image: '/assets/home-banner-3.jpg',
-      title: '24/7 Mobile Fleet Maintenance & Breakdown Services',
-      bgColor: 'bg-[#07193d]',
-      link: '/services#maintenance-fleet',
-      objectPosition: 'object-[center_30%]'
+      image: '/assets/service-manpower-banner.jpg',
+      title: 'Manpower Supply for Transport & Fleet Operations',
+      bgColor: 'bg-[#093566]',
+      link: '/services#manpower-supply',
     },
     {
       id: 4,
-      image: '/assets/home-banner-4.jpg',
-      title: 'Executive Corporate Shuttles & Luxury Bus Rentals',
-      bgColor: 'bg-white',
-      link: '/services#bus-rental',
-      objectPosition: 'object-[center_30%]'
+      image: '/assets/service-rating-banner.jpg',
+      title: 'Bus 5-Star Rating Service by Charvik',
+      bgColor: 'bg-[#042142]',
+      link: '/services#bus-rating',
     },
     {
       id: 5,
+      image: '/assets/service-breakdown-banner.jpg',
+      title: 'On-Road Breakdown Support - Mechanic & Electrician Hiring Services',
+      bgColor: 'bg-[#021731]',
+      link: '/services#breakdown-support',
+    },
+    {
+      id: 6,
       image: '/assets/home-banner-5.jpg?v=20261119_pure_hd_v6',
       title: 'Employee Safety & Welfare Program - Employee Insurance & Donation Support',
       bgColor: 'bg-[#03152F]',
       link: '/donations',
-      objectFit: 'object-fill'
     }
   ];
 
@@ -136,32 +141,32 @@ export const Home: React.FC = () => {
 
   return (
     <div className="overflow-hidden">
-      {/* 1. FULL-WIDTH 4-BANNER AUTO-SCROLLER (FULL PAGE, ZERO WHITE SPACE) */}
+      {/* 1. FULL-WIDTH 6-BANNER AUTO-SCROLLER (HD 16:9 RATIO - NO CROPPING, NO CUT TEXT) */}
       <section className="relative w-full overflow-hidden select-none bg-slate-950">
         <div
-          className="relative w-full h-[calc(100vh-5rem)] min-h-[560px] max-h-[880px] overflow-hidden group"
+          className="relative w-full aspect-[16/9] max-h-[84vh] min-h-[220px] sm:min-h-[380px] md:min-h-[480px] lg:min-h-[560px] xl:min-h-[640px] mx-auto overflow-hidden group flex items-center justify-center bg-slate-950"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Render all 5 banners with smooth crossfade */}
+          {/* Render all 6 banners with smooth crossfade */}
           {heroBanners.map((banner, index) => {
             const isActive = index === currentSlide;
             return (
               <div
                 key={banner.id}
-                className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-700 ease-in-out ${
                   isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                 } ${banner.bgColor || 'bg-slate-950'}`}
               >
                 <Link
                   to={banner.link}
-                  className="block w-full h-full cursor-pointer relative"
+                  className="block w-full h-full cursor-pointer relative flex items-center justify-center"
                   title={banner.title}
                 >
                   <img
                     src={banner.image}
                     alt={banner.title}
-                    className={`w-full h-full ${(banner as any).objectFit || 'object-cover'} ${banner.objectPosition || 'object-center'} select-none`}
+                    className="w-full h-full object-contain sm:object-fill select-none"
                     loading={index === 0 ? 'eager' : 'lazy'}
                   />
                 </Link>
