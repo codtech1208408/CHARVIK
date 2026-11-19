@@ -49,13 +49,13 @@ export const PublicFooter: React.FC = () => {
           {/* Company Column */}
           <div className="space-y-4">
             <div className="flex items-center">
-              <div className="h-16 sm:h-20 w-auto px-3 py-1.5 rounded-xl bg-white border border-white/20 shadow-md flex items-center justify-center shrink-0">
+              <Link to="/" className="flex items-center py-1 group cursor-pointer" title="Charvik Staffing Consultancy">
                 <img
-                  src="/logo-compact.png"
+                  src="/logo-navbar.png?v=20261119_clean_v6"
                   alt="Charvik Staffing Consultancy Logo"
-                  className="h-full w-auto object-contain"
+                  className="h-16 sm:h-20 w-auto max-w-[280px] object-contain transition-transform group-hover:scale-[1.02]"
                 />
-              </div>
+              </Link>
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed">

@@ -30,15 +30,18 @@ export const PublicNavbar: React.FC = () => {
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-24">
-            {/* Brand Logo */}
-            <Link to="/" className="flex items-center group py-2" aria-label="Charvik Home">
-              <div className="h-20 sm:h-24 w-auto px-3 py-1.5 rounded-xl bg-white border border-slate-200/90 shadow-sm group-hover:shadow transition-shadow flex items-center justify-center">
-                <img
-                  src="/logo-navbar.png?v=20261119_clean_v6"
-                  alt="Charvik Staffing Consultancy"
-                  className="h-full w-auto max-h-20 sm:max-h-24 object-contain transition-transform group-hover:scale-105"
-                />
-              </div>
+            {/* Brand Logo - clean without box, matching Admin Dashboard */}
+            <Link
+              to="/"
+              className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer select-none py-1 group"
+              aria-label="Charvik Staffing Consultancy Home"
+              title="Charvik Staffing Consultancy"
+            >
+              <img
+                src="/logo-navbar.png?v=20261119_clean_v6"
+                alt="Charvik Staffing Consultancy - Your Talent | Our Support | A Brighter Future"
+                className="h-[84px] sm:h-[92px] w-auto max-w-[340px] object-contain transition-transform group-hover:scale-[1.02]"
+              />
             </Link>
 
             {/* Desktop Navigation Links */}

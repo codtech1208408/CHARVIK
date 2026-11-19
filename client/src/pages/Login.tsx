@@ -156,15 +156,15 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
           </Link>
         </div>
 
-        {/* Logo and Brand */}
+        {/* Logo and Brand - Clean without box, matching Admin Dashboard */}
         <div className="text-center flex flex-col items-center">
-          <div className="w-72 h-28 rounded-2xl bg-white p-3 shadow-xl border border-slate-200/80 mb-2 flex items-center justify-center">
+          <Link to="/" className="flex items-center justify-center transition-transform hover:scale-[1.02] mb-2 cursor-pointer" title="Charvik Staffing Consultancy">
             <img
-              src="/logo.jpg"
+              src="/logo-navbar.png?v=20261119_clean_v6"
               alt="Charvik Staffing Consultancy Logo"
-              className="w-full h-full object-contain"
+              className="h-24 sm:h-28 w-auto max-w-[340px] object-contain drop-shadow-xs"
             />
-          </div>
+          </Link>
 
           {/* Portal Title Badge (Dedicated per portal - no /admin shown on captain or supporter) */}
           <div className="mt-3.5 flex items-center justify-center">
