@@ -15,7 +15,15 @@ import {
   FileCheck,
   Sparkles,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  QrCode,
+  Copy,
+  Check,
+  UserCheck,
+  MessageCircle,
+  ArrowUpRight,
+  BadgeCheck,
+  Wallet
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
@@ -42,6 +50,14 @@ export const Donations: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [modeFilter, setModeFilter] = useState('All');
   const [periodFilter, setPeriodFilter] = useState('All');
+
+  // Modals for "View All"
+  const [showAllDonatorsModal, setShowAllDonatorsModal] = useState(false);
+  const [showAllStaffModal, setShowAllStaffModal] = useState(false);
+  const [selectedStaffFilter, setSelectedStaffFilter] = useState<string>('All');
+
+  // Copy feedback state
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Lightbox Modal
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
@@ -100,6 +116,44 @@ export const Donations: React.FC = () => {
     const totalDonors = donations.length;
     return { totalAmount, totalDonors };
   }, [donations]);
+
+  // Aggregate employees who received donation amounts
+  const staffSummary = useMemo(() => {
+    const map = new Map<string, {
+      name: string;
+      code?: string;
+      role?: string;
+      totalAmount: number;
+      donationCount: number;
+      donations: PublicDonationItem[];
+    }>();
+
+    donations.forEach((item) => {
+      const staffName = item.received_by_employee_name || 'Staff Member';
+      if (!map.has(staffName)) {
+        map.set(staffName, {
+          name: staffName,
+          code: item.received_by_employee_code,
+          role: item.received_by_employee_role || 'Staff',
+          totalAmount: 0,
+          donationCount: 0,
+          donations: []
+        });
+      }
+      const entry = map.get(staffName)!;
+      entry.totalAmount += Number(item.amount) || 0;
+      entry.donationCount += 1;
+      entry.donations.push(item);
+    });
+
+    return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
+  }, [donations]);
+
+  const handleCopy = (text: string, fieldName: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldName);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   const openLightbox = (images: string[], index = 0) => {
     setLightboxImages(images);
@@ -164,7 +218,7 @@ export const Donations: React.FC = () => {
         </div>
       </section>
 
-      {/* Main Content Area */}
+      {/* Main Content Area: 3-Box Layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-10">
         {/* Search & Filter Toolbar */}
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 p-4 sm:p-5 flex flex-col md:flex-row gap-3 items-center justify-between mb-8">
@@ -222,158 +276,317 @@ export const Donations: React.FC = () => {
           </div>
         </div>
 
-        {/* Donations Cards Grid */}
+        {/* 3 Main Interactive Boxes */}
         {loading ? (
           <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-3">
             <div className="w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
             <p className="text-xs font-bold text-slate-600">Loading verified donation records...</p>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-3 shadow-xs">
-            <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
-              <HeartHandshake className="w-7 h-7" />
-            </div>
-            <h3 className="text-base font-black text-slate-800">No Donations Found</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              {searchTerm || modeFilter !== 'All'
-                ? 'No donation records match your search criteria. Please adjust your filters.'
-                : 'No donations have been published yet.'}
-            </p>
-          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((item) => {
-              const proofCount = item.proof_images?.length || 0;
-              const formattedDate = new Date(item.donation_date).toLocaleDateString('en-IN', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-              });
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            {/* ================= BOX 1: DONATORS LIST (VERTICAL) ================= */}
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-md p-5 flex flex-col justify-between transition-all hover:shadow-xl group">
+              <div>
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-md shadow-rose-100">
+                      <HeartHandshake className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-black text-slate-900 leading-tight">
+                        Donators & Benefactors
+                      </h2>
+                      <p className="text-[11px] text-slate-400 font-medium">
+                        Recent voluntary contributions
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-100 shrink-0">
+                    {filtered.length} Total
+                  </span>
+                </div>
 
-              return (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between group"
-                >
-                  {/* Top Card Section */}
-                  <div className="p-6">
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center font-black text-base shadow-md shadow-rose-100">
-                          {item.donor_name.charAt(0).toUpperCase()}
+                {/* Vertical Donators List */}
+                {filtered.length === 0 ? (
+                  <div className="py-12 text-center text-slate-400 text-xs italic">
+                    No donation records found.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {filtered.slice(0, 5).map((item) => {
+                      const formattedDate = new Date(item.donation_date).toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                      });
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors flex items-center justify-between gap-3"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                              {item.donor_name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-bold text-slate-900 truncate">
+                                {item.donor_name}
+                              </h4>
+                              <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
+                                <span>{formattedDate}</span>
+                                <span>•</span>
+                                <span className="font-semibold text-slate-600">{item.payment_mode || 'Cash'}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="text-xs font-black text-emerald-600 tracking-tight">
+                              ₹{Number(item.amount).toLocaleString('en-IN')}
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors">
-                            {item.donor_name}
-                          </h3>
-                          <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                            <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
-                              <Calendar className="w-3.5 h-3.5 text-slate-400" /> {formattedDate}
-                            </span>
-                            {item.donor_phone && (
-                              <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
-                                <Phone className="w-3 h-3 text-emerald-500" /> {item.donor_phone}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* View All Button */}
+              <div className="pt-4 mt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAllDonatorsModal(true)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer hover:shadow-md"
+                >
+                  <Eye className="w-4 h-4 text-rose-400" />
+                  <span>View All Donators & Full Details ({filtered.length})</span>
+                </button>
+              </div>
+            </div>
+
+            {/* ================= BOX 2: EMPLOYEES WHO TOOK DONATION (VERTICAL) ================= */}
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-md p-5 flex flex-col justify-between transition-all hover:shadow-xl group">
+              <div>
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-100">
+                      <UserCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-base font-black text-slate-900 leading-tight">
+                        Staff Who Received Donation
+                      </h2>
+                      <p className="text-[11px] text-slate-400 font-medium">
+                        Employees who took donated money
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-600 border border-blue-100 shrink-0">
+                    {staffSummary.length} Crew
+                  </span>
+                </div>
+
+                {/* Vertical Receiving Employees List */}
+                {staffSummary.length === 0 ? (
+                  <div className="py-12 text-center text-slate-400 text-xs italic">
+                    No receiving staff records found.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {staffSummary.slice(0, 5).map((staff) => (
+                      <div
+                        key={staff.name}
+                        className="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                            <User className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-bold text-slate-900 truncate flex items-center gap-1.5">
+                              <span>{staff.name}</span>
+                              {staff.code && (
+                                <span className="text-[10px] text-slate-500 font-mono font-normal">
+                                  ({staff.code})
+                                </span>
+                              )}
+                            </h4>
+                            <div className="flex items-center gap-1.5 text-[10px] text-blue-600 font-semibold mt-0.5">
+                              <span>{staff.role}</span>
+                              <span className="text-slate-300">•</span>
+                              <span className="text-slate-500 font-normal">
+                                {staff.donationCount} {staff.donationCount === 1 ? 'donation' : 'donations'}
                               </span>
-                            )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase block">Received</span>
+                          <div className="text-xs font-black text-slate-900 tracking-tight">
+                            ₹{staff.totalAmount.toLocaleString('en-IN')}
                           </div>
                         </div>
                       </div>
-
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
-                        {item.payment_mode || 'Cash'}
-                      </span>
-                    </div>
-
-                    {/* Amount Banner */}
-                    <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50/50 border border-emerald-200/80 flex items-center justify-between mb-4">
-                      <div>
-                        <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-                          Contribution Amount
-                        </span>
-                        <div className="text-2xl font-black text-emerald-600 tracking-tight">
-                          ₹{Number(item.amount).toLocaleString('en-IN')}
-                        </div>
-                      </div>
-                      <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
-                        <IndianRupee className="w-5 h-5" />
-                      </div>
-                    </div>
-
-                    {/* Receiving Employee */}
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 mb-4">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                        Received On Duty By Staff
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
-                          <User className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="text-xs font-bold text-slate-800">
-                          {item.received_by_employee_name}
-                          {item.received_by_employee_code && (
-                            <span className="text-slate-500 font-mono font-normal ml-1.5">
-                              ({item.received_by_employee_code})
-                            </span>
-                          )}
-                          {item.received_by_employee_role && (
-                            <span className="text-blue-600 font-semibold ml-1.5">
-                              • {item.received_by_employee_role}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Notes / Purpose */}
-                    {item.notes && (
-                      <p className="text-xs text-slate-600 italic bg-white p-2.5 rounded-lg border border-slate-100 line-clamp-2">
-                        "{item.notes}"
-                      </p>
-                    )}
+                    ))}
                   </div>
+                )}
+              </div>
 
-                  {/* Proof Photo Gallery Section */}
-                  <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-100">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                        <FileCheck className="w-3.5 h-3.5 text-blue-600" />
-                        Verified Proof Documents
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-400">
-                        {proofCount} {proofCount === 1 ? 'Image' : 'Images'}
-                      </span>
+              {/* View All Staff Button */}
+              <div className="pt-4 mt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAllStaffModal(true)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer hover:shadow-md"
+                >
+                  <Users className="w-4 h-4" />
+                  <span>View All Staff & Receiving History ({staffSummary.length})</span>
+                </button>
+              </div>
+            </div>
+
+            {/* ================= BOX 3: DONATE NOW (QR CODE & ACCOUNT DETAILS) ================= */}
+            <div className="bg-gradient-to-b from-white to-blue-50/50 rounded-2xl border-2 border-blue-500/25 shadow-md p-5 flex flex-col justify-between transition-all hover:shadow-xl relative overflow-hidden">
+              <div>
+                {/* Header */}
+                <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-blue-100/70">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-100">
+                      <QrCode className="w-5 h-5" />
                     </div>
+                    <div>
+                      <h2 className="text-base font-black text-slate-900 leading-tight">
+                        Donate & Support Crew
+                      </h2>
+                      <p className="text-[11px] text-slate-500 font-medium">
+                        Scan QR code or transfer to account
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                    Instant Verified
+                  </span>
+                </div>
 
-                    {proofCount > 0 ? (
-                      <div className="grid grid-cols-4 gap-2">
-                        {item.proof_images!.slice(0, 4).map((imgUrl, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => openLightbox(item.proof_images!, idx)}
-                            className="relative rounded-xl overflow-hidden aspect-square border border-slate-200 group/img shadow-2xs hover:border-blue-500 transition-colors cursor-pointer bg-white"
-                            title="Click to view image in high definition"
-                          >
-                            <img
-                              src={imgUrl}
-                              alt={`Proof Document ${idx + 1}`}
-                              className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-200"
-                            />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white">
-                              <Eye className="w-3.5 h-3.5" />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-slate-400 italic">
-                        Receipt registered on official ledger.
-                      </div>
-                    )}
+                {/* QR Code Display Card */}
+                <div className="flex flex-col items-center justify-center py-1">
+                  <div
+                    onClick={() => openLightbox(['/charvik-donation-qr.png'], 0)}
+                    className="p-2.5 bg-white rounded-2xl border-2 border-slate-200/90 shadow-sm relative group cursor-pointer hover:border-blue-500 transition-colors"
+                    title="Click to view QR code full size"
+                  >
+                    <img
+                      src="/charvik-donation-qr.png"
+                      alt="Charvik Staffing Consultancy UPI QR Code"
+                      className="w-36 h-36 sm:w-40 sm:h-40 object-contain rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center text-white text-[11px] font-bold gap-1 pointer-events-none">
+                      <Eye className="w-3.5 h-3.5" /> Enlarge QR
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-slate-600">
+                    <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">GPay</span>
+                    <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">PhonePe</span>
+                    <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">Paytm</span>
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">Any UPI</span>
                   </div>
                 </div>
-              );
-            })}
+
+                {/* Bank Account Particulars */}
+                <div className="space-y-2 mt-3 text-xs">
+                  {/* Account Number */}
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/90 flex items-center justify-between shadow-2xs">
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Account Number
+                      </span>
+                      <span className="font-mono font-bold text-slate-900 text-xs tracking-wider">
+                        50200095051515
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy('50200095051515', 'account')}
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
+                      title="Copy Account Number"
+                    >
+                      {copiedField === 'account' ? (
+                        <Check className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Bank & IFSC */}
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/90 flex items-center justify-between shadow-2xs">
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Bank & IFSC Code
+                      </span>
+                      <div className="font-bold text-slate-800 text-xs">
+                        HDFC Bank • <span className="font-mono text-slate-600">HDFC0000542</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy('HDFC0000542', 'ifsc')}
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
+                      title="Copy IFSC Code"
+                    >
+                      {copiedField === 'ifsc' ? (
+                        <Check className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* UPI ID */}
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/90 flex items-center justify-between shadow-2xs">
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                        UPI ID / Mobile Pay
+                      </span>
+                      <span className="font-mono font-bold text-slate-800 text-xs">
+                        9505151527@ybl
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy('9505151527@ybl', 'upi')}
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-blue-600 transition-colors cursor-pointer"
+                      title="Copy UPI ID"
+                    >
+                      {copiedField === 'upi' ? (
+                        <Check className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* WhatsApp Notification Footnote */}
+              <div className="mt-3 p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200/80 text-[11px] text-emerald-900 flex items-start gap-2 shadow-2xs">
+                <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span className="leading-snug">
+                  After transfer, share screenshot via WhatsApp to{' '}
+                  <a
+                    href="https://wa.me/919505151527?text=Hello%20Charvik%20Staffing%2C%20I%20have%20made%20a%20welfare%20donation.%20Please%20find%20attached%20payment%20proof."
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-bold underline text-emerald-950"
+                  >
+                    +91 9505151527
+                  </a>{' '}
+                  for instant receipt and public ledger entry.
+                </span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -395,13 +608,314 @@ export const Donations: React.FC = () => {
 
           <Link
             to="/contact"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold shadow-sm transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#142B4A] hover:bg-[#1E3A5F] text-white text-xs font-bold shadow-sm transition-colors shrink-0 cursor-pointer"
           >
             <span>Contact Secretariat</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
+
+      {/* ================= MODAL 1: VIEW ALL DONATORS & FULL DETAILS ================= */}
+      {showAllDonatorsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-5xl max-h-[90vh] rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4.5 bg-[#0B2545] text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                  <HeartHandshake className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black tracking-tight">
+                    Complete Donators & Benefactors Registry
+                  </h3>
+                  <p className="text-[11px] text-blue-200">
+                    Showing all {filtered.length} verified donations with receiving crew details and proof documents
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllDonatorsModal(false)}
+                className="p-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body: Cards Grid */}
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-50 space-y-4">
+              {filtered.length === 0 ? (
+                <div className="py-16 text-center text-slate-400 text-sm">
+                  No matching donation records found.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filtered.map((item) => {
+                    const proofCount = item.proof_images?.length || 0;
+                    const formattedDate = new Date(item.donation_date).toLocaleDateString('en-IN', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric'
+                    });
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between"
+                      >
+                        <div>
+                          {/* Top: Donator & Amount */}
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+                                {item.donor_name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-black text-slate-900">
+                                  {item.donor_name}
+                                </h4>
+                                <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                                  <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+                                    <Calendar className="w-3 h-3 text-slate-400" /> {formattedDate}
+                                  </span>
+                                  {item.donor_phone && (
+                                    <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                      <Phone className="w-3 h-3 text-emerald-500" /> {item.donor_phone}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-base font-black text-emerald-600">
+                                ₹{Number(item.amount).toLocaleString('en-IN')}
+                              </div>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                {item.payment_mode || 'Cash'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Receiving Staff Info */}
+                          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 mb-3">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                              Received On Duty By Staff
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                                <User className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="text-xs font-bold text-slate-800">
+                                {item.received_by_employee_name}
+                                {item.received_by_employee_code && (
+                                  <span className="text-slate-500 font-mono font-normal ml-1.5">
+                                    ({item.received_by_employee_code})
+                                  </span>
+                                )}
+                                {item.received_by_employee_role && (
+                                  <span className="text-blue-600 font-semibold ml-1.5">
+                                    • {item.received_by_employee_role}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Notes */}
+                          {item.notes && (
+                            <p className="text-xs text-slate-600 italic bg-slate-50/60 p-2.5 rounded-lg border border-slate-100 mb-3">
+                              "{item.notes}"
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Verified Proof Images */}
+                        <div className="pt-3 border-t border-slate-100">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-bold text-slate-600 flex items-center gap-1">
+                              <FileCheck className="w-3 h-3 text-blue-600" /> Verified Proofs
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {proofCount} {proofCount === 1 ? 'Image' : 'Images'}
+                            </span>
+                          </div>
+                          {proofCount > 0 ? (
+                            <div className="grid grid-cols-4 gap-2">
+                              {item.proof_images!.map((imgUrl, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => openLightbox(item.proof_images!, idx)}
+                                  className="relative rounded-lg overflow-hidden aspect-square border border-slate-200 group/img cursor-pointer bg-slate-100"
+                                >
+                                  <img
+                                    src={imgUrl}
+                                    alt={`Proof ${idx + 1}`}
+                                    className="w-full h-full object-cover group-hover/img:scale-110 transition-transform"
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-slate-400 italic">No images attached.</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-600">
+                Total Shown: {filtered.length} Contributions
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAllDonatorsModal(false)}
+                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer"
+              >
+                Close Registry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL 2: VIEW ALL RECEIVING STAFF & BREAKDOWN ================= */}
+      {showAllStaffModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-5xl max-h-[90vh] rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4.5 bg-[#0B2545] text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black tracking-tight">
+                    Staff Donation Intake & Accountability Registry
+                  </h3>
+                  <p className="text-[11px] text-blue-200">
+                    Comprehensive log of all staff members who took voluntary donations and corresponding donor details
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllStaffModal(false)}
+                className="p-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-50 space-y-5">
+              {staffSummary.map((staff) => (
+                <div
+                  key={staff.name}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-4"
+                >
+                  {/* Staff Summary Banner */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-slate-900 flex items-center gap-2">
+                          <span>{staff.name}</span>
+                          {staff.code && (
+                            <span className="text-xs text-slate-500 font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md">
+                              {staff.code}
+                            </span>
+                          )}
+                        </h4>
+                        <div className="text-xs text-blue-600 font-bold mt-0.5">
+                          {staff.role} • {staff.donationCount} {staff.donationCount === 1 ? 'Intake Record' : 'Intake Records'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Total Funds Handled
+                      </span>
+                      <div className="text-xl font-black text-emerald-600">
+                        ₹{staff.totalAmount.toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* List of Donations handled by this staff */}
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Associated Donor Contributions ({staff.donations.length})
+                    </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {staff.donations.map((d) => (
+                        <div
+                          key={d.id}
+                          className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3"
+                        >
+                          <div>
+                            <div className="text-xs font-bold text-slate-900">{d.donor_name}</div>
+                            <div className="text-[10px] text-slate-500 mt-0.5">
+                              {new Date(d.donation_date).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              })}{' '}
+                              • {d.payment_mode || 'Cash'}
+                            </div>
+                            {d.notes && (
+                              <div className="text-[10px] text-slate-400 truncate max-w-xs mt-0.5">
+                                "{d.notes}"
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="text-xs font-black text-emerald-600">
+                              ₹{Number(d.amount).toLocaleString('en-IN')}
+                            </div>
+                            {d.proof_images && d.proof_images.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => openLightbox(d.proof_images!, 0)}
+                                className="text-[10px] text-blue-600 font-bold hover:underline inline-flex items-center gap-0.5 mt-0.5 cursor-pointer"
+                              >
+                                <Eye className="w-3 h-3" /> View Proof
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-600">
+                Total Staff Members: {staffSummary.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAllStaffModal(false)}
+                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer"
+              >
+                Close Registry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Lightbox Carousel Modal */}
       {isLightboxOpen && lightboxImages.length > 0 && (
@@ -422,7 +936,7 @@ export const Donations: React.FC = () => {
           <div className="max-w-4xl max-h-[80vh] w-full flex items-center justify-center relative">
             <img
               src={lightboxImages[lightboxIndex]}
-              alt={`Proof Document ${lightboxIndex + 1}`}
+              alt={`Document ${lightboxIndex + 1}`}
               className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl"
             />
           </div>
@@ -450,4 +964,3 @@ export const Donations: React.FC = () => {
     </div>
   );
 };
-export default Donations;
