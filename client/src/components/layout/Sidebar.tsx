@@ -179,6 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Fleet Maintenance Overview', route: '/admin/vehicle-maintenance', icon: Gauge, iconColor: 'text-amber-500', activeRoutes: ['/admin/vehicle-maintenance'] },
     { label: 'Daily Vehicle Maintenance', route: '/admin/vehicle-maintenance-card', icon: Wrench, iconColor: 'text-blue-500', activeRoutes: ['/admin/vehicle-maintenance-card', '/admin/job-card', '/admin/daily-maintenance'] },
     { label: 'Vehicle Registration', route: '/admin/vehicles', icon: Bus, iconColor: 'text-purple-600', activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management'] },
+    { label: 'Vehicle Income & Expense', route: '/admin/vehicles?tab=income-expense', icon: IndianRupee, iconColor: 'text-emerald-500', activeRoutes: ['/admin/vehicles?tab=income-expense'] },
     { label: 'Daily Vehicle Checkup', route: '/admin/daily-vehicle-checkup', icon: ClipboardCheck, iconColor: 'text-violet-600', activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition'] },
     { label: 'Mileage & Fueling', route: '/admin/mileage-fueling', icon: Fuel, iconColor: 'text-amber-500', activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers'] },
     { label: 'New Tyres', route: '/admin/new-tyres', icon: Disc, iconColor: 'text-orange-500', activeRoutes: ['/admin/new-tyres', '/admin/tyres/new'] },
