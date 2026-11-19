@@ -25,7 +25,7 @@ export const Services: React.FC = () => {
       tagline: 'Best Fares • Easy Booking • Secure Payments • 24/7 Support • Exclusive Deals • Customized Packages',
       desc: 'Charvik delivers comprehensive multimodal ticketing and holiday planning for corporate clients, tourist groups, and individual travelers. From reserved train tatkal bookings and scheduled intercity luxury buses to instant flight ticket issuance, chauffeur-driven rental cabs, and custom holiday tour packages, we guarantee seamless end-to-end journey coordination.',
       icon: Plane,
-      image: '/assets/service-travel-banner.jpg?v=20261119_clean_sky_v3',
+      image: '/assets/service-travel-banner.jpg?v=20261119_pristine_laplace_v4',
       badgeColor: 'bg-sky-50 text-sky-700 border-sky-200',
       features: [
         'Train Tickets: Confirmed and tatkal booking assistance with best fares across Indian Railways networks.',
@@ -45,7 +45,7 @@ export const Services: React.FC = () => {
       tagline: 'Safe & Secure Handling • On-Time Delivery • Real-Time Tracking • Flexible Logistics • All Types of Cargo & Vehicles • 24/7 Support',
       desc: 'Charvik Transport & Cargo provides integrated logistics, parcel movement, and commercial vehicle supply across India. We manage door-to-door express parcel deliveries, full truck loads, and temperature-sensitive freight with complete transparency, transit insurance, and SLA-guaranteed delivery timelines.',
       icon: Truck,
-      image: '/assets/service-cargo-banner.jpg?v=20261119_clean_sky_v3',
+      image: '/assets/service-cargo-banner.jpg?v=20261119_pristine_laplace_v4',
       badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
       features: [
         'Cargo Booking & Pickup: Convenient consignee dispatch, doorstep collection, and centralized hub handling.',
@@ -67,7 +67,7 @@ export const Services: React.FC = () => {
       tagline: 'Verified & Trained Staff • On-Demand Supply • Short & Long-Term Support • Transport Domain Expertise • Pan-India Staffing • Compliant Service',
       desc: 'Finding reliable, licensed, and responsible crew for heavy commercial bus fleets is critical for safety and uptime. Charvik specializes in sourcing, vetting, training, and deploying drivers, helpers, bus captains, and fleet supervisors for private operators, corporate shuttles, and intercity routes.',
       icon: Users,
-      image: '/assets/service-manpower-banner.jpg?v=20261119_clean_sky_v3',
+      image: '/assets/service-manpower-banner.jpg?v=20261119_pristine_laplace_v4',
       badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
       features: [
         'Driver Supply: Experienced, police-verified commercial heavy transport (HTV/HMV) drivers trained in defensive driving.',
@@ -87,7 +87,7 @@ export const Services: React.FC = () => {
       tagline: 'Quality Bus Fleet • Better Passenger Experience • Safety Assurance • Higher Customer Satisfaction • Improved Business Reputation',
       desc: 'Our proprietary 5-Star Bus Rating & Certification program evaluates and rates passenger buses on safety, comfort, cleanliness, and crew etiquette. Operators and fleet owners use Charvik certification to build passenger trust, charge premium fares, and maintain world-class fleet standards.',
       icon: Star,
-      image: '/assets/service-rating-banner.jpg?v=20261119_clean_sky_v3',
+      image: '/assets/service-rating-banner.jpg?v=20261119_pristine_laplace_v4',
       badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
       features: [
         'Vehicle Condition Inspection: Comprehensive audit of chassis, brake systems, tyres, exterior bodywork, and lighting.',
@@ -109,7 +109,7 @@ export const Services: React.FC = () => {
       tagline: 'Roadside Repair Support • Skilled Manpower • Quick Deployment • Verified Service Partners • All India Coverage',
       desc: 'Never leave your bus, truck, or commercial vehicle stranded on the highway. Charvik operates a rapid-response emergency breakdown assistance network spanning major national and state highways across India. With one call or dispatch request, we deploy certified mechanics and auto-electricians directly to your breakdown spot.',
       icon: Wrench,
-      image: '/assets/service-breakdown-banner.jpg?v=20261119_clean_sky_v3',
+      image: '/assets/service-breakdown-banner.jpg?v=20261119_pristine_laplace_v4',
       badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
       features: [
         'Mechanic Support: Emergency on-site repairs for engine overheating, radiator leaks, clutch plates, air-brake locks, gearboxes, and suspension.',
