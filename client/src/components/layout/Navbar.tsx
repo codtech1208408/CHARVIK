@@ -170,9 +170,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           title="Charvik Staffing Consultancy"
         >
           <img
-            src="/logo-navbar.png?v=20261119_hq"
+            src="/logo-navbar.png?v=20261119_trans_v4"
             alt="Charvik Staffing Consultancy - Your Talent | Our Support | A Brighter Future"
-            className="h-[88px] sm:h-[95px] w-auto max-w-[320px] object-contain transition-transform group-hover:scale-[1.02]"
+            className="h-[90px] sm:h-[96px] w-auto max-w-[340px] object-contain transition-transform group-hover:scale-[1.02]"
           />
         </Link>
 
