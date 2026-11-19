@@ -171,9 +171,10 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           margin-bottom: 4px;
         }
         .charvik-brand-logo {
-          height: 48px !important;
-          max-height: 48px !important;
+          height: 66px !important;
+          max-height: 70px !important;
           width: auto !important;
+          max-width: 340px !important;
           object-fit: contain !important;
           display: block;
           margin: 0 auto;
@@ -398,7 +399,7 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
         <div class="charvik-letterhead-container">
           <div class="charvik-letterhead-logo-row">
             <img 
-              src="/logo-brand.png" 
+              src="/logo-brand.png?v=20261119_hq" 
               alt="CHARVIK STAFFING CONSULTANCY" 
               class="charvik-brand-logo"
               onerror="this.src='/logo.png'" 

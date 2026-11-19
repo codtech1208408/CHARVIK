@@ -34,9 +34,9 @@ export const PublicNavbar: React.FC = () => {
             <Link to="/" className="flex items-center group py-2" aria-label="Charvik Home">
               <div className="h-20 sm:h-24 w-auto px-3 py-1.5 rounded-xl bg-white border border-slate-200/90 shadow-sm group-hover:shadow transition-shadow flex items-center justify-center">
                 <img
-                  src="/logo-compact.png"
+                  src="/logo-navbar.png?v=20261119_hq"
                   alt="Charvik Staffing Consultancy"
-                  className="h-full w-auto max-h-18 sm:max-h-22 object-contain transition-transform group-hover:scale-105"
+                  className="h-full w-auto max-h-20 sm:max-h-24 object-contain transition-transform group-hover:scale-105"
                 />
               </div>
             </Link>

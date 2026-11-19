@@ -307,17 +307,25 @@
     display: block !important;
   }
 
-  /* Prevent logo stretching in printouts */
+  /* Prevent logo stretching in printouts while keeping text legible */
   .vyshnavi-header-logo,
   img[src*="vyshnavi"],
-  img[src*="chandrika"],
-  .charvik-brand-logo,
-  img[src*="logo-brand"],
-  img[src*="logo-navbar"] {
+  img[src*="chandrika"] {
     width: auto !important;
     max-width: 280px !important;
     height: auto !important;
     max-height: 90px !important;
+    display: block !important;
+  }
+
+  .charvik-brand-logo,
+  img[src*="logo-brand"],
+  img[src*="logo-navbar"],
+  img[src*="charvik"] {
+    width: auto !important;
+    max-width: 360px !important;
+    height: auto !important;
+    max-height: 75px !important;
     display: block !important;
   }
 
