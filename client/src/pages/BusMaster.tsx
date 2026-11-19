@@ -985,7 +985,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                       <button
                         onClick={() => navigate('/admin/income-expense')}
                         className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
-                        title="Vehicle Income & Expense Ledger"
+                        title="Income & Expense Ledger"
                       >
                         <IndianRupee className="w-3.5 h-3.5" />
                       </button>
@@ -1135,7 +1135,7 @@ This document must be renewed immediately. Operating without valid ${alertItem.d
                           <button
                             onClick={() => navigate('/admin/income-expense')}
                             className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
-                            title="Vehicle Income & Expense Ledger"
+                            title="Income & Expense Ledger"
                           >
                             <IndianRupee className="w-4 h-4" />
                           </button>
