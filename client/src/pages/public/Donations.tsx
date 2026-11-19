@@ -63,6 +63,7 @@ export const Donations: React.FC = () => {
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchDonations() {
@@ -473,7 +474,7 @@ export const Donations: React.FC = () => {
                 {/* QR Code Display Card */}
                 <div className="flex flex-col items-center justify-center py-1">
                   <div
-                    onClick={() => openLightbox(['/charvik-donation-qr.png'], 0)}
+                    onClick={() => setIsQrModalOpen(true)}
                     className="p-2.5 bg-white rounded-2xl border-2 border-slate-200/90 shadow-sm relative group cursor-pointer hover:border-blue-500 transition-colors"
                     title="Click to view QR code full size"
                   >
@@ -631,7 +632,7 @@ export const Donations: React.FC = () => {
                     Complete Donators & Benefactors Registry
                   </h3>
                   <p className="text-[11px] text-blue-200">
-                    Showing all {filtered.length} verified donations with receiving crew details and proof documents
+                    Showing all {filtered.length} verified benefactor donations with receipt documents and proofs
                   </p>
                 </div>
               </div>
@@ -695,31 +696,6 @@ export const Donations: React.FC = () => {
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
                                 {item.payment_mode || 'Cash'}
                               </span>
-                            </div>
-                          </div>
-
-                          {/* Receiving Staff Info */}
-                          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 mb-3">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                              Received On Duty By Staff
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
-                                <User className="w-3.5 h-3.5" />
-                              </div>
-                              <div className="text-xs font-bold text-slate-800">
-                                {item.received_by_employee_name}
-                                {item.received_by_employee_code && (
-                                  <span className="text-slate-500 font-mono font-normal ml-1.5">
-                                    ({item.received_by_employee_code})
-                                  </span>
-                                )}
-                                {item.received_by_employee_role && (
-                                  <span className="text-blue-600 font-semibold ml-1.5">
-                                    • {item.received_by_employee_role}
-                                  </span>
-                                )}
-                              </div>
                             </div>
                           </div>
 
@@ -917,9 +893,94 @@ export const Donations: React.FC = () => {
         </div>
       )}
 
+      {/* Dedicated Centered QR Payment Modal */}
+      {isQrModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-slate-100 p-6 flex flex-col items-center text-center relative overflow-hidden">
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsQrModalOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Top Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-extrabold border border-emerald-200 mb-3">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Official Charvik UPI Payment</span>
+            </div>
+
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">
+              Charvik Staffing Welfare
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5 mb-4">
+              Scan with any UPI app to donate directly
+            </p>
+
+            {/* Crisp QR Code Container */}
+            <div className="p-3 bg-white rounded-2xl border-2 border-slate-200 shadow-md">
+              <img
+                src="/charvik-donation-qr.png"
+                alt="Charvik Donation QR Code"
+                className="w-56 h-56 object-contain rounded-xl"
+              />
+            </div>
+
+            {/* Supported Apps */}
+            <div className="flex items-center gap-2 mt-3 text-[10px] font-bold text-slate-600">
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">GPay</span>
+              <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">PhonePe</span>
+              <span className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200">Paytm</span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">BHIM / UPI</span>
+            </div>
+
+            {/* Quick Details with Copy */}
+            <div className="w-full mt-4 space-y-2 text-xs text-left">
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">UPI ID</span>
+                  <span className="font-mono font-bold text-slate-800 text-xs">9505151527@ybl</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy('9505151527@ybl', 'modal-upi')}
+                  className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-blue-600 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  {copiedField === 'modal-upi' ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Account No. (HDFC)</span>
+                  <span className="font-mono font-bold text-slate-800 text-xs">50200095051515</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy('50200095051515', 'modal-account')}
+                  className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-blue-600 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  {copiedField === 'modal-account' ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsQrModalOpen(false)}
+              className="w-full mt-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
+            >
+              Done / Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Lightbox Carousel Modal */}
       {isLightboxOpen && lightboxImages.length > 0 && (
-        <div className="fixed inset-0 z-60 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="absolute top-4 right-4 flex items-center gap-2">
             <span className="text-xs text-white/80 font-bold">
               {lightboxIndex + 1} / {lightboxImages.length}

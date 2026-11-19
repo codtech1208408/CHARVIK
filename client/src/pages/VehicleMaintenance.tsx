@@ -2129,37 +2129,36 @@ export const VehicleMaintenance: React.FC = () => {
           <p className="text-xs text-slate-500 mt-1">All vehicles are healthy and up to date.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filteredVehicles.map((bus, idx) => {
             const isAttention = bus.overdueCount > 0;
             const isDueSoon = bus.dueSoonCount > 0 && bus.overdueCount === 0;
-            const busImgUrl = idx % 5 === 0 ? '/assets/fleet1.jpg' : idx % 5 === 1 ? '/assets/fleet2.jpg' : idx % 5 === 2 ? '/assets/fleet3.jpg' : idx % 5 === 3 ? '/assets/fleet4.jpg' : '/assets/fleet5.jpg';
             const dueServices = (bus.services || []).filter((s) => s.isOverdue || s.isDueSoon);
 
             return (
               <div
                 key={bus.id}
                 onClick={() => handleSelectVehicle(bus)}
-                className={`bg-white rounded-3xl border-2 ${
+                className={`bg-white rounded-2xl border-2 ${
                   isAttention
                     ? 'border-rose-300 hover:border-rose-500 shadow-rose-500/10'
                     : isDueSoon
                     ? 'border-amber-300 hover:border-amber-500 shadow-amber-500/10'
                     : 'border-slate-200/90 hover:border-slate-300'
-                } p-6 shadow-2xs hover:shadow-lg transition-all flex flex-col justify-between cursor-pointer group`}
+                } p-4 sm:p-4.5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group`}
               >
                 <div>
                   {/* Top Header: Reg, Badge, Model */}
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h2 className="text-2xl font-black text-slate-900 tracking-tight font-mono">
+                      <h2 className="text-xl font-black text-slate-900 tracking-tight font-mono">
                         {bus.registration_number}
                       </h2>
-                      <p className="text-sm text-slate-500 font-semibold mt-0.5">{bus.model}</p>
+                      <p className="text-xs text-slate-500 font-semibold mt-0.5">{bus.model}</p>
                     </div>
 
                     <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 ${
                         isAttention
                           ? 'bg-rose-50 text-rose-700 border border-rose-200'
                           : isDueSoon
@@ -2174,48 +2173,43 @@ export const VehicleMaintenance: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Real Bus Photo matching Reference Image 2 */}
-                  <div className="w-full h-40 rounded-2xl overflow-hidden my-3.5 relative shadow-xs border border-slate-100">
-                    <img
-                      src={busImgUrl}
-                      alt={bus.registration_number}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-lg bg-black/60 backdrop-blur-xs text-white text-[11px] font-bold flex items-center gap-1.5">
-                      <Fuel className="w-3.5 h-3.5 text-sky-400" />
+                  {/* Compact Odometer & Fuel Row */}
+                  <div className="mt-3 bg-slate-50/90 rounded-xl p-2.5 flex items-center justify-between border border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                        <Gauge className="w-4 h-4" />
+                      </div>
+                      <div className="flex items-baseline gap-1 font-mono">
+                        <span className="text-lg font-black text-slate-900">
+                          {bus.current_odometer_km.toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-xs font-bold text-slate-400">KM</span>
+                      </div>
+                    </div>
+                    <div className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 text-[11px] font-bold flex items-center gap-1 shadow-2xs">
+                      <Fuel className="w-3 h-3 text-sky-500" />
                       <span>Fuel: {78 - ((idx * 11) % 25)}%</span>
                     </div>
                   </div>
 
-                  {/* Big Odometer Box (Synced with Daily Vehicle Checkup!) */}
-                  <div className="mt-4 bg-[#F8FAFC] rounded-2xl p-4 flex items-center gap-3 border border-slate-100">
-                    <Gauge className="w-6 h-6 text-slate-400 shrink-0" />
-                    <div className="flex items-baseline gap-1.5 font-mono">
-                      <span className="text-2xl font-black text-slate-900">
-                        {bus.current_odometer_km.toLocaleString('en-IN')}
-                      </span>
-                      <span className="text-sm font-bold text-slate-400">KM</span>
-                    </div>
-                  </div>
-
                   {/* Meta: Location and Driver */}
-                  <div className="mt-3.5 flex items-center gap-4 text-xs text-slate-500 truncate">
-                    <span className="flex items-center gap-1.5 truncate">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <div className="mt-2.5 flex items-center gap-3 text-[11px] text-slate-500 truncate">
+                    <span className="flex items-center gap-1 truncate">
+                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
                       <span className="truncate">{bus.parking_location || 'Delhi Depot – Bay 1'}</span>
                     </span>
-                    <span className="flex items-center gap-1.5 truncate">
-                      <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="flex items-center gap-1 truncate">
+                      <User className="w-3 h-3 text-slate-400 shrink-0" />
                       <span className="truncate">{bus.driver_name || 'Sunil Yadav'}</span>
                     </span>
                   </div>
 
                   {/* Services Due Section - ONLY shows services that are Overdue or Due Soon (matching Image 1) */}
                   {dueServices.length > 0 && (
-                    <div className="mt-4 border-t border-slate-100 pt-3.5 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 px-0.5">
+                    <div className="mt-3 border-t border-slate-100 pt-2.5 space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 px-0.5">
                         <span>Services Due</span>
-                        <span className="text-[11px] font-semibold text-rose-600">
+                        <span className="text-[10px] font-semibold text-rose-600">
                           {bus.overdueCount > 0 ? `${bus.overdueCount} Overdue` : ''}
                           {bus.overdueCount > 0 && bus.dueSoonCount > 0 ? ' • ' : ''}
                           {bus.dueSoonCount > 0 ? `${bus.dueSoonCount} Due Soon` : ''}
@@ -2236,19 +2230,19 @@ export const VehicleMaintenance: React.FC = () => {
                         return (
                           <div
                             key={s.key}
-                            className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100"
+                            className="flex items-center justify-between gap-2 py-1 px-2 rounded-lg bg-slate-50 border border-slate-100 text-xs"
                           >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`} />
-                              <span className="text-slate-900 font-bold truncate text-xs" title={s.name}>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotClass}`} />
+                              <span className="text-slate-900 font-bold truncate text-[11px]" title={s.name}>
                                 {s.name}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0 text-right">
-                              <span className="text-slate-500 text-[11px] font-medium font-mono">
+                            <div className="flex items-center gap-1.5 shrink-0 text-right">
+                              <span className="text-slate-500 text-[10px] font-medium font-mono">
                                 {nextDueLabel}
                               </span>
-                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${badgeBg}`}>
+                              <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border ${badgeBg}`}>
                                 {s.status}
                               </span>
                             </div>

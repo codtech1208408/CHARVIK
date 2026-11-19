@@ -73,6 +73,18 @@ export const DonationManagement: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | number | null>(null);
 
+  // Separate Staff Handover Modal State ("Which employee took amount from whom")
+  const [isStaffHandoverModalOpen, setIsStaffHandoverModalOpen] = useState(false);
+  const [handoverData, setHandoverData] = useState({
+    donation_id: '',
+    received_by_employee_id: '',
+    received_by_employee_name: '',
+    received_by_employee_code: '',
+    received_by_employee_role: '',
+    handover_date: new Date().toISOString().split('T')[0],
+    remarks: ''
+  });
+
   // Form State
   const [formData, setFormData] = useState({
     donor_name: '',
@@ -302,7 +314,7 @@ export const DonationManagement: React.FC = () => {
     }));
   };
 
-  // Open modal for new donation
+  // Open modal for new donation (Focuses on Donator Details)
   const handleOpenAddModal = () => {
     setIsEditing(false);
     setEditingId(null);
@@ -311,15 +323,87 @@ export const DonationManagement: React.FC = () => {
       donor_phone: '',
       amount: '',
       donation_date: new Date().toISOString().split('T')[0],
-      received_by_employee_id: employees.length > 0 ? String(employees[0].id) : '',
-      received_by_employee_name: employees.length > 0 ? employees[0].full_name : '',
-      received_by_employee_code: employees.length > 0 ? (employees[0].employee_code || '') : '',
-      received_by_employee_role: employees.length > 0 ? (employees[0].role || 'Staff') : '',
+      received_by_employee_id: '',
+      received_by_employee_name: 'Charvik Central Office',
+      received_by_employee_code: 'HQ',
+      received_by_employee_role: 'Office Staff',
       payment_mode: 'Cash',
       notes: '',
       proof_images: []
     });
     setIsModalOpen(true);
+  };
+
+  // Open separate modal for "Which employee took amount from whom"
+  const handleOpenStaffHandoverModal = (preselectedDonationId?: string | number) => {
+    const targetDonation = preselectedDonationId
+      ? donations.find((d) => String(d.id) === String(preselectedDonationId))
+      : (donations.length > 0 ? donations[0] : null);
+
+    const initialEmp = targetDonation?.received_by_employee_id
+      ? employees.find((e) => String(e.id) === String(targetDonation.received_by_employee_id))
+      : (employees.length > 0 ? employees[0] : null);
+
+    setHandoverData({
+      donation_id: targetDonation ? String(targetDonation.id) : (donations.length > 0 ? String(donations[0].id) : ''),
+      received_by_employee_id: initialEmp ? String(initialEmp.id) : (employees.length > 0 ? String(employees[0].id) : ''),
+      received_by_employee_name: initialEmp ? initialEmp.full_name : (employees.length > 0 ? employees[0].full_name : ''),
+      received_by_employee_code: initialEmp ? (initialEmp.employee_code || '') : (employees.length > 0 ? (employees[0].employee_code || '') : ''),
+      received_by_employee_role: initialEmp ? (initialEmp.role || 'Staff') : (employees.length > 0 ? (employees[0].role || 'Staff') : ''),
+      handover_date: targetDonation ? targetDonation.donation_date : new Date().toISOString().split('T')[0],
+      remarks: targetDonation?.notes || ''
+    });
+    setIsStaffHandoverModalOpen(true);
+  };
+
+  const handleHandoverEmployeeChange = (employeeIdStr: string) => {
+    if (!employeeIdStr) {
+      setHandoverData((prev) => ({
+        ...prev,
+        received_by_employee_id: '',
+        received_by_employee_name: '',
+        received_by_employee_code: '',
+        received_by_employee_role: ''
+      }));
+      return;
+    }
+    const selected = employees.find((emp) => String(emp.id) === String(employeeIdStr));
+    if (selected) {
+      setHandoverData((prev) => ({
+        ...prev,
+        received_by_employee_id: String(selected.id),
+        received_by_employee_name: selected.full_name,
+        received_by_employee_code: selected.employee_code || '',
+        received_by_employee_role: selected.role || 'Staff'
+      }));
+    }
+  };
+
+  const handleSaveStaffHandover = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!handoverData.donation_id) {
+      toastError('Please select which donator contribution to assign.');
+      return;
+    }
+    if (!handoverData.received_by_employee_name) {
+      toastError('Please select which employee took the donated amount.');
+      return;
+    }
+
+    try {
+      await api.updateDonation(handoverData.donation_id, {
+        received_by_employee_id: handoverData.received_by_employee_id ? Number(handoverData.received_by_employee_id) : null,
+        received_by_employee_name: handoverData.received_by_employee_name.trim(),
+        received_by_employee_code: handoverData.received_by_employee_code.trim(),
+        received_by_employee_role: handoverData.received_by_employee_role.trim(),
+        notes: handoverData.remarks ? handoverData.remarks.trim() : undefined
+      });
+      success(`Successfully recorded: ${handoverData.received_by_employee_name} received this donation!`);
+      setIsStaffHandoverModalOpen(false);
+      await loadData();
+    } catch (err: any) {
+      toastError(err.message || 'Failed to update employee handover details');
+    }
   };
 
   // Open modal for editing
@@ -355,10 +439,6 @@ export const DonationManagement: React.FC = () => {
       toastError('Please enter a valid donation amount.');
       return;
     }
-    if (!formData.received_by_employee_name.trim()) {
-      toastError('Please select or specify the receiving employee.');
-      return;
-    }
 
     const payload = {
       donor_name: formData.donor_name.trim(),
@@ -366,9 +446,9 @@ export const DonationManagement: React.FC = () => {
       amount: numAmount,
       donation_date: formData.donation_date,
       received_by_employee_id: formData.received_by_employee_id ? Number(formData.received_by_employee_id) : null,
-      received_by_employee_name: formData.received_by_employee_name.trim(),
-      received_by_employee_code: formData.received_by_employee_code.trim(),
-      received_by_employee_role: formData.received_by_employee_role.trim(),
+      received_by_employee_name: (formData.received_by_employee_name || 'Charvik Central Office').trim(),
+      received_by_employee_code: (formData.received_by_employee_code || 'HQ').trim(),
+      received_by_employee_role: (formData.received_by_employee_role || 'Staff').trim(),
       payment_mode: formData.payment_mode,
       notes: formData.notes.trim(),
       proof_images: formData.proof_images
@@ -659,18 +739,30 @@ export const DonationManagement: React.FC = () => {
         </div>
 
         {/* Right: Action Buttons */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
           <Link
             to="/donations"
             target="_blank"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-2xs"
             title="Open the Public Donations view"
           >
             <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
             <span>Public Website View</span>
           </Link>
 
+          {/* SEPARATE OPTION: Add which employee took amount from whom */}
           <button
+            type="button"
+            onClick={() => handleOpenStaffHandoverModal()}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+            title="Record which registered employee received or collected donation money from a donator"
+          >
+            <UserCheck className="w-4 h-4 stroke-[2.5]" />
+            <span>+ Record Staff Received</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleOpenAddModal}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
           >
@@ -1168,8 +1260,16 @@ export const DonationManagement: React.FC = () => {
                             <User className="w-3.5 h-3.5" />
                           </div>
                           <div>
-                            <div className="font-bold text-slate-800">
-                              {donation.received_by_employee_name}
+                            <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                              <span>{donation.received_by_employee_name}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenStaffHandoverModal(donation.id)}
+                                className="text-[10px] text-blue-600 hover:text-blue-800 font-bold hover:underline cursor-pointer"
+                                title="Change or assign which employee took this amount"
+                              >
+                                (Edit)
+                              </button>
                             </div>
                             <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium">
                               {donation.received_by_employee_code && (
@@ -1392,50 +1492,14 @@ export const DonationManagement: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Which employee took the donated money */}
-                <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Which Employee Took Donated Money? <span className="text-rose-500">*</span>
-                  </label>
-                  <p className="text-[10px] text-slate-500 mb-1.5">
-                    Select a registered employee — their verified Name, Code, and Role will automatically populate.
-                  </p>
-                  <div className="relative">
-                    <select
-                      value={formData.received_by_employee_id}
-                      onChange={(e) => handleEmployeeChange(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-xs font-bold text-slate-800 bg-white"
-                    >
-                      <option value="">-- Choose Registered Staff Member --</option>
-                      {employees.map((emp) => (
-                        <option key={emp.id} value={emp.id}>
-                          {emp.full_name} — {emp.employee_code || 'EMP'} ({emp.role})
-                        </option>
-                      ))}
-                    </select>
+                {/* Note about separate Staff Handover option */}
+                <div className="sm:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <UserCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="text-slate-600 font-medium">
+                      To record which employee took or collected this donation, use the separate <strong>"+ Record Staff Received"</strong> option on the dashboard.
+                    </span>
                   </div>
-
-                  {/* Registered Employee Auto-filled Badge Preview */}
-                  {formData.received_by_employee_name && (
-                    <div className="mt-2 p-2.5 rounded-xl bg-blue-50/70 border border-blue-200/80 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                          {formData.received_by_employee_name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <span className="font-bold text-slate-900 text-xs">
-                            {formData.received_by_employee_name}
-                          </span>
-                          <span className="text-[10px] text-slate-600 ml-1.5 font-medium">
-                            {formData.received_by_employee_code ? `(${formData.received_by_employee_code})` : ''} • {formData.received_by_employee_role}
-                          </span>
-                        </div>
-                      </div>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                        <CheckCircle2 className="w-3 h-3" /> Registered Staff
-                      </span>
-                    </div>
-                  )}
                 </div>
 
                 {/* Payment Mode */}
@@ -1554,6 +1618,194 @@ export const DonationManagement: React.FC = () => {
                   className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer"
                 >
                   {isEditing ? 'Save Changes' : 'Record Donation'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          SEPARATE OPTION MODAL: Which Employee Took Donated Money From Whom
+         ========================================================================= */}
+      {isStaffHandoverModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-gradient-to-r from-emerald-700 via-teal-800 to-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-emerald-300">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black tracking-tight">
+                    Record Staff Receiving & Handover
+                  </h3>
+                  <p className="text-[11px] text-emerald-200">
+                    Record which employee took or collected the donation money from whom
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsStaffHandoverModalOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveStaffHandover} className="p-6 overflow-y-auto space-y-4">
+              {/* Select Donator Contribution (From Whom) */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  1. From Whom? (Select Donator Contribution) <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  required
+                  value={handoverData.donation_id}
+                  onChange={(e) => {
+                    const selId = e.target.value;
+                    const found = donations.find((d) => String(d.id) === String(selId));
+                    setHandoverData((prev) => ({
+                      ...prev,
+                      donation_id: selId,
+                      remarks: found?.notes || prev.remarks
+                    }));
+                  }}
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-bold text-slate-800 bg-white"
+                >
+                  <option value="">-- Choose Donator / Contribution Record --</option>
+                  {donations.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      #DON-{String(d.id).padStart(5, '0')} • {d.donor_name} — ₹{Number(d.amount).toLocaleString('en-IN')} ({d.donation_date})
+                    </option>
+                  ))}
+                </select>
+
+                {/* Donator Card Preview */}
+                {(() => {
+                  const selectedDonation = donations.find((d) => String(d.id) === String(handoverData.donation_id));
+                  if (!selectedDonation) return null;
+                  return (
+                    <div className="mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/90 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                          {selectedDonation.donor_name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900">{selectedDonation.donor_name}</div>
+                          <div className="text-[10px] text-slate-500">
+                            {selectedDonation.donor_phone ? `📞 ${selectedDonation.donor_phone} • ` : ''}
+                            {selectedDonation.payment_mode || 'Cash'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-black text-emerald-600">
+                          ₹{Number(selectedDonation.amount).toLocaleString('en-IN')}
+                        </div>
+                        <span className="text-[10px] text-slate-400">
+                          {selectedDonation.donation_date}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Select Employee Who Took Donated Money */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  2. Which Employee Took The Amount? <span className="text-rose-500">*</span>
+                </label>
+                <p className="text-[10px] text-slate-500 mb-1.5">
+                  Choose the registered driver, captain, helper or staff member who took the donation.
+                </p>
+                <select
+                  required
+                  value={handoverData.received_by_employee_id}
+                  onChange={(e) => handleHandoverEmployeeChange(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-bold text-slate-800 bg-white"
+                >
+                  <option value="">-- Choose Registered Staff Member --</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.full_name} — {emp.employee_code || 'EMP'} ({emp.role})
+                    </option>
+                  ))}
+                </select>
+
+                {/* Employee Preview Badge */}
+                {handoverData.received_by_employee_name && (
+                  <div className="mt-2.5 p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                        {handoverData.received_by_employee_name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900">
+                          {handoverData.received_by_employee_name}
+                        </div>
+                        <div className="text-[10px] text-slate-600 font-medium">
+                          {handoverData.received_by_employee_code ? `Code: ${handoverData.received_by_employee_code} • ` : ''}
+                          Role: {handoverData.received_by_employee_role}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-white px-2.5 py-1 rounded-full border border-emerald-200 shadow-2xs">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Verified Staff
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Receiving / Handover Date */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  3. Handover / Receiving Date
+                </label>
+                <div className="relative">
+                  <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="date"
+                    value={handoverData.handover_date}
+                    onChange={(e) => setHandoverData({ ...handoverData, handover_date: e.target.value })}
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-semibold text-slate-800"
+                  />
+                </div>
+              </div>
+
+              {/* Handover Remarks */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  4. Staff Handover Remarks / Duty Occasion
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Received on duty at Tirupati corridor; handed over to crew for travel expenses..."
+                  value={handoverData.remarks}
+                  onChange={(e) => setHandoverData({ ...handoverData, remarks: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-xs font-normal text-slate-800"
+                />
+              </div>
+
+              {/* Modal Buttons */}
+              <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsStaffHandoverModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                  <span>Save Staff Handover Record</span>
                 </button>
               </div>
             </form>

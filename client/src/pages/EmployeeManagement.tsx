@@ -1132,7 +1132,7 @@ export const EmployeeManagement: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
               {ALL_MODULE_CATEGORIES.map((cat) => {
                 const isChecked = newStaffCategories.includes(cat.name);
                 const CatIcon = cat.icon;
@@ -1221,7 +1221,7 @@ export const EmployeeManagement: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
             {ALL_MODULE_CATEGORIES.map((cat) => {
               const isChecked = editingCategoriesList.includes(cat.name);
               const CatIcon = cat.icon;
