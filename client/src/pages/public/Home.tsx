@@ -114,11 +114,11 @@ export const Home: React.FC = () => {
     },
     {
       id: 5,
-      image: '/assets/home-banner-5.jpg',
+      image: '/assets/home-banner-5.jpg?v=20261119_hd_v2',
       title: 'Employee Safety & Welfare Program - Employee Insurance & Donation Support',
-      bgColor: 'bg-[#002859]',
+      bgColor: 'bg-[#03152F]',
       link: '/donations',
-      objectPosition: 'object-center'
+      fit: 'contain'
     }
   ];
 
@@ -143,25 +143,37 @@ export const Home: React.FC = () => {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Render all 4 banners with smooth crossfade */}
+          {/* Render all 5 banners with smooth crossfade */}
           {heroBanners.map((banner, index) => {
             const isActive = index === currentSlide;
+            const isContain = banner.fit === 'contain';
             return (
               <div
                 key={banner.id}
                 className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
                   isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
-                }`}
+                } ${banner.bgColor || 'bg-slate-950'}`}
               >
                 <Link
                   to={banner.link}
-                  className="block w-full h-full cursor-pointer relative"
+                  className="block w-full h-full cursor-pointer relative flex items-center justify-center overflow-hidden"
                   title={banner.title}
                 >
+                  {/* Ambient background glow for contain mode */}
+                  {isContain && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center blur-2xl scale-110 opacity-30 pointer-events-none"
+                      style={{ backgroundImage: `url(${banner.image})` }}
+                    />
+                  )}
                   <img
                     src={banner.image}
                     alt={banner.title}
-                    className={`w-full h-full object-cover ${banner.objectPosition || 'object-center'} select-none`}
+                    className={`relative z-10 select-none ${
+                      isContain
+                        ? 'max-w-full max-h-full w-auto h-auto object-contain p-2 sm:p-4 pt-3 pb-12 sm:pb-14 drop-shadow-2xl'
+                        : `w-full h-full object-cover ${banner.objectPosition || 'object-center'}`
+                    }`}
                     loading={index === 0 ? 'eager' : 'lazy'}
                   />
                 </Link>
