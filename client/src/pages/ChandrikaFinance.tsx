@@ -1196,8 +1196,7 @@ export const ChandrikaFinance: React.FC = () => {
             <div style="display: flex; align-items: center; gap: 14px;">
               <img src="/chandrika-finance-logo.png" alt="Chandrika Finance" style="height: 55px; width: auto; object-fit: contain; display: block;" onerror="this.src='/chandrika-finance-logo-transparent.png'" />
               <div>
-                <div style="font-size: 16px; font-weight: 900; color: #1e3a8a; letter-spacing: 0.5px;">CHANDRIKA FINANCE</div>
-                <div style="font-size: 10.5px; font-weight: 700; color: #64748b; letter-spacing: 0.3px;">FINANCIAL & MICRO-LENDING SOLUTIONS</div>
+                <div style="font-size: 17px; font-weight: 900; color: #1e3a8a; letter-spacing: 0.5px;">CHANDRIKA FINANCE</div>
               </div>
             </div>
             <div style="text-align: right; font-size: 10.5px; color: #334155; line-height: 1.45;">

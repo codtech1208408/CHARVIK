@@ -37,7 +37,8 @@ import {
   Landmark,
   Coins,
   HandCoins,
-  CalendarPlus
+  CalendarPlus,
+  Star
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
@@ -311,6 +312,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       iconColor: 'text-teal-400',
       activeGradient: 'bg-gradient-to-r from-teal-500 to-emerald-600',
       activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi']
+    },
+    {
+      label: 'Service Partners',
+      route: '/admin/service-partners',
+      icon: Users,
+      iconColor: 'text-orange-400',
+      activeGradient: 'bg-gradient-to-r from-orange-500 to-amber-600',
+      activeRoutes: ['/admin/service-partners']
+    },
+    {
+      label: 'Bus Rating',
+      route: '/admin/bus-rating',
+      icon: Star,
+      iconColor: 'text-yellow-400',
+      activeGradient: 'bg-gradient-to-r from-amber-500 to-yellow-600',
+      activeRoutes: ['/admin/bus-rating']
     },
     {
       label: 'Website Inquiries',

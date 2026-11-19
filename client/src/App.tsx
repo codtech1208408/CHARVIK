@@ -51,6 +51,8 @@ import { SupporterTasks } from './pages/SupporterTasks';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { IncomeExpense } from './pages/IncomeExpense';
+import { ServicePartners } from './pages/ServicePartners';
+import { BusRating } from './pages/BusRating';
 
 export function App() {
   return (
@@ -113,6 +115,8 @@ export function App() {
               <Route path="captain-audit-record" element={<Navigate to="/admin/captain-audit" replace />} />
               <Route path="vyshnavi-travels" element={<VyshnaviTravels />} />
               <Route path="vyshnavi" element={<Navigate to="/admin/vyshnavi-travels" replace />} />
+              <Route path="service-partners" element={<ServicePartners />} />
+              <Route path="bus-rating" element={<BusRating />} />
               <Route path="inquiries" element={<WebsiteInquiries />} />
               <Route path="donations" element={<DonationManagement />} />
               <Route path="donation" element={<Navigate to="/admin/donations" replace />} />

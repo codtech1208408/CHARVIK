@@ -213,6 +213,45 @@ export const AdminLayout: React.FC = () => {
     }
   }, [activeUser, user, setUser, isAdminPortal, isCaptainPortal, isOperatorPortal]);
 
+  // Universal Modal Scroll Lock: Prevents background page from moving/scrolling whenever any modal is open
+  useEffect(() => {
+    const syncScrollLock = () => {
+      const activeModals = document.querySelectorAll(
+        '.fixed.inset-0.z-50, .fixed.inset-0[class*="z-50"], .fixed.inset-0[class*="bg-black"], .fixed.inset-0[class*="bg-slate-900"], [role="dialog"]'
+      );
+      if (activeModals.length > 0) {
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
+        document.documentElement.classList.add('modal-open');
+      } else {
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        document.body.classList.remove('modal-open');
+        document.documentElement.classList.remove('modal-open');
+      }
+    };
+
+    const observer = new MutationObserver(() => {
+      syncScrollLock();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style', 'hidden']
+    });
+
+    return () => {
+      observer.disconnect();
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
+    };
+  }, []);
+
   // 2. NOW SAFELY EXECUTE CONDITIONAL RENDERS & REDIRECTS (AFTER ALL HOOKS)
   const isUserAuthenticated = isAuthenticated || !!activeUser;
 

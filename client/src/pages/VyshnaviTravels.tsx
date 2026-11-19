@@ -742,19 +742,63 @@ export const VyshnaviTravels: React.FC = () => {
               min-height: auto !important;
               box-sizing: border-box !important;
             }
+            .vyshnavi-header-wrap {
+              display: flex !important;
+              align-items: center !important;
+              justify-content: space-between !important;
+              border-bottom: 2.5px solid #1d4ed8 !important;
+              padding-bottom: 10px !important;
+              margin-bottom: 8px !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
+            }
+            .vyshnavi-header-logo,
+            #vyshnavi-printable-letterhead img,
+            #vyshnavi-printable-report img {
+              height: 72px !important;
+              max-height: 75px !important;
+              width: auto !important;
+              max-width: 260px !important;
+              display: block !important;
+              object-fit: contain !important;
+            }
+            .vyshnavi-contact-box {
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: flex-end !important;
+              gap: 5px !important;
+              text-align: right !important;
+            }
+            .vyshnavi-contact-row {
+              display: flex !important;
+              align-items: center !important;
+              gap: 8px !important;
+              font-size: 13px !important;
+              color: #1e3a8a !important;
+              font-weight: 700 !important;
+            }
+            .vyshnavi-icon-pill {
+              display: inline-flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              background: #1d4ed8 !important;
+              border-radius: 50% !important;
+              width: 22px !important;
+              height: 22px !important;
+              color: white !important;
+            }
             table {
               width: 100% !important;
               max-width: 100% !important;
               min-width: 0 !important;
-              table-layout: fixed !important;
+              table-layout: auto !important;
               border-collapse: collapse !important;
               box-sizing: border-box !important;
             }
             th, td {
-              word-break: break-word !important;
-              overflow-wrap: break-word !important;
-              white-space: normal !important;
               box-sizing: border-box !important;
+              padding: 6px 8px !important;
+              font-size: 11.5px !important;
             }
             [class*="min-w-"] {
               min-width: 0 !important;
@@ -767,6 +811,16 @@ export const VyshnaviTravels: React.FC = () => {
                 max-width: 100% !important;
                 width: 100% !important;
                 min-height: auto !important;
+              }
+              .vyshnavi-header-logo,
+              #vyshnavi-printable-letterhead img,
+              #vyshnavi-printable-report img {
+                height: 72px !important;
+                max-height: 75px !important;
+                width: auto !important;
+                max-width: 260px !important;
+                display: block !important;
+                object-fit: contain !important;
               }
             }
           </style>
@@ -1237,19 +1291,63 @@ export const VyshnaviTravels: React.FC = () => {
               min-height: auto !important;
               box-sizing: border-box !important;
             }
+            .vyshnavi-header-wrap {
+              display: flex !important;
+              align-items: center !important;
+              justify-content: space-between !important;
+              border-bottom: 2.5px solid #1d4ed8 !important;
+              padding-bottom: 10px !important;
+              margin-bottom: 8px !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
+            }
+            .vyshnavi-header-logo,
+            #vyshnavi-printable-letterhead img,
+            #vyshnavi-printable-report img {
+              height: 72px !important;
+              max-height: 75px !important;
+              width: auto !important;
+              max-width: 260px !important;
+              display: block !important;
+              object-fit: contain !important;
+            }
+            .vyshnavi-contact-box {
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: flex-end !important;
+              gap: 5px !important;
+              text-align: right !important;
+            }
+            .vyshnavi-contact-row {
+              display: flex !important;
+              align-items: center !important;
+              gap: 8px !important;
+              font-size: 13px !important;
+              color: #1e3a8a !important;
+              font-weight: 700 !important;
+            }
+            .vyshnavi-icon-pill {
+              display: inline-flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              background: #1d4ed8 !important;
+              border-radius: 50% !important;
+              width: 22px !important;
+              height: 22px !important;
+              color: white !important;
+            }
             table {
               width: 100% !important;
               max-width: 100% !important;
               min-width: 0 !important;
-              table-layout: fixed !important;
+              table-layout: auto !important;
               border-collapse: collapse !important;
               box-sizing: border-box !important;
             }
             th, td {
-              word-break: break-word !important;
-              overflow-wrap: break-word !important;
-              white-space: normal !important;
               box-sizing: border-box !important;
+              padding: 6px 8px !important;
+              font-size: 11px !important;
             }
             [class*="min-w-"] {
               min-width: 0 !important;
@@ -1262,6 +1360,16 @@ export const VyshnaviTravels: React.FC = () => {
                 max-width: 100% !important;
                 width: 100% !important;
                 min-height: auto !important;
+              }
+              .vyshnavi-header-logo,
+              #vyshnavi-printable-letterhead img,
+              #vyshnavi-printable-report img {
+                height: 72px !important;
+                max-height: 75px !important;
+                width: auto !important;
+                max-width: 260px !important;
+                display: block !important;
+                object-fit: contain !important;
               }
             }
           </style>
@@ -3144,28 +3252,29 @@ export const VyshnaviTravels: React.FC = () => {
                 {/* 1. Official Letterhead Header */}
                 <div>
                   {/* Logo + Contact Info row */}
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'2px solid #1d4ed8', paddingBottom:'10px', marginBottom:'4px' }}>
+                  <div className="vyshnavi-header-wrap" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'2px solid #1d4ed8', paddingBottom:'10px', marginBottom:'4px' }}>
                     <img
                       src="/vyshnavi-letterhead-header-clean.png"
                       alt="Vyshnavi Travels"
-                      style={{ height:'90px', width:'auto', display:'block', objectFit:'contain' }}
+                      className="vyshnavi-header-logo"
+                      style={{ height:'72px', maxHeight:'75px', width:'auto', maxWidth:'260px', display:'block', objectFit:'contain' }}
                     />
-                    <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'6px', textAlign:'right' }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                    <div className="vyshnavi-contact-box" style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'6px', textAlign:'right' }}>
+                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
                         <span>+91 9000202241</span>
-                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
                         </span>
                       </div>
-                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
                         <span>vyshnavitravels@yahoo.com</span>
-                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
                         </span>
                       </div>
-                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
                         <span>Hyderabad, Telangana</span>
-                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                         </span>
                       </div>
@@ -3638,28 +3747,29 @@ export const VyshnaviTravels: React.FC = () => {
               >
                 <div>
                   {/* Logo + Contact Info row */}
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'2px solid #1d4ed8', paddingBottom:'10px', marginBottom:'4px' }}>
+                  <div className="vyshnavi-header-wrap" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'2px solid #1d4ed8', paddingBottom:'10px', marginBottom:'4px' }}>
                     <img
                       src="/vyshnavi-letterhead-header-clean.png"
                       alt="Vyshnavi Travels"
-                      style={{ height:'90px', width:'auto', display:'block', objectFit:'contain' }}
+                      className="vyshnavi-header-logo"
+                      style={{ height:'72px', maxHeight:'75px', width:'auto', maxWidth:'260px', display:'block', objectFit:'contain' }}
                     />
-                    <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'6px', textAlign:'right' }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                    <div className="vyshnavi-contact-box" style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'6px', textAlign:'right' }}>
+                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
                         <span>+91 9000202241</span>
-                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
                         </span>
                       </div>
-                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
                         <span>vyshnavitravels@yahoo.com</span>
-                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
                         </span>
                       </div>
-                      <div style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
                         <span>Hyderabad, Telangana</span>
-                        <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
+                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                         </span>
                       </div>

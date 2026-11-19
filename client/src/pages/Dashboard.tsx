@@ -39,7 +39,9 @@ import {
   Fuel,
   Landmark,
   Banknote,
-  HeartHandshake
+  HeartHandshake,
+  Star,
+  Zap
 } from 'lucide-react';
 import { StatCard } from '../components/common/StatCard';
 import { Modal } from '../components/common/Modal';
@@ -640,27 +642,41 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 shrink-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 shrink-0">
+            <button
+              onClick={() => navigate('/admin/service-partners')}
+              className="px-3.5 py-2 bg-amber-500/90 hover:bg-amber-500 border border-white/30 text-white rounded-xl text-xs font-black backdrop-blur-md transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Users className="w-3.5 h-3.5 text-amber-200" />
+              <span>Service Partners</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/bus-rating')}
+              className="px-3.5 py-2 bg-yellow-500/90 hover:bg-yellow-500 border border-white/30 text-white rounded-xl text-xs font-black backdrop-blur-md transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Star className="w-3.5 h-3.5 text-yellow-200 fill-yellow-200" />
+              <span>Bus Rating</span>
+            </button>
             <button
               onClick={() => navigate('/admin/vehicle-maintenance')}
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+              className="px-3.5 py-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <Wrench className="w-4 h-4 text-sky-200" />
-              <span>Fleet Maintenance</span>
+              <Wrench className="w-3.5 h-3.5 text-sky-200" />
+              <span>Fleet Maint.</span>
             </button>
             <button
               onClick={() => navigate('/admin/donations')}
-              className="px-4 py-2 bg-rose-500/80 hover:bg-rose-500 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+              className="px-3.5 py-2 bg-rose-500/80 hover:bg-rose-500 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <HeartHandshake className="w-4 h-4 text-rose-100" />
-              <span>Donations & Welfare</span>
+              <HeartHandshake className="w-3.5 h-3.5 text-rose-100" />
+              <span>Donations</span>
             </button>
             <button
               onClick={() => navigate('/admin/vyshnavi-travels')}
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+              className="px-3.5 py-2 bg-teal-600/80 hover:bg-teal-600 border border-white/30 text-white rounded-xl text-xs font-bold backdrop-blur-md transition-all shadow-xs flex items-center gap-1.5 cursor-pointer col-span-2 sm:col-span-1 lg:col-span-2"
             >
-              <FileText className="w-4 h-4 text-emerald-200" />
-              <span>Corporate Portal</span>
+              <FileText className="w-3.5 h-3.5 text-teal-200" />
+              <span>Vyshnavi Travels Portal</span>
             </button>
           </div>
         </div>
@@ -1030,6 +1046,89 @@ export const Dashboard: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-950/70 via-transparent to-transparent flex flex-col justify-end p-3.5 text-white">
               <span className="text-[10px] font-black uppercase tracking-wider text-sky-300">Express Transit Fleet</span>
               <span className="text-sm font-extrabold drop-shadow-md">Active Highway Intercity Operations</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          3. SERVICE PARTNERS DIRECTORY & BUS OPERATOR RATINGS DUAL WIDGET SECTION
+         ========================================================================= */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Service Partner Directory Quick Access Widget */}
+        <div
+          onClick={() => navigate('/admin/service-partners')}
+          className="bg-gradient-to-r from-[#032B69] via-[#004B9E] to-[#0284c7] rounded-3xl p-5 text-white shadow-md hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden flex flex-col justify-between"
+        >
+          <div className="relative z-10 flex items-start justify-between">
+            <div className="space-y-1">
+              <span className="inline-block px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-black uppercase tracking-wider">
+                Fleet Maintenance Network
+              </span>
+              <h3 className="text-xl font-black text-white tracking-tight mt-1 flex items-center gap-2">
+                <span>Service Partner Directory</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </h3>
+              <p className="text-xs text-blue-100 font-medium">
+                Mechanical &bull; Electrical &bull; AC & HVAC workshop contact database across South & West India
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-amber-300 shadow-inner shrink-0 group-hover:scale-105 transition-transform">
+              <Wrench className="w-6 h-6" />
+            </div>
+          </div>
+
+          <div className="relative z-10 grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/20 text-center">
+            <div className="bg-white/10 rounded-xl p-2 backdrop-blur-xs">
+              <div className="text-[10px] font-bold text-blue-200">Mechanical</div>
+              <div className="text-sm font-black text-white mt-0.5">Active</div>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2 backdrop-blur-xs">
+              <div className="text-[10px] font-bold text-amber-200">Electrical</div>
+              <div className="text-sm font-black text-white mt-0.5">Active</div>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2 backdrop-blur-xs">
+              <div className="text-[10px] font-bold text-purple-200">AC / HVAC</div>
+              <div className="text-sm font-black text-white mt-0.5">Active</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bus Operator Rating & Feedback Quick Access Widget */}
+        <div
+          onClick={() => navigate('/admin/bus-rating')}
+          className="bg-gradient-to-r from-[#142B4A] via-[#1E3A8A] to-[#2563EB] rounded-3xl p-5 text-white shadow-md hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden flex flex-col justify-between"
+        >
+          <div className="relative z-10 flex items-start justify-between">
+            <div className="space-y-1">
+              <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-400 text-slate-900 text-[10px] font-black uppercase tracking-wider">
+                Passenger Satisfaction
+              </span>
+              <h3 className="text-xl font-black text-white tracking-tight mt-1 flex items-center gap-2">
+                <span>Bus Operator Rating & Feedback</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </h3>
+              <p className="text-xs text-blue-100 font-medium">
+                Customer traveling feedback, operator benchmark scores, complaints tracking & agent verifications
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-yellow-300 shadow-inner shrink-0 group-hover:scale-105 transition-transform">
+              <Star className="w-6 h-6 fill-yellow-300" />
+            </div>
+          </div>
+
+          <div className="relative z-10 grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/20 text-center">
+            <div className="bg-white/10 rounded-xl p-2 backdrop-blur-xs">
+              <div className="text-[10px] font-bold text-blue-200">Total Ratings</div>
+              <div className="text-sm font-black text-white mt-0.5">256+</div>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2 backdrop-blur-xs">
+              <div className="text-[10px] font-bold text-emerald-200">Avg. Score</div>
+              <div className="text-sm font-black text-white mt-0.5">4.3 / 5 ★</div>
+            </div>
+            <div className="bg-white/10 rounded-xl p-2 backdrop-blur-xs">
+              <div className="text-[10px] font-bold text-cyan-200">Operators</div>
+              <div className="text-sm font-black text-white mt-0.5">12 Fleets</div>
             </div>
           </div>
         </div>

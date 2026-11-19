@@ -298,13 +298,34 @@
     min-width: 0 !important;
   }
 
-  .printable-sheet img,
-  .print-body img,
-  img {
+  /* Only stretch explicit full-width print banner images */
+  .printable-full-banner-img,
+  img.print-full-width {
     width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
     display: block !important;
+  }
+
+  /* Prevent logo stretching in printouts */
+  .vyshnavi-header-logo,
+  img[src*="vyshnavi"],
+  img[src*="chandrika"],
+  .charvik-brand-logo,
+  img[src*="logo-brand"],
+  img[src*="logo-navbar"] {
+    width: auto !important;
+    max-width: 280px !important;
+    height: auto !important;
+    max-height: 90px !important;
+    display: block !important;
+  }
+
+  /* Prevent body and document scroll when modal is open */
+  body.modal-open,
+  html.modal-open {
+    overflow: hidden !important;
+    height: 100% !important;
   }
 
   /* Hide scrollbars */
