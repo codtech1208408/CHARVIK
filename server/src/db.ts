@@ -403,6 +403,7 @@ export function initDatabase() {
     CREATE TABLE IF NOT EXISTS donations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       donor_name TEXT NOT NULL,
+      donor_phone TEXT,
       amount REAL NOT NULL,
       donation_date DATE NOT NULL,
       received_by_employee_id INTEGER REFERENCES employees(id),
@@ -438,6 +439,12 @@ export function initDatabase() {
 
   try {
     db.exec('ALTER TABLE buses ADD COLUMN assigned_captain_id INTEGER;');
+  } catch (e) {
+    // Column already exists
+  }
+
+  try {
+    db.exec('ALTER TABLE donations ADD COLUMN donor_phone TEXT;');
   } catch (e) {
     // Column already exists
   }

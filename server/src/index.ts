@@ -5328,6 +5328,7 @@ app.post('/api/donations', (req: Request, res: Response) => {
   try {
     const {
       donor_name,
+      donor_phone,
       amount,
       donation_date,
       received_by_employee_id,
@@ -5360,14 +5361,15 @@ app.post('/api/donations', (req: Request, res: Response) => {
 
     const stmt = db.prepare(`
       INSERT INTO donations (
-        donor_name, amount, donation_date, received_by_employee_id,
+        donor_name, donor_phone, amount, donation_date, received_by_employee_id,
         received_by_employee_name, received_by_employee_code, received_by_employee_role,
         payment_mode, notes, proof_images
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
       donor_name.trim(),
+      donor_phone ? donor_phone.trim() : '',
       Number(amount),
       donation_date || new Date().toISOString().split('T')[0],
       received_by_employee_id || null,
@@ -5396,6 +5398,7 @@ app.put('/api/donations/:id', (req: Request, res: Response) => {
     const { id } = req.params;
     const {
       donor_name,
+      donor_phone,
       amount,
       donation_date,
       received_by_employee_id,
@@ -5425,6 +5428,7 @@ app.put('/api/donations/:id', (req: Request, res: Response) => {
     const stmt = db.prepare(`
       UPDATE donations SET
         donor_name = COALESCE(?, donor_name),
+        donor_phone = COALESCE(?, donor_phone),
         amount = COALESCE(?, amount),
         donation_date = COALESCE(?, donation_date),
         received_by_employee_id = COALESCE(?, received_by_employee_id),
@@ -5440,6 +5444,7 @@ app.put('/api/donations/:id', (req: Request, res: Response) => {
 
     stmt.run(
       donor_name ? donor_name.trim() : null,
+      donor_phone !== undefined ? donor_phone.trim() : null,
       amount !== undefined ? Number(amount) : null,
       donation_date || null,
       received_by_employee_id || null,

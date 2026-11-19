@@ -8,6 +8,7 @@ import {
   IndianRupee,
   User,
   Users,
+  Phone,
   Image as ImageIcon,
   Trash2,
   Edit2,
@@ -41,6 +42,7 @@ import { exportTableToExcel } from '../utils/exportToExcel';
 export interface DonationRecord {
   id: string | number;
   donor_name: string;
+  donor_phone?: string;
   amount: number;
   donation_date: string;
   received_by_employee_id?: number | string | null;
@@ -74,6 +76,7 @@ export const DonationManagement: React.FC = () => {
   // Form State
   const [formData, setFormData] = useState({
     donor_name: '',
+    donor_phone: '',
     amount: '',
     donation_date: new Date().toISOString().split('T')[0],
     received_by_employee_id: '',
@@ -131,6 +134,7 @@ export const DonationManagement: React.FC = () => {
     return donations.filter((item) => {
       const matchesSearch =
         item.donor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.donor_phone && item.donor_phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
         item.received_by_employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.received_by_employee_code && item.received_by_employee_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (item.notes && item.notes.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -304,6 +308,7 @@ export const DonationManagement: React.FC = () => {
     setEditingId(null);
     setFormData({
       donor_name: '',
+      donor_phone: '',
       amount: '',
       donation_date: new Date().toISOString().split('T')[0],
       received_by_employee_id: employees.length > 0 ? String(employees[0].id) : '',
@@ -323,6 +328,7 @@ export const DonationManagement: React.FC = () => {
     setEditingId(donation.id);
     setFormData({
       donor_name: donation.donor_name,
+      donor_phone: donation.donor_phone || '',
       amount: String(donation.amount),
       donation_date: donation.donation_date,
       received_by_employee_id: donation.received_by_employee_id ? String(donation.received_by_employee_id) : '',
@@ -356,6 +362,7 @@ export const DonationManagement: React.FC = () => {
 
     const payload = {
       donor_name: formData.donor_name.trim(),
+      donor_phone: formData.donor_phone.trim(),
       amount: numAmount,
       donation_date: formData.donation_date,
       received_by_employee_id: formData.received_by_employee_id ? Number(formData.received_by_employee_id) : null,
@@ -430,6 +437,11 @@ export const DonationManagement: React.FC = () => {
               <td style="padding: 8px 0; color: #64748b;">Donator Name:</td>
               <td style="padding: 8px 0; font-weight: bold; text-align: right; font-size: 14px; color: #072346;">${donation.donor_name}</td>
             </tr>
+            ${donation.donor_phone ? `
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Donator Contact:</td>
+              <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #0f172a;">${donation.donor_phone}</td>
+            </tr>` : ''}
             <tr>
               <td style="padding: 8px 0; color: #64748b;">Received By Staff:</td>
               <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #0f172a;">
@@ -495,7 +507,10 @@ export const DonationManagement: React.FC = () => {
     const rowsHtml = donations.map((d) => `
       <tr style="border-bottom: 1px solid #e2e8f0; font-size: 11px;">
         <td style="padding: 10px; font-family: monospace; font-weight: bold; color: #1e293b;">#DON-${String(d.id).padStart(5, '0')}</td>
-        <td style="padding: 10px; font-weight: bold; color: #0f172a;">${d.donor_name}</td>
+        <td style="padding: 10px; font-weight: bold; color: #0f172a;">
+          ${d.donor_name}
+          ${d.donor_phone ? `<div style="font-size: 10px; color: #059669; font-weight: normal; margin-top: 2px;">📞 ${d.donor_phone}</div>` : ''}
+        </td>
         <td style="padding: 10px; color: #475569;">${d.notes || '—'}</td>
         <td style="padding: 10px; font-weight: 900; color: #047857; text-align: right;">₹${Number(d.amount).toLocaleString('en-IN')}</td>
         <td style="padding: 10px; color: #64748b;">${new Date(d.donation_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
@@ -559,6 +574,7 @@ export const DonationManagement: React.FC = () => {
       'S.No',
       'Receipt ID',
       'Donor Name',
+      'Donator Number',
       'Amount (Rs)',
       'Date',
       'Received By Staff',
@@ -572,6 +588,7 @@ export const DonationManagement: React.FC = () => {
       idx + 1,
       `#DON-${String(d.id).padStart(5, '0')}`,
       d.donor_name || '—',
+      d.donor_phone || '—',
       Number(d.amount) || 0,
       d.donation_date || '—',
       d.received_by_employee_name || '—',
@@ -596,6 +613,7 @@ export const DonationManagement: React.FC = () => {
       ['Receipt Number', `#DON-${String(donation.id).padStart(5, '0')}`],
       ['Date', donation.donation_date],
       ['Donor Name', donation.donor_name],
+      ['Donator Number', donation.donor_phone || '—'],
       ['Amount (Rs)', `₹ ${Number(donation.amount).toLocaleString('en-IN')}`],
       ['Payment Mode', donation.payment_mode || 'Cash'],
       ['Received By Staff', `${donation.received_by_employee_name || '—'} (${donation.received_by_employee_code || '—'})`],
@@ -1108,6 +1126,16 @@ export const DonationManagement: React.FC = () => {
                             <div className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                               {donation.donor_name}
                             </div>
+                            {donation.donor_phone && (
+                              <a
+                                href={`tel:${donation.donor_phone}`}
+                                className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-semibold hover:underline mt-0.5"
+                                title="Click to call donator"
+                              >
+                                <Phone className="w-3 h-3 text-emerald-500" />
+                                <span>{donation.donor_phone}</span>
+                              </a>
+                            )}
                             {donation.notes && (
                               <div className="text-[11px] text-slate-400 truncate max-w-xs" title={donation.notes}>
                                 {donation.notes}
@@ -1293,7 +1321,7 @@ export const DonationManagement: React.FC = () => {
             <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Donator Name */}
-                <div className="sm:col-span-2">
+                <div>
                   <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                     Donator Name <span className="text-rose-500">*</span>
                   </label>
@@ -1305,6 +1333,23 @@ export const DonationManagement: React.FC = () => {
                       placeholder="e.g. Srikanth Reddy / Vyshnavi Trust"
                       value={formData.donor_name}
                       onChange={(e) => setFormData({ ...formData, donor_name: e.target.value })}
+                      className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-xs font-semibold text-slate-800"
+                    />
+                  </div>
+                </div>
+
+                {/* Donator Number */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Donator Number <span className="text-slate-400 font-normal">(Mobile)</span>
+                  </label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="tel"
+                      placeholder="e.g. +91 98765 43210"
+                      value={formData.donor_phone}
+                      onChange={(e) => setFormData({ ...formData, donor_phone: e.target.value })}
                       className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-xs font-semibold text-slate-800"
                     />
                   </div>
@@ -1587,6 +1632,15 @@ export const DonationManagement: React.FC = () => {
                 <div className="p-3 rounded-xl border border-slate-200">
                   <div className="text-[10px] font-bold text-slate-500 uppercase">Donator</div>
                   <div className="font-bold text-slate-900 text-xs mt-0.5">{viewingDonation.donor_name}</div>
+                  {viewingDonation.donor_phone && (
+                    <a
+                      href={`tel:${viewingDonation.donor_phone}`}
+                      className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-semibold mt-1 hover:underline"
+                    >
+                      <Phone className="w-3 h-3 text-emerald-500" />
+                      <span>{viewingDonation.donor_phone}</span>
+                    </a>
+                  )}
                 </div>
 
                 <div className="p-3 rounded-xl border border-slate-200">
