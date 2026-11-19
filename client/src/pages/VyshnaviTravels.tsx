@@ -183,6 +183,7 @@ export const VyshnaviTravels: React.FC = () => {
   // Printout Report State (for full tab statement printing)
   const [isPrintReportModalOpen, setIsPrintReportModalOpen] = useState(false);
   const [reportPrintType, setReportPrintType] = useState<'records' | 'transactions'>('records');
+  const [reportOrientation, setReportOrientation] = useState<'landscape' | 'portrait'>('landscape');
 
   // Record Form State
   const [recordForm, setRecordForm] = useState<{
@@ -707,58 +708,47 @@ export const VyshnaviTravels: React.FC = () => {
           <style>
             @page {
               size: A4 portrait;
-              margin: 5mm 6mm;
+              margin: 6mm 8mm;
             }
-            * { box-sizing: border-box !important; }
+            * {
+              box-sizing: border-box !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
             html, body {
               margin: 0 !important;
-              padding: 2px !important;
+              padding: 0 !important;
               background: #ffffff !important;
               color: #0f172a !important;
               width: 100% !important;
               max-width: 100% !important;
-              min-width: 0 !important;
-              overflow: visible !important;
               font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
-            #isolated-letterhead-wrap {
+            #isolated-letterhead-wrap, #vyshnavi-printable-letterhead {
               width: 100% !important;
               max-width: 100% !important;
-              min-width: 0 !important;
-              margin: 0 auto !important;
-              padding: 0 !important;
               background: #ffffff !important;
-              box-sizing: border-box !important;
-            }
-            #vyshnavi-printable-letterhead {
-              box-shadow: none !important;
+              padding: 0 !important;
+              margin: 0 !important;
               border: none !important;
-              padding: 2mm 3mm !important;
-              max-width: 100% !important;
-              width: 100% !important;
-              min-width: 0 !important;
-              min-height: auto !important;
-              box-sizing: border-box !important;
+              box-shadow: none !important;
             }
             .vyshnavi-header-wrap {
               display: flex !important;
               align-items: center !important;
               justify-content: space-between !important;
               border-bottom: 2.5px solid #1d4ed8 !important;
-              padding-bottom: 10px !important;
+              padding-bottom: 8px !important;
               margin-bottom: 8px !important;
               width: 100% !important;
-              box-sizing: border-box !important;
             }
             .vyshnavi-header-logo,
-            #vyshnavi-printable-letterhead img,
-            #vyshnavi-printable-report img {
-              height: 72px !important;
-              max-height: 75px !important;
+            #vyshnavi-printable-letterhead img {
+              height: 64px !important;
+              max-height: 70px !important;
               width: auto !important;
-              max-width: 260px !important;
               display: block !important;
               object-fit: contain !important;
             }
@@ -766,14 +756,14 @@ export const VyshnaviTravels: React.FC = () => {
               display: flex !important;
               flex-direction: column !important;
               align-items: flex-end !important;
-              gap: 5px !important;
+              gap: 4px !important;
               text-align: right !important;
             }
             .vyshnavi-contact-row {
               display: flex !important;
               align-items: center !important;
-              gap: 8px !important;
-              font-size: 13px !important;
+              gap: 6px !important;
+              font-size: 11px !important;
               color: #1e3a8a !important;
               font-weight: 700 !important;
             }
@@ -783,22 +773,45 @@ export const VyshnaviTravels: React.FC = () => {
               justify-content: center !important;
               background: #1d4ed8 !important;
               border-radius: 50% !important;
-              width: 22px !important;
-              height: 22px !important;
+              width: 18px !important;
+              height: 18px !important;
               color: white !important;
             }
             table {
               width: 100% !important;
-              max-width: 100% !important;
-              min-width: 0 !important;
-              table-layout: auto !important;
               border-collapse: collapse !important;
-              box-sizing: border-box !important;
+              margin: 8px 0 !important;
+              font-size: 10px !important;
+              background: #ffffff !important;
+              border: 1.5px solid #0f2b48 !important;
             }
-            th, td {
-              box-sizing: border-box !important;
-              padding: 6px 8px !important;
-              font-size: 11.5px !important;
+            thead tr, tr.bg-slate-800 {
+              background-color: #0B2545 !important;
+              color: #ffffff !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            th {
+              background-color: #0B2545 !important;
+              color: #ffffff !important;
+              font-weight: 800 !important;
+              text-transform: uppercase !important;
+              font-size: 9.5px !important;
+              padding: 6px 5px !important;
+              border: 1px solid #1E3A5F !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            td {
+              padding: 6px 5px !important;
+              border: 1px solid #cbd5e1 !important;
+              color: #0f172a !important;
+              font-size: 9.5px !important;
+            }
+            tfoot tr {
+              background-color: #e2e8f0 !important;
+              font-weight: 900 !important;
+              border-top: 2px solid #0B2545 !important;
             }
             [class*="min-w-"] {
               min-width: 0 !important;
@@ -1241,6 +1254,7 @@ export const VyshnaviTravels: React.FC = () => {
       .map((el) => el.outerHTML)
       .join('\n');
 
+    const isLandscape = reportOrientation === 'landscape';
     const reportTitle = reportPrintType === 'records'
       ? 'Vyshnavi Travels - Billing & Service Records Statement'
       : 'Vyshnavi Travels - Income & Expense Ledger Statement';
@@ -1255,59 +1269,48 @@ export const VyshnaviTravels: React.FC = () => {
           ${styles}
           <style>
             @page {
-              size: A4 landscape;
-              margin: 5mm 6mm;
+              size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'};
+              margin: 6mm 8mm;
             }
-            * { box-sizing: border-box !important; }
+            * {
+              box-sizing: border-box !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
             html, body {
               margin: 0 !important;
-              padding: 2px !important;
+              padding: 0 !important;
               background: #ffffff !important;
               color: #0f172a !important;
               width: 100% !important;
               max-width: 100% !important;
-              min-width: 0 !important;
-              overflow: visible !important;
               font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
-            #isolated-report-wrap {
+            #isolated-report-wrap, #vyshnavi-printable-report {
               width: 100% !important;
               max-width: 100% !important;
-              min-width: 0 !important;
-              margin: 0 auto !important;
-              padding: 0 !important;
               background: #ffffff !important;
-              box-sizing: border-box !important;
-            }
-            #vyshnavi-printable-report {
-              box-shadow: none !important;
+              padding: 0 !important;
+              margin: 0 !important;
               border: none !important;
-              padding: 2mm 3mm !important;
-              max-width: 100% !important;
-              width: 100% !important;
-              min-width: 0 !important;
-              min-height: auto !important;
-              box-sizing: border-box !important;
+              box-shadow: none !important;
             }
             .vyshnavi-header-wrap {
               display: flex !important;
               align-items: center !important;
               justify-content: space-between !important;
               border-bottom: 2.5px solid #1d4ed8 !important;
-              padding-bottom: 10px !important;
+              padding-bottom: 8px !important;
               margin-bottom: 8px !important;
               width: 100% !important;
-              box-sizing: border-box !important;
             }
             .vyshnavi-header-logo,
-            #vyshnavi-printable-letterhead img,
             #vyshnavi-printable-report img {
-              height: 72px !important;
-              max-height: 75px !important;
+              height: 64px !important;
+              max-height: 70px !important;
               width: auto !important;
-              max-width: 260px !important;
               display: block !important;
               object-fit: contain !important;
             }
@@ -1315,14 +1318,14 @@ export const VyshnaviTravels: React.FC = () => {
               display: flex !important;
               flex-direction: column !important;
               align-items: flex-end !important;
-              gap: 5px !important;
+              gap: 4px !important;
               text-align: right !important;
             }
             .vyshnavi-contact-row {
               display: flex !important;
               align-items: center !important;
-              gap: 8px !important;
-              font-size: 13px !important;
+              gap: 6px !important;
+              font-size: 11px !important;
               color: #1e3a8a !important;
               font-weight: 700 !important;
             }
@@ -1332,45 +1335,157 @@ export const VyshnaviTravels: React.FC = () => {
               justify-content: center !important;
               background: #1d4ed8 !important;
               border-radius: 50% !important;
-              width: 22px !important;
-              height: 22px !important;
+              width: 18px !important;
+              height: 18px !important;
               color: white !important;
             }
+
+            /* Statement Title */
+            .vyshnavi-title-banner {
+              text-align: center !important;
+              border-bottom: 2px solid #0f172a !important;
+              padding-bottom: 6px !important;
+              margin: 10px 0 12px !important;
+            }
+            .vyshnavi-title-banner h2 {
+              font-size: 14px !important;
+              font-weight: 900 !important;
+              letter-spacing: 0.5px !important;
+              color: #0f172a !important;
+              text-transform: uppercase !important;
+              margin: 0 !important;
+            }
+
+            /* Table Styling - FULLY BORDERED, PROFESSIONAL CORPORATE STATEMENT */
             table {
               width: 100% !important;
               max-width: 100% !important;
-              min-width: 0 !important;
-              table-layout: auto !important;
               border-collapse: collapse !important;
+              margin: 10px 0 !important;
+              font-size: ${isLandscape ? '11px' : '9.5px'} !important;
+              background: #ffffff !important;
+              border: 1.5px solid #0f2b48 !important;
+            }
+            thead tr, tr.bg-slate-800 {
+              background-color: #0B2545 !important;
+              color: #ffffff !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            th {
+              background-color: #0B2545 !important;
+              color: #ffffff !important;
+              font-weight: 800 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.3px !important;
+              font-size: ${isLandscape ? '10px' : '8.5px'} !important;
+              padding: 8px 6px !important;
+              border: 1px solid #1E3A5F !important;
+              text-align: left !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            th.text-center, td.text-center {
+              text-align: center !important;
+            }
+            th.text-right, td.text-right {
+              text-align: right !important;
+            }
+            td {
+              padding: 6px 5px !important;
+              border: 1px solid #cbd5e1 !important;
+              color: #0f172a !important;
+              font-size: ${isLandscape ? '10.5px' : '9px'} !important;
+              vertical-align: middle !important;
               box-sizing: border-box !important;
             }
-            th, td {
-              box-sizing: border-box !important;
-              padding: 6px 8px !important;
+            tbody tr:nth-child(even), tr.bg-slate-50\\/60 {
+              background-color: #f8fafc !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            tfoot tr, tr.bg-slate-100 {
+              background-color: #e2e8f0 !important;
+              font-weight: 900 !important;
+              border-top: 2.5px solid #0B2545 !important;
+              border-bottom: 2px solid #0B2545 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            tfoot td {
+              padding: 8px 6px !important;
+              border: 1px solid #cbd5e1 !important;
+              font-size: ${isLandscape ? '11px' : '9.5px'} !important;
+              font-weight: 900 !important;
+              color: #0f172a !important;
+            }
+            .text-center { text-align: center !important; }
+            .text-right { text-align: right !important; }
+            .font-bold { font-weight: bold !important; }
+            .font-black { font-weight: 900 !important; }
+            .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important; }
+            .text-emerald-700 { color: #047857 !important; }
+            .text-rose-700 { color: #b91c1c !important; }
+            .text-slate-900 { color: #0f172a !important; }
+            .text-slate-800 { color: #1e293b !important; }
+            .text-slate-600 { color: #475569 !important; }
+            .text-slate-500 { color: #64748b !important; }
+
+            /* Bank Details Strip */
+            .vyshnavi-bank-strip,
+            div.bg-slate-50.p-3 {
+              margin-top: 14px !important;
+              background-color: #eff6ff !important;
+              border: 1.5px solid #3b82f6 !important;
+              border-radius: 8px !important;
+              padding: 10px 14px !important;
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: center !important;
               font-size: 11px !important;
+              color: #1e3a8a !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
-            [class*="min-w-"] {
-              min-width: 0 !important;
+            .vyshnavi-bank-strip strong {
+              color: #0f172a !important;
+              font-weight: 800 !important;
             }
-            @media print {
-              #vyshnavi-printable-report {
-                box-shadow: none !important;
-                border: none !important;
-                padding: 0 !important;
-                max-width: 100% !important;
-                width: 100% !important;
-                min-height: auto !important;
-              }
-              .vyshnavi-header-logo,
-              #vyshnavi-printable-letterhead img,
-              #vyshnavi-printable-report img {
-                height: 72px !important;
-                max-height: 75px !important;
-                width: auto !important;
-                max-width: 260px !important;
-                display: block !important;
-                object-fit: contain !important;
-              }
+
+            /* Notice & Signatures */
+            .vyshnavi-footer-wrap,
+            div.mt-6.flex.items-end.justify-between {
+              margin-top: 26px !important;
+              padding-top: 12px !important;
+              border-top: 1.5px solid #cbd5e1 !important;
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: flex-end !important;
+              font-size: 10.5px !important;
+            }
+            .vyshnavi-notice-box,
+            div.text-\\[10px\\].text-slate-500 {
+              color: #64748b !important;
+              line-height: 1.4 !important;
+              font-size: 10px !important;
+            }
+            .vyshnavi-sig-box,
+            div.text-center.space-y-8 {
+              text-align: center !important;
+              min-width: 190px !important;
+            }
+            .vyshnavi-sig-line,
+            div.w-44.border-b {
+              width: 190px !important;
+              border-bottom: 1.5px solid #0f172a !important;
+              margin-bottom: 6px !important;
+            }
+            .vyshnavi-sig-title,
+            span.text-\\[11px\\].font-bold.text-slate-700 {
+              font-size: 11px !important;
+              font-weight: 800 !important;
+              color: #0f172a !important;
+              display: block !important;
             }
           </style>
         </head>
@@ -3704,7 +3819,32 @@ export const VyshnaviTravels: React.FC = () => {
                     : `Vyshnavi Travels Ledger (${filteredTransactions.length} entries)`}
                 </strong>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Print Orientation Selector */}
+                <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setReportOrientation('landscape')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      reportOrientation === 'landscape'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Landscape
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReportOrientation('portrait')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      reportOrientation === 'portrait'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Portrait
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
@@ -3786,95 +3926,95 @@ export const VyshnaviTravels: React.FC = () => {
                   </div>
 
                   {/* Complete Printable Table */}
-                  <div className="mt-4 border border-slate-300 rounded-lg overflow-hidden">
+                  <div className="mt-4 border border-slate-300 rounded-lg overflow-hidden" style={{ border: '1.5px solid #0B2545', borderRadius: '6px' }}>
                     {reportPrintType === 'records' ? (
-                      <table className="w-full text-left border-collapse text-[11px]">
+                      <table className="w-full text-left border-collapse text-[11px]" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #0B2545' }}>
                         <thead>
-                          <tr className="bg-slate-800 text-white font-bold uppercase text-[10px]">
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-center w-10">S.No</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Record / Inv #</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Date</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Billed To (Client)</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Period</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-center">Staff</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-right">Invoiced (₹)</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-right">Received (₹)</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-right">Balance Due (₹)</th>
-                            <th className="py-2 px-2.5 text-center">Status</th>
+                          <tr className="bg-slate-800 text-white font-bold uppercase text-[10px]" style={{ backgroundColor: '#0B2545', color: '#ffffff' }}>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-center w-10" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>S.No</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Record / Inv #</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Date</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Billed To (Client)</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Period</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-center" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Staff</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-right" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'right', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Invoiced (₹)</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-right" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'right', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Received (₹)</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-right" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'right', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Balance Due (₹)</th>
+                            <th className="py-2 px-2.5 text-center" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Status</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
                           {filteredRecords.map((rec, idx) => (
-                            <tr key={rec.id || idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold text-slate-500">{idx + 1}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-bold text-slate-900">{rec.record_number}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{rec.record_date}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-medium text-slate-800">{rec.bill_to_name}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{rec.period_month || '—'}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold">{rec.total_staff_count || rec.items?.length || 1}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-black text-slate-900">₹{(rec.total_amount || 0).toLocaleString('en-IN')}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-bold text-emerald-700">₹{(rec.received_amount || 0).toLocaleString('en-IN')}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-bold text-rose-700">₹{(rec.balance_amount || 0).toLocaleString('en-IN')}</td>
-                              <td className="py-2 px-2.5 text-center font-bold uppercase text-[10px] text-slate-700">{rec.payment_status}</td>
+                            <tr key={rec.id || idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'} style={{ backgroundColor: idx % 2 === 1 ? '#f8fafc' : '#ffffff' }}>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold text-slate-500" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{idx + 1}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-bold text-slate-900" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontWeight: 'bold', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.record_number}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.record_date}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-medium text-slate-800" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.bill_to_name}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.period_month || '—'}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.total_staff_count || rec.items?.length || 1}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-black text-slate-900" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>₹{(rec.total_amount || 0).toLocaleString('en-IN')}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-bold text-emerald-700" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'right', fontWeight: 'bold', color: '#047857', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>₹{(rec.received_amount || 0).toLocaleString('en-IN')}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-bold text-rose-700" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'right', fontWeight: 'bold', color: '#b91c1c', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>₹{(rec.balance_amount || 0).toLocaleString('en-IN')}</td>
+                              <td className="py-2 px-2.5 text-center font-bold uppercase text-[10px] text-slate-700" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'center', fontSize: '9.5px', textTransform: 'uppercase' }}>{rec.payment_status}</td>
                             </tr>
                           ))}
                         </tbody>
                         <tfoot>
-                          <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
-                            <td colSpan={6} className="py-2.5 px-2.5 text-right uppercase tracking-wider">Grand Totals:</td>
-                            <td className="py-2.5 px-2.5 text-right font-mono font-black">
+                          <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300" style={{ backgroundColor: '#e2e8f0', borderTop: '2.5px solid #0B2545', borderBottom: '2px solid #0B2545' }}>
+                            <td colSpan={6} className="py-2.5 px-2.5 text-right uppercase tracking-wider" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>Grand Totals:</td>
+                            <td className="py-2.5 px-2.5 text-right font-mono font-black" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
                               ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.total_amount) || 0), 0).toLocaleString('en-IN')}
                             </td>
-                            <td className="py-2.5 px-2.5 text-right font-mono font-black text-emerald-700">
+                            <td className="py-2.5 px-2.5 text-right font-mono font-black text-emerald-700" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, color: '#047857', fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
                               ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.received_amount) || 0), 0).toLocaleString('en-IN')}
                             </td>
-                            <td className="py-2.5 px-2.5 text-right font-mono font-black text-rose-700">
+                            <td className="py-2.5 px-2.5 text-right font-mono font-black text-rose-700" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, color: '#b91c1c', fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
                               ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.balance_amount) || 0), 0).toLocaleString('en-IN')}
                             </td>
-                            <td></td>
+                            <td style={{ border: '1px solid #cbd5e1', padding: '8px 6px' }}></td>
                           </tr>
                         </tfoot>
                       </table>
                     ) : (
-                      <table className="w-full text-left border-collapse text-[11px]">
+                      <table className="w-full text-left border-collapse text-[11px]" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #0B2545' }}>
                         <thead>
-                          <tr className="bg-slate-800 text-white font-bold uppercase text-[10px]">
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-center w-10">S.No</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Date</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Type</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Category</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Vehicle</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Party / Vendor</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Mode</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700">Ref / UTR #</th>
-                            <th className="py-2 px-2.5 text-right">Amount (₹)</th>
+                          <tr className="bg-slate-800 text-white font-bold uppercase text-[10px]" style={{ backgroundColor: '#0B2545', color: '#ffffff' }}>
+                            <th className="py-2 px-2.5 border-r border-slate-700 text-center w-10" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>S.No</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Date</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Type</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Category</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Vehicle</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Party / Vendor</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Mode</th>
+                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Ref / UTR #</th>
+                            <th className="py-2 px-2.5 text-right" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'right', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Amount (₹)</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
                           {filteredTransactions.map((t, idx) => (
-                            <tr key={t.id || idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold text-slate-500">{idx + 1}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{t.transaction_date}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-bold">
-                                <span className={t.transaction_type === 'Income' ? 'text-emerald-700' : 'text-rose-700'}>
+                            <tr key={t.id || idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'} style={{ backgroundColor: idx % 2 === 1 ? '#f8fafc' : '#ffffff' }}>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold text-slate-500" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{idx + 1}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.transaction_date}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-bold" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontWeight: 'bold', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>
+                                <span className={t.transaction_type === 'Income' ? 'text-emerald-700' : 'text-rose-700'} style={{ color: t.transaction_type === 'Income' ? '#047857' : '#b91c1c' }}>
                                   {t.transaction_type}
                                 </span>
                               </td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-medium text-slate-900">{t.category}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{t.vehicle_number || 'General'}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-700">{t.party_name || '—'}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600">{t.payment_mode}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-mono text-[10px] text-slate-600">{t.reference_no || '—'}</td>
-                              <td className={`py-2 px-2.5 text-right font-black font-mono ${t.transaction_type === 'Income' ? 'text-emerald-700' : 'text-rose-700'}`}>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-medium text-slate-900" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.category}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.vehicle_number || 'General'}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-700" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.party_name || '—'}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.payment_mode}</td>
+                              <td className="py-2 px-2.5 border-r border-slate-200 font-mono text-[10px] text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: '9.5px', fontFamily: 'monospace' }}>{t.reference_no || '—'}</td>
+                              <td className={`py-2 px-2.5 text-right font-black font-mono ${t.transaction_type === 'Income' ? 'text-emerald-700' : 'text-rose-700'}`} style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'right', fontWeight: 900, color: t.transaction_type === 'Income' ? '#047857' : '#b91c1c', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>
                                 {t.transaction_type === 'Income' ? '+' : '-'} ₹{(t.amount || 0).toLocaleString('en-IN')}
                               </td>
                             </tr>
                           ))}
                         </tbody>
                         <tfoot>
-                          <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
-                            <td colSpan={8} className="py-2.5 px-2.5 text-right uppercase tracking-wider">Net Cash Flow:</td>
-                            <td className="py-2.5 px-2.5 text-right font-mono font-black">
+                          <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300" style={{ backgroundColor: '#e2e8f0', borderTop: '2.5px solid #0B2545', borderBottom: '2px solid #0B2545' }}>
+                            <td colSpan={8} className="py-2.5 px-2.5 text-right uppercase tracking-wider" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>Net Cash Flow:</td>
+                            <td className="py-2.5 px-2.5 text-right font-mono font-black" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
                               ₹{(filteredTransactions.filter(t => t.transaction_type === 'Income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0) - filteredTransactions.filter(t => t.transaction_type === 'Expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0)).toLocaleString('en-IN')}
                             </td>
                           </tr>
@@ -3884,33 +4024,57 @@ export const VyshnaviTravels: React.FC = () => {
                   </div>
 
                   {/* Bank Details Strip */}
-                  <div className="mt-4 bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-[11px]">
+                  <div
+                    className="vyshnavi-bank-strip mt-4 bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-[11px]"
+                    style={{
+                      marginTop: '14px',
+                      backgroundColor: '#eff6ff',
+                      border: '1.5px solid #3b82f6',
+                      borderRadius: '8px',
+                      padding: '10px 14px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '11px',
+                      color: '#1e3a8a'
+                    }}
+                  >
                     <div>
-                      <span className="font-bold text-slate-800">Bank Settlement: </span>
-                      <span className="text-slate-600">Kotak Mahindra Bank, VANAS Hyderabad • A/C: <strong>2848153146</strong> • IFSC: <strong>KKBK0007460</strong></span>
+                      <span className="font-bold text-slate-800" style={{ color: '#0f172a', fontWeight: 'bold' }}>Bank Settlement: </span>
+                      <span className="text-slate-600" style={{ color: '#1e3a8a' }}>Kotak Mahindra Bank, VANAS Hyderabad • A/C: <strong style={{ color: '#0f172a' }}>2848153146</strong> • IFSC: <strong style={{ color: '#0f172a' }}>KKBK0007460</strong></span>
                     </div>
                     <div>
-                      <span className="font-bold text-slate-800">UPI ID: </span>
-                      <span className="text-slate-600"><strong>9000202241@ybl</strong></span>
+                      <span className="font-bold text-slate-800" style={{ color: '#0f172a', fontWeight: 'bold' }}>UPI ID: </span>
+                      <span className="text-slate-600" style={{ color: '#1e3a8a' }}><strong style={{ color: '#0f172a' }}>9000202241@ybl</strong></span>
                     </div>
                   </div>
 
                   {/* Official Notice & Signatures */}
-                  <div className="mt-6 flex items-end justify-between pt-4 border-t border-slate-200 text-xs">
-                    <div className="text-[10px] text-slate-500 space-y-0.5">
-                      <p className="font-semibold text-slate-700">Notice:</p>
-                      <p>1. Computer-generated official operations statement issued by Vyshnavi Travels.</p>
-                      <p>2. For any discrepancies, please notify accounts within 3 business days.</p>
+                  <div
+                    className="vyshnavi-footer-wrap mt-6 flex items-end justify-between pt-4 border-t border-slate-200 text-xs"
+                    style={{
+                      marginTop: '26px',
+                      paddingTop: '14px',
+                      borderTop: '1.5px solid #cbd5e1',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-end',
+                      fontSize: '11px'
+                    }}
+                  >
+                    <div className="vyshnavi-notice-box text-[10px] text-slate-500 space-y-0.5" style={{ color: '#64748b', fontSize: '10px', lineHeight: 1.4 }}>
+                      <p className="font-semibold text-slate-700" style={{ color: '#0f172a', fontWeight: 'bold', margin: '0 0 3px 0' }}>Notice:</p>
+                      <p style={{ margin: '0 0 2px 0' }}>1. Computer-generated official operations statement issued by Vyshnavi Travels.</p>
+                      <p style={{ margin: 0 }}>2. For any discrepancies, please notify accounts within 3 business days.</p>
                     </div>
-                    <div className="text-center space-y-8">
-                      <div className="w-44 border-b border-slate-400"></div>
-                      <span className="text-[11px] font-bold text-slate-700 block">
+                    <div className="vyshnavi-sig-box text-center space-y-8" style={{ textAlign: 'center', minWidth: '190px' }}>
+                      <div className="vyshnavi-sig-line w-44 border-b border-slate-400" style={{ width: '190px', borderBottom: '1.5px solid #0f172a', marginBottom: '8px' }}></div>
+                      <span className="vyshnavi-sig-title text-[11px] font-bold text-slate-700 block" style={{ fontSize: '11px', fontWeight: 800, color: '#0f172a', display: 'block' }}>
                         Authorized Signatory / Seal
                       </span>
                     </div>
                   </div>
                 </div>
-
 
               </div>
             </div>

@@ -1492,15 +1492,7 @@ export const DonationManagement: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Note about separate Staff Handover option */}
-                <div className="sm:col-span-2 p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="text-slate-600 font-medium">
-                      To record which employee took or collected this donation, use the separate <strong>"+ Record Staff Received"</strong> option on the dashboard.
-                    </span>
-                  </div>
-                </div>
+
 
                 {/* Payment Mode */}
                 <div>
