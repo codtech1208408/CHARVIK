@@ -6,6 +6,7 @@ import {
   IndianRupee,
   User,
   Users,
+  Phone,
   ShieldCheck,
   CheckCircle2,
   Filter,
@@ -22,6 +23,7 @@ import { api } from '../../services/api';
 export interface PublicDonationItem {
   id: string | number;
   donor_name: string;
+  donor_phone?: string;
   amount: number;
   donation_date: string;
   received_by_employee_name: string;
@@ -72,6 +74,7 @@ export const Donations: React.FC = () => {
     return donations.filter((item) => {
       const matchesSearch =
         item.donor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.donor_phone && item.donor_phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
         item.received_by_employee_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.notes && item.notes.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -163,6 +166,23 @@ export const Donations: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-10">
+        {/* Employee Safety & Welfare Program Poster */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden mb-8 group transition-all duration-300 hover:shadow-3xl">
+          <div className="relative">
+            <img
+              src="/donation-welfare-poster.jpg"
+              alt="Charvik Employee Safety & Welfare Program - Employee Insurance & Donation Support"
+              className="w-full h-auto object-cover block cursor-pointer transition-transform duration-500 group-hover:scale-[1.01]"
+              onClick={() => openLightbox(['/donation-welfare-poster.jpg'], 0)}
+              title="Click to view full poster"
+            />
+            <div className="absolute bottom-3 right-3 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold shadow-lg pointer-events-none">
+              <Eye className="w-3.5 h-3.5 text-rose-400" />
+              <span>Click to enlarge poster</span>
+            </div>
+          </div>
+        </div>
+
         {/* Search & Filter Toolbar */}
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 p-4 sm:p-5 flex flex-col md:flex-row gap-3 items-center justify-between mb-8">
           <div className="relative w-full md:w-96">
@@ -263,9 +283,16 @@ export const Donations: React.FC = () => {
                           <h3 className="text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors">
                             {item.donor_name}
                           </h3>
-                          <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1 mt-0.5">
-                            <Calendar className="w-3.5 h-3.5 text-slate-400" /> {formattedDate}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                            <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5 text-slate-400" /> {formattedDate}
+                            </span>
+                            {item.donor_phone && (
+                              <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                <Phone className="w-3 h-3 text-emerald-500" /> {item.donor_phone}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
