@@ -215,40 +215,41 @@ export const AdminLayout: React.FC = () => {
 
   // Universal Modal Scroll Lock: Prevents background page from moving/scrolling whenever any modal is open
   useEffect(() => {
+    let isLocked = false;
+
     const syncScrollLock = () => {
-      const activeModals = document.querySelectorAll(
+      // Check if any modal dialog or fixed fullscreen overlay is in DOM
+      const hasModal = !!document.querySelector(
         '.fixed.inset-0.z-50, .fixed.inset-0[class*="z-50"], .fixed.inset-0[class*="bg-black"], .fixed.inset-0[class*="bg-slate-900"], [role="dialog"]'
       );
-      if (activeModals.length > 0) {
+
+      if (hasModal && !isLocked) {
+        isLocked = true;
         document.body.style.overflow = 'hidden';
         document.documentElement.style.overflow = 'hidden';
-        document.body.classList.add('modal-open');
-        document.documentElement.classList.add('modal-open');
-      } else {
+      } else if (!hasModal && isLocked) {
+        isLocked = false;
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
-        document.body.classList.remove('modal-open');
-        document.documentElement.classList.remove('modal-open');
       }
     };
 
+    // Observe child additions/removals only (never observe attributes to avoid self-triggering loops)
     const observer = new MutationObserver(() => {
       syncScrollLock();
     });
 
     observer.observe(document.body, {
       childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'style', 'hidden']
+      subtree: true
     });
 
     return () => {
       observer.disconnect();
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-      document.body.classList.remove('modal-open');
-      document.documentElement.classList.remove('modal-open');
+      if (isLocked) {
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+      }
     };
   }, []);
 
