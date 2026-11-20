@@ -155,8 +155,8 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
         .charvik-letterhead-container {
           border: 2px solid #0056b3;
           border-radius: 12px;
-          padding: 8px 14px 9px;
-          margin-bottom: 7px;
+          padding: 8px 14px 10px;
+          margin-bottom: 8px;
           text-align: center;
           background: #ffffff;
           box-sizing: border-box !important;
@@ -168,48 +168,78 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           display: flex;
           justify-content: center;
           align-items: center;
-          margin-bottom: 4px;
+          margin-bottom: 2px;
         }
         .charvik-brand-logo {
-          height: 66px !important;
-          max-height: 70px !important;
+          height: 56px !important;
+          max-height: 60px !important;
           width: auto !important;
-          max-width: 340px !important;
+          max-width: 320px !important;
           object-fit: contain !important;
           display: block;
           margin: 0 auto;
         }
+        .charvik-letterhead-tagline {
+          font-size: 11px;
+          font-weight: 800;
+          color: #00448a;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          margin-top: 3px;
+          margin-bottom: 6px;
+          text-align: center;
+          line-height: 1.3;
+        }
         .charvik-letterhead-contacts {
           display: flex;
+          flex-wrap: wrap;
           justify-content: center;
           align-items: center;
-          gap: 12px;
-          font-size: 11px;
+          gap: 14px;
+          font-size: 11.5px;
           font-weight: 700;
-          color: #072346;
-          margin-bottom: 5px;
+          color: #000000;
+          margin-bottom: 6px;
           letter-spacing: 0.2px;
+          line-height: 1.35;
         }
         .charvik-contact-item {
           display: inline-flex;
           align-items: center;
           gap: 4px;
+          white-space: nowrap;
+        }
+        .charvik-contact-label {
+          color: #0056b3;
+          font-weight: 800;
+        }
+        .charvik-contact-val {
+          color: #000000;
+          font-weight: 700;
         }
         .charvik-contact-sep {
-          color: #94a3b8;
-          font-weight: 400;
+          color: #0056b3;
+          font-weight: 900;
+          font-size: 13px;
         }
         .charvik-letterhead-address-pill {
           display: inline-block;
           border: 1.5px solid #0056b3;
-          border-radius: 9999px;
-          padding: 2.5px 12px;
-          font-size: 10px;
-          font-weight: 700;
-          color: #072346;
+          border-radius: 6px;
+          padding: 3px 14px;
+          font-size: 10.5px;
+          font-weight: 600;
+          color: #000000;
+          background: #f8fafc;
           max-width: 98%;
-          line-height: 1.35;
+          line-height: 1.4;
           margin: 0 auto;
+          box-sizing: border-box !important;
+        }
+        .charvik-address-label {
+          color: #0056b3;
+          font-weight: 800;
+          margin-right: 4px;
         }
 
         /* 2. Title & Meta Strip Box */
@@ -386,6 +416,28 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
+          .charvik-letterhead-container {
+            border: 2px solid #0056b3 !important;
+            background: #ffffff !important;
+            page-break-inside: avoid !important;
+          }
+          .charvik-letterhead-tagline {
+            color: #00448a !important;
+            font-weight: 800 !important;
+          }
+          .charvik-letterhead-contacts, .charvik-contact-val {
+            color: #000000 !important;
+            font-weight: 700 !important;
+          }
+          .charvik-contact-label, .charvik-contact-sep, .charvik-address-label {
+            color: #0056b3 !important;
+            font-weight: 800 !important;
+          }
+          .charvik-letterhead-address-pill {
+            border: 1.5px solid #0056b3 !important;
+            color: #000000 !important;
+            background: #f8fafc !important;
+          }
           .no-print {
             display: none !important;
           }
@@ -399,28 +451,34 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
         <div class="charvik-letterhead-container">
           <div class="charvik-letterhead-logo-row">
             <img 
-              src="/logo-brand.png?v=20261119_hq" 
+              src="/charvik-print-logo.png?v=20261120_print" 
               alt="CHARVIK STAFFING CONSULTANCY" 
               class="charvik-brand-logo"
-              onerror="this.src='/logo.png'" 
+              onerror="this.src='/logo-brand.png'" 
             />
+          </div>
+          <div class="charvik-letterhead-tagline">
+            Manpower Solutions &nbsp;•&nbsp; Recruitment &nbsp;•&nbsp; Payroll Support
           </div>
           <div class="charvik-letterhead-contacts">
             <span class="charvik-contact-item">
-              <span style="color: #0056b3;">Phone:</span> 9505151527
+              <span class="charvik-contact-label">Phone:</span>
+              <span class="charvik-contact-val">9505151527</span>
             </span>
-            <span class="charvik-contact-sep">|</span>
+            <span class="charvik-contact-sep">•</span>
             <span class="charvik-contact-item">
-              <span style="color: #0056b3;">Email:</span> charvikstaffingconsulrancy@gmail.com
+              <span class="charvik-contact-label">Email:</span>
+              <span class="charvik-contact-val">charvikstaffingconsultancy@gmail.com</span>
             </span>
-            <span class="charvik-contact-sep">|</span>
+            <span class="charvik-contact-sep">•</span>
             <span class="charvik-contact-item">
-              <span style="color: #0056b3;">Web:</span> www.charvikstaffing.com
+              <span class="charvik-contact-label">Web:</span>
+              <span class="charvik-contact-val">www.charvikstaffing.com</span>
             </span>
           </div>
           <div class="charvik-letterhead-address-pill">
-            <span style="color: #0056b3; font-weight: 800; margin-right: 4px;">Office:</span>
-            NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana
+            <span class="charvik-address-label">Office:</span>
+            <span>NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana</span>
           </div>
         </div>
         ` : ''}

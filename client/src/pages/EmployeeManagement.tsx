@@ -1409,13 +1409,39 @@ export const EmployeeManagement: React.FC = () => {
             {viewTab === 'sheet' && (
               <div id="printable-employee-sheet" className="border-2 border-black overflow-hidden font-sans text-xs bg-white printable-sheet">
                 {/* Official Charvik Letterhead Header */}
-                <div className="bg-white border-b-2 border-black">
-                  <img
-                    src="/charvik-letterhead-header.png?v=20261115"
-                    alt="CHARVIK STAFFING CONSULTANCY"
-                    className="w-full h-auto block"
-                  />
-                  <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-700 font-bold">
+                <div className="bg-white border-b-2 border-black p-2.5 text-center">
+                  <div className="flex justify-center items-center mb-1">
+                    <img
+                      src="/charvik-print-logo.png?v=20261120_print"
+                      alt="CHARVIK STAFFING CONSULTANCY"
+                      className="h-14 max-h-[58px] w-auto max-w-[320px] object-contain block mx-auto"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/logo-brand.png'; }}
+                    />
+                  </div>
+                  <div className="text-[11px] font-extrabold text-[#00448a] tracking-widest uppercase my-1 text-center">
+                    Manpower Solutions &nbsp;•&nbsp; Recruitment &nbsp;•&nbsp; Payroll Support
+                  </div>
+                  <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1 leading-tight">
+                    <span className="inline-flex items-center gap-1">
+                      <span className="text-[#0056b3] font-extrabold">Phone:</span>
+                      <span className="text-black">9505151527</span>
+                    </span>
+                    <span className="text-[#0056b3] font-black">•</span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="text-[#0056b3] font-extrabold">Email:</span>
+                      <span className="text-black">charvikstaffingconsultancy@gmail.com</span>
+                    </span>
+                    <span className="text-[#0056b3] font-black">•</span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="text-[#0056b3] font-extrabold">Web:</span>
+                      <span className="text-black">www.charvikstaffing.com</span>
+                    </span>
+                  </div>
+                  <div className="inline-block border border-[#0056b3] rounded-md px-3 py-1 text-[10.5px] font-semibold text-black bg-slate-50 max-w-[98%] leading-snug">
+                    <span className="text-[#0056b3] font-extrabold mr-1">Office:</span>
+                    <span>NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana</span>
+                  </div>
+                  <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-700 font-bold mt-2">
                     <div>
                       {viewingProfile.employee.role === 'Driver'
                         ? 'DRIVER FLEET STAFFING VERIFICATION RECORD'
