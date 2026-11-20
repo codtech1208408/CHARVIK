@@ -33,7 +33,8 @@ import {
   ArrowRight,
   Tag,
   Check,
-  ChevronDown
+  ChevronDown,
+  Landmark
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
