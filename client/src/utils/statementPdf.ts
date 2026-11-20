@@ -52,6 +52,37 @@ export function sanitizeWhatsAppNumber(phoneStr: string): string {
 }
 
 /**
+ * Safely parses various date formats (DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, ISO)
+ * into a unix timestamp for reliable chronological sorting.
+ */
+export function parseTripDateToTime(dateStr?: string | null): number {
+  if (!dateStr) return 0;
+  const s = String(dateStr).trim();
+  if (!s) return 0;
+
+  // DD/MM/YYYY or DD-MM-YYYY
+  const dmy = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+  if (dmy) {
+    const day = parseInt(dmy[1], 10);
+    const month = parseInt(dmy[2], 10) - 1;
+    const year = parseInt(dmy[3], 10);
+    return new Date(year, month, day).getTime();
+  }
+
+  // YYYY-MM-DD or YYYY/MM/DD
+  const ymd = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (ymd) {
+    const year = parseInt(ymd[1], 10);
+    const month = parseInt(ymd[2], 10) - 1;
+    const day = parseInt(ymd[3], 10);
+    return new Date(year, month, day).getTime();
+  }
+
+  const parsed = Date.parse(s);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+/**
  * Builds safe PDF file name
  */
 export function buildSalaryPdfFileName(fullName: string, monthLabel: string): string {
@@ -77,6 +108,14 @@ function cleanRouteText(routeStr: string): string {
  */
 export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
   const { employee, trips = [], payments = [], monthLabel, staffPhone } = data;
+
+  // Strict chronological ascending sort (oldest duty to latest duty in sequence)
+  const sortedTrips = [...trips].sort(
+    (a, b) => parseTripDateToTime(a.date) - parseTripDateToTime(b.date)
+  );
+  const sortedPayments = [...payments].sort(
+    (a, b) => parseTripDateToTime(a.payment_date) - parseTripDateToTime(b.payment_date)
+  );
 
   const doc = new jsPDF({
     orientation: "portrait",
@@ -183,9 +222,9 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
   doc.text(staffPhone || employee.phone || "-", marginX + 118, 73.5);
 
   // 7. Calculate Financial Totals
-  const totalSalary = trips.reduce((sum, t) => sum + (Number(t.salary) || 0), 0);
-  const totalPaid = trips.reduce((sum, t) => sum + (Number(t.advance) || 0), 0);
-  const totalDue = trips.reduce((sum, t) => sum + (Number(t.balance_due) || 0), 0);
+  const totalSalary = sortedTrips.reduce((sum, t) => sum + (Number(t.salary) || 0), 0);
+  const totalPaid = sortedTrips.reduce((sum, t) => sum + (Number(t.advance) || 0), 0);
+  const totalDue = sortedTrips.reduce((sum, t) => sum + (Number(t.balance_due) || 0), 0);
 
   // 8. 3 KPI Financial Cards
   const gap = 3;
@@ -229,9 +268,9 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
   doc.setTextColor(totalDue > 0 ? 225 : 4, totalDue > 0 ? 29 : 120, totalDue > 0 ? 72 : 87);
   doc.text(`Rs. ${totalDue.toLocaleString("en-IN")}`, card3X + cardWidth / 2, 92.5, { align: "center" });
 
-  // 9. Records of Trips Table via AutoTable
+  // 9. Records of Trips Table via AutoTable (Strict Sequential Chronological Order)
   // Header labels explicitly specify currency (Rs) so row cells are clean uncrowded numbers
-  const tripRows = trips.map((t, idx) => {
+  const tripRows = sortedTrips.map((t, idx) => {
     const d = t.date
       ? t.date.includes("-")
         ? t.date.split("-").reverse().join("/")
@@ -259,7 +298,7 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
       totalSalary.toLocaleString("en-IN"),
       totalPaid.toLocaleString("en-IN"),
       totalDue.toLocaleString("en-IN"),
-      `${trips.length} Trips`
+      `${sortedTrips.length} Trips`
     ]
   ];
 
@@ -302,8 +341,8 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
   let currentY = (doc as any).lastAutoTable.finalY + 6;
 
   // 10. Records of Payments Table (if any)
-  if (payments.length > 0) {
-    const paymentRows = payments.map((p, idx) => {
+  if (sortedPayments.length > 0) {
+    const paymentRows = sortedPayments.map((p, idx) => {
       const pd = p.payment_date
         ? p.payment_date.includes("-")
           ? p.payment_date.split("-").reverse().join("/")
@@ -319,14 +358,14 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
       ];
     });
 
-    const totalDisbursed = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    const totalDisbursed = sortedPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
     autoTable(doc, {
       startY: currentY,
       margin: { left: marginX, right: marginX },
       head: [["#", "PAYMENT DATE", "AMOUNT (Rs)", "MODE", "TYPE", "NOTES"]],
       body: paymentRows,
-      foot: [["", "TOTAL DISBURSED", totalDisbursed.toLocaleString("en-IN"), "", "", `${payments.length} Payments`]],
+      foot: [["", "TOTAL DISBURSED", totalDisbursed.toLocaleString("en-IN"), "", "", `${sortedPayments.length} Payments`]],
       theme: "striped",
       headStyles: {
         fillColor: [20, 43, 74],
@@ -497,9 +536,17 @@ export async function shareOrSendWhatsAppSalaryStatement(options: {
 export function generateSalaryStatementHtml(data: StatementPdfData): string {
   const { employee, trips = [], payments = [], monthLabel, staffPhone } = data;
 
-  const totalSalary = trips.reduce((sum, t) => sum + (Number(t.salary) || 0), 0);
-  const totalPaid = trips.reduce((sum, t) => sum + (Number(t.advance) || 0), 0);
-  const totalDue = trips.reduce((sum, t) => sum + (Number(t.balance_due) || 0), 0);
+  // Strict chronological ascending sort (oldest duty to latest duty in sequence)
+  const sortedTrips = [...trips].sort(
+    (a, b) => parseTripDateToTime(a.date) - parseTripDateToTime(b.date)
+  );
+  const sortedPayments = [...payments].sort(
+    (a, b) => parseTripDateToTime(a.payment_date) - parseTripDateToTime(b.payment_date)
+  );
+
+  const totalSalary = sortedTrips.reduce((sum, t) => sum + (Number(t.salary) || 0), 0);
+  const totalPaid = sortedTrips.reduce((sum, t) => sum + (Number(t.advance) || 0), 0);
+  const totalDue = sortedTrips.reduce((sum, t) => sum + (Number(t.balance_due) || 0), 0);
 
   const isSettled = totalDue <= 0 && totalSalary > 0;
   const statusLabel = isSettled ? "FULLY SETTLED / PAID" : totalDue > 0 ? "PENDING PAYMENT" : "NIL";
@@ -518,8 +565,8 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
     hour12: true
   });
 
-  const tripRowsHtml = trips.length > 0
-    ? trips.map((t, idx) => {
+  const tripRowsHtml = sortedTrips.length > 0
+    ? sortedTrips.map((t, idx) => {
         const d = t.date
           ? t.date.includes("-")
             ? t.date.split("-").reverse().join("/")
@@ -554,8 +601,8 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
       </tr>
     `;
 
-  const paymentRowsHtml = payments.length > 0
-    ? payments.map((p, idx) => {
+  const paymentRowsHtml = sortedPayments.length > 0
+    ? sortedPayments.map((p, idx) => {
         const pd = p.payment_date
           ? p.payment_date.includes("-")
             ? p.payment_date.split("-").reverse().join("/")
@@ -574,7 +621,7 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
       }).join("")
     : "";
 
-  const totalPaymentsAmount = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+  const totalPaymentsAmount = sortedPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
   return `
     <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif; color: #0f172a; background: #ffffff; padding: 20px 22px; width: 100%; max-width: 800px; margin: 0 auto; box-sizing: border-box;">
@@ -666,7 +713,7 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
       <!-- Trips Table -->
       <div style="margin-bottom: 14px;">
         <div style="font-size: 11px; font-weight: 800; color: #142B4A; text-transform: uppercase; margin-bottom: 6px;">
-          RECORDS OF TRIPS &amp; DUTIES (${trips.length} TRIPS)
+          RECORDS OF TRIPS &amp; DUTIES (${sortedTrips.length} TRIPS)
         </div>
         <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #cbd5e1; border-radius: 6px; overflow: hidden; font-size: 10.5px;">
           <thead>
@@ -684,14 +731,14 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
           <tbody>
             ${tripRowsHtml}
           </tbody>
-          ${trips.length > 0 ? `
+          ${sortedTrips.length > 0 ? `
             <tfoot>
               <tr style="background: #f1f5f9; font-weight: bold; border-top: 2px solid #cbd5e1;">
                 <td colspan="4" style="padding: 6px 8px; text-align: right; font-size: 10.5px; color: #0f172a;">TOTALS:</td>
                 <td style="padding: 6px 8px; text-align: right; font-size: 10.5px; color: #0f172a;">${totalSalary.toLocaleString("en-IN")}</td>
                 <td style="padding: 6px 8px; text-align: right; font-size: 10.5px; color: #047857;">${totalPaid.toLocaleString("en-IN")}</td>
                 <td style="padding: 6px 8px; text-align: right; font-size: 10.5px; color: ${totalDue > 0 ? '#e11d48' : '#047857'};">${totalDue.toLocaleString("en-IN")}</td>
-                <td style="padding: 6px 8px; text-align: center; font-size: 9.5px; color: #64748b;">${trips.length} Duties</td>
+                <td style="padding: 6px 8px; text-align: center; font-size: 9.5px; color: #64748b;">${sortedTrips.length} Duties</td>
               </tr>
             </tfoot>
           ` : ""}
@@ -699,10 +746,10 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
       </div>
 
       <!-- Payments Table -->
-      ${payments.length > 0 ? `
+      ${sortedPayments.length > 0 ? `
         <div style="margin-bottom: 14px;">
           <div style="font-size: 11px; font-weight: 800; color: #142B4A; text-transform: uppercase; margin-bottom: 6px;">
-            DISBURSEMENT &amp; DIRECT PAYMENT RECORDS (${payments.length} PAYMENTS)
+            DISBURSEMENT &amp; DIRECT PAYMENT RECORDS (${sortedPayments.length} PAYMENTS)
           </div>
           <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #cbd5e1; border-radius: 6px; overflow: hidden; font-size: 10.5px;">
             <thead>

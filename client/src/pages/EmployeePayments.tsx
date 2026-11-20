@@ -18,6 +18,7 @@ import {
   downloadSalaryStatementPdf,
   shareOrSendWhatsAppSalaryStatement,
   buildSalaryPdfFileName,
+  parseTripDateToTime,
   type StatementPdfData
 } from "../utils/statementPdf";
 
@@ -297,7 +298,9 @@ export const EmployeePayments: React.FC = () => {
     });
 
     const list = Array.from(map.values());
-    list.forEach((r) => r.trips.sort((a, b) => b.date.localeCompare(a.date)));
+    list.forEach((r) =>
+      r.trips.sort((a, b) => parseTripDateToTime(a.date) - parseTripDateToTime(b.date))
+    );
     return list;
   }, [employees, periodFilteredTasks]);
 
@@ -756,13 +759,21 @@ export const EmployeePayments: React.FC = () => {
     monthLabel: string,
     staffPhone: string
   ) => {
-    const totalSal = tripsList.reduce((a, b) => a + (b.salary || 0), 0);
-    const totalPaid = tripsList.reduce((a, b) => a + (b.advance || 0), 0);
-    const totalDue = tripsList.reduce((a, b) => a + (b.balance_due || 0), 0);
+    // Sort in sequential chronological order (oldest duty to newest duty)
+    const sortedTrips = [...tripsList].sort(
+      (a, b) => parseTripDateToTime(a.date) - parseTripDateToTime(b.date)
+    );
+    const sortedPayments = [...paymentsList].sort(
+      (a, b) => parseTripDateToTime(a.payment_date) - parseTripDateToTime(b.payment_date)
+    );
+
+    const totalSal = sortedTrips.reduce((a, b) => a + (b.salary || 0), 0);
+    const totalPaid = sortedTrips.reduce((a, b) => a + (b.advance || 0), 0);
+    const totalDue = sortedTrips.reduce((a, b) => a + (b.balance_due || 0), 0);
 
     const formattedTrips =
-      tripsList.length > 0
-        ? tripsList
+      sortedTrips.length > 0
+        ? sortedTrips
             .map((t, idx) => {
               const d = t.date
                 ? t.date.includes("-")
@@ -775,8 +786,8 @@ export const EmployeePayments: React.FC = () => {
         : "(No trip duties recorded for this period)";
 
     const formattedPayments =
-      paymentsList.length > 0
-        ? paymentsList
+      sortedPayments.length > 0
+        ? sortedPayments
             .map((p, idx) => {
               const pd = p.payment_date
                 ? p.payment_date.includes("-")
@@ -1425,11 +1436,14 @@ _This is an official automated monthly salary & trip record statement._`;
       error("No trips available to print for this employee.");
       return;
     }
-    const totalSal = filteredTrips.reduce((a, b) => a + (b.salary || 0), 0);
-    const totalAdv = filteredTrips.reduce((a, b) => a + (b.advance || 0), 0);
-    const totalDue = filteredTrips.reduce((a, b) => a + (b.balance_due || 0), 0);
+    const sortedTrips = [...filteredTrips].sort(
+      (a, b) => parseTripDateToTime(a.date) - parseTripDateToTime(b.date)
+    );
+    const totalSal = sortedTrips.reduce((a, b) => a + (b.salary || 0), 0);
+    const totalAdv = sortedTrips.reduce((a, b) => a + (b.advance || 0), 0);
+    const totalDue = sortedTrips.reduce((a, b) => a + (b.balance_due || 0), 0);
 
-    const tripRows = filteredTrips
+    const tripRows = sortedTrips
       .map((t, idx) => {
         const formattedDate = (() => {
           if (!t.date) return "-";
