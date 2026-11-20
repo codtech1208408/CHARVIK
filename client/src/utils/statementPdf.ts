@@ -269,7 +269,7 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
   doc.text(`Rs. ${totalDue.toLocaleString("en-IN")}`, card3X + cardWidth / 2, 92.5, { align: "center" });
 
   // 9. Records of Trips Table via AutoTable (Strict Sequential Chronological Order)
-  // Header labels explicitly specify currency (Rs) so row cells are clean uncrowded numbers
+  // Cell objects with explicit halign guarantee headers, rows and footer totals align with pixel precision
   const tripRows = sortedTrips.map((t, idx) => {
     const d = t.date
       ? t.date.includes("-")
@@ -289,23 +289,33 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
     ];
   });
 
+  const tripHead = [
+    [
+      { content: "#", styles: { halign: "center" as const } },
+      { content: "DATE", styles: { halign: "center" as const } },
+      { content: "ROUTE CORRIDOR", styles: { halign: "left" as const } },
+      { content: "VEHICLE NO.", styles: { halign: "center" as const } },
+      { content: "SALARY (Rs)", styles: { halign: "right" as const } },
+      { content: "PAID (Rs)", styles: { halign: "right" as const } },
+      { content: "DUE (Rs)", styles: { halign: "right" as const } },
+      { content: "STATUS", styles: { halign: "center" as const } }
+    ]
+  ];
+
   const tripFoot = [
     [
-      "",
-      "TOTALS",
-      "",
-      "",
-      totalSalary.toLocaleString("en-IN"),
-      totalPaid.toLocaleString("en-IN"),
-      totalDue.toLocaleString("en-IN"),
-      `${sortedTrips.length} Trips`
+      { content: "TOTALS:", colSpan: 4, styles: { halign: "right" as const, fontStyle: "bold" as const } },
+      { content: totalSalary.toLocaleString("en-IN"), styles: { halign: "right" as const, fontStyle: "bold" as const } },
+      { content: totalPaid.toLocaleString("en-IN"), styles: { halign: "right" as const, fontStyle: "bold" as const, textColor: [4, 120, 87] } },
+      { content: totalDue.toLocaleString("en-IN"), styles: { halign: "right" as const, fontStyle: "bold" as const, textColor: [225, 29, 72] } },
+      { content: `${sortedTrips.length} Trips`, styles: { halign: "center" as const, fontStyle: "bold" as const } }
     ]
   ];
 
   autoTable(doc, {
     startY: 99,
     margin: { left: marginX, right: marginX },
-    head: [["#", "DATE", "ROUTE CORRIDOR", "VEHICLE NO.", "SALARY (Rs)", "PAID (Rs)", "DUE (Rs)", "STATUS"]],
+    head: tripHead,
     body: tripRows.length > 0 ? tripRows : [["-", "-", "No trip duty records for this period", "-", "0", "0", "0", "-"]],
     foot: tripRows.length > 0 ? tripFoot : undefined,
     theme: "striped",
@@ -323,7 +333,7 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
     },
     styles: {
       fontSize: 7.2,
-      cellPadding: { top: 2, bottom: 2, left: 1, right: 1 },
+      cellPadding: { top: 2, bottom: 2, left: 1.5, right: 1.5 },
       textColor: [15, 23, 42]
     },
     columnStyles: {
@@ -360,12 +370,31 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
 
     const totalDisbursed = sortedPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
+    const paymentHead = [
+      [
+        { content: "#", styles: { halign: "center" as const } },
+        { content: "PAYMENT DATE", styles: { halign: "center" as const } },
+        { content: "AMOUNT (Rs)", styles: { halign: "right" as const } },
+        { content: "MODE", styles: { halign: "center" as const } },
+        { content: "TYPE", styles: { halign: "center" as const } },
+        { content: "NOTES", styles: { halign: "left" as const } }
+      ]
+    ];
+
+    const paymentFoot = [
+      [
+        { content: "TOTAL DISBURSED:", colSpan: 2, styles: { halign: "right" as const, fontStyle: "bold" as const } },
+        { content: totalDisbursed.toLocaleString("en-IN"), styles: { halign: "right" as const, fontStyle: "bold" as const, textColor: [4, 120, 87] } },
+        { content: `${sortedPayments.length} Payments`, colSpan: 3, styles: { halign: "center" as const, fontStyle: "bold" as const } }
+      ]
+    ];
+
     autoTable(doc, {
       startY: currentY,
       margin: { left: marginX, right: marginX },
-      head: [["#", "PAYMENT DATE", "AMOUNT (Rs)", "MODE", "TYPE", "NOTES"]],
+      head: paymentHead,
       body: paymentRows,
-      foot: [["", "TOTAL DISBURSED", totalDisbursed.toLocaleString("en-IN"), "", "", `${sortedPayments.length} Payments`]],
+      foot: paymentFoot,
       theme: "striped",
       headStyles: {
         fillColor: [20, 43, 74],
@@ -381,15 +410,15 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
       },
       styles: {
         fontSize: 7.2,
-        cellPadding: { top: 2, bottom: 2, left: 1, right: 1 }
+        cellPadding: { top: 2, bottom: 2, left: 1.5, right: 1.5 }
       },
       columnStyles: {
         0: { halign: "center", cellWidth: 8 },
         1: { halign: "center", cellWidth: 24 },
         2: { halign: "right", cellWidth: 24, fontStyle: "bold", textColor: [4, 120, 87] },
-        3: { cellWidth: 24 },
-        4: { cellWidth: 24 },
-        5: { cellWidth: 78 }
+        3: { halign: "center", cellWidth: 24 },
+        4: { halign: "center", cellWidth: 24 },
+        5: { halign: "left", cellWidth: 78 }
       }
     });
 
@@ -497,8 +526,6 @@ export async function shareOrSendWhatsAppSalaryStatement(options: {
   const totalDue = data.trips.reduce((a, b) => a + (Number(b.balance_due) || 0), 0);
   const statusStr = totalDue <= 0 ? "FULLY SETTLED" : "PENDING PAYMENT";
 
-  const messageText = `*CHARVIK STAFFING CONSULTANCY*\nOFFICIAL SALARY STATEMENT (PDF)\n────────────────────────────\nStaff Name: ${data.employee.full_name}\nStaff ID: ${formatEmployeeId(data.employee.employee_code, data.employee.role)}\nRole: ${data.employee.role}\nBilling Cycle: ${data.monthLabel}\n────────────────────────────\nTotal Salary: Rs. ${totalSal.toLocaleString("en-IN")}\nTotal Paid: Rs. ${totalPaid.toLocaleString("en-IN")}\nRemaining Due: Rs. ${totalDue.toLocaleString("en-IN")}\nStatus: ${statusStr}\n────────────────────────────\nOfficial PDF Statement: "${fileName}"\n────────────────────────────\nCharvik Staffing Consultancy | +91 9505151527`;
-
   // Check if browser supports Web Share API with File sharing (e.g. Android Chrome, iOS Safari)
   const pdfFile = new File([blob], fileName, { type: "application/pdf" });
   if (
@@ -507,10 +534,10 @@ export async function shareOrSendWhatsAppSalaryStatement(options: {
     navigator.canShare({ files: [pdfFile] })
   ) {
     try {
+      // Dispatches strictly and only the PDF file so WhatsApp receives a single clean PDF document (no duplicate text wall)
       await navigator.share({
         files: [pdfFile],
-        title: `${data.employee.full_name} Salary Statement - ${data.monthLabel}`,
-        text: messageText
+        title: fileName
       });
       return { method: "native-share", fileName };
     } catch (err: any) {
@@ -520,11 +547,11 @@ export async function shareOrSendWhatsAppSalaryStatement(options: {
     }
   }
 
-  // Fallback: Open WhatsApp with clean summary text pointing to the attached PDF
+  // Fallback: Open WhatsApp directly to the chat without dumping redundant text block (PDF already auto-downloaded)
   const finalPhone = sanitizeWhatsAppNumber(targetPhone);
   const whatsappUrl = finalPhone
-    ? `https://api.whatsapp.com/send?phone=${finalPhone}&text=${encodeURIComponent(messageText)}`
-    : `https://api.whatsapp.com/send?text=${encodeURIComponent(messageText)}`;
+    ? `https://api.whatsapp.com/send?phone=${finalPhone}`
+    : `https://api.whatsapp.com/send`;
 
   window.open(whatsappUrl, "_blank");
   return { method: "whatsapp-web", fileName };
@@ -719,9 +746,9 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
           <thead>
             <tr style="background: #142B4A; color: #ffffff;">
               <th style="padding: 6px 8px; text-align: center; font-size: 9.5px; font-weight: 800; width: 6%;">#</th>
-              <th style="padding: 6px 8px; text-align: left; font-size: 9.5px; font-weight: 800; width: 14%;">DATE</th>
+              <th style="padding: 6px 8px; text-align: center; font-size: 9.5px; font-weight: 800; width: 14%;">DATE</th>
               <th style="padding: 6px 8px; text-align: left; font-size: 9.5px; font-weight: 800; width: 33%;">ROUTE CORRIDOR</th>
-              <th style="padding: 6px 8px; text-align: left; font-size: 9.5px; font-weight: 800; width: 18%;">VEHICLE NO</th>
+              <th style="padding: 6px 8px; text-align: center; font-size: 9.5px; font-weight: 800; width: 18%;">VEHICLE NO</th>
               <th style="padding: 6px 8px; text-align: right; font-size: 9.5px; font-weight: 800; width: 10%;">SALARY (Rs)</th>
               <th style="padding: 6px 8px; text-align: right; font-size: 9.5px; font-weight: 800; width: 10%;">PAID (Rs)</th>
               <th style="padding: 6px 8px; text-align: right; font-size: 9.5px; font-weight: 800; width: 10%;">DUE (Rs)</th>
@@ -755,10 +782,10 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
             <thead>
               <tr style="background: #142B4A; color: #ffffff;">
                 <th style="padding: 5px 8px; text-align: center; font-size: 9.5px; font-weight: 800; width: 6%;">#</th>
-                <th style="padding: 5px 8px; text-align: left; font-size: 9.5px; font-weight: 800; width: 16%;">PAYMENT DATE</th>
+                <th style="padding: 5px 8px; text-align: center; font-size: 9.5px; font-weight: 800; width: 16%;">PAYMENT DATE</th>
                 <th style="padding: 5px 8px; text-align: right; font-size: 9.5px; font-weight: 800; width: 16%;">AMOUNT (Rs)</th>
-                <th style="padding: 5px 8px; text-align: left; font-size: 9.5px; font-weight: 800; width: 18%;">MODE</th>
-                <th style="padding: 5px 8px; text-align: left; font-size: 9.5px; font-weight: 800; width: 18%;">TYPE</th>
+                <th style="padding: 5px 8px; text-align: center; font-size: 9.5px; font-weight: 800; width: 18%;">MODE</th>
+                <th style="padding: 5px 8px; text-align: center; font-size: 9.5px; font-weight: 800; width: 18%;">TYPE</th>
                 <th style="padding: 5px 8px; text-align: left; font-size: 9.5px; font-weight: 800; width: 26%;">NOTES</th>
               </tr>
             </thead>
