@@ -1831,52 +1831,6 @@ _This is an official automated monthly salary & trip record statement._`;
                 </div>
               </div>
 
-              {/* Automated Monthly WhatsApp Auto-Dispatch Card */}
-              <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/70 border border-emerald-200/90 rounded-3xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/30">
-                    <MessageCircle className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-sm font-black text-emerald-950 uppercase tracking-wider">
-                        Monthly WhatsApp Auto-Dispatch: {currentMonthLabel}
-                      </h4>
-                      <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
-                        dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`]
-                          ? 'bg-emerald-200 text-emerald-900 border border-emerald-300'
-                          : 'bg-amber-100 text-amber-900 border border-amber-300'
-                      }`}>
-                        {dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`]
-                          ? `✓ Dispatched on ${dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`].sent_at}`
-                          : '⚡ Month Complete: Ready to Send'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-emerald-800 font-medium mt-1">
-                      {dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`]
-                        ? `Monthly salary statement for ${r.full_name} (${dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`].phone}) is sent via WhatsApp.`
-                        : `Every completed month, this employee's total salary (₹${r.salaryEarned.toLocaleString("en-IN")}), advance paid, balance due (₹${r.pendingDue.toLocaleString("en-IN")}), and trip breakdown are prepared to send directly to WhatsApp.`}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2.5 self-stretch md:self-auto shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => handleOpenWhatsAppModal(r)}
-                    className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap"
-                    title="Send monthly payment and trip statement to this employee via WhatsApp"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>
-                      {dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`]
-                        ? "Resend via WhatsApp"
-                        : "Send Monthly WhatsApp"}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
               {/* 3 KPI Summary Cards (Glowing Vibrant Color Palette) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {/* TOTAL SALARY EARNED (Sky Blue Gradient) */}
