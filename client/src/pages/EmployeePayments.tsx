@@ -4,7 +4,8 @@ import {
   ArrowLeft, User, Bus, ShieldCheck, IndianRupee, CheckCircle2, Clock,
   Calendar, Download, MapPin, Hash, AlertCircle, ChevronLeft, ChevronRight, Search,
   Users, ChevronDown, Filter, Wallet, ArrowRight, Receipt, Printer, X,
-  Upload, Image as ImageIcon, Eye, FileText, Edit2, Trash2
+  Upload, Image as ImageIcon, Eye, FileText, Edit2, Trash2,
+  MessageCircle, Copy, Phone, Send, Sparkles
 } from "lucide-react";
 import { api } from "../services/api";
 import { useToast } from "../components/common/Toast";
@@ -126,6 +127,21 @@ export const EmployeePayments: React.FC = () => {
     notes?: string;
   } | null>(null);
   const [deletingPayment, setDeletingPayment] = useState<RecordedPayment | null>(null);
+
+  // WhatsApp Monthly Auto-Dispatch States
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [whatsAppTargetEmployee, setWhatsAppTargetEmployee] = useState<EmployeePaymentRecord | null>(null);
+  const [whatsAppPhone, setWhatsAppPhone] = useState("");
+  const [whatsAppMonth, setWhatsAppMonth] = useState("");
+  const [isBulkWhatsAppOpen, setIsBulkWhatsAppOpen] = useState(false);
+  const [dispatchesMap, setDispatchesMap] = useState<Record<string, { sent_at: string; phone: string; amount: number }>>({});
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("charvik_employee_monthly_whatsapp_dispatches");
+      if (raw) setDispatchesMap(JSON.parse(raw));
+    } catch {}
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -704,6 +720,221 @@ export const EmployeePayments: React.FC = () => {
       ) || null
     );
   }, [employees, r]);
+
+  const currentMonthLabel = useMemo(() => {
+    const now = new Date();
+    return now.toLocaleString("en-IN", { month: "long", year: "numeric" });
+  }, []);
+
+  const currentMonthKey = useMemo(() => {
+    const now = new Date();
+    return now.toISOString().substring(0, 7);
+  }, []);
+
+  const sanitizeWhatsAppPhone = (phoneStr: string): string => {
+    const digits = (phoneStr || "").replace(/\D/g, "");
+    if (!digits) return "";
+    if (digits.length === 10) return `91${digits}`;
+    if (digits.length === 11 && digits.startsWith("0")) return `91${digits.slice(1)}`;
+    if (digits.length === 12 && digits.startsWith("91")) return digits;
+    return digits;
+  };
+
+  const generateWhatsAppMonthlyStatement = (
+    employee: EmployeePaymentRecord,
+    tripsList: TripEntry[],
+    paymentsList: RecordedPayment[],
+    monthLabel: string,
+    staffPhone: string
+  ) => {
+    const totalSal = tripsList.reduce((a, b) => a + (b.salary || 0), 0);
+    const totalPaid = tripsList.reduce((a, b) => a + (b.advance || 0), 0);
+    const totalDue = tripsList.reduce((a, b) => a + (b.balance_due || 0), 0);
+
+    const formattedTrips =
+      tripsList.length > 0
+        ? tripsList
+            .map((t, idx) => {
+              const d = t.date
+                ? t.date.includes("-")
+                  ? t.date.split("-").reverse().join("/")
+                  : t.date
+                : "-";
+              return `${idx + 1}. *${d}* | *${t.route_corridor}*\n   🚌 Bus: *${t.vehicle_number}*\n   💵 Salary: ₹${t.salary.toLocaleString("en-IN")} | Paid: ₹${t.advance.toLocaleString("en-IN")} | Due: ₹${t.balance_due.toLocaleString("en-IN")}`;
+            })
+            .join("\n\n")
+        : "(No trip duties recorded for this period)";
+
+    const formattedPayments =
+      paymentsList.length > 0
+        ? paymentsList
+            .map((p, idx) => {
+              const pd = p.payment_date
+                ? p.payment_date.includes("-")
+                  ? p.payment_date.split("-").reverse().join("/")
+                  : p.payment_date
+                : "-";
+              return `${idx + 1}. *${pd}:* ₹${Number(p.amount).toLocaleString("en-IN")} (${p.payment_mode} - ${p.payment_type})${p.notes ? ` - ${p.notes}` : ""}`;
+            })
+            .join("\n")
+        : "(No direct disbursement records logged for this period)";
+
+    const statusText = totalDue <= 0 ? "✅ FULLY SETTLED / PAID" : "⏳ PENDING PAYMENT";
+
+    return `🌟 *CHARVIK STAFFING CONSULTANCY* 🌟
+📋 *MONTHLY SALARY & TRIP SETTLEMENT STATEMENT*
+════════════════════════════
+👤 *Staff Name:* ${employee.full_name}
+🆔 *Employee ID:* ${formatEmployeeId(employee.employee_code, employee.role)}
+💼 *Role:* ${employee.role}
+📅 *Billing Period:* ${monthLabel}
+📱 *Staff Phone:* ${staffPhone || "-"}
+════════════════════════════
+💰 *PAYMENT & SALARY SUMMARY:*
+• *Total Salary Earned:* ₹${totalSal.toLocaleString("en-IN")}
+• *Total Paid / Advance:* ₹${totalPaid.toLocaleString("en-IN")}
+• *Net Remaining Due:* ₹${totalDue.toLocaleString("en-IN")}
+• *Payment Status:* ${statusText}
+════════════════════════════
+🚌 *RECORDS OF TRIPS (${tripsList.length} Trips):*
+${formattedTrips}
+════════════════════════════
+💳 *RECORDS OF PAYMENTS (${paymentsList.length} Payments):*
+${formattedPayments}
+════════════════════════════
+🏢 *CHARVIK STAFFING CONSULTANCY*
+📍 NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana
+📞 Helpline: +91 9505151527
+📧 charvikstaffingconsultancy@gmail.com
+🌐 www.charvikstaffing.com
+════════════════════════════
+_This is an official automated monthly salary & trip record statement._`;
+  };
+
+  const generateWhatsAppTripSlip = (
+    employee: EmployeePaymentRecord,
+    trip: TripEntry
+  ) => {
+    const d = trip.date
+      ? trip.date.includes("-")
+        ? trip.date.split("-").reverse().join("/")
+        : trip.date
+      : "-";
+    return `🌟 *CHARVIK STAFFING CONSULTANCY* 🌟
+🎫 *OFFICIAL TRIP DUTY & SALARY SLIP*
+════════════════════════════
+👤 *Staff Name:* ${employee.full_name}
+🆔 *Staff ID:* ${formatEmployeeId(employee.employee_code, employee.role)} (${employee.role})
+📅 *Trip Date:* ${d}
+🚌 *Vehicle No:* ${trip.vehicle_number}
+🛣️ *Route:* ${trip.route_corridor}
+════════════════════════════
+💰 *TRIP SALARY DETAILS:*
+• *Trip Salary:* ₹${trip.salary.toLocaleString("en-IN")}
+• *Advance / Paid:* ₹${trip.advance.toLocaleString("en-IN")}
+• *Balance Due:* ₹${trip.balance_due.toLocaleString("en-IN")}
+• *Trip Status:* ${trip.isPaid ? "✅ PAID" : "⏳ PENDING PAYMENT"}
+════════════════════════════
+📞 Helpline: +91 9505151527 | Charvik Staffing Consultancy`;
+  };
+
+  const handleOpenWhatsAppModal = (emp?: EmployeePaymentRecord | null) => {
+    const target = emp || r;
+    if (!target) return;
+    setWhatsAppTargetEmployee(target);
+    const targetRawEmp = employees.find(
+      (e) =>
+        e.id === target.id ||
+        (e.employee_code && e.employee_code === target.employee_code) ||
+        (e.full_name && e.full_name.toLowerCase() === target.full_name.toLowerCase())
+    );
+    const phone = targetRawEmp?.phone || targetRawEmp?.phone_number || targetRawEmp?.mobile || target.phone || "";
+    setWhatsAppPhone(phone);
+    setWhatsAppMonth(currentMonthLabel);
+    setIsWhatsAppModalOpen(true);
+  };
+
+  const handleSendTripWhatsApp = (trip: TripEntry) => {
+    if (!r) return;
+    const phone = rawEmp?.phone || rawEmp?.phone_number || rawEmp?.mobile || r.phone || "";
+    const clean = phone.replace(/\D/g, "");
+    const finalPhone = clean.length === 10 ? `91${clean}` : clean.startsWith("0") ? `91${clean.slice(1)}` : clean;
+    const msg = generateWhatsAppTripSlip(r, trip);
+    const url = finalPhone
+      ? `https://api.whatsapp.com/send?phone=${finalPhone}&text=${encodeURIComponent(msg)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+    success(`Opening WhatsApp with Trip Slip for ${r.full_name}!`);
+  };
+
+  const handleConfirmSendMonthlyWhatsApp = () => {
+    if (!whatsAppTargetEmployee) return;
+    const clean = whatsAppPhone.replace(/\D/g, "");
+    if (!clean) {
+      error("Please enter a valid WhatsApp mobile number for this employee.");
+      return;
+    }
+    const finalPhone = clean.length === 10 ? `91${clean}` : clean.startsWith("0") ? `91${clean.slice(1)}` : clean;
+
+    const staffPayments = paymentHistory.filter(
+      (p) =>
+        (p.employee_code && p.employee_code.toLowerCase() === (whatsAppTargetEmployee.employee_code || "").toLowerCase()) ||
+        (p.employee_name && p.employee_name.toLowerCase() === whatsAppTargetEmployee.full_name.toLowerCase())
+    );
+
+    const msg = generateWhatsAppMonthlyStatement(
+      whatsAppTargetEmployee,
+      whatsAppTargetEmployee.trips || [],
+      staffPayments,
+      whatsAppMonth || currentMonthLabel,
+      whatsAppPhone
+    );
+
+    const url = `https://api.whatsapp.com/send?phone=${finalPhone}&text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+
+    const empKey = (whatsAppTargetEmployee.employee_code || whatsAppTargetEmployee.full_name).trim().toLowerCase();
+    const updated = {
+      ...dispatchesMap,
+      [`${empKey}_${currentMonthKey}`]: {
+        sent_at: new Date().toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true
+        }),
+        phone: whatsAppPhone,
+        amount: whatsAppTargetEmployee.pendingDue
+      }
+    };
+    setDispatchesMap(updated);
+    try {
+      localStorage.setItem("charvik_employee_monthly_whatsapp_dispatches", JSON.stringify(updated));
+    } catch {}
+
+    success(`Monthly WhatsApp statement sent to ${whatsAppTargetEmployee.full_name}!`);
+    setIsWhatsAppModalOpen(false);
+  };
+
+  const handleCopyWhatsAppMessage = () => {
+    if (!whatsAppTargetEmployee) return;
+    const staffPayments = paymentHistory.filter(
+      (p) =>
+        (p.employee_code && p.employee_code.toLowerCase() === (whatsAppTargetEmployee.employee_code || "").toLowerCase()) ||
+        (p.employee_name && p.employee_name.toLowerCase() === whatsAppTargetEmployee.full_name.toLowerCase())
+    );
+    const msg = generateWhatsAppMonthlyStatement(
+      whatsAppTargetEmployee,
+      whatsAppTargetEmployee.trips || [],
+      staffPayments,
+      whatsAppMonth || currentMonthLabel,
+      whatsAppPhone
+    );
+    navigator.clipboard.writeText(msg);
+    success("Statement copied to clipboard!");
+  };
 
   if (loading) {
     return (
@@ -1402,6 +1633,16 @@ export const EmployeePayments: React.FC = () => {
             <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
               <button
                 type="button"
+                onClick={() => handleOpenWhatsAppModal(r)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                title="Send official monthly statement to this employee via WhatsApp"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Send Monthly WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => handleOpenRecordPayment(r)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#142B4A] hover:bg-[#1E3A5F] text-white transition-all cursor-pointer shadow-xs whitespace-nowrap"
               >
@@ -1506,6 +1747,52 @@ export const EmployeePayments: React.FC = () => {
                 </div>
               </div>
 
+              {/* Automated Monthly WhatsApp Auto-Dispatch Card */}
+              <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/70 border border-emerald-200/90 rounded-3xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/30">
+                    <MessageCircle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-sm font-black text-emerald-950 uppercase tracking-wider">
+                        Monthly WhatsApp Auto-Dispatch: {currentMonthLabel}
+                      </h4>
+                      <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                        dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`]
+                          ? 'bg-emerald-200 text-emerald-900 border border-emerald-300'
+                          : 'bg-amber-100 text-amber-900 border border-amber-300'
+                      }`}>
+                        {dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`]
+                          ? `✓ Dispatched on ${dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`].sent_at}`
+                          : '⚡ Month Complete: Ready to Send'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-emerald-800 font-medium mt-1">
+                      {dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`]
+                        ? `Monthly salary statement for ${r.full_name} (${dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`].phone}) is sent via WhatsApp.`
+                        : `Every completed month, this employee's total salary (₹${r.salaryEarned.toLocaleString("en-IN")}), advance paid, balance due (₹${r.pendingDue.toLocaleString("en-IN")}), and trip breakdown are prepared to send directly to WhatsApp.`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 self-stretch md:self-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenWhatsAppModal(r)}
+                    className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap"
+                    title="Send monthly payment and trip statement to this employee via WhatsApp"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>
+                      {dispatchesMap[`${(r.employee_code || r.full_name).trim().toLowerCase()}_${currentMonthKey}`]
+                        ? "Resend via WhatsApp"
+                        : "Send Monthly WhatsApp"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               {/* 3 KPI Summary Cards (Glowing Vibrant Color Palette) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {/* TOTAL SALARY EARNED (Sky Blue Gradient) */}
@@ -1562,6 +1849,15 @@ export const EmployeePayments: React.FC = () => {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-base font-bold text-slate-800">Records of Trips</h3>
                   <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenWhatsAppModal(r)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-2xs cursor-pointer"
+                      title="Send Complete Monthly Statement to Employee via WhatsApp"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Send WhatsApp</span>
+                    </button>
                     <button
                       type="button"
                       onClick={handlePrintTripLedger}
@@ -1632,6 +1928,14 @@ export const EmployeePayments: React.FC = () => {
                                       title="Print Payment Slip"
                                     >
                                       <Printer className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSendTripWhatsApp(trip)}
+                                      className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                                      title="Send Trip Slip via WhatsApp"
+                                    >
+                                      <MessageCircle className="w-3.5 h-3.5" />
                                     </button>
                                     <button
                                       type="button"
@@ -1955,6 +2259,16 @@ export const EmployeePayments: React.FC = () => {
 
                   <button
                     type="button"
+                    onClick={() => setIsBulkWhatsAppOpen(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer shadow-md whitespace-nowrap"
+                    title="Open Monthly WhatsApp Auto-Dispatch Roster"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Monthly WhatsApp Dispatch</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => handleOpenRecordPayment(null)}
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black bg-white text-blue-900 hover:bg-blue-50 transition-all cursor-pointer shadow-md whitespace-nowrap"
                     title="Record new payment for staff"
@@ -2204,6 +2518,17 @@ export const EmployeePayments: React.FC = () => {
                                 >
                                   <span className="font-black text-emerald-600">₹</span>
                                   <span>Pay</span>
+                                </button>
+
+                                {/* WhatsApp monthly statement button */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenWhatsAppModal(emp)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-600 hover:text-white cursor-pointer shadow-2xs transition-all"
+                                  title="Send Monthly WhatsApp Statement"
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5" />
+                                  <span>WhatsApp</span>
                                 </button>
 
                                 {/* View Ledger button */}
@@ -2879,6 +3204,271 @@ export const EmployeePayments: React.FC = () => {
                 className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-xs cursor-pointer"
               >
                 Yes, Delete Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Monthly Statement Modal */}
+      {isWhatsAppModalOpen && whatsAppTargetEmployee && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setIsWhatsAppModalOpen(false)}
+        >
+          <div
+            className="relative max-w-xl w-full bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 p-5 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black tracking-wide">
+                    Monthly WhatsApp Salary Statement
+                  </h3>
+                  <p className="text-xs text-emerald-100 font-medium">
+                    Send completed monthly statement directly to staff via WhatsApp
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsWhatsAppModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 pt-2 space-y-4 max-h-[75vh] overflow-y-auto">
+              {/* Employee Summary Card */}
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-black text-slate-900">{whatsAppTargetEmployee.full_name}</h4>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Role: <strong className="text-slate-800">{whatsAppTargetEmployee.role}</strong> &nbsp;|&nbsp;
+                    ID: <strong className="font-mono text-blue-700">{formatEmployeeId(whatsAppTargetEmployee.employee_code, whatsAppTargetEmployee.role)}</strong>
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Remaining Due</span>
+                  <span className="text-base font-black font-mono text-rose-600">
+                    ₹{whatsAppTargetEmployee.pendingDue.toLocaleString("en-IN")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Form Controls: Phone & Billing Month */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    WhatsApp Mobile Number <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="tel"
+                      value={whatsAppPhone}
+                      onChange={(e) => setWhatsAppPhone(e.target.value)}
+                      placeholder="e.g. 9848012345"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl text-xs font-bold text-slate-900 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                    />
+                  </div>
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">10-digit mobile number for WhatsApp</span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Billing Period / Month
+                  </label>
+                  <input
+                    type="text"
+                    value={whatsAppMonth}
+                    onChange={(e) => setWhatsAppMonth(e.target.value)}
+                    placeholder="e.g. November 2026"
+                    className="w-full px-3 py-2 rounded-xl text-xs font-bold text-slate-900 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">Cycle statement period</span>
+                </div>
+              </div>
+
+              {/* Message Live Preview */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-700">
+                    WhatsApp Message Preview
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleCopyWhatsAppMessage}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>Copy Text</span>
+                  </button>
+                </div>
+                <div className="bg-[#0b141a] text-[#e9edef] rounded-2xl p-4 text-xs font-mono whitespace-pre-wrap max-h-60 overflow-y-auto border border-emerald-950/40 shadow-inner leading-relaxed">
+                  {generateWhatsAppMonthlyStatement(
+                    whatsAppTargetEmployee,
+                    whatsAppTargetEmployee.trips || [],
+                    paymentHistory.filter(
+                      (p) =>
+                        (p.employee_code && p.employee_code.toLowerCase() === (whatsAppTargetEmployee.employee_code || "").toLowerCase()) ||
+                        (p.employee_name && p.employee_name.toLowerCase() === whatsAppTargetEmployee.full_name.toLowerCase())
+                    ),
+                    whatsAppMonth || currentMonthLabel,
+                    whatsAppPhone
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsWhatsAppModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSendMonthlyWhatsApp}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md hover:shadow-lg cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Send via WhatsApp Now</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Monthly WhatsApp Auto-Dispatch Roster Modal */}
+      {isBulkWhatsAppOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setIsBulkWhatsAppOpen(false)}
+        >
+          <div
+            className="relative max-w-3xl w-full bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 p-5 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black tracking-wide">
+                    Monthly WhatsApp Auto-Dispatch Roster • {currentMonthLabel}
+                  </h3>
+                  <p className="text-xs text-emerald-100 font-medium">
+                    1-Click WhatsApp monthly statements dispatch for all active crew &amp; drivers
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBulkWhatsAppOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 pt-2 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between text-xs text-emerald-950">
+                <span>Active Personnel in {currentMonthLabel}: <strong>{allEmployeeRecords.filter(e => e.tasksHandled > 0).length} Staff Members</strong></span>
+                <span>Total Month Dues: <strong className="font-mono text-rose-700">₹{allEmployeeRecords.reduce((acc, curr) => acc + curr.pendingDue, 0).toLocaleString("en-IN")}</strong></span>
+              </div>
+
+              <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#0B3A79] text-white uppercase font-bold text-[11px]">
+                    <tr>
+                      <th className="py-2.5 px-3">STAFF NAME</th>
+                      <th className="py-2.5 px-3">ROLE</th>
+                      <th className="py-2.5 px-3">TRIPS</th>
+                      <th className="py-2.5 px-3">TOTAL EARNED</th>
+                      <th className="py-2.5 px-3">REMAINING DUE</th>
+                      <th className="py-2.5 px-3">DISPATCH STATUS</th>
+                      <th className="py-2.5 px-3 text-center">ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                    {allEmployeeRecords.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-slate-400">
+                          No employee records found for this period.
+                        </td>
+                      </tr>
+                    ) : (
+                      allEmployeeRecords.map((emp) => {
+                        const empKey = (emp.employee_code || emp.full_name).trim().toLowerCase();
+                        const dispatch = dispatchesMap[`${empKey}_${currentMonthKey}`];
+                        return (
+                          <tr key={emp.id + emp.full_name} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-2.5 px-3 font-bold text-slate-900">
+                              {emp.full_name}
+                              <span className="block text-[10px] font-mono text-slate-400">{formatEmployeeId(emp.employee_code, emp.role)}</span>
+                            </td>
+                            <td className="py-2.5 px-3 font-semibold text-slate-700">{emp.role}</td>
+                            <td className="py-2.5 px-3 font-bold">{emp.tasksHandled}</td>
+                            <td className="py-2.5 px-3 font-mono font-bold">₹{emp.salaryEarned.toLocaleString("en-IN")}</td>
+                            <td className="py-2.5 px-3 font-mono font-black text-rose-600">₹{emp.pendingDue.toLocaleString("en-IN")}</td>
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              {dispatch ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                  ✓ Sent
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                  Pending
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsBulkWhatsAppOpen(false);
+                                  handleOpenWhatsAppModal(emp);
+                                }}
+                                className="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition-all cursor-pointer"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                                <span>{dispatch ? "Resend" : "Send"}</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-xs text-slate-500 font-medium">
+                Dispatches are saved automatically to the audit ledger.
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsBulkWhatsAppOpen(false)}
+                className="px-5 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                Close
               </button>
             </div>
           </div>
