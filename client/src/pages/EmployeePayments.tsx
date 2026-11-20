@@ -5,7 +5,7 @@ import {
   Calendar, Download, MapPin, Hash, AlertCircle, ChevronLeft, ChevronRight, Search,
   Users, ChevronDown, Filter, Wallet, ArrowRight, Receipt, Printer, X,
   Upload, Image as ImageIcon, Eye, FileText, Edit2, Trash2,
-  MessageCircle, Copy, Phone, Send, Sparkles
+  MessageCircle, Copy, Phone, Send, Sparkles, Loader2, Share2
 } from "lucide-react";
 import { api } from "../services/api";
 import { useToast } from "../components/common/Toast";
@@ -13,6 +13,13 @@ import { PrintButton } from "../components/common/PrintButton";
 import { printSheet } from "../utils/printSheet";
 import { formatEmployeeId } from "../utils/employeeCode";
 import { exportTableToExcel } from "../utils/exportToExcel";
+import {
+  generateSalaryStatementHtml,
+  downloadSalaryStatementPdf,
+  shareOrSendWhatsAppSalaryStatement,
+  buildSalaryPdfFileName,
+  type StatementPdfData
+} from "../utils/statementPdf";
 
 interface TripEntry {
   id: number | string;
@@ -135,6 +142,8 @@ export const EmployeePayments: React.FC = () => {
   const [whatsAppMonth, setWhatsAppMonth] = useState("");
   const [isBulkWhatsAppOpen, setIsBulkWhatsAppOpen] = useState(false);
   const [dispatchesMap, setDispatchesMap] = useState<Record<string, { sent_at: string; phone: string; amount: number }>>({});
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfPreviewTab, setPdfPreviewTab] = useState<"pdf" | "text">("pdf");
 
   useEffect(() => {
     try {
@@ -867,55 +876,130 @@ _This is an official automated monthly salary & trip record statement._`;
     success(`Opening WhatsApp with Trip Slip for ${r.full_name}!`);
   };
 
-  const handleConfirmSendMonthlyWhatsApp = () => {
+  const getPdfDataForTarget = (
+    emp: EmployeePaymentRecord,
+    phoneStr: string,
+    monthStr: string
+  ): StatementPdfData => {
+    const rawTarget = employees.find(
+      (e) =>
+        e.id === emp.id ||
+        (e.employee_code && e.employee_code === emp.employee_code) ||
+        (e.full_name && e.full_name.toLowerCase() === emp.full_name.toLowerCase())
+    );
+    const staffPayments = paymentHistory.filter(
+      (p) =>
+        (p.employee_code && p.employee_code.toLowerCase() === (emp.employee_code || "").toLowerCase()) ||
+        (p.employee_name && p.employee_name.toLowerCase() === emp.full_name.toLowerCase())
+    );
+    return {
+      employee: {
+        full_name: emp.full_name,
+        employee_code: emp.employee_code,
+        role: emp.role,
+        phone: phoneStr || emp.phone,
+        salaryEarned: emp.salaryEarned,
+        pendingDue: emp.pendingDue,
+        advancePaid: emp.advancePaid,
+        branch: rawTarget?.branch || rawEmp?.branch
+      },
+      trips: emp.trips || [],
+      payments: staffPayments,
+      monthLabel: monthStr || currentMonthLabel,
+      staffPhone: phoneStr
+    };
+  };
+
+  const handleConfirmSendMonthlyWhatsApp = async () => {
     if (!whatsAppTargetEmployee) return;
     const clean = whatsAppPhone.replace(/\D/g, "");
     if (!clean) {
       error("Please enter a valid WhatsApp mobile number for this employee.");
       return;
     }
-    const finalPhone = clean.length === 10 ? `91${clean}` : clean.startsWith("0") ? `91${clean.slice(1)}` : clean;
 
-    const staffPayments = paymentHistory.filter(
-      (p) =>
-        (p.employee_code && p.employee_code.toLowerCase() === (whatsAppTargetEmployee.employee_code || "").toLowerCase()) ||
-        (p.employee_name && p.employee_name.toLowerCase() === whatsAppTargetEmployee.full_name.toLowerCase())
-    );
-
-    const msg = generateWhatsAppMonthlyStatement(
-      whatsAppTargetEmployee,
-      whatsAppTargetEmployee.trips || [],
-      staffPayments,
-      whatsAppMonth || currentMonthLabel,
-      whatsAppPhone
-    );
-
-    const url = `https://api.whatsapp.com/send?phone=${finalPhone}&text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
-
-    const empKey = (whatsAppTargetEmployee.employee_code || whatsAppTargetEmployee.full_name).trim().toLowerCase();
-    const updated = {
-      ...dispatchesMap,
-      [`${empKey}_${currentMonthKey}`]: {
-        sent_at: new Date().toLocaleString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true
-        }),
-        phone: whatsAppPhone,
-        amount: whatsAppTargetEmployee.pendingDue
-      }
-    };
-    setDispatchesMap(updated);
     try {
-      localStorage.setItem("charvik_employee_monthly_whatsapp_dispatches", JSON.stringify(updated));
-    } catch {}
+      setIsGeneratingPdf(true);
+      const pdfData = getPdfDataForTarget(
+        whatsAppTargetEmployee,
+        whatsAppPhone,
+        whatsAppMonth || currentMonthLabel
+      );
 
-    success(`Monthly WhatsApp statement sent to ${whatsAppTargetEmployee.full_name}!`);
-    setIsWhatsAppModalOpen(false);
+      const result = await shareOrSendWhatsAppSalaryStatement({
+        data: pdfData,
+        targetPhone: whatsAppPhone
+      });
+
+      const empKey = (whatsAppTargetEmployee.employee_code || whatsAppTargetEmployee.full_name).trim().toLowerCase();
+      const updated = {
+        ...dispatchesMap,
+        [`${empKey}_${currentMonthKey}`]: {
+          sent_at: new Date().toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+          }),
+          phone: whatsAppPhone,
+          amount: whatsAppTargetEmployee.pendingDue
+        }
+      };
+      setDispatchesMap(updated);
+      try {
+        localStorage.setItem("charvik_employee_monthly_whatsapp_dispatches", JSON.stringify(updated));
+      } catch {}
+
+      if (result.method === "native-share") {
+        success(`Monthly Salary Statement PDF dispatched directly to WhatsApp for ${whatsAppTargetEmployee.full_name}!`);
+      } else {
+        success(`Official PDF Statement downloaded (${result.fileName}) & WhatsApp opened!`);
+      }
+      setIsWhatsAppModalOpen(false);
+    } catch (err: any) {
+      console.error("PDF WhatsApp dispatch error:", err);
+      error("Failed to generate PDF statement: " + (err?.message || err));
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleDirectDownloadPdf = async () => {
+    if (!whatsAppTargetEmployee) return;
+    try {
+      setIsGeneratingPdf(true);
+      const pdfData = getPdfDataForTarget(
+        whatsAppTargetEmployee,
+        whatsAppPhone,
+        whatsAppMonth || currentMonthLabel
+      );
+      const fileName = await downloadSalaryStatementPdf(pdfData);
+      success(`Official statement PDF downloaded: ${fileName}`);
+    } catch (err: any) {
+      console.error("Direct download PDF error:", err);
+      error("Failed to generate PDF: " + (err?.message || err));
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handlePrintStatementSheet = () => {
+    if (!whatsAppTargetEmployee) return;
+    const pdfData = getPdfDataForTarget(
+      whatsAppTargetEmployee,
+      whatsAppPhone,
+      whatsAppMonth || currentMonthLabel
+    );
+    printSheet({
+      title: `${whatsAppTargetEmployee.full_name} - Monthly Salary Statement`,
+      subtitle: `Official Statement | Cycle: ${whatsAppMonth || currentMonthLabel}`,
+      orientation: "portrait",
+      hideMetaBar: true,
+      hideHeader: true,
+      htmlContent: generateSalaryStatementHtml(pdfData)
+    });
   };
 
   const handleCopyWhatsAppMessage = () => {
@@ -933,7 +1017,7 @@ _This is an official automated monthly salary & trip record statement._`;
       whatsAppPhone
     );
     navigator.clipboard.writeText(msg);
-    success("Statement copied to clipboard!");
+    success("Statement text copied to clipboard!");
   };
 
   if (loading) {
@@ -3214,10 +3298,10 @@ _This is an official automated monthly salary & trip record statement._`;
       {isWhatsAppModalOpen && whatsAppTargetEmployee && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in"
-          onClick={() => setIsWhatsAppModalOpen(false)}
+          onClick={() => !isGeneratingPdf && setIsWhatsAppModalOpen(false)}
         >
           <div
-            className="relative max-w-xl w-full bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden space-y-4"
+            className="relative max-w-2xl w-full bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -3227,18 +3311,24 @@ _This is an official automated monthly salary & trip record statement._`;
                   <MessageCircle className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black tracking-wide">
-                    Monthly WhatsApp Salary Statement
-                  </h3>
-                  <p className="text-xs text-emerald-100 font-medium">
-                    Send completed monthly statement directly to staff via WhatsApp
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-black tracking-wide">
+                      Monthly Salary Statement
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/25 text-white border border-white/30">
+                      PDF Document
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-100 font-medium mt-0.5">
+                    Generates official Charvik Letterhead A4 PDF &amp; dispatches via WhatsApp
                   </p>
                 </div>
               </div>
               <button
                 type="button"
+                disabled={isGeneratingPdf}
                 onClick={() => setIsWhatsAppModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors text-white cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors text-white cursor-pointer disabled:opacity-50"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -3279,7 +3369,7 @@ _This is an official automated monthly salary & trip record statement._`;
                       className="w-full pl-9 pr-3 py-2 rounded-xl text-xs font-bold text-slate-900 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
                     />
                   </div>
-                  <span className="text-[10px] text-slate-400 mt-0.5 block">10-digit mobile number for WhatsApp</span>
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">10-digit mobile number for WhatsApp delivery</span>
                 </div>
 
                 <div>
@@ -3293,58 +3383,169 @@ _This is an official automated monthly salary & trip record statement._`;
                     placeholder="e.g. November 2026"
                     className="w-full px-3 py-2 rounded-xl text-xs font-bold text-slate-900 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
                   />
-                  <span className="text-[10px] text-slate-400 mt-0.5 block">Cycle statement period</span>
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">Cycle statement period label</span>
                 </div>
               </div>
 
-              {/* Message Live Preview */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-slate-700">
-                    WhatsApp Message Preview
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleCopyWhatsAppMessage}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer"
-                  >
-                    <Copy className="w-3 h-3" />
-                    <span>Copy Text</span>
-                  </button>
+              {/* Notice Card: PDF Generation */}
+              <div className="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 flex items-start gap-2.5">
+                <FileText className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                <div className="text-xs text-emerald-900 leading-relaxed">
+                  <strong>Official PDF Delivery:</strong> Clicking <strong>Send PDF via WhatsApp</strong> automatically compiles the official statement into an A4 document with the Charvik letterhead, seal, itemized trip duties, and payments, ready for direct WhatsApp dispatch.
                 </div>
-                <div className="bg-[#0b141a] text-[#e9edef] rounded-2xl p-4 text-xs font-mono whitespace-pre-wrap max-h-60 overflow-y-auto border border-emerald-950/40 shadow-inner leading-relaxed">
-                  {generateWhatsAppMonthlyStatement(
-                    whatsAppTargetEmployee,
-                    whatsAppTargetEmployee.trips || [],
-                    paymentHistory.filter(
-                      (p) =>
-                        (p.employee_code && p.employee_code.toLowerCase() === (whatsAppTargetEmployee.employee_code || "").toLowerCase()) ||
-                        (p.employee_name && p.employee_name.toLowerCase() === whatsAppTargetEmployee.full_name.toLowerCase())
-                    ),
-                    whatsAppMonth || currentMonthLabel,
-                    whatsAppPhone
-                  )}
+              </div>
+
+              {/* Live Preview Tabs */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setPdfPreviewTab("pdf")}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        pdfPreviewTab === "pdf"
+                          ? "bg-white text-emerald-800 shadow-xs"
+                          : "text-slate-500 hover:text-slate-900"
+                      }`}
+                    >
+                      <FileText className="w-3.5 h-3.5 text-rose-500" />
+                      <span>PDF Document Preview</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPdfPreviewTab("text")}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        pdfPreviewTab === "text"
+                          ? "bg-white text-emerald-800 shadow-xs"
+                          : "text-slate-500 hover:text-slate-900"
+                      }`}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>WhatsApp Summary</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handlePrintStatementSheet}
+                      title="Print or Save as PDF via Browser"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 hover:underline cursor-pointer"
+                    >
+                      <Printer className="w-3 h-3 text-slate-500" />
+                      <span>Print Sheet</span>
+                    </button>
+                    {pdfPreviewTab === "text" && (
+                      <button
+                        type="button"
+                        onClick={handleCopyWhatsAppMessage}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 hover:underline cursor-pointer"
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>Copy Text</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {pdfPreviewTab === "pdf" ? (
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50 shadow-inner">
+                    <div className="bg-slate-100 px-3 py-1.5 text-[11px] font-bold text-slate-600 flex items-center justify-between border-b border-slate-200">
+                      <span className="flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        <span>A4 Letterhead • High DPI Document</span>
+                      </span>
+                      <span className="font-mono text-[10px] text-slate-500 truncate max-w-[240px]">
+                        {buildSalaryPdfFileName(whatsAppTargetEmployee.full_name, whatsAppMonth || currentMonthLabel)}
+                      </span>
+                    </div>
+                    <div 
+                      className="max-h-72 overflow-y-auto p-2 bg-white"
+                      dangerouslySetInnerHTML={{
+                        __html: generateSalaryStatementHtml(
+                          getPdfDataForTarget(
+                            whatsAppTargetEmployee,
+                            whatsAppPhone,
+                            whatsAppMonth || currentMonthLabel
+                          )
+                        )
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-[#0b141a] text-[#e9edef] rounded-2xl p-4 text-xs font-mono whitespace-pre-wrap max-h-60 overflow-y-auto border border-emerald-950/40 shadow-inner leading-relaxed">
+                    {generateWhatsAppMonthlyStatement(
+                      whatsAppTargetEmployee,
+                      whatsAppTargetEmployee.trips || [],
+                      paymentHistory.filter(
+                        (p) =>
+                          (p.employee_code && p.employee_code.toLowerCase() === (whatsAppTargetEmployee.employee_code || "").toLowerCase()) ||
+                          (p.employee_name && p.employee_name.toLowerCase() === whatsAppTargetEmployee.full_name.toLowerCase())
+                      ),
+                      whatsAppMonth || currentMonthLabel,
+                      whatsAppPhone
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={() => setIsWhatsAppModalOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmSendMonthlyWhatsApp}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md hover:shadow-lg cursor-pointer"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>Send via WhatsApp Now</span>
-              </button>
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isGeneratingPdf}
+                  onClick={handleDirectDownloadPdf}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+                >
+                  {isGeneratingPdf ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-600" />
+                  ) : (
+                    <Download className="w-3.5 h-3.5 text-slate-600" />
+                  )}
+                  <span>Download PDF</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isGeneratingPdf}
+                  onClick={handlePrintStatementSheet}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Print</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isGeneratingPdf}
+                  onClick={() => setIsWhatsAppModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isGeneratingPdf}
+                  onClick={handleConfirmSendMonthlyWhatsApp}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md hover:shadow-lg cursor-pointer disabled:opacity-60"
+                >
+                  {isGeneratingPdf ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Generating &amp; Sending PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle className="w-4 h-4" />
+                      <span>Send PDF via WhatsApp</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
