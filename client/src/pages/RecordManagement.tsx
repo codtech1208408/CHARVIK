@@ -1087,10 +1087,8 @@ export const RecordManagement: React.FC = () => {
                   <thead className="bg-slate-100 text-slate-900 font-bold uppercase text-[10px] border-b border-slate-200">
                     <tr>
                       <th className="py-2.5 px-3 text-center w-12 text-slate-900">Sr.No</th>
-                      <th className="py-2.5 px-3 min-w-[100px] text-slate-900">Description of Services *</th>
-                      <th className="py-2.5 px-3 min-w-[100px] text-slate-900">Category *</th>
-                      <th className="py-2.5 px-3 min-w-[100px] text-center text-slate-900">No of Drivers/Cleaners/Captain</th>
-                      <th className="py-2.5 px-3 min-w-[100px] text-right text-slate-900">Salary Paid (₹) *</th>
+                      <th className="py-2.5 px-3 min-w-[200px] text-slate-900">Description of Services *</th>
+                      <th className="py-2.5 px-3 min-w-[140px] text-right text-slate-900">Amount (₹) *</th>
                       <th className="py-2.5 px-2 text-center w-10"></th>
                     </tr>
                   </thead>
@@ -1106,28 +1104,6 @@ export const RecordManagement: React.FC = () => {
                             value={item.description}
                             onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
                             className="w-full p-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-800 outline-none focus:border-blue-500"
-                          />
-                        </td>
-                        <td className="py-2 px-3 min-w-[130px]">
-                          <select
-                            required
-                            value={item.category || 'Driver'}
-                            onChange={(e) => handleUpdateItem(item.id, 'category', e.target.value)}
-                            className="w-full p-1.5 rounded-lg border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer text-xs"
-                          >
-                            <option value="Driver">Driver</option>
-                            <option value="Helper">Helper</option>
-                            <option value="Captain">Captain</option>
-                          </select>
-                        </td>
-                        <td className="py-2 px-3">
-                          <input
-                            type="number"
-                            min="0"
-                            placeholder="0"
-                            value={item.staff_count || ''}
-                            onChange={(e) => handleUpdateItem(item.id, 'staff_count', Number(e.target.value))}
-                            className="w-full p-1.5 text-center rounded-lg border border-slate-200 bg-white font-bold text-slate-800 outline-none focus:border-blue-500"
                           />
                         </td>
                         <td className="py-2 px-3">
@@ -1157,11 +1133,8 @@ export const RecordManagement: React.FC = () => {
                   {/* Totals Row */}
                   <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-slate-900">
                     <tr>
-                      <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px] text-slate-900">
+                      <td colSpan={2} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px] text-slate-900">
                         Total:
-                      </td>
-                      <td className="py-2 px-3 text-center text-sm font-black text-slate-900">
-                        {formCalculations.staffCount}
                       </td>
                       <td className="py-2 px-3 text-right text-sm font-black text-slate-900">
                         ₹{formCalculations.totalAmt.toLocaleString('en-IN')}
@@ -1473,9 +1446,7 @@ export const RecordManagement: React.FC = () => {
                     <tr>
                       <th className="py-2.5 px-3 text-center w-14 border-r border-slate-600">Sr.No</th>
                       <th className="py-2.5 px-3 border-r border-slate-600">Description of Services</th>
-                      <th className="py-2.5 px-3 text-center border-r border-slate-600">Category</th>
-                      <th className="py-2.5 px-3 text-center border-r border-slate-600">No of Drivers / Cleaners / Captain</th>
-                      <th className="py-2.5 px-3 text-right">Salary Paid</th>
+                      <th className="py-2.5 px-3 text-right">Amount (₹)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-300 font-medium text-slate-800">
@@ -1487,25 +1458,16 @@ export const RecordManagement: React.FC = () => {
                         <td className="py-2 px-3 border-r border-slate-300 font-semibold text-slate-900 break-words">
                           {item.description}
                         </td>
-                        <td className="py-2 px-3 text-center border-r border-slate-300">
-                          {item.category}
-                        </td>
-                        <td className="py-2 px-3 text-center border-r border-slate-300 font-bold">
-                          {item.staff_count}
-                        </td>
                         <td className="py-2 px-3 text-right font-bold text-slate-900">
                           ₹{Number(item.salary_paid).toLocaleString('en-IN')}
                         </td>
                       </tr>
                     ))}
 
-                    {/* Total Row (Exact Match for Image 4) */}
+                    {/* Total Row */}
                     <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-400">
-                      <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-xs border-r border-slate-300">
+                      <td colSpan={2} className="py-2.5 px-3 text-right uppercase tracking-wider text-xs border-r border-slate-300">
                         Total
-                      </td>
-                      <td className="py-2 px-3 text-center border-r border-slate-300 text-sm">
-                        {printingRecord.total_staff_count}
                       </td>
                       <td className="py-2 px-3 text-right text-sm text-[#142B4A]">
                         ₹{Number(printingRecord.total_amount).toLocaleString('en-IN')}

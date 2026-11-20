@@ -407,11 +407,13 @@ export interface VyshnaviRecord {
   record_number: string;
   record_date: string;
   period_month: string;
+  vehicle_number?: string;
   payment_status: 'Pending' | 'Paid' | 'Partially Paid' | 'Cancelled';
   bill_to_name: string;
   bill_to_phone?: string;
   bill_to_address?: string;
   bill_to_pan?: string;
+  bill_to_gst?: string;
   items: VyshnaviServiceItem[];
   total_staff_count: number;
   total_amount: number;

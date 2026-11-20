@@ -499,11 +499,6 @@ export const ServicePartners: React.FC = () => {
                       <div className="font-extrabold text-[#142B4A] text-sm group-hover:text-blue-600 transition-colors">
                         {partner.name}
                       </div>
-                      {partner.notes && (
-                        <div className="text-[11px] text-slate-500 font-medium line-clamp-1 mt-0.5">
-                          {partner.notes}
-                        </div>
-                      )}
                     </td>
 
                     {/* Contact Person */}

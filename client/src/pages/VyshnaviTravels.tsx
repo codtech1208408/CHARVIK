@@ -202,6 +202,8 @@ export const VyshnaviTravels: React.FC = () => {
     bank_account_no: string;
     bank_ifsc: string;
     bank_branch: string;
+    vehicle_number: string;
+    bill_to_gst: string;
     upi_id: string;
     qr_code_url: string;
     remarks: string;
@@ -209,11 +211,13 @@ export const VyshnaviTravels: React.FC = () => {
     record_number: '',
     record_date: new Date().toISOString().split('T')[0],
     period_month: '',
+    vehicle_number: '',
     payment_status: 'Pending',
     bill_to_name: '',
     bill_to_phone: '',
     bill_to_address: '',
     bill_to_pan: '',
+    bill_to_gst: '',
     items: [
       {
         sr_no: 1,
@@ -462,11 +466,13 @@ export const VyshnaviTravels: React.FC = () => {
       record_number: rec.record_number || '',
       record_date: rec.record_date || new Date().toISOString().split('T')[0],
       period_month: rec.period_month || '',
+      vehicle_number: rec.vehicle_number || rec.period_month || '',
       payment_status: rec.payment_status || 'Pending',
       bill_to_name: rec.bill_to_name || '',
       bill_to_phone: rec.bill_to_phone || '',
       bill_to_address: rec.bill_to_address || '',
       bill_to_pan: rec.bill_to_pan || '',
+      bill_to_gst: rec.bill_to_gst || '',
       items: rec.items && rec.items.length > 0 ? rec.items : [
         {
           sr_no: 1,
@@ -508,12 +514,14 @@ export const VyshnaviTravels: React.FC = () => {
     const payload: VyshnaviRecord = {
       record_number: recordForm.record_number,
       record_date: recordForm.record_date,
-      period_month: recordForm.period_month,
+      period_month: recordForm.vehicle_number || recordForm.period_month,
+      vehicle_number: recordForm.vehicle_number,
       payment_status: recordForm.payment_status,
       bill_to_name: recordForm.bill_to_name,
       bill_to_phone: recordForm.bill_to_phone,
       bill_to_address: recordForm.bill_to_address,
       bill_to_pan: recordForm.bill_to_pan,
+      bill_to_gst: recordForm.bill_to_gst,
       items: recordForm.items,
       total_staff_count: calculatedTotalStaff,
       total_amount: calculatedTotalAmount,
@@ -921,7 +929,7 @@ export const VyshnaviTravels: React.FC = () => {
       'Invoice / Record #',
       'Date',
       'Billed To (Client)',
-      'Billing Period',
+      'Vehicle Number',
       'Services Count',
       'Total Amount (Rs)',
       'Advance Received (Rs)',
@@ -933,7 +941,7 @@ export const VyshnaviTravels: React.FC = () => {
       r.record_number,
       r.record_date,
       r.bill_to_name,
-      r.period_month || '',
+      r.vehicle_number || r.period_month || '',
       (r.services || []).length,
       Number(r.total_amount) || 0,
       Number(r.received_amount) || 0,
@@ -1821,7 +1829,7 @@ export const VyshnaviTravels: React.FC = () => {
                     <th className="py-3.5 px-4">Record / Invoice #</th>
                     <th className="py-3.5 px-4">Date</th>
                     <th className="py-3.5 px-4">Billed To (Client)</th>
-                    <th className="py-3.5 px-4">Billing Period</th>
+                    <th className="py-3.5 px-4">Vehicle No</th>
                     <th className="py-3.5 px-4 text-center">Staff Count</th>
                     <th className="py-3.5 px-4 text-right">Total Amount</th>
                     <th className="py-3.5 px-4 text-right">Received</th>
@@ -1860,8 +1868,8 @@ export const VyshnaviTravels: React.FC = () => {
                               <div className="text-[11px] text-slate-400 font-medium">{rec.bill_to_phone}</div>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 font-medium text-slate-600">
-                            {rec.period_month || '—'}
+                          <td className="py-3.5 px-4 font-bold text-slate-800">
+                            {rec.vehicle_number || rec.period_month || '—'}
                           </td>
                           <td className="py-3.5 px-4 text-center">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-[11px]">
@@ -2314,11 +2322,11 @@ export const VyshnaviTravels: React.FC = () => {
         size="2xl"
       >
         <form onSubmit={handleSaveRecord} className="space-y-6">
-          {/* Section 1: Record Details & Billing Period */}
+          {/* Section 1: Record Details & Vehicle Number */}
           <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-3">
             <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
               <FileText className="w-4 h-4 text-blue-600" />
-              <span>1. Record Details & Billing Period</span>
+              <span>1. Record Details & Vehicle Number</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
@@ -2349,13 +2357,13 @@ export const VyshnaviTravels: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Billing Period / Month</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Vehicle Number</label>
                 <input
                   type="text"
-                  value={recordForm.period_month}
-                  onChange={(e) => setRecordForm({ ...recordForm, period_month: e.target.value })}
-                  placeholder="e.g. Aug'26 or Oct 2026"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none"
+                  value={recordForm.vehicle_number}
+                  onChange={(e) => setRecordForm({ ...recordForm, vehicle_number: e.target.value.toUpperCase() })}
+                  placeholder="e.g. AP 16 TC 2080"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
 
@@ -2389,12 +2397,15 @@ export const VyshnaviTravels: React.FC = () => {
                   value={recordForm.bill_to_name}
                   onChange={(val) => setRecordForm({ ...recordForm, bill_to_name: val })}
                   onSelectOperator={(op) => {
+                    const gst = (op.gstOrPan && op.gstOrPan.length === 15) ? op.gstOrPan : '';
+                    const pan = (op.gstOrPan && op.gstOrPan.length === 10) ? op.gstOrPan : (!gst && op.gstOrPan ? op.gstOrPan : '');
                     setRecordForm((prev) => ({
                       ...prev,
                       bill_to_name: op.name,
                       bill_to_phone: op.phone || prev.bill_to_phone || '',
                       bill_to_address: op.address || prev.bill_to_address || '',
-                      bill_to_pan: op.gstOrPan || prev.bill_to_pan || ''
+                      bill_to_gst: gst || prev.bill_to_gst || '',
+                      bill_to_pan: pan || prev.bill_to_pan || ''
                     }));
                   }}
                   placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
@@ -2424,11 +2435,22 @@ export const VyshnaviTravels: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Client PAN / GST Number</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">GST Number</label>
+                <input
+                  type="text"
+                  value={recordForm.bill_to_gst}
+                  onChange={(e) => setRecordForm({ ...recordForm, bill_to_gst: e.target.value.toUpperCase() })}
+                  placeholder="e.g. 36AABCY5013H1Z2"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 uppercase focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">PAN Number</label>
                 <input
                   type="text"
                   value={recordForm.bill_to_pan}
-                  onChange={(e) => setRecordForm({ ...recordForm, bill_to_pan: e.target.value })}
+                  onChange={(e) => setRecordForm({ ...recordForm, bill_to_pan: e.target.value.toUpperCase() })}
                   placeholder="e.g. AABCY5013H"
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 uppercase focus:outline-none"
                 />
@@ -2441,7 +2463,7 @@ export const VyshnaviTravels: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
                 <Users className="w-4 h-4 text-purple-600" />
-                <span>3. Services & Staff Breakdown</span>
+                <span>3. Services Breakdown</span>
               </div>
               <button
                 type="button"
@@ -2459,9 +2481,7 @@ export const VyshnaviTravels: React.FC = () => {
                   <tr className="bg-slate-100/80 border-b border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-wider">
                     <th className="py-2.5 px-3 w-12 text-center">Sr.No</th>
                     <th className="py-2.5 px-3 min-w-[200px]">Description of Services *</th>
-                    <th className="py-2.5 px-3 min-w-[150px] w-40">Category *</th>
-                    <th className="py-2.5 px-3 w-36 text-center">No of Drivers / Cleaners</th>
-                    <th className="py-2.5 px-3 w-36 text-right">Salary Paid (₹) *</th>
+                    <th className="py-2.5 px-3 w-44 text-right">Amount (₹) *</th>
                     <th className="py-2.5 px-3 w-12 text-center"></th>
                   </tr>
                 </thead>
@@ -2479,31 +2499,8 @@ export const VyshnaviTravels: React.FC = () => {
                           className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none"
                         />
                       </td>
-                      <td className="py-2 px-3 min-w-[150px]">
-                        <div className="relative w-full">
-                          <select
-                            value={item.category}
-                            onChange={(e) => handleUpdateServiceRow(idx, 'category', e.target.value)}
-                            className="w-full pl-3 pr-8 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer appearance-none"
-                          >
-                            {SERVICE_CATEGORIES.map((c) => (
-                              <option key={c} value={c}>{c}</option>
-                            ))}
-                          </select>
-                          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                        </div>
-                      </td>
-                      <td className="py-2 px-3 text-center">
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.staff_count}
-                          onChange={(e) => handleUpdateServiceRow(idx, 'staff_count', parseInt(e.target.value) || 0)}
-                          className="w-20 px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-center text-slate-800 focus:outline-none"
-                        />
-                      </td>
                       <td className="py-2 px-3 text-right">
-                        <div className="relative inline-block w-28">
+                        <div className="relative inline-block w-36">
                           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
                           <input
                             type="number"
@@ -2529,13 +2526,10 @@ export const VyshnaviTravels: React.FC = () => {
                   ))}
                   {/* Total Summary Row */}
                   <tr className="bg-slate-50/90 font-black text-xs border-t-2 border-slate-200">
-                    <td colSpan={3} className="py-3 px-3 text-right uppercase tracking-wider text-slate-700">
+                    <td colSpan={2} className="py-3 px-3 text-right uppercase tracking-wider text-slate-700">
                       Total:
                     </td>
-                    <td className="py-3 px-3 text-center text-slate-900">
-                      {calculatedTotalStaff}
-                    </td>
-                    <td className="py-3 px-3 text-right text-[#142B4A] text-sm">
+                    <td className="py-3 px-3 text-right text-[#142B4A] text-sm font-black">
                       ₹{calculatedTotalAmount.toLocaleString('en-IN')}
                     </td>
                     <td></td>
@@ -2587,86 +2581,48 @@ export const VyshnaviTravels: React.FC = () => {
             </div>
           </div>
 
-          {/* Section 5: Bank Details & Payment QR Code */}
+          {/* Section 5: Official Bank Details */}
           <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-3">
             <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
-              <QrCode className="w-4 h-4 text-purple-600" />
-              <span>5. Bank Details & Payment QR Code</span>
+              <Landmark className="w-4 h-4 text-emerald-600" />
+              <span>5. Official Bank Details</span>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Left Column: Bank Info */}
-              <div className="space-y-2.5">
-                <h4 className="text-[11px] font-black uppercase text-slate-500 tracking-wider">Official Bank Details</h4>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700">Account Holder Name</label>
-                  <input
-                    type="text"
-                    value={recordForm.bank_account_name}
-                    onChange={(e) => setRecordForm({ ...recordForm, bank_account_name: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700">Account Number</label>
-                  <input
-                    type="text"
-                    value={recordForm.bank_account_no}
-                    onChange={(e) => setRecordForm({ ...recordForm, bank_account_no: e.target.value })}
-                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-800 focus:outline-none"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700">IFSC Code</label>
-                    <input
-                      type="text"
-                      value={recordForm.bank_ifsc}
-                      onChange={(e) => setRecordForm({ ...recordForm, bank_ifsc: e.target.value })}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700">Bank & Branch</label>
-                    <input
-                      type="text"
-                      value={recordForm.bank_name}
-                      onChange={(e) => setRecordForm({ ...recordForm, bank_name: e.target.value })}
-                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none"
-                    />
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Account Holder Name</label>
+                <input
+                  type="text"
+                  value={recordForm.bank_account_name}
+                  onChange={(e) => setRecordForm({ ...recordForm, bank_account_name: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none"
+                />
               </div>
-
-              {/* Right Column: Payment QR & UPI ID */}
-              <div className="space-y-2.5">
-                <h4 className="text-[11px] font-black uppercase text-slate-500 tracking-wider">Payment QR & UPI ID</h4>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700">UPI ID (PhonePe / GPay / PayTM)</label>
-                  <input
-                    type="text"
-                    value={recordForm.upi_id}
-                    onChange={(e) => setRecordForm({ ...recordForm, upi_id: e.target.value })}
-                    placeholder="9000202241@ybl"
-                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-purple-900 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex items-center gap-4 pt-1">
-                  <div className="p-1 bg-white border border-slate-300 rounded-lg shadow-2xs">
-                    <img
-                      src={liveQrUrl}
-                      alt="UPI Payment QR Code"
-                      className="w-20 h-20 object-contain block"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-xs font-bold text-slate-900 block">Live QR Preview</span>
-                    <p className="text-[11px] text-slate-500 leading-tight">
-                      Scannable with any UPI app on the printed Vyshnavi Travels record sheet.
-                    </p>
-                    <span className="text-[10px] text-purple-700 font-bold block">{recordForm.upi_id}</span>
-                  </div>
-                </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Account Number</label>
+                <input
+                  type="text"
+                  value={recordForm.bank_account_no}
+                  onChange={(e) => setRecordForm({ ...recordForm, bank_account_no: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">IFSC Code</label>
+                <input
+                  type="text"
+                  value={recordForm.bank_ifsc}
+                  onChange={(e) => setRecordForm({ ...recordForm, bank_ifsc: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Bank & Branch</label>
+                <input
+                  type="text"
+                  value={recordForm.bank_name}
+                  onChange={(e) => setRecordForm({ ...recordForm, bank_name: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none"
+                />
               </div>
             </div>
           </div>
@@ -3423,9 +3379,15 @@ export const VyshnaviTravels: React.FC = () => {
                           {printingRecord.bill_to_phone}
                         </p>
                       )}
+                      {printingRecord.bill_to_gst && (
+                        <p className="text-slate-600 text-[11px] mt-0.5">
+                          <span className="font-semibold text-slate-500">GSTIN: </span>
+                          <span className="font-mono font-bold uppercase">{printingRecord.bill_to_gst}</span>
+                        </p>
+                      )}
                       {printingRecord.bill_to_pan && (
                         <p className="text-slate-600 text-[11px] mt-0.5">
-                          <span className="font-semibold text-slate-500">PAN / GSTIN: </span>
+                          <span className="font-semibold text-slate-500">PAN: </span>
                           <span className="font-mono font-bold uppercase">{printingRecord.bill_to_pan}</span>
                         </p>
                       )}
@@ -3442,8 +3404,8 @@ export const VyshnaviTravels: React.FC = () => {
                         <span className="font-medium text-slate-800">{printingRecord.record_date}</span>
                       </div>
                       <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-500 font-semibold">Billing Period / Month:</span>
-                        <span className="font-bold text-slate-900">{printingRecord.period_month || 'Current Cycle'}</span>
+                        <span className="text-slate-500 font-semibold">Vehicle Number:</span>
+                        <span className="font-bold text-slate-900">{printingRecord.vehicle_number || printingRecord.period_month || '—'}</span>
                       </div>
                       <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200">
                         <span className="text-slate-500 font-semibold">Payment Status:</span>
@@ -3461,9 +3423,7 @@ export const VyshnaviTravels: React.FC = () => {
                         <tr className="bg-slate-100 border-b border-slate-300 text-[10px] font-black text-slate-700 uppercase tracking-wider">
                           <th className="py-2.5 px-3 w-12 text-center border-r border-slate-300">Sr.No</th>
                           <th className="py-2.5 px-3 border-r border-slate-300">Description of Services</th>
-                          <th className="py-2.5 px-3 w-28 text-center border-r border-slate-300">Category</th>
-                          <th className="py-2.5 px-3 w-28 text-center border-r border-slate-300">Staff Count</th>
-                          <th className="py-2.5 px-3 w-32 text-right">Salary Paid (₹)</th>
+                          <th className="py-2.5 px-3 w-40 text-right">Amount (₹)</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200">
@@ -3475,12 +3435,6 @@ export const VyshnaviTravels: React.FC = () => {
                             <td className="py-2.5 px-3 font-medium text-slate-900 border-r border-slate-200">
                               {item.description}
                             </td>
-                            <td className="py-2.5 px-3 text-center font-semibold text-slate-700 border-r border-slate-200">
-                              {item.category}
-                            </td>
-                            <td className="py-2.5 px-3 text-center font-bold text-slate-800 border-r border-slate-200">
-                              {item.staff_count}
-                            </td>
                             <td className="py-2.5 px-3 text-right font-black text-slate-900">
                               ₹{(Number(item.salary_paid) || 0).toLocaleString('en-IN')}
                             </td>
@@ -3489,11 +3443,8 @@ export const VyshnaviTravels: React.FC = () => {
 
                         {/* Grand Total Row */}
                         <tr className="bg-slate-100/90 font-black text-xs border-t-2 border-slate-400">
-                          <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-slate-800 border-r border-slate-300">
+                          <td colSpan={2} className="py-2.5 px-3 text-right uppercase tracking-wider text-slate-800 border-r border-slate-300">
                             Grand Total:
-                          </td>
-                          <td className="py-2.5 px-3 text-center text-slate-900 border-r border-slate-300 font-black">
-                            {printingRecord.total_staff_count || printingRecord.items?.length || 1}
                           </td>
                           <td className="py-2.5 px-3 text-right text-slate-950 font-black text-sm">
                             ₹{(printingRecord.total_amount || 0).toLocaleString('en-IN')}
