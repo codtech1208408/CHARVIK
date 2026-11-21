@@ -42,27 +42,15 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
-import { ALL_MODULE_CATEGORIES, ALL_CATEGORY_NAMES } from '../../constants/moduleCategories';
+import {
+  ALL_MODULE_CATEGORIES,
+  ALL_CATEGORY_NAMES,
+  getAdminNavItems,
+  type NavItemLeaf,
+  type NavSubItem
+} from '../../constants/moduleCategories';
 
-export interface NavSubItem {
-  label: string;
-  route: string;
-  icon: any;
-  iconColor?: string;
-  activeRoutes?: string[];
-}
-
-export interface NavItemLeaf {
-  label: string;
-  route: string;
-  icon: any;
-  iconColor?: string;
-  activeGradient?: string;
-  imageSrc?: string;
-  hasLiveBadge?: boolean;
-  activeRoutes?: string[];
-  subItems?: NavSubItem[];
-}
+export type { NavSubItem, NavItemLeaf };
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -158,50 +146,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
     else navigate('/admin/login');
   };
 
-  // =========================================================================
-  // SUBTABS SPECIFICATIONS (Exact 1-to-1 match with all system pages)
-  // =========================================================================
+  // Listen for dynamic tab changes (from admin or localStorage)
+  const [tabsVersion, setTabsVersion] = useState(0);
+  useEffect(() => {
+    const handleTabsUpdated = () => setTabsVersion((v) => v + 1);
+    window.addEventListener('charvik_tabs_updated', handleTabsUpdated);
+    window.addEventListener('storage', handleTabsUpdated);
+    return () => {
+      window.removeEventListener('charvik_tabs_updated', handleTabsUpdated);
+      window.removeEventListener('storage', handleTabsUpdated);
+    };
+  }, []);
 
-  // Admin Vehicle Management Subtabs (8 modules)
-  const adminVehicleManagementSubItems: NavSubItem[] = [
-    { label: 'Route Management', route: '/admin/routes', icon: Navigation, iconColor: 'text-blue-500', activeRoutes: ['/admin/routes'] },
-    { label: 'Trip Management', route: '/admin/tasks', icon: ClipboardList, iconColor: 'text-indigo-500', activeRoutes: ['/admin/tasks', '/admin/trips'] },
-    { label: 'Operator Management', route: '/admin/organizers', icon: Building2, iconColor: 'text-amber-500', activeRoutes: ['/admin/organizers', '/admin/operators'] },
-    { label: 'Employee Registration', route: '/admin/employee-registration', icon: UserPlus, iconColor: 'text-emerald-500', activeRoutes: ['/admin/employee-registration', '/admin/employees', '/admin/drivers', '/admin/support-staff'] },
-    { label: 'Employee Payments', route: '/admin/employee-payments', icon: IndianRupee, iconColor: 'text-emerald-600', activeRoutes: ['/admin/employee-payments'] },
-    { label: 'Earnings', route: '/admin/earnings', icon: TrendingUp, iconColor: 'text-purple-500', activeRoutes: ['/admin/earnings'] },
-    { label: 'Record Management', route: '/admin/records', icon: FileText, iconColor: 'text-cyan-500', activeRoutes: ['/admin/records', '/admin/record-management', '/admin/record'] },
-    { label: 'Captain Audit Record', route: '/admin/captain-audit', icon: ShieldCheck, iconColor: 'text-blue-600', activeRoutes: ['/admin/captain-audit', '/captain/audit-record'] },
-  ];
-
-  // Admin Vehicle Maintenance Subtabs
-  const adminVehicleMaintenanceSubItems: NavSubItem[] = [
-    { label: 'Fleet Maintenance Overview', route: '/admin/vehicle-maintenance', icon: Gauge, iconColor: 'text-amber-500', activeRoutes: ['/admin/vehicle-maintenance'] },
-    { label: 'Daily Vehicle Maintenance', route: '/admin/vehicle-maintenance-card', icon: Wrench, iconColor: 'text-blue-500', activeRoutes: ['/admin/vehicle-maintenance-card', '/admin/job-card', '/admin/daily-maintenance'] },
-    { label: 'Vehicle Registration', route: '/admin/vehicles', icon: Bus, iconColor: 'text-purple-600', activeRoutes: ['/admin/vehicles', '/admin/buses', '/admin/vehicle-registration', '/admin/vehicle-management'] },
-    { label: 'Income & Expense', route: '/admin/income-expense', icon: IndianRupee, iconColor: 'text-emerald-500', activeRoutes: ['/admin/income-expense', '/admin/vehicle-income-expense', '/admin/income-and-expense'] },
-    { label: 'Daily Vehicle Checkup', route: '/admin/daily-vehicle-checkup', icon: ClipboardCheck, iconColor: 'text-violet-600', activeRoutes: ['/admin/daily-vehicle-checkup', '/admin/vehicle-checkup', '/admin/bus-condition'] },
-    { label: 'Mileage & Fueling', route: '/admin/mileage-fueling', icon: Fuel, iconColor: 'text-amber-500', activeRoutes: ['/admin/mileage-fueling', '/admin/daily-kilometers'] },
-    { label: 'New Tyres', route: '/admin/new-tyres', icon: Disc, iconColor: 'text-orange-500', activeRoutes: ['/admin/new-tyres', '/admin/tyres/new'] },
-    { label: 'Product Management', route: '/admin/products', icon: Package, iconColor: 'text-pink-600', activeRoutes: ['/admin/products', '/admin/product-management'] },
-  ];
-
-  // Admin Vyshnavi Travels Subtabs
-  const adminVyshnaviTravelsSubItems: NavSubItem[] = [
-    { label: 'Travels Statement & Billing', route: '/admin/vyshnavi-travels', icon: FileText, iconColor: 'text-teal-500', activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi'] },
-    { label: 'Service Records', route: '/admin/vyshnavi-travels?tab=records', icon: ClipboardList, iconColor: 'text-blue-500', activeRoutes: ['/admin/vyshnavi-travels?tab=records'] },
-    { label: 'Operator Income & Expense', route: '/admin/income-expense', icon: IndianRupee, iconColor: 'text-emerald-500', activeRoutes: ['/admin/income-expense'] },
-  ];
-
-  // Admin Chandrika Finance Subtabs (Except Interest, exactly matching user request)
-  const adminChandrikaFinanceSubItems: NavSubItem[] = [
-    { label: 'Finance Overview', route: '/admin/chandrika-finance', icon: Landmark, iconColor: 'text-amber-500', activeRoutes: ['/admin/chandrika-finance'] },
-    { label: 'Investment', route: '/admin/chandrika-finance?tab=investment', icon: Coins, iconColor: 'text-emerald-500', activeRoutes: ['/admin/chandrika-finance?tab=investment'] },
-    { label: 'Customers', route: '/admin/chandrika-finance?tab=customers', icon: Users, iconColor: 'text-blue-500', activeRoutes: ['/admin/chandrika-finance?tab=customers'] },
-    { label: 'Loan / Amount Given', route: '/admin/chandrika-finance?tab=loan', icon: HandCoins, iconColor: 'text-orange-500', activeRoutes: ['/admin/chandrika-finance?tab=loan'] },
-    { label: 'Collections (Daily / Monthly)', route: '/admin/chandrika-finance?tab=collections', icon: CalendarPlus, iconColor: 'text-purple-500', activeRoutes: ['/admin/chandrika-finance?tab=collections'] },
-    { label: 'Balance / Outstanding', route: '/admin/chandrika-finance?tab=balance', icon: TrendingUp, iconColor: 'text-rose-500', activeRoutes: ['/admin/chandrika-finance?tab=balance'] },
-  ];
+  // Main Admin Navigation Tabs (single source of truth with moduleCategories.ts)
+  const adminNavItems: NavItemLeaf[] = useMemo(() => getAdminNavItems(), [tabsVersion]);
 
   // Operator Subtabs
   const operatorDutySubItems: NavSubItem[] = [
@@ -239,125 +197,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Battery Check', route: '/captain/battery-maintenance', icon: BatteryCharging, activeRoutes: ['/captain/battery-maintenance'] },
     { label: 'Maintenance Schedule', route: '/captain/maintenance-schedule', icon: CalendarDays, activeRoutes: ['/captain/maintenance-schedule'] },
     { label: 'Complaints & Defects', route: '/captain/complaints', icon: AlertTriangle, activeRoutes: ['/captain/complaints'] },
-  ];
-
-  // =========================================================================
-  // MAIN NAVIGATION TABS (Settings removed per user request!)
-  // =========================================================================
-
-  const adminNavItems: NavItemLeaf[] = [
-    {
-      label: 'Dashboard',
-      route: '/admin/dashboard',
-      icon: LayoutGrid,
-      iconColor: 'text-sky-400',
-      activeGradient: 'bg-gradient-to-r from-blue-600 to-indigo-600',
-      hasLiveBadge: true,
-      activeRoutes: ['/admin/dashboard']
-    },
-    {
-      label: 'Employee Management',
-      route: '/admin/routes',
-      icon: Users,
-      iconColor: 'text-cyan-400',
-      activeGradient: 'bg-gradient-to-r from-blue-600 to-indigo-600',
-      activeRoutes: [
-        '/admin/routes',
-        '/admin/tasks',
-        '/admin/organizers',
-        '/admin/employee-registration',
-        '/admin/employees',
-        '/admin/drivers',
-        '/admin/support-staff',
-        '/admin/employee-payments',
-        '/admin/earnings',
-        '/admin/records',
-        '/admin/record-management',
-        '/admin/record',
-        '/admin/captain-audit',
-        '/admin/captain-audit-record'
-      ],
-      subItems: adminVehicleManagementSubItems
-    },
-    {
-      label: 'Vehicle Maintenance',
-      route: '/admin/vehicle-maintenance',
-      icon: Wrench,
-      iconColor: 'text-blue-400',
-      activeGradient: 'bg-gradient-to-r from-blue-600 to-indigo-600',
-      activeRoutes: [
-        '/admin/vehicle-maintenance',
-        '/admin/vehicle-maintenance-card',
-        '/admin/job-card',
-        '/admin/vehicles',
-        '/admin/buses',
-        '/admin/vehicle-registration',
-        '/admin/vehicle-management',
-        '/admin/income-expense',
-        '/admin/vehicle-income-expense',
-        '/admin/income-and-expense',
-        '/admin/daily-vehicle-checkup',
-        '/admin/vehicle-checkup',
-        '/admin/bus-condition',
-        '/admin/daily-maintenance',
-        '/admin/mileage-fueling',
-        '/admin/daily-kilometers',
-        '/admin/new-tyres',
-        '/admin/tyres/new',
-        '/admin/products',
-        '/admin/product-management'
-      ],
-      subItems: adminVehicleMaintenanceSubItems
-    },
-    {
-      label: 'Vyshnavi Travels',
-      route: '/admin/vyshnavi-travels',
-      icon: Bus,
-      iconColor: 'text-teal-400',
-      activeGradient: 'bg-gradient-to-r from-teal-500 to-emerald-600',
-      activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi']
-    },
-    {
-      label: 'Service Partners',
-      route: '/admin/service-partners',
-      icon: Users,
-      iconColor: 'text-orange-400',
-      activeGradient: 'bg-gradient-to-r from-orange-500 to-amber-600',
-      activeRoutes: ['/admin/service-partners']
-    },
-    {
-      label: 'Bus Rating',
-      route: '/admin/bus-rating',
-      icon: Star,
-      iconColor: 'text-yellow-400',
-      activeGradient: 'bg-gradient-to-r from-amber-500 to-yellow-600',
-      activeRoutes: ['/admin/bus-rating']
-    },
-    {
-      label: 'Website Inquiries',
-      route: '/admin/inquiries',
-      icon: Bell,
-      iconColor: 'text-indigo-400',
-      activeGradient: 'bg-gradient-to-r from-violet-600 to-purple-600',
-      activeRoutes: ['/admin/inquiries']
-    },
-    {
-      label: 'Donations',
-      route: '/admin/donations',
-      icon: HeartHandshake,
-      iconColor: 'text-rose-400',
-      activeGradient: 'bg-gradient-to-r from-pink-500 to-rose-600',
-      activeRoutes: ['/admin/donations', '/admin/donation']
-    },
-    {
-      label: 'Chandrika Finance',
-      route: '/admin/chandrika-finance',
-      icon: Landmark,
-      iconColor: 'text-amber-400',
-      activeGradient: 'bg-gradient-to-r from-amber-500 to-orange-600',
-      activeRoutes: ['/admin/chandrika-finance', '/admin/finance'],
-      subItems: adminChandrikaFinanceSubItems
-    }
   ];
 
   const captainNavItems: NavItemLeaf[] = [

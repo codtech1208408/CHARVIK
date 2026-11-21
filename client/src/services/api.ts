@@ -1499,15 +1499,15 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       if (method === 'GET') {
         const localCreds = getLocalCollection<any>('staff_credentials');
         const allCategoryNames = [
-          'Vehicle Registration',
-          'Route Management',
-          'Task Management',
-          'Organizer Management',
-          'Daily Vehicle Checkup',
-          'Mileage & Fueling',
-          'AC Maintenance',
-          'Tyre Maintenance',
-          'Product Management'
+          'Dashboard',
+          'Employee Management',
+          'Vehicle Maintenance',
+          'Vyshnavi Travels',
+          'Service Partners',
+          'Bus Rating',
+          'Website Inquiries',
+          'Donations',
+          'Chandrika Finance'
         ];
         if (localCreds.length > 0) {
           return localCreds

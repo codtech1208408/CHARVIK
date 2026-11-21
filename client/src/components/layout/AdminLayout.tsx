@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ErrorBoundary } from '../common/ErrorBoundary';
 import AOS from 'aos';
 import { auditLogger } from '../../services/auditLogger';
-import { ALL_CATEGORY_NAMES } from '../../constants/moduleCategories';
+import { ALL_CATEGORY_NAMES, getAdminModuleCategories, mapCategoryToCurrentTab } from '../../constants/moduleCategories';
 
 export const AdminLayout: React.FC = () => {
   // 1. ALL HOOKS CALLED UNCONDITIONALLY AT THE VERY TOP
@@ -274,17 +274,26 @@ export const AdminLayout: React.FC = () => {
   }
 
   const getCategoryForPath = (path: string): string | null => {
-    if (path.startsWith('/admin/vehicles') || path.startsWith('/admin/buses') || path.startsWith('/admin/vehicle-registration')) return 'Vehicle Registration';
-    if (path.startsWith('/admin/routes')) return 'Route Management';
-    if (path.startsWith('/admin/tasks') || path.startsWith('/admin/trips')) return 'Trip Management';
-    if (path.startsWith('/admin/organizers') || path.startsWith('/admin/operators')) return 'Operator Management';
-    if (path.startsWith('/admin/daily-vehicle-checkup') || path.startsWith('/admin/vehicle-checkup') || path.startsWith('/admin/bus-condition')) return 'Daily Vehicle Checkup';
-    if (path.startsWith('/admin/daily-maintenance') || path.startsWith('/admin/vehicle-maintenance')) return 'Daily Vehicle Maintenance';
-    if (path.startsWith('/admin/new-tyres') || path.startsWith('/admin/tyres/new')) return 'New Tyres';
-    if (path.startsWith('/admin/mileage-fueling') || path.startsWith('/admin/daily-kilometers')) return 'Mileage & Fueling';
-    if (path.startsWith('/admin/ac-maintenance')) return 'AC Maintenance';
-    if (path.startsWith('/admin/tyre-maintenance')) return 'Tyre Maintenance';
-    if (path.startsWith('/admin/products')) return 'Product Management';
+    const modules = getAdminModuleCategories();
+    for (const m of modules) {
+      if (m.activeRoutes && m.activeRoutes.some((r) => path === r || path.startsWith(r + '/'))) {
+        return m.name;
+      }
+      if (path === m.route || path.startsWith(m.route + '/')) {
+        return m.name;
+      }
+      if (m.subItems) {
+        for (const sub of m.subItems) {
+          const pureSub = sub.route.split('?')[0];
+          if (path === pureSub || path.startsWith(pureSub + '/')) {
+            return m.name;
+          }
+          if (sub.activeRoutes && sub.activeRoutes.some((r) => path === r || path.startsWith(r + '/'))) {
+            return m.name;
+          }
+        }
+      }
+    }
     return null;
   };
 
@@ -314,7 +323,9 @@ export const AdminLayout: React.FC = () => {
           ? rawActiveCats.map((c: any) => String(c || '').trim()).filter(Boolean)
           : ALL_CATEGORY_NAMES;
 
-        if (cat && !userCats.includes(cat)) {
+        const mappedUserCats = userCats.map((c: string) => mapCategoryToCurrentTab(c));
+
+        if (cat && !mappedUserCats.includes(cat) && !userCats.includes(cat)) {
           return <Navigate to="/admin/dashboard" replace />;
         }
       } else {

@@ -36,7 +36,7 @@ import { useToast } from '../components/common/Toast';
 import { StatCard } from '../components/common/StatCard';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
-import { ALL_MODULE_CATEGORIES } from '../constants/moduleCategories';
+import { ALL_MODULE_CATEGORIES, getAdminModuleCategories, mapCategoryToCurrentTab } from '../constants/moduleCategories';
 
 export const SupportDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -286,8 +286,11 @@ export const SupportDashboard: React.FC = () => {
     : DEFAULT_OP_CATS;
 
   const userCats = effectiveUserCats.map((c: any) => String(c || '').trim()).filter(Boolean);
-  const permittedModules = ALL_MODULE_CATEGORIES.filter((cat) => {
-    return userCats.some((c) => c.toLowerCase() === cat.name.trim().toLowerCase());
+  const mappedUserCats = userCats.map((c: string) => mapCategoryToCurrentTab(c).toLowerCase());
+  const allCurrentModules = getAdminModuleCategories();
+  const permittedModules = allCurrentModules.filter((cat) => {
+    return userCats.some((c) => c.toLowerCase() === cat.name.trim().toLowerCase()) ||
+      mappedUserCats.includes(cat.name.trim().toLowerCase());
   });
 
   const hasRouteManagement = userCats.some(c => c.toLowerCase() === 'route management');

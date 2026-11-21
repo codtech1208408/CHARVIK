@@ -40,7 +40,12 @@ import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
 import { useAuth } from '../context/AuthContext';
-import { ALL_MODULE_CATEGORIES, ALL_CATEGORY_NAMES } from '../constants/moduleCategories';
+import {
+  ALL_MODULE_CATEGORIES,
+  ALL_CATEGORY_NAMES,
+  getAdminModuleCategories,
+  mapCategoryToCurrentTab
+} from '../constants/moduleCategories';
 import { formatEmployeeId } from '../utils/employeeCode';
 import { printSheet } from '../utils/printSheet';
 
@@ -73,7 +78,22 @@ export const EmployeeManagement: React.FC = () => {
   const [resetPasswordVal, setResetPasswordVal] = useState('');
   const [creatingStaff, setCreatingStaff] = useState(false);
 
-  // Category Permissions Editing State
+  // Category Permissions Editing State (Dynamic Admin Modules)
+  const [tabsVersion, setTabsVersion] = useState(0);
+
+  useEffect(() => {
+    const handleTabsUpdated = () => setTabsVersion((v) => v + 1);
+    window.addEventListener('charvik_tabs_updated', handleTabsUpdated);
+    window.addEventListener('storage', handleTabsUpdated);
+    return () => {
+      window.removeEventListener('charvik_tabs_updated', handleTabsUpdated);
+      window.removeEventListener('storage', handleTabsUpdated);
+    };
+  }, []);
+
+  const activeCategories = useMemo(() => getAdminModuleCategories(), [tabsVersion]);
+  const activeCategoryNames = useMemo(() => activeCategories.map((c) => c.name), [activeCategories]);
+
   const [showEditCategoriesModal, setShowEditCategoriesModal] = useState(false);
   const [selectedStaffForCategories, setSelectedStaffForCategories] = useState<any>(null);
   const [editingCategoriesList, setEditingCategoriesList] = useState<string[]>([]);
@@ -87,7 +107,7 @@ export const EmployeeManagement: React.FC = () => {
   const [newStaffMobile, setNewStaffMobile] = useState('');
   const [newStaffUsername, setNewStaffUsername] = useState('');
   const [newStaffPassword, setNewStaffPassword] = useState('');
-  const [newStaffCategories, setNewStaffCategories] = useState<string[]>(ALL_CATEGORY_NAMES);
+  const [newStaffCategories, setNewStaffCategories] = useState<string[]>(() => getAdminModuleCategories().map(c => c.name));
 
   // Modals & Views
   const [viewingProfile, setViewingProfile] = useState<any>(null);
@@ -189,8 +209,8 @@ export const EmployeeManagement: React.FC = () => {
         ...s,
         name: s.name === 'Fleet Captain' ? 'Employee' : s.name === 'Support Staff Member' ? 'Operator' : s.name,
         categories: (s.role === 'Super Admin' || s.role === 'Admin')
-          ? ALL_CATEGORY_NAMES
-          : (Array.isArray(s.categories) ? s.categories : [])
+          ? activeCategoryNames
+          : (Array.isArray(s.categories) ? Array.from(new Set(s.categories.map((c: string) => mapCategoryToCurrentTab(c)))) : [])
       }));
       setStaffCredentials(mapped);
     } catch (err: any) {
@@ -242,7 +262,7 @@ export const EmployeeManagement: React.FC = () => {
       setNewStaffMobile('');
       setNewStaffUsername('');
       setNewStaffPassword('');
-      setNewStaffCategories(ALL_CATEGORY_NAMES);
+      setNewStaffCategories([...activeCategoryNames]);
       loadStaffCredentials();
     } catch (err: any) {
       error(err.message || 'Failed to create account');
@@ -255,8 +275,10 @@ export const EmployeeManagement: React.FC = () => {
     setSelectedStaffForCategories(staff);
     const assigned = Array.isArray(staff.categories) && staff.categories.length > 0
       ? staff.categories
-      : ALL_CATEGORY_NAMES;
-    setEditingCategoriesList([...assigned]);
+      : activeCategoryNames;
+    const mapped = assigned.map((name: string) => mapCategoryToCurrentTab(name)).filter(Boolean);
+    const unique = Array.from(new Set(mapped));
+    setEditingCategoriesList(unique.length > 0 ? unique : [...activeCategoryNames]);
     setShowEditCategoriesModal(true);
   };
 
@@ -512,7 +534,7 @@ export const EmployeeManagement: React.FC = () => {
                 onClick={() => {
                   setPageView('staff-accounts');
                   setNewStaffRole('Captain');
-                  setNewStaffCategories([...ALL_CATEGORY_NAMES]);
+                  setNewStaffCategories([...activeCategoryNames]);
                   setShowCreateStaffModal(true);
                 }}
                 className="inline-flex items-center px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-black rounded-xl transition-all shadow-md gap-2 cursor-pointer"
@@ -729,7 +751,7 @@ export const EmployeeManagement: React.FC = () => {
               <button
                 onClick={() => {
                   setNewStaffRole(isOperatorDashboard ? 'Captain' : 'Support Staff');
-                  setNewStaffCategories([...ALL_CATEGORY_NAMES]);
+                  setNewStaffCategories([...activeCategoryNames]);
                   setShowCreateStaffModal(true);
                 }}
                 className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-2 cursor-pointer ml-auto"
@@ -868,7 +890,7 @@ export const EmployeeManagement: React.FC = () => {
                               title="Click to view or edit dashboard category permissions"
                             >
                               <Layers className="w-3.5 h-3.5 text-blue-600" />
-                              <span>{assignedCats.length} / {ALL_MODULE_CATEGORIES.length} Categories</span>
+                              <span>{assignedCats.length} / {activeCategories.length} Categories</span>
                             </button>
                           )}
                         </td>
@@ -1107,7 +1129,7 @@ export const EmployeeManagement: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-800">
                   Dashboard Categories (Admin Modules){' '}
                   <span className="text-blue-600 font-extrabold">
-                    ({newStaffCategories.length} of {ALL_MODULE_CATEGORIES.length} selected)
+                    ({newStaffCategories.length} of {activeCategories.length} selected)
                   </span>
                 </label>
                 <p className="text-[11px] text-slate-500">
@@ -1117,7 +1139,7 @@ export const EmployeeManagement: React.FC = () => {
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setNewStaffCategories([...ALL_CATEGORY_NAMES])}
+                  onClick={() => setNewStaffCategories([...activeCategoryNames])}
                   className="px-2 py-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 cursor-pointer"
                 >
                   Select All
@@ -1133,7 +1155,7 @@ export const EmployeeManagement: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-              {ALL_MODULE_CATEGORIES.map((cat) => {
+              {activeCategories.map((cat) => {
                 const isChecked = newStaffCategories.includes(cat.name);
                 const CatIcon = cat.icon;
                 return (
@@ -1200,13 +1222,13 @@ export const EmployeeManagement: React.FC = () => {
             <p className="text-xs text-slate-600">
               Selected:{' '}
               <strong className="text-blue-700 font-bold">
-                {editingCategoriesList.length} of {ALL_MODULE_CATEGORIES.length} Categories
+                {editingCategoriesList.length} of {activeCategories.length} Categories
               </strong>
             </p>
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => setEditingCategoriesList([...ALL_CATEGORY_NAMES])}
+                onClick={() => setEditingCategoriesList([...activeCategoryNames])}
                 className="px-2 py-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 cursor-pointer"
               >
                 Select All
@@ -1222,7 +1244,7 @@ export const EmployeeManagement: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-            {ALL_MODULE_CATEGORIES.map((cat) => {
+            {activeCategories.map((cat) => {
               const isChecked = editingCategoriesList.includes(cat.name);
               const CatIcon = cat.icon;
               return (
