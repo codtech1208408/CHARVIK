@@ -120,7 +120,7 @@ export const VyshnaviTravels: React.FC = () => {
       if (saved) return JSON.parse(saved);
       const general = localStorage.getItem('charvik_custom_income_categories');
       if (general) return JSON.parse(general);
-    } catch {}
+    } catch { }
     return INCOME_CATEGORIES;
   });
 
@@ -130,7 +130,7 @@ export const VyshnaviTravels: React.FC = () => {
       if (saved) return JSON.parse(saved);
       const general = localStorage.getItem('charvik_custom_expense_categories');
       if (general) return JSON.parse(general);
-    } catch {}
+    } catch { }
     return EXPENSE_CATEGORIES;
   });
 
@@ -146,7 +146,7 @@ export const VyshnaviTravels: React.FC = () => {
     try {
       const saved = localStorage.getItem('vyshnavi_custom_vehicles');
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return [
       'General / Fleet Wide',
       'AP16TV1234',
@@ -166,7 +166,7 @@ export const VyshnaviTravels: React.FC = () => {
     try {
       const saved = localStorage.getItem('vyshnavi_custom_parties');
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return [
       'Sri Krishna Travels',
       'Indian Oil',
@@ -223,17 +223,10 @@ export const VyshnaviTravels: React.FC = () => {
     items: [
       {
         sr_no: 1,
-        description: `LB Nagar to Gachibowli – Dropping Service\nGachibowli to LB Nagar – Pickup Service\nECL to LB Nagar – Pickup Service\n(From October 10th to November 10th)`,
+        description: '',
         category: 'Service',
         staff_count: 1,
-        salary_paid: 60000
-      },
-      {
-        sr_no: 2,
-        description: `Driver Salary – Two Drivers\n(From October 10th to November 10th)`,
-        category: 'Driver',
-        staff_count: 2,
-        salary_paid: 40000
+        salary_paid: 0
       }
     ],
     received_amount: 0,
@@ -301,7 +294,7 @@ export const VyshnaviTravels: React.FC = () => {
     loadTransactions();
     api.getBuses().then((res) => {
       if (Array.isArray(res)) setBuses(res);
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   // Filtered Records
@@ -457,17 +450,10 @@ export const VyshnaviTravels: React.FC = () => {
       items: [
         {
           sr_no: 1,
-          description: `LB Nagar to Gachibowli – Dropping Service\nGachibowli to LB Nagar – Pickup Service\nECL to LB Nagar – Pickup Service\n(From October 10th to November 10th)`,
+          description: '',
           category: 'Service',
           staff_count: 1,
-          salary_paid: 60000
-        },
-        {
-          sr_no: 2,
-          description: `Driver Salary – Two Drivers\n(From October 10th to November 10th)`,
-          category: 'Driver',
-          staff_count: 2,
-          salary_paid: 40000
+          salary_paid: 0
         }
       ],
       received_amount: 0,
@@ -1631,17 +1617,15 @@ export const VyshnaviTravels: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab('records')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'records'
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'records'
                   ? 'bg-white text-[#142B4A] shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
-              }`}
+                }`}
             >
               <FileText className="w-4 h-4 text-blue-600" />
               <span>Billing & Service Records</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                activeTab === 'records' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'
-              }`}>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'records' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-600'
+                }`}>
                 {records.length}
               </span>
             </button>
@@ -1649,17 +1633,15 @@ export const VyshnaviTravels: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab('transactions')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'transactions'
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'transactions'
                   ? 'bg-white text-[#142B4A] shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
-              }`}
+                }`}
             >
               <Wallet className="w-4 h-4 text-emerald-600" />
               <span>Income & Expense Ledger</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                activeTab === 'transactions' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
-              }`}>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'transactions' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                }`}>
                 {transactions.length}
               </span>
             </button>
@@ -1941,13 +1923,12 @@ export const VyshnaviTravels: React.FC = () => {
                           </td>
                           <td className="py-3.5 px-4 text-center">
                             <span
-                              className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                isPaid
+                              className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${isPaid
                                   ? 'bg-emerald-100 text-emerald-800'
                                   : isPartial
-                                  ? 'bg-amber-100 text-amber-800'
-                                  : 'bg-rose-100 text-rose-800'
-                              }`}
+                                    ? 'bg-amber-100 text-amber-800'
+                                    : 'bg-rose-100 text-rose-800'
+                                }`}
                             >
                               {rec.payment_status}
                             </span>
@@ -2144,27 +2125,24 @@ export const VyshnaviTravels: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setTxnTypeFilter('All')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                    txnTypeFilter === 'All' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
-                  }`}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${txnTypeFilter === 'All' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500'
+                    }`}
                 >
                   All
                 </button>
                 <button
                   type="button"
                   onClick={() => setTxnTypeFilter('Income')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                    txnTypeFilter === 'Income' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-500'
-                  }`}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${txnTypeFilter === 'Income' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-500'
+                    }`}
                 >
                   Income
                 </button>
                 <button
                   type="button"
                   onClick={() => setTxnTypeFilter('Expense')}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                    txnTypeFilter === 'Expense' ? 'bg-rose-600 text-white shadow-2xs' : 'text-slate-500'
-                  }`}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${txnTypeFilter === 'Expense' ? 'bg-rose-600 text-white shadow-2xs' : 'text-slate-500'
+                    }`}
                 >
                   Expense
                 </button>
@@ -2291,11 +2269,10 @@ export const VyshnaviTravels: React.FC = () => {
                           <td className="py-3.5 px-4 font-medium text-slate-600">{t.transaction_date}</td>
                           <td className="py-3.5 px-4 text-center">
                             <span
-                              className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                isIncome
+                              className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${isIncome
                                   ? 'bg-emerald-100 text-emerald-800'
                                   : 'bg-rose-100 text-rose-800'
-                              }`}
+                                }`}
                             >
                               {t.transaction_type}
                             </span>
@@ -2507,7 +2484,7 @@ export const VyshnaviTravels: React.FC = () => {
                           rows={3}
                           value={item.description}
                           onChange={(e) => handleUpdateServiceRow(idx, 'description', e.target.value)}
-                          placeholder="e.g. LB Nagar to Gachibowli – Dropping Service&#10;Gachibowli to LB Nagar – Pickup Service&#10;ECL to LB Nagar – Pickup Service&#10;(From October 10th to November 10th)"
+                          placeholder="Enter particulars (e.g. Route dropping/pickup services, driver salary, dates/period...)"
                           className="w-full px-3 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed resize-y"
                         />
                       </td>
@@ -2518,8 +2495,9 @@ export const VyshnaviTravels: React.FC = () => {
                             type="number"
                             min="0"
                             required
-                            value={item.salary_paid}
+                            value={item.salary_paid || ''}
                             onChange={(e) => handleUpdateServiceRow(idx, 'salary_paid', parseFloat(e.target.value) || 0)}
+                            placeholder="0"
                             className="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black text-right text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                           />
                         </div>
@@ -2682,11 +2660,10 @@ export const VyshnaviTravels: React.FC = () => {
                     : incomeCategories[0] || 'Trip Advance / Booking'
                 }))
               }
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                txnForm.transaction_type === 'Income'
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${txnForm.transaction_type === 'Income'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
-              }`}
+                }`}
             >
               + Income (Money In)
             </button>
@@ -2701,11 +2678,10 @@ export const VyshnaviTravels: React.FC = () => {
                     : expenseCategories[0] || 'Diesel / Fuel'
                 }))
               }
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                txnForm.transaction_type === 'Expense'
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${txnForm.transaction_type === 'Expense'
                   ? 'bg-rose-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
-              }`}
+                }`}
             >
               - Expense (Money Out)
             </button>
@@ -3270,9 +3246,8 @@ export const VyshnaviTravels: React.FC = () => {
             </button>
             <button
               type="submit"
-              className={`px-5 py-2 rounded-xl text-white text-xs font-bold shadow-md cursor-pointer ${
-                txnForm.transaction_type === 'Income' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
-              }`}
+              className={`px-5 py-2 rounded-xl text-white text-xs font-bold shadow-md cursor-pointer ${txnForm.transaction_type === 'Income' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+                }`}
             >
               {editingTxn ? 'Save Changes' : `Save ${txnForm.transaction_type}`}
             </button>
@@ -3335,30 +3310,30 @@ export const VyshnaviTravels: React.FC = () => {
                 {/* 1. Official Letterhead Header */}
                 <div>
                   {/* Logo + Contact Info row */}
-                  <div className="vyshnavi-header-wrap" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'2px solid #1d4ed8', paddingBottom:'10px', marginBottom:'4px' }}>
+                  <div className="vyshnavi-header-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '2px solid #1d4ed8', paddingBottom: '10px', marginBottom: '4px' }}>
                     <img
                       src="/vyshnavi-letterhead-header-clean.png"
                       alt="Vyshnavi Travels"
                       className="vyshnavi-header-logo"
-                      style={{ height:'72px', maxHeight:'75px', width:'auto', maxWidth:'260px', display:'block', objectFit:'contain' }}
+                      style={{ height: '72px', maxHeight: '75px', width: 'auto', maxWidth: '260px', display: 'block', objectFit: 'contain' }}
                     />
-                    <div className="vyshnavi-contact-box" style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'6px', textAlign:'right' }}>
-                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                    <div className="vyshnavi-contact-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', textAlign: 'right' }}>
+                      <div className="vyshnavi-contact-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#1e3a8a', fontWeight: '600' }}>
                         <span>+91 9000202241</span>
-                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+                        <span className="vyshnavi-icon-pill" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1d4ed8', borderRadius: '50%', width: '22px', height: '22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" /></svg>
                         </span>
                       </div>
-                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                      <div className="vyshnavi-contact-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#1e3a8a', fontWeight: '600' }}>
                         <span>vyshnavitravels@yahoo.com</span>
-                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        <span className="vyshnavi-icon-pill" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1d4ed8', borderRadius: '50%', width: '22px', height: '22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" /></svg>
                         </span>
                       </div>
-                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                      <div className="vyshnavi-contact-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#1e3a8a', fontWeight: '600' }}>
                         <span>Hyderabad, Telangana</span>
-                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        <span className="vyshnavi-icon-pill" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1d4ed8', borderRadius: '50%', width: '22px', height: '22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
                         </span>
                       </div>
                     </div>
@@ -3706,11 +3681,10 @@ export const VyshnaviTravels: React.FC = () => {
                   setStandaloneCatType('Income');
                   setEditingCategoryOldName(null);
                 }}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  standaloneCatType === 'Income'
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${standaloneCatType === 'Income'
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <TrendingUp className="w-3.5 h-3.5" />
                 <span>Income Categories ({incomeCategories.length})</span>
@@ -3721,11 +3695,10 @@ export const VyshnaviTravels: React.FC = () => {
                   setStandaloneCatType('Expense');
                   setEditingCategoryOldName(null);
                 }}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  standaloneCatType === 'Expense'
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${standaloneCatType === 'Expense'
                     ? 'bg-rose-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <TrendingDown className="w-3.5 h-3.5" />
                 <span>Expense Categories ({expenseCategories.length})</span>
@@ -3868,22 +3841,20 @@ export const VyshnaviTravels: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setReportOrientation('landscape')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      reportOrientation === 'landscape'
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${reportOrientation === 'landscape'
                         ? 'bg-blue-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     Landscape
                   </button>
                   <button
                     type="button"
                     onClick={() => setReportOrientation('portrait')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      reportOrientation === 'portrait'
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${reportOrientation === 'portrait'
                         ? 'bg-blue-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     Portrait
                   </button>
@@ -3930,30 +3901,30 @@ export const VyshnaviTravels: React.FC = () => {
               >
                 <div>
                   {/* Logo + Contact Info row */}
-                  <div className="vyshnavi-header-wrap" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'2px solid #1d4ed8', paddingBottom:'10px', marginBottom:'4px' }}>
+                  <div className="vyshnavi-header-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '2px solid #1d4ed8', paddingBottom: '10px', marginBottom: '4px' }}>
                     <img
                       src="/vyshnavi-letterhead-header-clean.png"
                       alt="Vyshnavi Travels"
                       className="vyshnavi-header-logo"
-                      style={{ height:'72px', maxHeight:'75px', width:'auto', maxWidth:'260px', display:'block', objectFit:'contain' }}
+                      style={{ height: '72px', maxHeight: '75px', width: 'auto', maxWidth: '260px', display: 'block', objectFit: 'contain' }}
                     />
-                    <div className="vyshnavi-contact-box" style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'6px', textAlign:'right' }}>
-                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                    <div className="vyshnavi-contact-box" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', textAlign: 'right' }}>
+                      <div className="vyshnavi-contact-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#1e3a8a', fontWeight: '600' }}>
                         <span>+91 9000202241</span>
-                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+                        <span className="vyshnavi-icon-pill" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1d4ed8', borderRadius: '50%', width: '22px', height: '22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" /></svg>
                         </span>
                       </div>
-                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                      <div className="vyshnavi-contact-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#1e3a8a', fontWeight: '600' }}>
                         <span>vyshnavitravels@yahoo.com</span>
-                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        <span className="vyshnavi-icon-pill" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1d4ed8', borderRadius: '50%', width: '22px', height: '22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" /></svg>
                         </span>
                       </div>
-                      <div className="vyshnavi-contact-row" style={{ display:'flex', alignItems:'center', gap:'8px', fontSize:'13px', color:'#1e3a8a', fontWeight:'600' }}>
+                      <div className="vyshnavi-contact-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#1e3a8a', fontWeight: '600' }}>
                         <span>Hyderabad, Telangana</span>
-                        <span className="vyshnavi-icon-pill" style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', background:'#1d4ed8', borderRadius:'50%', width:'22px', height:'22px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        <span className="vyshnavi-icon-pill" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1d4ed8', borderRadius: '50%', width: '22px', height: '22px' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
                         </span>
                       </div>
                     </div>
