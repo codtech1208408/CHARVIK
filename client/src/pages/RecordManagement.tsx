@@ -264,22 +264,44 @@ export const RecordManagement: React.FC = () => {
   const [monthFilter, setMonthFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
 
-  // Modals
-  const [isAddEditOpen, setIsAddEditOpen] = useState(false);
+  // Modals & Refs
+  const formRef = useRef<HTMLDivElement>(null);
+  const printSheetRef = useRef<HTMLDivElement>(null);
   const [editingRecord, setEditingRecord] = useState<ServiceRecord | null>(null);
   const [printingRecord, setPrintingRecord] = useState<ServiceRecord | null>(null);
 
-  // Form State
-  const [formData, setFormData] = useState<Partial<ServiceRecord>>({
-    record_number: '',
+  const getInitialFormData = (existingRecordsCount: number = 0): Partial<ServiceRecord> => ({
+    record_number: `REC-${new Date().getFullYear()}-${String(existingRecordsCount + 1).padStart(3, '0')}`,
     record_date: new Date().toISOString().split('T')[0],
-    period_month: '',
-    bill_to_name: '',
-    bill_to_address: '',
-    bill_to_phone: '',
-    bill_to_pan: '',
-    operator_name: '',
-    items: [],
+    period_month: "Aug'26",
+    bill_to_name: 'Charvik Staffing Consultancy',
+    bill_to_address: 'Opp. BSNL Office, Beside Sri Krishna Travels, Gooty Road, Anantapuramu - 515001',
+    bill_to_phone: '9505151527',
+    bill_to_pan: 'AABCY5013H',
+    operator_name: 'Charvik Staffing',
+    items: [
+      {
+        id: 'item-1',
+        description: "Driver's Salary for Aug'26",
+        category: 'Driver',
+        staff_count: 69,
+        salary_paid: 1858400
+      },
+      {
+        id: 'item-2',
+        description: "Helper's Salary for Aug'26",
+        category: 'Helper',
+        staff_count: 6,
+        salary_paid: 49300
+      },
+      {
+        id: 'item-3',
+        description: "Captain's Salary for Aug'26",
+        category: 'Captain',
+        staff_count: 40,
+        salary_paid: 419200
+      }
+    ],
     received_amount: 0,
     payment_status: 'Pending',
     ...DEFAULT_BANK_DETAILS,
@@ -287,7 +309,13 @@ export const RecordManagement: React.FC = () => {
     remarks: ''
   });
 
-  const printSheetRef = useRef<HTMLDivElement>(null);
+  // Form State
+  const [formData, setFormData] = useState<Partial<ServiceRecord>>(() => getInitialFormData(0));
+
+  const handleResetForm = () => {
+    setEditingRecord(null);
+    setFormData(getInitialFormData(records.length));
+  };
 
   // Load records
   const loadRecords = async () => {
@@ -361,52 +389,13 @@ export const RecordManagement: React.FC = () => {
     return { totalCount, totalStaff, totalBilled, totalReceived, totalBalance };
   }, [records]);
 
-  // Open Create Modal
+  // Scroll to inline form & create new
   const handleOpenCreate = () => {
-    setEditingRecord(null);
-    const nextRecNo = `REC-${new Date().getFullYear()}-${String(records.length + 1).padStart(3, '0')}`;
-    setFormData({
-      record_number: nextRecNo,
-      record_date: new Date().toISOString().split('T')[0],
-      period_month: "Aug'26",
-      bill_to_name: 'Yolobus Private Limited / Sri Krishna Travels',
-      bill_to_address: 'Unit 330, JMD Megapolis, Sohna Road, Gurugram',
-      bill_to_phone: '9505151527',
-      bill_to_pan: 'AABCY5013H',
-      operator_name: 'Ravi Kumar / Sri Krishna Travels Operator',
-      items: [
-        {
-          id: String(Date.now()),
-          description: "Driver's Salary for Aug'26",
-          category: 'Driver',
-          staff_count: 69,
-          salary_paid: 1858400
-        },
-        {
-          id: String(Date.now() + 1),
-          description: "Helper's Salary for Aug'26",
-          category: 'Helper',
-          staff_count: 6,
-          salary_paid: 49300
-        },
-        {
-          id: String(Date.now() + 2),
-          description: "Captain's Salary for Aug'26",
-          category: 'Captain',
-          staff_count: 40,
-          salary_paid: 419200
-        }
-      ],
-      received_amount: 0,
-      payment_status: 'Pending',
-      ...DEFAULT_BANK_DETAILS,
-      qr_code_url: '',
-      remarks: ''
-    });
-    setIsAddEditOpen(true);
+    handleResetForm();
+    formRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Open Edit Modal
+  // Populate inline form to edit
   const handleOpenEdit = (rec: ServiceRecord) => {
     setEditingRecord(rec);
     setFormData({
@@ -421,7 +410,7 @@ export const RecordManagement: React.FC = () => {
         }
       ]
     });
-    setIsAddEditOpen(true);
+    formRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   // Line item helpers
@@ -547,7 +536,7 @@ export const RecordManagement: React.FC = () => {
         setRecords((prev) => [recordPayload, ...prev]);
         success(`Record ${recordPayload.record_number} created successfully!`);
       }
-      setIsAddEditOpen(false);
+      handleResetForm();
     } catch (err: any) {
       error(err.message || 'Failed to save record.');
     }
@@ -871,6 +860,160 @@ export const RecordManagement: React.FC = () => {
         </div>
       </div>
 
+      {/* ── INLINE DATA FILLING SECTION (NORMAL INLINE FORM LIKE OTHER TABS, NO POPUP BOX) ── */}
+      <div ref={formRef} className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 sm:p-6 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-base shadow-xs">
+              +
+            </div>
+            <div>
+              <h2 className="text-base font-black text-[#142B4A] tracking-tight">
+                {editingRecord ? `Edit Record: ${editingRecord.record_number}` : 'Add Service & Salary Record'}
+              </h2>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Fill in Description of Services, Category (with Select, Search & Add More), Staff Count, and Salary Paid.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {editingRecord && (
+              <button
+                type="button"
+                onClick={handleResetForm}
+                className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1 cursor-pointer transition-all"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Cancel Edit</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleAddItemRow}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+            >
+              <Plus className="w-3.5 h-3.5 text-slate-950" />
+              <span>Add Service Row</span>
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSaveRecord} className="space-y-4 text-xs text-slate-700">
+          {/* Exact Golden-Yellow Table from Image 2 */}
+          <div className="overflow-x-auto border-2 border-amber-300 rounded-2xl bg-white shadow-sm">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-[#FDE047] text-slate-950 font-black text-xs uppercase border-b-2 border-amber-300">
+                <tr>
+                  <th className="py-3 px-3 text-center w-14 text-slate-950">Sr. No</th>
+                  <th className="py-3 px-4 min-w-[240px] text-slate-950">Description of Services</th>
+                  <th className="py-3 px-4 min-w-[180px] text-slate-950">Category</th>
+                  <th className="py-3 px-4 min-w-[170px] text-center text-slate-950">
+                    No. of Driver/Helper/Captain
+                  </th>
+                  <th className="py-3 px-4 min-w-[160px] text-right text-slate-950">
+                    Salary Paid (₹)
+                  </th>
+                  <th className="py-3 px-2 text-center w-10"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-amber-100/70 bg-white">
+                {(formData.items || []).map((item, idx) => (
+                  <tr key={item.id} className="hover:bg-amber-50/40 transition-colors">
+                    <td className="py-2.5 px-3 text-center font-black text-slate-900 text-sm">
+                      {idx + 1}
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Driver's Salary for Aug'26"
+                        value={item.description}
+                        onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
+                        className="w-full p-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400"
+                      />
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <CategorySelector
+                        value={item.category}
+                        onChange={(newCat) => handleUpdateItem(item.id, 'category', newCat)}
+                        availableCategories={availableCategories}
+                        onAddCategory={handleAddCategory}
+                      />
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="number"
+                        min="0"
+                        required
+                        placeholder="0"
+                        value={item.staff_count ?? ''}
+                        onChange={(e) => handleUpdateItem(item.id, 'staff_count', Number(e.target.value))}
+                        className="w-full p-2 text-center rounded-xl border border-slate-200 bg-white font-black text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400 text-sm"
+                      />
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="number"
+                        min="0"
+                        required
+                        placeholder="₹ 0"
+                        value={item.salary_paid ?? ''}
+                        onChange={(e) => handleUpdateItem(item.id, 'salary_paid', Number(e.target.value))}
+                        className="w-full p-2 text-right rounded-xl border border-slate-200 bg-white font-black text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400 text-sm"
+                      />
+                    </td>
+                    <td className="py-2.5 px-2 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItemRow(item.id)}
+                        className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                        title="Remove Row"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              {/* Total Row matching Image 2 */}
+              <tfoot className="bg-[#FEF08A] font-black border-t-2 border-amber-300 text-slate-950">
+                <tr>
+                  <td colSpan={3} className="py-3 px-4 text-center font-black text-sm uppercase tracking-wider text-slate-950">
+                    Total
+                  </td>
+                  <td className="py-3 px-4 text-center text-sm font-black text-slate-950">
+                    {formCalculations.staffCount}
+                  </td>
+                  <td className="py-3 px-4 text-right text-base font-black text-slate-950">
+                    ₹ {formCalculations.totalAmt.toLocaleString('en-IN')}
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          {/* Form Actions */}
+          <div className="flex items-center justify-end gap-2.5 pt-2">
+            <button
+              type="button"
+              onClick={handleResetForm}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              Clear
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 rounded-xl text-xs font-black bg-[#142B4A] hover:bg-[#1E3A5F] text-white shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <Save className="w-4 h-4 text-amber-300" />
+              <span>{editingRecord ? 'Update Record' : 'Save Record'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
       {/* Filter Toolbar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center gap-3">
         <div className="relative min-w-[200px] sm:min-w-[240px]">
@@ -1099,150 +1242,6 @@ export const RecordManagement: React.FC = () => {
           </table>
         </div>
       </div>
-
-      {/* =========================================================================
-          ADD / EDIT RECORD MODAL (EXACT MATCH FOR USER IMAGE 2 TABLE ONLY)
-          ========================================================================= */}
-      {isAddEditOpen && (
-        <Modal
-          isOpen={isAddEditOpen}
-          onClose={() => setIsAddEditOpen(false)}
-          title={editingRecord ? `Edit Record: ${editingRecord.record_number}` : 'Add Record'}
-          subtitle="Fill in Description of Services, Category (with Select, Search & Add More), Staff Count, and Salary Paid."
-          maxWidth="max-w-4xl"
-        >
-          <form onSubmit={handleSaveRecord} className="space-y-4 text-xs text-slate-700">
-            {/* Top Toolbar: Add Service Row */}
-            <div className="flex items-center justify-between bg-amber-50/70 p-3 rounded-2xl border border-amber-200">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
-                <span className="font-bold text-amber-950 text-xs uppercase tracking-wide">
-                  Service & Salary Breakdown (Image Format)
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleAddItemRow}
-                className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
-              >
-                <Plus className="w-3.5 h-3.5 text-slate-950" />
-                <span>Add Service Row</span>
-              </button>
-            </div>
-
-            {/* Exact Golden-Yellow Table from Image 2 */}
-            <div className="overflow-x-auto border-2 border-amber-300 rounded-2xl bg-white shadow-sm">
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-[#FDE047] text-slate-950 font-black text-xs uppercase border-b-2 border-amber-300">
-                  <tr>
-                    <th className="py-3 px-3 text-center w-14 text-slate-950">Sr. No</th>
-                    <th className="py-3 px-4 min-w-[240px] text-slate-950">Description of Services</th>
-                    <th className="py-3 px-4 min-w-[180px] text-slate-950">Category</th>
-                    <th className="py-3 px-4 min-w-[170px] text-center text-slate-950">
-                      No. of Driver/Helper/Captain
-                    </th>
-                    <th className="py-3 px-4 min-w-[160px] text-right text-slate-950">
-                      Salary Paid (₹)
-                    </th>
-                    <th className="py-3 px-2 text-center w-10"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-amber-100/70 bg-white">
-                  {(formData.items || []).map((item, idx) => (
-                    <tr key={item.id} className="hover:bg-amber-50/40 transition-colors">
-                      <td className="py-2.5 px-3 text-center font-black text-slate-900 text-sm">
-                        {idx + 1}
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Driver's Salary for Aug'26"
-                          value={item.description}
-                          onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
-                          className="w-full p-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400"
-                        />
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <CategorySelector
-                          value={item.category}
-                          onChange={(newCat) => handleUpdateItem(item.id, 'category', newCat)}
-                          availableCategories={availableCategories}
-                          onAddCategory={handleAddCategory}
-                        />
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <input
-                          type="number"
-                          min="0"
-                          required
-                          placeholder="0"
-                          value={item.staff_count ?? ''}
-                          onChange={(e) => handleUpdateItem(item.id, 'staff_count', Number(e.target.value))}
-                          className="w-full p-2 text-center rounded-xl border border-slate-200 bg-white font-black text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400 text-sm"
-                        />
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <input
-                          type="number"
-                          min="0"
-                          required
-                          placeholder="₹ 0"
-                          value={item.salary_paid ?? ''}
-                          onChange={(e) => handleUpdateItem(item.id, 'salary_paid', Number(e.target.value))}
-                          className="w-full p-2 text-right rounded-xl border border-slate-200 bg-white font-black text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400 text-sm"
-                        />
-                      </td>
-                      <td className="py-2.5 px-2 text-center">
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveItemRow(item.id)}
-                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
-                          title="Remove Row"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                {/* Total Row matching Image 2 */}
-                <tfoot className="bg-[#FEF08A] font-black border-t-2 border-amber-300 text-slate-950">
-                  <tr>
-                    <td colSpan={3} className="py-3 px-4 text-center font-black text-sm uppercase tracking-wider text-slate-950">
-                      Total
-                    </td>
-                    <td className="py-3 px-4 text-center text-sm font-black text-slate-950">
-                      {formCalculations.staffCount}
-                    </td>
-                    <td className="py-3 px-4 text-right text-base font-black text-slate-950">
-                      ₹ {formCalculations.totalAmt.toLocaleString('en-IN')}
-                    </td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
-              <button
-                type="button"
-                onClick={() => setIsAddEditOpen(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-5 py-2.5 rounded-xl text-xs font-black bg-[#142B4A] hover:bg-[#1E3A5F] text-white shadow-sm transition-all cursor-pointer"
-              >
-                {editingRecord ? 'Update Record' : 'Save Record'}
-              </button>
-            </div>
-          </form>
-        </Modal>
-      )}
 
       {/* =========================================================================
           PRINT RECORD MODAL (EXACT MATCH FOR IMAGES 1, 2, 3, AND 4)

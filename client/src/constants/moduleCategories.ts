@@ -278,7 +278,7 @@ export const getCustomAdminTabs = (): NavItemLeaf[] => {
         }));
       }
     }
-  } catch {}
+  } catch { }
   return [];
 };
 
@@ -321,7 +321,7 @@ export const registerAdminTab = (tab: {
       localStorage.setItem('charvik_custom_admin_tabs', JSON.stringify(custom));
       window.dispatchEvent(new CustomEvent('charvik_tabs_updated'));
     }
-  } catch {}
+  } catch { }
 };
 
 /**
