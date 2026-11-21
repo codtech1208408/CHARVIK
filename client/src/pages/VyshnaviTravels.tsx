@@ -2499,10 +2499,6 @@ export const VyshnaviTravels: React.FC = () => {
                 }}
                 placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
               />
-              <p className="text-[11px] text-slate-500 font-medium mt-1.5 flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Client mobile number &amp; address will show directly in the official printout sheet.</span>
-              </p>
             </div>
           </div>
 
