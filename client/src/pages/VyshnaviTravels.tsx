@@ -2484,7 +2484,6 @@ export const VyshnaviTravels: React.FC = () => {
                           rows={3}
                           value={item.description}
                           onChange={(e) => handleUpdateServiceRow(idx, 'description', e.target.value)}
-                          placeholder="Enter particulars (e.g. Route dropping/pickup services, driver salary, dates/period...)"
                           className="w-full px-3 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed resize-y"
                         />
                       </td>
