@@ -2502,7 +2502,7 @@ export const VyshnaviTravels: React.FC = () => {
             </div>
           </div>
 
-          {/* Section 3: Services & Staff Breakdown (Particulars Box-Type) */}
+          {/* Section 3: Services & Particulars Breakdown (Clean Form Entry) */}
           <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
@@ -2513,28 +2513,28 @@ export const VyshnaviTravels: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleAddRouteRow}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold shadow-2xs cursor-pointer"
-                  title="Insert Dropping &amp; Pickup Service particulars matching template"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold shadow-2xs cursor-pointer transition-colors"
+                  title="Insert Dropping &amp; Pickup Service particulars template"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ Route Service (Drop/Pickup)</span>
+                  <span>Route Service (Drop/Pickup)</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleAddDriverSalaryRow}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 text-xs font-bold shadow-2xs cursor-pointer"
-                  title="Insert Driver Salary particulars matching template"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 text-xs font-bold shadow-2xs cursor-pointer transition-colors"
+                  title="Insert Driver Salary particulars template"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ Driver Salary</span>
+                  <span>Driver Salary</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleAddServiceRow}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ Add Row</span>
+                  <span>Add Row</span>
                 </button>
               </div>
             </div>
@@ -2542,25 +2542,25 @@ export const VyshnaviTravels: React.FC = () => {
             <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#b9d8ff]/60 border-b border-blue-200 text-[11px] font-black text-slate-900 uppercase tracking-wider">
-                    <th className="py-2.5 px-3 w-14 text-center border-r border-blue-200">S. No.</th>
-                    <th className="py-2.5 px-3 min-w-[260px] border-r border-blue-200">Particulars (Service Details &amp; Period) *</th>
+                  <tr className="bg-slate-100/90 border-b border-slate-200 text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                    <th className="py-2.5 px-3 w-14 text-center">S. No.</th>
+                    <th className="py-2.5 px-3 min-w-[260px]">Particulars (Service Details &amp; Period) *</th>
                     <th className="py-2.5 px-3 w-44 text-right">Amount (₹) *</th>
                     <th className="py-2.5 px-3 w-12 text-center"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-slate-100">
                   {recordForm.items.map((item, idx) => (
-                    <tr key={idx} className={idx % 2 === 1 ? 'bg-[#fef9c3]/50 hover:bg-[#fef9c3]/80' : 'bg-white hover:bg-slate-50/60'}>
-                      <td className="py-3 px-3 text-center font-black text-slate-700 align-top pt-3 border-r border-slate-200">{idx + 1}</td>
-                      <td className="py-2.5 px-3 border-r border-slate-200">
+                    <tr key={idx} className="bg-white hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3 px-3 text-center font-bold text-slate-500 align-top pt-3.5">{idx + 1}</td>
+                      <td className="py-2.5 px-3">
                         <textarea
                           required
                           rows={3}
                           value={item.description}
                           onChange={(e) => handleUpdateServiceRow(idx, 'description', e.target.value)}
                           placeholder="e.g. LB Nagar to Gachibowli – Dropping Service&#10;Gachibowli to LB Nagar – Pickup Service&#10;ECL to LB Nagar – Pickup Service&#10;(From October 10th to November 10th)"
-                          className="w-full px-2.5 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed resize-y"
+                          className="w-full px-3 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed resize-y"
                         />
                       </td>
                       <td className="py-2.5 px-3 text-right align-top pt-3">
@@ -2572,7 +2572,7 @@ export const VyshnaviTravels: React.FC = () => {
                             required
                             value={item.salary_paid}
                             onChange={(e) => handleUpdateServiceRow(idx, 'salary_paid', parseFloat(e.target.value) || 0)}
-                            className="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black text-right text-slate-900 focus:outline-none"
+                            className="w-full pl-6 pr-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-black text-right text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                           />
                         </div>
                       </td>
@@ -2580,7 +2580,7 @@ export const VyshnaviTravels: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleRemoveServiceRow(idx)}
-                          className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
+                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 cursor-pointer transition-colors"
                           title="Remove row"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -2589,8 +2589,8 @@ export const VyshnaviTravels: React.FC = () => {
                     </tr>
                   ))}
                   {/* Total Summary Row */}
-                  <tr className="bg-slate-100 font-black text-xs border-t-2 border-blue-900/30">
-                    <td colSpan={2} className="py-3 px-3 text-right uppercase tracking-wider text-slate-800 border-r border-slate-200">
+                  <tr className="bg-slate-50/80 font-black text-xs border-t border-slate-200">
+                    <td colSpan={2} className="py-3 px-3 text-right uppercase tracking-wider text-slate-700">
                       Total:
                     </td>
                     <td className="py-3 px-3 text-right text-[#142B4A] text-sm font-black">
