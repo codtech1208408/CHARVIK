@@ -500,8 +500,6 @@ export const LetterPad: React.FC = () => {
               <!-- Header -->
               <div class="letter-header">
                 <img src="${currentConfig.logo}" class="logo-img" alt="${currentConfig.name}" />
-                <div class="company-name">${currentConfig.name}</div>
-                <div class="company-tagline">${currentConfig.tagline}</div>
                 <div class="contact-pills">
                   <span>📞 ${currentConfig.phone}</span>
                   <span>✉️ ${currentConfig.email}</span>
@@ -568,10 +566,10 @@ export const LetterPad: React.FC = () => {
     }, 400);
   };
 
-  // Filtered saved records for table
+  // Filtered saved records for table (strictly for activeCompany)
   const filteredRecords = useMemo(() => {
     return savedRecords.filter((rec) => {
-      if (tableCompanyFilter !== 'All' && rec.company !== tableCompanyFilter) return false;
+      if (rec.company !== activeCompany) return false;
       const q = tableSearch.toLowerCase().trim();
       if (!q) return true;
       return (
@@ -581,7 +579,7 @@ export const LetterPad: React.FC = () => {
         rec.date.toLowerCase().includes(q)
       );
     });
-  }, [savedRecords, tableCompanyFilter, tableSearch]);
+  }, [savedRecords, activeCompany, tableSearch]);
 
   const currentConfig = COMPANIES[activeCompany];
 
@@ -621,46 +619,26 @@ export const LetterPad: React.FC = () => {
           </button>
         </div>
 
-        {/* 3-Company Switcher Tabs */}
-        <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80">
-          <button
-            type="button"
-            onClick={() => handleSwitchCompany('charvik')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeCompany === 'charvik'
-                ? 'bg-white text-blue-900 shadow-xs font-black'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5 text-blue-600" />
-            <span>Charvik Consultancy</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSwitchCompany('vyshnavi')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeCompany === 'vyshnavi'
-                ? 'bg-white text-teal-900 shadow-xs font-black'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Bus className="w-3.5 h-3.5 text-teal-600" />
-            <span>Vyshnavi Travels</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSwitchCompany('chandrika')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeCompany === 'chandrika'
-                ? 'bg-white text-amber-900 shadow-xs font-black'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Landmark className="w-3.5 h-3.5 text-amber-600" />
-            <span>Chandrika Finance</span>
-          </button>
+        {/* Active Company Badge Only (Dedicated tab mode) */}
+        <div className="flex items-center gap-2">
+          {activeCompany === 'charvik' && (
+            <div className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-900 border border-blue-200 text-xs font-black flex items-center gap-2 shadow-xs">
+              <Building2 className="w-4 h-4 text-blue-600" />
+              <span>Charvik Staffing Consultancy</span>
+            </div>
+          )}
+          {activeCompany === 'vyshnavi' && (
+            <div className="px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-900 border border-teal-200 text-xs font-black flex items-center gap-2 shadow-xs">
+              <Bus className="w-4 h-4 text-teal-600" />
+              <span>Vyshnavi Travels</span>
+            </div>
+          )}
+          {activeCompany === 'chandrika' && (
+            <div className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-black flex items-center gap-2 shadow-xs">
+              <Landmark className="w-4 h-4 text-amber-600" />
+              <span>Chandrika Finance</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -931,18 +909,6 @@ export const LetterPad: React.FC = () => {
                     className="max-h-16 max-w-[260px] object-contain"
                   />
                 </div>
-                <h1
-                  className="text-xl sm:text-2xl font-black uppercase tracking-wide"
-                  style={{ color: currentConfig.themeColor }}
-                >
-                  {currentConfig.name}
-                </h1>
-                <p
-                  className="text-[11px] font-bold uppercase tracking-wider mt-0.5"
-                  style={{ color: currentConfig.accentColor }}
-                >
-                  {currentConfig.tagline}
-                </p>
 
                 {/* Contact Strip */}
                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-700 mt-2">

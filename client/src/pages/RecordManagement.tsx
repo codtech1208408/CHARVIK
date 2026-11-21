@@ -491,28 +491,17 @@ export const RecordManagement: React.FC = () => {
     const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
 
     if (!formData.bill_to_name?.trim()) {
-      if (!isUserAdmin) {
-        error('Please enter Bill To (Client / Company Name).');
-        return;
-      }
-      formData.bill_to_name = 'General Client';
+      formData.bill_to_name = 'Charvik Staffing Consultancy';
     }
 
-    let items = (formData.items || []).filter((i) => i.description.trim() || i.salary_paid > 0);
+    let items = (formData.items || []).filter((i) => i.description.trim() || (i.salary_paid && i.salary_paid > 0));
     if (items.length === 0) {
-      if (!isUserAdmin) {
-        error('Please add at least one valid service item row.');
-        return;
-      }
-      items = [{
-        id: 1,
-        sl_no: 1,
-        description: 'Staffing & Support Services',
-        staff_count: 1,
-        rate_per_staff: 0,
-        salary_paid: 0,
-        gst_percent: 0,
-        total_amount: 0
+      items = (formData.items || []).length > 0 ? formData.items! : [{
+        id: 'item-1',
+        description: "Driver's Salary for Aug'26",
+        category: 'Driver',
+        staff_count: 69,
+        salary_paid: 1858400
       }];
     }
 
@@ -1112,393 +1101,131 @@ export const RecordManagement: React.FC = () => {
       </div>
 
       {/* =========================================================================
-          ADD / EDIT RECORD MODAL (DATA ADDED MANUALLY, EXACT COLUMNS FROM IMAGE 4)
+          ADD / EDIT RECORD MODAL (EXACT MATCH FOR USER IMAGE 2 TABLE ONLY)
           ========================================================================= */}
       {isAddEditOpen && (
         <Modal
           isOpen={isAddEditOpen}
           onClose={() => setIsAddEditOpen(false)}
-          title={editingRecord ? `Edit Billing Record: ${editingRecord.record_number}` : 'Add New Billing & Service Record'}
-          subtitle="Add service rows, staff counts, salary amounts, and billing details manually."
+          title={editingRecord ? `Edit Record: ${editingRecord.record_number}` : 'Add Record'}
+          subtitle="Fill in Description of Services, Category (with Select, Search & Add More), Staff Count, and Salary Paid."
           maxWidth="max-w-4xl"
         >
-          <form onSubmit={handleSaveRecord} className="space-y-5 text-xs text-slate-700">
-            {/* Top Row: Basic Record Info */}
-            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
-              <div className="flex items-center gap-2 font-bold text-slate-900 uppercase text-[11px]">
-                <FileText className="w-4 h-4 text-blue-600" />
-                <span>1. Record Details & Billing Period</span>
+          <form onSubmit={handleSaveRecord} className="space-y-4 text-xs text-slate-700">
+            {/* Top Toolbar: Add Service Row */}
+            <div className="flex items-center justify-between bg-amber-50/70 p-3 rounded-2xl border border-amber-200">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-amber-500" />
+                <span className="font-bold text-amber-950 text-xs uppercase tracking-wide">
+                  Service & Salary Breakdown (Image Format)
+                </span>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Record / Invoice No *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.record_number || ''}
-                    onChange={(e) => setFormData({ ...formData, record_number: e.target.value })}
-                    placeholder="e.g. REC-2026-001"
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-bold text-blue-700 outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Record Date *</label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.record_date || ''}
-                    onChange={(e) => setFormData({ ...formData, record_date: e.target.value })}
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Billing Period / Month</label>
-                  <input
-                    type="text"
-                    value={formData.period_month || ''}
-                    onChange={(e) => setFormData({ ...formData, period_month: e.target.value })}
-                    placeholder="e.g. Aug'26 or Oct 2026"
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Payment Status</label>
-                  <select
-                    value={formData.payment_status || 'Pending'}
-                    onChange={(e) => setFormData({ ...formData, payment_status: e.target.value as any })}
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-bold outline-none cursor-pointer"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Partial">Partial</option>
-                    <option value="Paid">Paid</option>
-                  </select>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={handleAddItemRow}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+              >
+                <Plus className="w-3.5 h-3.5 text-slate-950" />
+                <span>Add Service Row</span>
+              </button>
             </div>
 
-            {/* Section 2: Bill To Client Info */}
-            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
-              <div className="flex items-center gap-2 font-bold text-slate-900 uppercase text-[11px]">
-                <Building2 className="w-4 h-4 text-emerald-600" />
-                <span>2. Bill To (Client/Operator Details)</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <OperatorSearchSelect
-                    label="Company / Client Name"
-                    required
-                    value={formData.bill_to_name || ''}
-                    onChange={(val) => setFormData({ ...formData, bill_to_name: val })}
-                    onSelectOperator={(op) => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        bill_to_name: op.name,
-                        bill_to_phone: op.phone || prev.bill_to_phone || '',
-                        bill_to_address: op.address || prev.bill_to_address || '',
-                        bill_to_pan: op.gstOrPan || prev.bill_to_pan || '',
-                        operator_name: op.contactPerson || op.name || prev.operator_name || ''
-                      }));
-                    }}
-                    placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Contact Mobile Number</label>
-                  <input
-                    type="text"
-                    value={formData.bill_to_phone || ''}
-                    onChange={(e) => setFormData({ ...formData, bill_to_phone: e.target.value })}
-                    placeholder="e.g. 9505151527"
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none text-xs"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator Name</label>
-                  <input
-                    type="text"
-                    value={formData.operator_name || ''}
-                    onChange={(e) => setFormData({ ...formData, operator_name: e.target.value })}
-                    placeholder="e.g. Ravi Kumar / Sri Krishna Travels Operator"
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator Address</label>
-                  <input
-                    type="text"
-                    value={formData.bill_to_address || ''}
-                    onChange={(e) => setFormData({ ...formData, bill_to_address: e.target.value })}
-                    placeholder="e.g. Unit 330, JMD Megapolis, Sohna Road, Gurugram"
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator PAN/GST Number</label>
-                  <input
-                    type="text"
-                    value={formData.bill_to_pan || ''}
-                    onChange={(e) => setFormData({ ...formData, bill_to_pan: e.target.value })}
-                    placeholder="e.g. AABCY5013H"
-                    className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Section 3: Data Columns Matching 4th Image (Description of Services, category, No of Staff, Salary paid) */}
-            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-bold text-slate-900 uppercase text-[11px]">
-                  <Users className="w-4 h-4 text-blue-600" />
-                  <span>3. Services & Staff Breakdown</span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleAddItemRow}
-                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-xs"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Service Row</span>
-                </button>
-              </div>
-
-              <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-xs">
-                <table className="w-full text-left text-sm whitespace-nowrap">
-                  <thead className="bg-slate-100 text-slate-900 font-bold uppercase text-[10px] border-b border-slate-200">
-                    <tr>
-                      <th className="py-2.5 px-3 text-center w-12 text-slate-900">Sr. No</th>
-                      <th className="py-2.5 px-3 min-w-[200px] text-slate-900">Description of Services *</th>
-                      <th className="py-2.5 px-3 min-w-[170px] text-slate-900">Category *</th>
-                      <th className="py-2.5 px-3 min-w-[150px] text-center text-slate-900">No. of Driver/Helper/Captain *</th>
-                      <th className="py-2.5 px-3 min-w-[140px] text-right text-slate-900">Salary Paid (₹) *</th>
-                      <th className="py-2.5 px-2 text-center w-10"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {(formData.items || []).map((item, idx) => (
-                      <tr key={item.id} className="hover:bg-slate-50/60">
-                        <td className="py-2 px-3 text-center font-bold text-slate-700">{idx + 1}</td>
-                        <td className="py-2 px-3">
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. Driver's Salary for Aug'26"
-                            value={item.description}
-                            onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
-                            className="w-full p-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-800 outline-none focus:border-blue-500"
-                          />
-                        </td>
-                        <td className="py-2 px-3">
-                          <CategorySelector
-                            value={item.category}
-                            onChange={(newCat) => handleUpdateItem(item.id, 'category', newCat)}
-                            availableCategories={availableCategories}
-                            onAddCategory={handleAddCategory}
-                          />
-                        </td>
-                        <td className="py-2 px-3">
-                          <input
-                            type="number"
-                            min="0"
-                            required
-                            placeholder="0"
-                            value={item.staff_count ?? ''}
-                            onChange={(e) => handleUpdateItem(item.id, 'staff_count', Number(e.target.value))}
-                            className="w-full p-1.5 text-center rounded-lg border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:border-blue-500"
-                          />
-                        </td>
-                        <td className="py-2 px-3">
-                          <input
-                            type="number"
-                            min="0"
-                            required
-                            placeholder="₹ 0"
-                            value={item.salary_paid ?? ''}
-                            onChange={(e) => handleUpdateItem(item.id, 'salary_paid', Number(e.target.value))}
-                            className="w-full p-1.5 text-right rounded-lg border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:border-blue-500"
-                          />
-                        </td>
-                        <td className="py-2 px-2 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveItemRow(item.id)}
-                            className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded cursor-pointer"
-                            title="Remove Row"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  {/* Totals Row */}
-                  <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-slate-900">
-                    <tr>
-                      <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px] text-slate-900 font-extrabold">
-                        Total:
+            {/* Exact Golden-Yellow Table from Image 2 */}
+            <div className="overflow-x-auto border-2 border-amber-300 rounded-2xl bg-white shadow-sm">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-[#FDE047] text-slate-950 font-black text-xs uppercase border-b-2 border-amber-300">
+                  <tr>
+                    <th className="py-3 px-3 text-center w-14 text-slate-950">Sr. No</th>
+                    <th className="py-3 px-4 min-w-[240px] text-slate-950">Description of Services</th>
+                    <th className="py-3 px-4 min-w-[180px] text-slate-950">Category</th>
+                    <th className="py-3 px-4 min-w-[170px] text-center text-slate-950">
+                      No. of Driver/Helper/Captain
+                    </th>
+                    <th className="py-3 px-4 min-w-[160px] text-right text-slate-950">
+                      Salary Paid (₹)
+                    </th>
+                    <th className="py-3 px-2 text-center w-10"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-amber-100/70 bg-white">
+                  {(formData.items || []).map((item, idx) => (
+                    <tr key={item.id} className="hover:bg-amber-50/40 transition-colors">
+                      <td className="py-2.5 px-3 text-center font-black text-slate-900 text-sm">
+                        {idx + 1}
                       </td>
-                      <td className="py-2.5 px-3 text-center text-sm font-black text-blue-700">
-                        {formCalculations.staffCount} Staff
+                      <td className="py-2.5 px-3">
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Driver's Salary for Aug'26"
+                          value={item.description}
+                          onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
+                          className="w-full p-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400"
+                        />
                       </td>
-                      <td className="py-2 px-3 text-right text-sm font-black text-slate-900">
-                        ₹{formCalculations.totalAmt.toLocaleString('en-IN')}
+                      <td className="py-2.5 px-3">
+                        <CategorySelector
+                          value={item.category}
+                          onChange={(newCat) => handleUpdateItem(item.id, 'category', newCat)}
+                          availableCategories={availableCategories}
+                          onAddCategory={handleAddCategory}
+                        />
                       </td>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <td colSpan={6} className="py-2 px-3 text-xs italic font-semibold text-slate-700 bg-slate-50">
-                        In words: {formCalculations.words}
+                      <td className="py-2.5 px-3">
+                        <input
+                          type="number"
+                          min="0"
+                          required
+                          placeholder="0"
+                          value={item.staff_count ?? ''}
+                          onChange={(e) => handleUpdateItem(item.id, 'staff_count', Number(e.target.value))}
+                          className="w-full p-2 text-center rounded-xl border border-slate-200 bg-white font-black text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400 text-sm"
+                        />
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <input
+                          type="number"
+                          min="0"
+                          required
+                          placeholder="₹ 0"
+                          value={item.salary_paid ?? ''}
+                          onChange={(e) => handleUpdateItem(item.id, 'salary_paid', Number(e.target.value))}
+                          className="w-full p-2 text-right rounded-xl border border-slate-200 bg-white font-black text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400 text-sm"
+                        />
+                      </td>
+                      <td className="py-2.5 px-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItemRow(item.id)}
+                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                          title="Remove Row"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-
-            {/* Section 4: Received Amount & Accounting */}
-            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
-              <div className="flex items-center gap-2 font-bold text-slate-900 uppercase text-[11px]">
-                <IndianRupee className="w-4 h-4 text-blue-600" />
-                <span>4. Payment & Settlement Summary</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-3 rounded-xl bg-white border border-slate-200">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Billed</span>
-                  <p className="text-lg font-black text-slate-900 mt-0.5">
-                    ₹{formCalculations.totalAmt.toLocaleString('en-IN')}
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                  <label className="text-[10px] uppercase font-bold text-emerald-800 block mb-1">
-                    Received Amount (₹)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.received_amount !== undefined ? formData.received_amount : ''}
-                    onChange={(e) => setFormData({ ...formData, received_amount: Number(e.target.value) })}
-                    placeholder="Enter received amount"
-                    className="w-full p-1.5 rounded-lg border border-emerald-300 bg-white font-bold text-emerald-900 outline-none"
-                  />
-                </div>
-
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200">
-                  <span className="text-[10px] uppercase font-bold text-rose-800 block">Balance Due</span>
-                  <p className="text-lg font-black text-rose-600 mt-0.5">
-                    ₹{formCalculations.balance.toLocaleString('en-IN')}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Section 5: Bank Details and QR Code (From Image 2 End of Page) */}
-            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
-              <div className="flex items-center gap-2 font-bold text-slate-900 uppercase text-[11px]">
-                <QrCode className="w-4 h-4 text-purple-600" />
-                <span>5. Bank Details & Payment QR Code (Image 2 Footer)</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Bank Details */}
-                <div className="space-y-2 p-3 bg-white rounded-xl border border-slate-200">
-                  <span className="font-bold text-slate-800 text-xs block border-b pb-1">Official Bank Details</span>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-600">Account Holder Name</label>
-                    <input
-                      type="text"
-                      value={formData.bank_account_name || ''}
-                      onChange={(e) => setFormData({ ...formData, bank_account_name: e.target.value })}
-                      className="w-full p-1.5 rounded border border-slate-200 text-xs font-semibold outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-600">Account Number</label>
-                    <input
-                      type="text"
-                      value={formData.bank_account_no || ''}
-                      onChange={(e) => setFormData({ ...formData, bank_account_no: e.target.value })}
-                      className="w-full p-1.5 rounded border border-slate-200 text-xs font-mono font-bold outline-none"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-600">IFSC Code</label>
-                      <input
-                        type="text"
-                        value={formData.bank_ifsc || ''}
-                        onChange={(e) => setFormData({ ...formData, bank_ifsc: e.target.value })}
-                        className="w-full p-1.5 rounded border border-slate-200 text-xs font-mono font-bold outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-600">Bank & Branch</label>
-                      <input
-                        type="text"
-                        value={formData.bank_name || ''}
-                        onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-                        className="w-full p-1.5 rounded border border-slate-200 text-xs outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* QR Code Details */}
-                <div className="space-y-2 p-3 bg-white rounded-xl border border-slate-200">
-                  <span className="font-bold text-slate-800 text-xs block border-b pb-1">Payment QR & UPI ID</span>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-600">UPI ID (PhonePe / GPay / Paytm)</label>
-                    <input
-                      type="text"
-                      value={formData.upi_id || ''}
-                      onChange={(e) => setFormData({ ...formData, upi_id: e.target.value })}
-                      placeholder="e.g. 9505151527@ybl"
-                      className="w-full p-1.5 rounded border border-slate-200 text-xs font-mono font-bold text-purple-700 outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-600">Custom QR Image URL (Optional)</label>
-                    <input
-                      type="text"
-                      value={formData.qr_code_url || ''}
-                      onChange={(e) => setFormData({ ...formData, qr_code_url: e.target.value })}
-                      placeholder="Leave blank to use auto-generated QR code"
-                      className="w-full p-1.5 rounded border border-slate-200 text-xs outline-none"
-                    />
-                  </div>
-                  <div className="pt-1 flex items-center gap-3">
-                    <img
-                      src={
-                        formData.qr_code_url ||
-                        `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=${encodeURIComponent(
-                          formData.upi_id || '9505151527@ybl'
-                        )}&pn=${encodeURIComponent(formData.bank_account_name || 'Charvik')}&cu=INR`
-                      }
-                      alt="Payment QR"
-                      className="w-16 h-16 border border-slate-200 rounded p-1 bg-white object-contain"
-                    />
-                    <div className="text-[11px] text-slate-500">
-                      <p className="font-semibold text-slate-800">Live QR Preview</p>
-                      <p>Scannable with any UPI app on the printed record sheet.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                  ))}
+                </tbody>
+                {/* Total Row matching Image 2 */}
+                <tfoot className="bg-[#FEF08A] font-black border-t-2 border-amber-300 text-slate-950">
+                  <tr>
+                    <td colSpan={3} className="py-3 px-4 text-center font-black text-sm uppercase tracking-wider text-slate-950">
+                      Total
+                    </td>
+                    <td className="py-3 px-4 text-center text-sm font-black text-slate-950">
+                      {formCalculations.staffCount}
+                    </td>
+                    <td className="py-3 px-4 text-right text-base font-black text-slate-950">
+                      ₹ {formCalculations.totalAmt.toLocaleString('en-IN')}
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setIsAddEditOpen(false)}
@@ -1508,9 +1235,9 @@ export const RecordManagement: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl text-xs font-bold bg-[#142B4A] hover:bg-[#1E3A5F] text-white shadow-sm transition-all cursor-pointer"
+                className="px-5 py-2.5 rounded-xl text-xs font-black bg-[#142B4A] hover:bg-[#1E3A5F] text-white shadow-sm transition-all cursor-pointer"
               >
-                {editingRecord ? 'Update Record' : 'Save & Create Record'}
+                {editingRecord ? 'Update Record' : 'Save Record'}
               </button>
             </div>
           </form>

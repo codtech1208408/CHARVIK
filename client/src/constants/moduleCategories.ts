@@ -251,17 +251,6 @@ export const BASE_ADMIN_NAV_ITEMS: NavItemLeaf[] = [
     activeRoutes: ['/admin/chandrika-finance', '/admin/finance'],
     subItems: adminChandrikaFinanceSubItems,
     description: 'Finance ledger, loans, collections, customer records & balances'
-  },
-  {
-    id: 'letter_pad',
-    label: 'Letter Pad',
-    name: 'Letter Pad',
-    route: '/admin/letter-pad',
-    icon: FileText,
-    iconColor: 'text-orange-400',
-    activeGradient: 'bg-gradient-to-r from-orange-500 to-amber-600',
-    activeRoutes: ['/admin/letter-pad', '/admin/official-letter-pad', '/admin/letterhead'],
-    description: 'Official letterhead documents for Charvik, Vyshnavi Travels & Chandrika Finance'
   }
 ];
 
