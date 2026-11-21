@@ -702,10 +702,10 @@ export const BusRating: React.FC = () => {
                     onChange={(e) => handleAutoSelectService(e.target.value)}
                     className="w-full px-3 py-2 bg-white border border-blue-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs cursor-pointer"
                   >
-                    <option value="">-- Choose Service / Route (Auto-Fill) --</option>
+                    <option value="">-- Choose Service --</option>
                     {servicesList.map((s) => (
                       <option key={s.serviceNumber} value={s.serviceNumber}>
-                        {s.name} - {s.operator}
+                        {s.name}
                       </option>
                     ))}
                   </select>
@@ -722,10 +722,10 @@ export const BusRating: React.FC = () => {
                     onChange={(e) => handleAutoSelectVehicle(e.target.value)}
                     className="w-full px-3 py-2 bg-white border border-blue-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs cursor-pointer"
                   >
-                    <option value="">-- Choose Vehicle Number (Auto-Fill) --</option>
+                    <option value="">-- Choose Vehicle Number --</option>
                     {vehiclesList.map((v) => (
                       <option key={v.busNumber} value={v.busNumber}>
-                        {v.busNumber} ({v.operator}{v.model ? ` - ${v.model}` : ''})
+                        {v.busNumber}
                       </option>
                     ))}
                   </select>
