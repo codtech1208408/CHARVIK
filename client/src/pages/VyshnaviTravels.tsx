@@ -3474,11 +3474,8 @@ export const VyshnaviTravels: React.FC = () => {
                   {/* Document Title Banner */}
                   <div className="mt-3 text-center border-b-2 border-slate-800 pb-2">
                     <h2 className="text-base font-black tracking-wider text-slate-900 uppercase">
-                      SERVICE BILLING &amp; STAFF STATEMENT
+                      BILLING
                     </h2>
-                    <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
-                      Crew Duty, Staff Salaries &amp; Monthly Operations Settlement
-                    </p>
                   </div>
 
                   {/* 2. Client & Statement Metadata */}
