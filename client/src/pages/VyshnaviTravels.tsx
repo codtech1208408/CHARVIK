@@ -260,12 +260,59 @@ export const VyshnaviTravels: React.FC = () => {
     receipt_url: ''
   });
 
+  // Helper to normalize record so items and details are always populated
+  const normalizeVyshnaviRecord = (rec: any): VyshnaviRecord => {
+    if (!rec) return rec;
+    let items: any[] = [];
+    if (Array.isArray(rec.items) && rec.items.length > 0) {
+      items = rec.items;
+    } else if (rec.items_json) {
+      try {
+        const parsed = typeof rec.items_json === 'string' ? JSON.parse(rec.items_json) : rec.items_json;
+        if (Array.isArray(parsed) && parsed.length > 0) items = parsed;
+      } catch (_) {}
+    } else if (typeof rec.items === 'string') {
+      try {
+        const parsed = JSON.parse(rec.items);
+        if (Array.isArray(parsed) && parsed.length > 0) items = parsed;
+      } catch (_) {}
+    }
+
+    // Fallback: If items is still empty, look for description, particulars, route or remarks
+    if (!Array.isArray(items) || items.length === 0) {
+      const fallbackDesc = rec.description || rec.particulars || rec.remarks || 'Fleet Bus Operational Duty & Crew Service';
+      items = [
+        {
+          sr_no: 1,
+          description: fallbackDesc,
+          category: 'Driver',
+          staff_count: Number(rec.total_staff_count) || 1,
+          salary_paid: Number(rec.total_amount) || 0
+        }
+      ];
+    }
+
+    items = items.map((it: any, i: number) => ({
+      sr_no: it.sr_no || i + 1,
+      description: it.description || it.particulars || it.service || it.service_details || it.route || it.name || 'Fleet Service & Operations',
+      category: it.category || 'Driver',
+      staff_count: Number(it.staff_count) || 1,
+      salary_paid: Number(it.salary_paid ?? it.amount ?? it.salary ?? it.total ?? 0)
+    }));
+
+    return {
+      ...rec,
+      items,
+      items_json: JSON.stringify(items)
+    };
+  };
+
   // Load Records
   const loadRecords = async () => {
     try {
       setLoadingRecords(true);
       const data = await api.getVyshnaviRecords();
-      setRecords(Array.isArray(data) ? data : []);
+      setRecords(Array.isArray(data) ? data.map(normalizeVyshnaviRecord) : []);
     } catch (err) {
       console.error(err);
       setRecords([]);
@@ -466,7 +513,8 @@ export const VyshnaviTravels: React.FC = () => {
   };
 
   // Open Record Modal for Edit
-  const handleOpenEditRecord = (rec: VyshnaviRecord) => {
+  const handleOpenEditRecord = (rawRec: VyshnaviRecord) => {
+    const rec = normalizeVyshnaviRecord(rawRec);
     setEditingRecord(rec);
     setRecordForm({
       record_number: rec.record_number || '',
@@ -529,6 +577,7 @@ export const VyshnaviTravels: React.FC = () => {
       bill_to_pan: recordForm.bill_to_pan,
       bill_to_gst: recordForm.bill_to_gst,
       items: recordForm.items,
+      items_json: JSON.stringify(recordForm.items),
       total_staff_count: calculatedTotalStaff,
       total_amount: calculatedTotalAmount,
       amount_in_words: calculatedAmountWords,
@@ -1940,7 +1989,7 @@ export const VyshnaviTravels: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setPrintingRecord(rec);
+                                  setPrintingRecord(normalizeVyshnaviRecord(rec));
                                 }}
                                 className="px-2.5 py-1.5 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
                                 title="Print on Vyshnavi Travels Letterhead"
@@ -3475,61 +3524,67 @@ export const VyshnaviTravels: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {printingRecord.items?.map((item, idx) => {
-                          const isCream = idx % 2 === 1;
-                          return (
-                            <tr
-                              key={idx}
-                              className={isCream ? 'vyshnavi-row-cream' : 'vyshnavi-row-white'}
-                              style={{
-                                backgroundColor: isCream ? '#fef9c3' : '#ffffff',
-                                borderBottom: '1.5px solid #1e3a8a'
-                              }}
-                            >
-                              <td
+                        {(() => {
+                          const resolvedRecord = normalizeVyshnaviRecord(printingRecord);
+                          const rows = resolvedRecord.items;
+                          return rows.map((item: any, idx: number) => {
+                            const isCream = idx % 2 === 1;
+                            const itemDesc = item.description || item.particulars || item.service || item.service_details || item.route || item.name || 'Fleet Service & Operations';
+                            const itemAmt = Number(item.salary_paid ?? item.amount ?? item.salary ?? item.total ?? 0);
+                            return (
+                              <tr
+                                key={idx}
+                                className={isCream ? 'vyshnavi-row-cream' : 'vyshnavi-row-white'}
                                 style={{
-                                  width: '60px',
-                                  padding: '12px 8px',
-                                  textAlign: 'center',
-                                  verticalAlign: 'middle',
-                                  fontWeight: '900',
-                                  fontSize: '13px',
-                                  color: '#0f172a',
-                                  borderRight: '1.5px solid #1e3a8a'
+                                  backgroundColor: isCream ? '#fef9c3' : '#ffffff',
+                                  borderBottom: '1.5px solid #1e3a8a'
                                 }}
                               >
-                                {idx + 1}
-                              </td>
-                              <td
-                                style={{
-                                  padding: '12px 14px',
-                                  textAlign: 'left',
-                                  verticalAlign: 'middle',
-                                  borderRight: '1.5px solid #1e3a8a',
-                                  whiteSpace: 'pre-line',
-                                  lineHeight: '1.5'
-                                }}
-                              >
-                                <div style={{ fontWeight: '800', fontSize: '12px', color: '#0a192f' }}>
-                                  {item.description}
-                                </div>
-                              </td>
-                              <td
-                                style={{
-                                  width: '160px',
-                                  padding: '12px 14px',
-                                  textAlign: 'right',
-                                  verticalAlign: 'middle',
-                                  fontWeight: '900',
-                                  fontSize: '13px',
-                                  color: '#0f172a'
-                                }}
-                              >
-                                ₹{(Number(item.salary_paid) || 0).toLocaleString('en-IN')}
-                              </td>
-                            </tr>
-                          );
-                        })}
+                                <td
+                                  style={{
+                                    width: '60px',
+                                    padding: '12px 8px',
+                                    textAlign: 'center',
+                                    verticalAlign: 'middle',
+                                    fontWeight: '900',
+                                    fontSize: '13px',
+                                    color: '#0f172a',
+                                    borderRight: '1.5px solid #1e3a8a'
+                                  }}
+                                >
+                                  {idx + 1}
+                                </td>
+                                <td
+                                  style={{
+                                    padding: '12px 14px',
+                                    textAlign: 'left',
+                                    verticalAlign: 'middle',
+                                    borderRight: '1.5px solid #1e3a8a',
+                                    whiteSpace: 'pre-line',
+                                    lineHeight: '1.5'
+                                  }}
+                                >
+                                  <div style={{ fontWeight: '800', fontSize: '12px', color: '#0a192f' }}>
+                                    {itemDesc}
+                                  </div>
+                                </td>
+                                <td
+                                  style={{
+                                    width: '160px',
+                                    padding: '12px 14px',
+                                    textAlign: 'right',
+                                    verticalAlign: 'middle',
+                                    fontWeight: '900',
+                                    fontSize: '13px',
+                                    color: '#0f172a'
+                                  }}
+                                >
+                                  ₹{itemAmt.toLocaleString('en-IN')}
+                                </td>
+                              </tr>
+                            );
+                          });
+                        })()}
 
                         {/* Grand Total Row */}
                         <tr style={{ backgroundColor: '#f1f5f9', fontWeight: '900', fontSize: '12px', borderTop: '2px solid #1e3a8a' }}>

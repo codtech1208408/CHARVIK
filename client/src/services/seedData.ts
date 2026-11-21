@@ -3022,23 +3022,42 @@ export interface DailyMaintenanceRecord {
 export const BASE_VYSHNAVI_RECORDS: any[] = [
   {
     id: 1,
-    invoice_no: 'VT/2026/10-01',
-    period_month: 'October',
-    period_year: '2026',
-    operator_name: 'Charvik Staffing & Logistics',
-    gst_number: '36GGGGG0000WG6G',
-    total_amount: 46000,
-    amount_in_words: 'Forty Six Thousand Rupees Only',
-    received_amount: 20000,
-    balance_amount: 26000,
+    record_number: 'VT-REC-2026-001',
+    invoice_no: 'VT-REC-2026-001',
+    record_date: '2026-11-08',
+    period_month: "Oct'26",
+    vehicle_number: "Oct'26",
+    bill_to_name: 'Sri Krishna Travels',
+    bill_to_address: 'Hyderabad, Telangana',
+    bill_to_phone: '9505151527',
+    bill_to_pan: '36AABCY5013H1Z2',
+    bill_to_gst: '36AABCY5013H1Z2',
+    operator_name: 'Sri Krishna Travels',
+    gst_number: '36AABCY5013H1Z2',
+    items: [
+      { sr_no: 1, description: "Fleet Bus Operational Duty - Hyderabad to Bangalore", category: "Driver", staff_count: 4, salary_paid: 60000 },
+      { sr_no: 2, description: "Route Captain Supervision & Passenger Care", category: "Captain", staff_count: 1, salary_paid: 20000 },
+      { sr_no: 3, description: "Cabin Attendant & Helper Crew Support", category: "Helper", staff_count: 2, salary_paid: 30000 }
+    ],
+    items_json: JSON.stringify([
+      { sr_no: 1, description: "Fleet Bus Operational Duty - Hyderabad to Bangalore", category: "Driver", staff_count: 4, salary_paid: 60000 },
+      { sr_no: 2, description: "Route Captain Supervision & Passenger Care", category: "Captain", staff_count: 1, salary_paid: 20000 },
+      { sr_no: 3, description: "Cabin Attendant & Helper Crew Support", category: "Helper", staff_count: 2, salary_paid: 30000 }
+    ]),
+    total_staff_count: 7,
+    total_amount: 110000,
+    amount_in_words: 'One Lakh Ten Thousand Rupees Only',
+    received_amount: 70000,
+    balance_amount: 40000,
+    payment_status: 'Partially Paid',
     bank_name: 'Kotak Mahindra Bank',
     bank_account_name: 'Vyshnavi Travels',
     bank_account_no: '2848153146',
     bank_ifsc: 'KKBK0007460',
     bank_branch: 'VANAS',
     upi_id: '9000202241@ybl',
-    qr_code_url: 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=9000202241@ybl%26pn=Vyshnavi%20Travels%26am=26000%26cu=INR',
-    remarks: 'October 2026 driver & helper crew settlement'
+    qr_code_url: 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=9000202241@ybl%26pn=Vyshnavi%20Travels%26am=40000%26cu=INR',
+    remarks: 'Fleet staffing and trip operational billing for October.'
   }
 ];
 

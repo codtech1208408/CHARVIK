@@ -1715,8 +1715,41 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
 
   // 17M. VYSHNAVI SERVICE RECORDS FALLBACK
   if (path === '/vyshnavi/records' || path.startsWith('/vyshnavi/records/')) {
+    const normalizeVyshnaviRecordItem = (r: any) => {
+      let items: any[] = [];
+      if (Array.isArray(r.items) && r.items.length > 0) {
+        items = r.items;
+      } else if (r.items_json) {
+        try {
+          items = typeof r.items_json === 'string' ? JSON.parse(r.items_json) : r.items_json;
+        } catch (_) {}
+      } else if (typeof r.items === 'string') {
+        try {
+          items = JSON.parse(r.items);
+        } catch (_) {}
+      }
+      if (!Array.isArray(items) || items.length === 0) {
+        const fallbackDesc = r.description || r.particulars || r.remarks || 'Fleet Bus Operational Duty & Crew Service';
+        items = [
+          {
+            sr_no: 1,
+            description: fallbackDesc,
+            category: 'Driver',
+            staff_count: Number(r.total_staff_count) || 1,
+            salary_paid: Number(r.total_amount) || 0
+          }
+        ];
+      }
+      return {
+        ...r,
+        items,
+        items_json: JSON.stringify(items)
+      };
+    };
+
     const res = await handleFallbackTableCrud('vyshnavi_service_records', 'vyshnavi_service_records', path, method, body, params, {
       idGenerator: () => Date.now(),
+      enrich: (items) => items.map(normalizeVyshnaviRecordItem),
       filter: (items, qParams) => {
         let filtered = items;
         const search = qParams.get('search');
@@ -1732,6 +1765,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     });
     let list = Array.isArray(res) ? res : getLocalCollection<any>('vyshnavi_service_records');
     list = mergeSeedCollection(list, BASE_VYSHNAVI_RECORDS);
+    list = list.map(normalizeVyshnaviRecordItem);
     setLocalCollection('vyshnavi_service_records', list);
     try {
       localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(list));
@@ -2846,6 +2880,38 @@ export const api = {
   // Vyshnavi Travels Records
   getVyshnaviRecords: async (params?: { search?: string; status?: string }) => {
     let records: VyshnaviRecord[] = [];
+    const parseRecordItems = (r: any): VyshnaviRecord => {
+      let items: any[] = [];
+      if (Array.isArray(r.items) && r.items.length > 0) {
+        items = r.items;
+      } else if (r.items_json) {
+        try {
+          items = typeof r.items_json === 'string' ? JSON.parse(r.items_json) : r.items_json;
+        } catch (_) {}
+      } else if (typeof r.items === 'string') {
+        try {
+          items = JSON.parse(r.items);
+        } catch (_) {}
+      }
+      if (!Array.isArray(items) || items.length === 0) {
+        const fallbackDesc = r.description || r.particulars || r.remarks || 'Fleet Bus Operational Duty & Crew Service';
+        items = [
+          {
+            sr_no: 1,
+            description: fallbackDesc,
+            category: 'Driver',
+            staff_count: Number(r.total_staff_count) || 1,
+            salary_paid: Number(r.total_amount) || 0
+          }
+        ];
+      }
+      return {
+        ...r,
+        items: Array.isArray(items) ? items : [],
+        items_json: JSON.stringify(Array.isArray(items) ? items : [])
+      };
+    };
+
     // 1. Live Supabase fetch
     try {
       const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject('timeout'), 2000));
@@ -2854,13 +2920,13 @@ export const api = {
         timeoutPromise
       ]) as any;
       if (Array.isArray(remoteTable) && remoteTable.length > 0) {
-        records = remoteTable;
+        records = remoteTable.map(parseRecordItems);
       } else {
         const { data: appData } = await supabase.from('application_settings').select('value').eq('key', 'cloud_sync_vyshnavi_service_records').single();
         if (appData && appData.value) {
           const parsed = JSON.parse(appData.value);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            records = parsed;
+            records = parsed.map(parseRecordItems);
           }
         }
       }
@@ -2876,7 +2942,7 @@ export const api = {
         const q = new URLSearchParams(cleanParams).toString();
         const data = await request<VyshnaviRecord[]>(`/vyshnavi/records${q ? `?${q}` : ''}`);
         if (Array.isArray(data) && data.length > 0) {
-          records = mergeSeedCollection(data, records);
+          records = mergeSeedCollection(data.map(parseRecordItems), records);
         }
       } catch { }
     }
@@ -2885,11 +2951,11 @@ export const api = {
     if (!records || records.length === 0) {
       try {
         const cached = localStorage.getItem('charvik_vyshnavi_records_cache');
-        if (cached) records = JSON.parse(cached);
+        if (cached) records = JSON.parse(cached).map(parseRecordItems);
       } catch { }
     }
     if (!records || records.length === 0) {
-      records = [...BASE_VYSHNAVI_RECORDS];
+      records = BASE_VYSHNAVI_RECORDS.map(parseRecordItems);
     }
 
     if (params?.status && params.status !== 'All') {
@@ -2904,16 +2970,22 @@ export const api = {
           (r.period_month || '').toLowerCase().includes(s)
       );
     }
+    records = records.map(parseRecordItems);
     localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(records));
     setLocalCollection('vyshnavi_service_records', records);
     return records;
   },
 
   createVyshnaviRecord: async (data: any) => {
+    const payload = {
+      ...data,
+      items: data.items || [],
+      items_json: JSON.stringify(data.items || [])
+    };
     try {
       const res = await request<any>('/vyshnavi/records', {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
       localStorage.removeItem('charvik_vyshnavi_records_cache');
       return res;
@@ -2922,8 +2994,7 @@ export const api = {
       const list: VyshnaviRecord[] = cached ? JSON.parse(cached) : [...BASE_VYSHNAVI_RECORDS];
       const newEntry: VyshnaviRecord = {
         id: Date.now(),
-        ...data,
-        items: data.items || []
+        ...payload
       };
       list.unshift(newEntry);
       localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(list));
@@ -2932,10 +3003,15 @@ export const api = {
   },
 
   updateVyshnaviRecord: async (id: number | string, data: any) => {
+    const payload = {
+      ...data,
+      items: data.items || [],
+      items_json: JSON.stringify(data.items || [])
+    };
     try {
       const res = await request<any>(`/vyshnavi/records/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
       localStorage.removeItem('charvik_vyshnavi_records_cache');
       return res;
@@ -2944,7 +3020,7 @@ export const api = {
       const list: VyshnaviRecord[] = cached ? JSON.parse(cached) : [...BASE_VYSHNAVI_RECORDS];
       const idx = list.findIndex((r) => String(r.id) === String(id));
       if (idx >= 0) {
-        list[idx] = { ...list[idx], ...data };
+        list[idx] = { ...list[idx], ...payload };
         localStorage.setItem('charvik_vyshnavi_records_cache', JSON.stringify(list));
       }
       return { success: true };
