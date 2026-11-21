@@ -52,7 +52,7 @@ const DEFAULT_BANK_DETAILS = {
   bank_account_no: '2848153146',
   bank_ifsc: 'KKBK0007460',
   bank_branch: 'VANAS, Hyderabad',
-  upi_id: '9000202241@ybl'
+  upi_id: ''
 };
 
 const SERVICE_CATEGORIES = ['Driver', 'Helper', 'Captain', 'Cleaner', 'Other'];
@@ -386,7 +386,8 @@ export const VyshnaviTravels: React.FC = () => {
   // Live QR Code Generation for Record Form
   const liveQrUrl = useMemo(() => {
     if (recordForm.qr_code_url) return recordForm.qr_code_url;
-    const upi = recordForm.upi_id || '9000202241@ybl';
+    if (!recordForm.upi_id?.trim()) return '';
+    const upi = recordForm.upi_id.trim();
     const payee = recordForm.bank_account_name || 'Vyshnavi Travels';
     const amt = calculatedBalanceDue > 0 ? calculatedBalanceDue : calculatedTotalAmount;
     return `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=${encodeURIComponent(
@@ -493,7 +494,7 @@ export const VyshnaviTravels: React.FC = () => {
       bank_account_no: rec.bank_account_no || DEFAULT_BANK_DETAILS.bank_account_no,
       bank_ifsc: rec.bank_ifsc || DEFAULT_BANK_DETAILS.bank_ifsc,
       bank_branch: rec.bank_branch || DEFAULT_BANK_DETAILS.bank_branch,
-      upi_id: rec.upi_id || DEFAULT_BANK_DETAILS.upi_id,
+      upi_id: rec.upi_id || '',
       qr_code_url: rec.qr_code_url || '',
       remarks: rec.remarks || ''
     });
@@ -538,8 +539,8 @@ export const VyshnaviTravels: React.FC = () => {
       bank_account_no: recordForm.bank_account_no,
       bank_ifsc: recordForm.bank_ifsc,
       bank_branch: recordForm.bank_branch,
-      upi_id: recordForm.upi_id,
-      qr_code_url: liveQrUrl,
+      upi_id: recordForm.upi_id?.trim() || '',
+      qr_code_url: recordForm.upi_id?.trim() ? (liveQrUrl || recordForm.qr_code_url || '') : '',
       remarks: recordForm.remarks
     };
 
@@ -3550,54 +3551,27 @@ export const VyshnaviTravels: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 5. Bank Account & Payment QR */}
-                  <div className="mt-4 border border-slate-300 rounded-lg p-3 bg-slate-50/50 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    {/* Bank Info */}
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider block border-b border-slate-200 pb-1">
-                        Bank Details for Direct Settlement
-                      </span>
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-slate-500 font-semibold">Account Name:</span>
+                  {/* 5. Bank Account */}
+                  <div className="mt-4 border border-slate-300 rounded-lg p-3 bg-slate-50/50 text-xs">
+                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider block border-b border-slate-200 pb-1 mb-2">
+                      Bank Details for Direct Settlement
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
+                      <div>
+                        <span className="text-slate-500 font-semibold block">Account Name:</span>
                         <strong className="font-bold text-slate-900">{printingRecord.bank_account_name || 'Vyshnavi Travels'}</strong>
                       </div>
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-slate-500 font-semibold">Account No:</span>
+                      <div>
+                        <span className="text-slate-500 font-semibold block">Account No:</span>
                         <strong className="font-mono font-black text-slate-900">{printingRecord.bank_account_no || '2848153146'}</strong>
                       </div>
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-slate-500 font-semibold">IFSC Code:</span>
+                      <div>
+                        <span className="text-slate-500 font-semibold block">IFSC Code:</span>
                         <strong className="font-mono font-bold text-slate-900">{printingRecord.bank_ifsc || 'KKBK0007460'}</strong>
                       </div>
-                      <div className="flex justify-between text-[11px]">
-                        <span className="text-slate-500 font-semibold">Bank:</span>
+                      <div>
+                        <span className="text-slate-500 font-semibold block">Bank:</span>
                         <span className="font-medium text-slate-800">{printingRecord.bank_name || 'Kotak Mahindra Bank, VANAS'}</span>
-                      </div>
-                    </div>
-
-                    {/* QR Code */}
-                    <div className="flex items-center justify-between pl-3 border-l border-slate-200">
-                      <div className="space-y-0.5">
-                        <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider block">
-                          Instant UPI QR Code
-                        </span>
-                        <p className="text-[10px] text-slate-600 font-semibold">Scan via PhonePe, GPay, PayTM</p>
-                        <p className="text-[11px] font-black text-purple-900 font-mono">
-                          {printingRecord.upi_id || '9000202241@ybl'}
-                        </p>
-                        <p className="text-[9px] text-slate-400">Direct instant settlement to account</p>
-                      </div>
-                      <div className="p-1 bg-white border border-slate-300 rounded">
-                        <img
-                          src={
-                            printingRecord.qr_code_url ||
-                            `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=${encodeURIComponent(
-                              printingRecord.upi_id || '9000202241@ybl'
-                            )}%26pn=${encodeURIComponent(printingRecord.bank_account_name || 'Vyshnavi Travels')}%26cu=INR`
-                          }
-                          alt="UPI Payment QR"
-                          className="w-16 h-16 object-contain block"
-                        />
                       </div>
                     </div>
                   </div>
@@ -4055,10 +4029,6 @@ export const VyshnaviTravels: React.FC = () => {
                     <div>
                       <span className="font-bold text-slate-800" style={{ color: '#0f172a', fontWeight: 'bold' }}>Bank Settlement: </span>
                       <span className="text-slate-600" style={{ color: '#1e3a8a' }}>Kotak Mahindra Bank, VANAS Hyderabad • A/C: <strong style={{ color: '#0f172a' }}>2848153146</strong> • IFSC: <strong style={{ color: '#0f172a' }}>KKBK0007460</strong></span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-800" style={{ color: '#0f172a', fontWeight: 'bold' }}>UPI ID: </span>
-                      <span className="text-slate-600" style={{ color: '#1e3a8a' }}><strong style={{ color: '#0f172a' }}>9000202241@ybl</strong></span>
                     </div>
                   </div>
 
