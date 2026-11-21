@@ -1442,8 +1442,8 @@ export const RecordManagement: React.FC = () => {
                 </table>
               </div>
 
-              {/* Received Amount Strip (From Image 2) */}
-              <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-300 rounded-lg mb-4 text-xs font-bold">
+              {/* Received Amount Strip */}
+              <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-300 rounded-lg mb-5 text-xs font-bold">
                 <div>
                   <span className="text-slate-600">Received Amount: </span>
                   <span className="text-emerald-700 font-black">
@@ -1455,61 +1455,6 @@ export const RecordManagement: React.FC = () => {
                   <span className="text-rose-600 font-black">
                     ₹{Number(printingRecord.balance_amount || 0).toLocaleString('en-IN')}
                   </span>
-                </div>
-              </div>
-
-              {/* BOTTOM SECTION: BANK DETAILS & PAYMENT QR CODE (EXACT MATCH FOR IMAGE 2 END OF PAGE) */}
-              <div className="grid grid-cols-2 gap-4 border border-slate-400 rounded-lg p-3.5 mb-5 text-xs bg-white">
-                {/* Left Box: Bank Details */}
-                <div className="border-r border-slate-300 pr-4 space-y-1.5">
-                  <span className="font-black text-slate-900 uppercase text-[11px] block border-b border-slate-200 pb-1">
-                    Bank Details
-                  </span>
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-slate-500 font-semibold">Name:</span>
-                    <span className="col-span-2 font-bold text-slate-900 break-words">{printingRecord.bank_account_name || 'Charvik Staffing Consultancy'}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-slate-500 font-semibold">IFSC Code:</span>
-                    <span className="col-span-2 font-bold tracking-wider text-slate-900">{printingRecord.bank_ifsc || 'KKBK0007460'}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-slate-500 font-semibold">Account No:</span>
-                    <span className="col-span-2 font-bold tracking-wider text-slate-900">{printingRecord.bank_account_no || '2848153146'}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-slate-500 font-semibold">Bank:</span>
-                    <span className="col-span-2 font-medium text-slate-800 break-words">{printingRecord.bank_name || 'Kotak Mahindra Bank, Vanasthalipuram Hyderabad'}</span>
-                  </div>
-                </div>
-
-                {/* Right Box: Payment QR Code */}
-                <div className="pl-2 flex items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <span className="font-black text-slate-900 uppercase text-[11px] block border-b border-slate-200 pb-1">
-                      Payment QR Code
-                    </span>
-                    <p className="text-[11px] font-bold text-slate-600">PhonePe / Google Pay / PayTM</p>
-                    <p className="text-xs">
-                      <span className="text-slate-500 font-semibold">UPI ID: </span>
-                      <strong className="font-bold tracking-wide text-purple-900">{printingRecord.upi_id || '9505151527@ybl'}</strong>
-                    </p>
-                    <p className="text-[10px] text-slate-400">Scan to pay instantly via any UPI app</p>
-                  </div>
-
-                  {/* QR Code graphic */}
-                  <div className="shrink-0 p-1 bg-white border border-slate-300 rounded">
-                    <img
-                      src={
-                        printingRecord.qr_code_url ||
-                        `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=${encodeURIComponent(
-                          printingRecord.upi_id || '9505151527@ybl'
-                        )}&pn=${encodeURIComponent(printingRecord.bank_account_name || 'Charvik')}&cu=INR`
-                      }
-                      alt="UPI Payment QR"
-                      className="w-20 h-20 object-contain block"
-                    />
-                  </div>
                 </div>
               </div>
 
