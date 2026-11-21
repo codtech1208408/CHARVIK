@@ -1722,11 +1722,11 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       } else if (r.items_json) {
         try {
           items = typeof r.items_json === 'string' ? JSON.parse(r.items_json) : r.items_json;
-        } catch (_) {}
+        } catch (_) { }
       } else if (typeof r.items === 'string') {
         try {
           items = JSON.parse(r.items);
-        } catch (_) {}
+        } catch (_) { }
       }
       if (!Array.isArray(items) || items.length === 0) {
         const fallbackDesc = r.description || r.particulars || r.remarks || 'Fleet Bus Operational Duty & Crew Service';
@@ -2686,7 +2686,7 @@ export const api = {
               localStorage.setItem('buses', JSON.stringify(busesList));
             }
           }
-        } catch (_) {}
+        } catch (_) { }
       }
       return res;
     } catch {
@@ -2887,11 +2887,11 @@ export const api = {
       } else if (r.items_json) {
         try {
           items = typeof r.items_json === 'string' ? JSON.parse(r.items_json) : r.items_json;
-        } catch (_) {}
+        } catch (_) { }
       } else if (typeof r.items === 'string') {
         try {
           items = JSON.parse(r.items);
-        } catch (_) {}
+        } catch (_) { }
       }
       if (!Array.isArray(items) || items.length === 0) {
         const fallbackDesc = r.description || r.particulars || r.remarks || 'Fleet Bus Operational Duty & Crew Service';
@@ -3186,14 +3186,14 @@ export const api = {
         localStorage.setItem('charvik_income_expenses_cache', JSON.stringify(res));
         return res;
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // Fallback local storage
     let cachedData: any = null;
     try {
       const raw = localStorage.getItem('charvik_income_expenses_cache');
       if (raw) cachedData = JSON.parse(raw);
-    } catch (_) {}
+    } catch (_) { }
 
     if (!cachedData || !Array.isArray(cachedData.transactions) || cachedData.transactions.length === 0) {
       const defaultTx = [
@@ -3251,7 +3251,7 @@ export const api = {
       try {
         const raw = localStorage.getItem('charvik_income_expenses_cache');
         if (raw) cachedData = JSON.parse(raw);
-      } catch {}
+      } catch { }
       const list = cachedData?.transactions || [];
       const newEntry = { id: Date.now(), ...data, created_at: new Date().toISOString() };
       list.unshift(newEntry);
@@ -3284,7 +3284,7 @@ export const api = {
       try {
         const raw = localStorage.getItem('charvik_income_expenses_cache');
         if (raw) cachedData = JSON.parse(raw);
-      } catch {}
+      } catch { }
       let list = cachedData?.transactions || [];
       list = list.map((t: any) => (String(t.id) === String(id) ? { ...t, ...data } : t));
       let totalInc = 0;
@@ -3315,7 +3315,7 @@ export const api = {
       try {
         const raw = localStorage.getItem('charvik_income_expenses_cache');
         if (raw) cachedData = JSON.parse(raw);
-      } catch {}
+      } catch { }
       let list = cachedData?.transactions || [];
       list = list.filter((t: any) => String(t.id) !== String(id));
       let totalInc = 0;
