@@ -277,12 +277,12 @@ export const VyshnaviTravels: React.FC = () => {
       try {
         const parsed = typeof rec.items_json === 'string' ? JSON.parse(rec.items_json) : rec.items_json;
         if (Array.isArray(parsed) && parsed.length > 0) items = parsed;
-      } catch (_) {}
+      } catch (_) { }
     } else if (typeof rec.items === 'string') {
       try {
         const parsed = JSON.parse(rec.items);
         if (Array.isArray(parsed) && parsed.length > 0) items = parsed;
-      } catch (_) {}
+      } catch (_) { }
     }
 
     // Fallback: If items is still empty, look for description, particulars, route or remarks
@@ -1333,6 +1333,10 @@ export const VyshnaviTravels: React.FC = () => {
 
   // Open Report Printout Modal
   const handleOpenPrintReport = (type: 'records' | 'transactions') => {
+    if (type === 'records' && filteredRecords.length === 1) {
+      setPrintingRecord(normalizeVyshnaviRecord(filteredRecords[0]));
+      return;
+    }
     setReportPrintType(type);
     setIsPrintReportModalOpen(true);
   };
@@ -1470,7 +1474,7 @@ export const VyshnaviTravels: React.FC = () => {
               margin: 0 !important;
             }
 
-            /* Table Styling - FULLY BORDERED, PROFESSIONAL CORPORATE STATEMENT */
+            /* Table Styling - BOX-STYLE SIGNATURE VYSHNAVI STATEMENT */
             table {
               width: 100% !important;
               max-width: 100% !important;
@@ -1478,24 +1482,25 @@ export const VyshnaviTravels: React.FC = () => {
               margin: 10px 0 !important;
               font-size: ${isLandscape ? '11px' : '9.5px'} !important;
               background: #ffffff !important;
-              border: 1.5px solid #0f2b48 !important;
+              border: 2px solid #1e3a8a !important;
             }
             thead tr, tr.bg-slate-800 {
-              background-color: #0B2545 !important;
-              color: #ffffff !important;
+              background-color: #b9d8ff !important;
+              color: #0f172a !important;
+              border-bottom: 2px solid #1e3a8a !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
             th {
-              background-color: #0B2545 !important;
-              color: #ffffff !important;
-              font-weight: 800 !important;
+              background-color: #b9d8ff !important;
+              color: #0f172a !important;
+              font-weight: 900 !important;
               text-transform: uppercase !important;
               letter-spacing: 0.3px !important;
               font-size: ${isLandscape ? '10px' : '8.5px'} !important;
-              padding: 8px 6px !important;
-              border: 1px solid #1E3A5F !important;
-              text-align: left !important;
+              padding: 9px 6px !important;
+              border: 1.5px solid #1e3a8a !important;
+              text-align: center !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
@@ -1506,29 +1511,36 @@ export const VyshnaviTravels: React.FC = () => {
               text-align: right !important;
             }
             td {
-              padding: 6px 5px !important;
-              border: 1px solid #cbd5e1 !important;
+              padding: 8px 6px !important;
+              border: 1.5px solid #1e3a8a !important;
               color: #0f172a !important;
               font-size: ${isLandscape ? '10.5px' : '9px'} !important;
               vertical-align: middle !important;
               box-sizing: border-box !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
-            tbody tr:nth-child(even), tr.bg-slate-50\\/60 {
-              background-color: #f8fafc !important;
+            tbody tr:nth-child(even), tr.vyshnavi-row-cream, tr.bg-slate-50\\/60 {
+              background-color: #fef9c3 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            tbody tr:nth-child(odd), tr.vyshnavi-row-white, tr.bg-white {
+              background-color: #ffffff !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
             tfoot tr, tr.bg-slate-100 {
-              background-color: #e2e8f0 !important;
+              background-color: #f1f5f9 !important;
               font-weight: 900 !important;
-              border-top: 2.5px solid #0B2545 !important;
-              border-bottom: 2px solid #0B2545 !important;
+              border-top: 2.5px solid #1e3a8a !important;
+              border-bottom: 2px solid #1e3a8a !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
             tfoot td {
-              padding: 8px 6px !important;
-              border: 1px solid #cbd5e1 !important;
+              padding: 9px 6px !important;
+              border: 1.5px solid #1e3a8a !important;
               font-size: ${isLandscape ? '11px' : '9.5px'} !important;
               font-weight: 900 !important;
               color: #0f172a !important;
@@ -1682,8 +1694,8 @@ export const VyshnaviTravels: React.FC = () => {
               type="button"
               onClick={() => setActiveTab('records')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'records'
-                  ? 'bg-white text-[#142B4A] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-[#142B4A] shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
                 }`}
             >
               <FileText className="w-4 h-4 text-blue-600" />
@@ -1698,8 +1710,8 @@ export const VyshnaviTravels: React.FC = () => {
               type="button"
               onClick={() => setActiveTab('transactions')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'transactions'
-                  ? 'bg-white text-[#142B4A] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-[#142B4A] shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
                 }`}
             >
               <Wallet className="w-4 h-4 text-emerald-600" />
@@ -1988,10 +2000,10 @@ export const VyshnaviTravels: React.FC = () => {
                           <td className="py-3.5 px-4 text-center">
                             <span
                               className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${isPaid
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : isPartial
-                                    ? 'bg-amber-100 text-amber-800'
-                                    : 'bg-rose-100 text-rose-800'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : isPartial
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-rose-100 text-rose-800'
                                 }`}
                             >
                               {rec.payment_status}
@@ -2334,8 +2346,8 @@ export const VyshnaviTravels: React.FC = () => {
                           <td className="py-3.5 px-4 text-center">
                             <span
                               className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${isIncome
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : 'bg-rose-100 text-rose-800'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-rose-100 text-rose-800'
                                 }`}
                             >
                               {t.transaction_type}
@@ -2767,8 +2779,8 @@ export const VyshnaviTravels: React.FC = () => {
                 }))
               }
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${txnForm.transaction_type === 'Income'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
                 }`}
             >
               + Income (Money In)
@@ -2785,8 +2797,8 @@ export const VyshnaviTravels: React.FC = () => {
                 }))
               }
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${txnForm.transaction_type === 'Expense'
-                  ? 'bg-rose-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
                 }`}
             >
               - Expense (Money Out)
@@ -3379,6 +3391,20 @@ export const VyshnaviTravels: React.FC = () => {
                 Record No: <strong className="text-slate-900 font-black">{printingRecord.record_number}</strong>
               </span>
               <div className="flex items-center gap-2">
+                {records.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPrintingRecord(null);
+                      setIsPrintReportModalOpen(true);
+                      setReportPrintType('records');
+                    }}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-blue-600" />
+                    <span>All Records Summary</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => handleExportSingleRecordExcel(printingRecord)}
@@ -3765,8 +3791,8 @@ export const VyshnaviTravels: React.FC = () => {
                   setEditingCategoryOldName(null);
                 }}
                 className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${standaloneCatType === 'Income'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
                   }`}
               >
                 <TrendingUp className="w-3.5 h-3.5" />
@@ -3779,8 +3805,8 @@ export const VyshnaviTravels: React.FC = () => {
                   setEditingCategoryOldName(null);
                 }}
                 className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${standaloneCatType === 'Expense'
-                    ? 'bg-rose-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
                   }`}
               >
                 <TrendingDown className="w-3.5 h-3.5" />
@@ -3919,14 +3945,27 @@ export const VyshnaviTravels: React.FC = () => {
                 </strong>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
+                {reportPrintType === 'records' && filteredRecords.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPrintReportModalOpen(false);
+                      setPrintingRecord(normalizeVyshnaviRecord(filteredRecords[0]));
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-blue-600" />
+                    <span>View Official Statement</span>
+                  </button>
+                )}
                 {/* Print Orientation Selector */}
                 <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
                   <button
                     type="button"
                     onClick={() => setReportOrientation('landscape')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${reportOrientation === 'landscape'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                       }`}
                   >
                     Landscape
@@ -3935,8 +3974,8 @@ export const VyshnaviTravels: React.FC = () => {
                     type="button"
                     onClick={() => setReportOrientation('portrait')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${reportOrientation === 'portrait'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                       }`}
                   >
                     Portrait
@@ -4022,96 +4061,102 @@ export const VyshnaviTravels: React.FC = () => {
                     </h2>
                   </div>
 
-                  {/* Complete Printable Table */}
-                  <div className="mt-4 border border-slate-300 rounded-lg overflow-hidden" style={{ border: '1.5px solid #0B2545', borderRadius: '6px' }}>
+                  {/* Complete Printable Table - Box Style Matching Letterhead */}
+                  <div className="mt-4 border-2 border-[#1e3a8a] rounded-sm overflow-hidden" style={{ border: '2px solid #1e3a8a', borderRadius: '4px' }}>
                     {reportPrintType === 'records' ? (
-                      <table className="w-full text-left border-collapse text-[11px]" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #0B2545' }}>
+                      <table className="w-full text-left border-collapse text-[11px] vyshnavi-box-table" style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #1e3a8a' }}>
                         <thead>
-                          <tr className="bg-slate-800 text-white font-bold uppercase text-[10px]" style={{ backgroundColor: '#0B2545', color: '#ffffff' }}>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-center w-10" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>S.No</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Record / Inv #</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Date</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Billed To (Client)</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Period</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-center" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Staff</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-right" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'right', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Invoiced (₹)</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-right" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'right', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Received (₹)</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-right" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'right', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Balance Due (₹)</th>
-                            <th className="py-2 px-2.5 text-center" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Status</th>
+                          <tr style={{ backgroundColor: '#b9d8ff', color: '#0f172a', borderBottom: '2px solid #1e3a8a' }}>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 5px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>S.No</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Record / Inv #</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Date</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Billed To (Client)</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Vehicle / Period</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 5px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Staff</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Invoiced (₹)</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Received (₹)</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Balance Due (₹)</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Status</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
-                          {filteredRecords.map((rec, idx) => (
-                            <tr key={rec.id || idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'} style={{ backgroundColor: idx % 2 === 1 ? '#f8fafc' : '#ffffff' }}>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold text-slate-500" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{idx + 1}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-bold text-slate-900" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontWeight: 'bold', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.record_number}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.record_date}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-medium text-slate-800" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.bill_to_name}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.period_month || '—'}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.total_staff_count || rec.items?.length || 1}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-black text-slate-900" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>₹{(rec.total_amount || 0).toLocaleString('en-IN')}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-bold text-emerald-700" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'right', fontWeight: 'bold', color: '#047857', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>₹{(rec.received_amount || 0).toLocaleString('en-IN')}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-right font-bold text-rose-700" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'right', fontWeight: 'bold', color: '#b91c1c', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>₹{(rec.balance_amount || 0).toLocaleString('en-IN')}</td>
-                              <td className="py-2 px-2.5 text-center font-bold uppercase text-[10px] text-slate-700" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'center', fontSize: '9.5px', textTransform: 'uppercase' }}>{rec.payment_status}</td>
-                            </tr>
-                          ))}
+                          {filteredRecords.map((rec, idx) => {
+                            const isCream = idx % 2 === 1;
+                            return (
+                              <tr key={rec.id || idx} className={isCream ? 'vyshnavi-row-cream' : 'vyshnavi-row-white'} style={{ backgroundColor: isCream ? '#fef9c3' : '#ffffff', borderBottom: '1.5px solid #1e3a8a' }}>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', textAlign: 'center', fontWeight: 'bold', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{idx + 1}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontWeight: 'bold', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.record_number}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.record_date}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontWeight: '700', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.bill_to_name}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.vehicle_number || rec.period_month || '—'}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', textAlign: 'center', fontWeight: 'bold', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{rec.total_staff_count || rec.items?.length || 1}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>₹{(rec.total_amount || 0).toLocaleString('en-IN')}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', textAlign: 'right', fontWeight: 'bold', color: '#047857', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>₹{(rec.received_amount || 0).toLocaleString('en-IN')}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', textAlign: 'right', fontWeight: 'bold', color: '#b91c1c', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>₹{(rec.balance_amount || 0).toLocaleString('en-IN')}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', textAlign: 'center', fontSize: '9.5px', textTransform: 'uppercase', fontWeight: 'bold' }}>{rec.payment_status}</td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                         <tfoot>
-                          <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300" style={{ backgroundColor: '#e2e8f0', borderTop: '2.5px solid #0B2545', borderBottom: '2px solid #0B2545' }}>
-                            <td colSpan={6} className="py-2.5 px-2.5 text-right uppercase tracking-wider" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>Grand Totals:</td>
-                            <td className="py-2.5 px-2.5 text-right font-mono font-black" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
+                          <tr style={{ backgroundColor: '#f1f5f9', borderTop: '2.5px solid #1e3a8a', borderBottom: '2px solid #1e3a8a' }}>
+                            <td colSpan={6} style={{ border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: 900, textTransform: 'uppercase', fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>Grand Totals:</td>
+                            <td style={{ border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
                               ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.total_amount) || 0), 0).toLocaleString('en-IN')}
                             </td>
-                            <td className="py-2.5 px-2.5 text-right font-mono font-black text-emerald-700" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, color: '#047857', fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
+                            <td style={{ border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: 900, color: '#047857', fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
                               ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.received_amount) || 0), 0).toLocaleString('en-IN')}
                             </td>
-                            <td className="py-2.5 px-2.5 text-right font-mono font-black text-rose-700" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, color: '#b91c1c', fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
+                            <td style={{ border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: 900, color: '#b91c1c', fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
                               ₹{filteredRecords.reduce((acc, r) => acc + (Number(r.balance_amount) || 0), 0).toLocaleString('en-IN')}
                             </td>
-                            <td style={{ border: '1px solid #cbd5e1', padding: '8px 6px' }}></td>
+                            <td style={{ border: '1.5px solid #1e3a8a', padding: '9px 6px' }}></td>
                           </tr>
                         </tfoot>
                       </table>
                     ) : (
-                      <table className="w-full text-left border-collapse text-[11px]" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #0B2545' }}>
+                      <table className="w-full text-left border-collapse text-[11px] vyshnavi-box-table" style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #1e3a8a' }}>
                         <thead>
-                          <tr className="bg-slate-800 text-white font-bold uppercase text-[10px]" style={{ backgroundColor: '#0B2545', color: '#ffffff' }}>
-                            <th className="py-2 px-2.5 border-r border-slate-700 text-center w-10" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>S.No</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Date</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Type</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Category</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Vehicle</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Party / Vendor</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Mode</th>
-                            <th className="py-2 px-2.5 border-r border-slate-700" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Ref / UTR #</th>
-                            <th className="py-2 px-2.5 text-right" style={{ backgroundColor: '#0B2545', color: '#ffffff', border: '1px solid #1E3A5F', padding: '8px 6px', textAlign: 'right', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Amount (₹)</th>
+                          <tr style={{ backgroundColor: '#b9d8ff', color: '#0f172a', borderBottom: '2px solid #1e3a8a' }}>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 5px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>S.No</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Date</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Type</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Category</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Vehicle</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Party / Vendor</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Mode</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'center', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Ref / UTR #</th>
+                            <th style={{ backgroundColor: '#b9d8ff', color: '#0f172a', border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: '900', fontSize: reportOrientation === 'landscape' ? '10px' : '8.5px' }}>Amount (₹)</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
-                          {filteredTransactions.map((t, idx) => (
-                            <tr key={t.id || idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'} style={{ backgroundColor: idx % 2 === 1 ? '#f8fafc' : '#ffffff' }}>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-center font-bold text-slate-500" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'center', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{idx + 1}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.transaction_date}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-bold" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontWeight: 'bold', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>
-                                <span className={t.transaction_type === 'Income' ? 'text-emerald-700' : 'text-rose-700'} style={{ color: t.transaction_type === 'Income' ? '#047857' : '#b91c1c' }}>
-                                  {t.transaction_type}
-                                </span>
-                              </td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-medium text-slate-900" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.category}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.vehicle_number || 'General'}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-700" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.party_name || '—'}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.payment_mode}</td>
-                              <td className="py-2 px-2.5 border-r border-slate-200 font-mono text-[10px] text-slate-600" style={{ border: '1px solid #cbd5e1', padding: '6px 5px', fontSize: '9.5px', fontFamily: 'monospace' }}>{t.reference_no || '—'}</td>
-                              <td className={`py-2 px-2.5 text-right font-black font-mono ${t.transaction_type === 'Income' ? 'text-emerald-700' : 'text-rose-700'}`} style={{ border: '1px solid #cbd5e1', padding: '6px 5px', textAlign: 'right', fontWeight: 900, color: t.transaction_type === 'Income' ? '#047857' : '#b91c1c', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>
-                                {t.transaction_type === 'Income' ? '+' : '-'} ₹{(t.amount || 0).toLocaleString('en-IN')}
-                              </td>
-                            </tr>
-                          ))}
+                          {filteredTransactions.map((t, idx) => {
+                            const isCream = idx % 2 === 1;
+                            return (
+                              <tr key={t.id || idx} className={isCream ? 'vyshnavi-row-cream' : 'vyshnavi-row-white'} style={{ backgroundColor: isCream ? '#fef9c3' : '#ffffff', borderBottom: '1.5px solid #1e3a8a' }}>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', textAlign: 'center', fontWeight: 'bold', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{idx + 1}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.transaction_date}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontWeight: 'bold', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>
+                                  <span className={t.transaction_type === 'Income' ? 'text-emerald-700' : 'text-rose-700'} style={{ color: t.transaction_type === 'Income' ? '#047857' : '#b91c1c' }}>
+                                    {t.transaction_type}
+                                  </span>
+                                </td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontWeight: '600', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.category}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.vehicle_number || 'General'}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.party_name || '—'}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>{t.payment_mode}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', fontSize: '9.5px', fontFamily: 'monospace' }}>{t.reference_no || '—'}</td>
+                                <td style={{ border: '1.5px solid #1e3a8a', padding: '8px 5px', textAlign: 'right', fontWeight: 900, color: t.transaction_type === 'Income' ? '#047857' : '#b91c1c', fontSize: reportOrientation === 'landscape' ? '10.5px' : '9px' }}>
+                                  {t.transaction_type === 'Income' ? '+' : '-'} ₹{(t.amount || 0).toLocaleString('en-IN')}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                         <tfoot>
-                          <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300" style={{ backgroundColor: '#e2e8f0', borderTop: '2.5px solid #0B2545', borderBottom: '2px solid #0B2545' }}>
-                            <td colSpan={8} className="py-2.5 px-2.5 text-right uppercase tracking-wider" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>Net Cash Flow:</td>
-                            <td className="py-2.5 px-2.5 text-right font-mono font-black" style={{ border: '1px solid #cbd5e1', padding: '8px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
+                          <tr style={{ backgroundColor: '#f1f5f9', borderTop: '2.5px solid #1e3a8a', borderBottom: '2px solid #1e3a8a' }}>
+                            <td colSpan={8} style={{ border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: 900, textTransform: 'uppercase', fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>Net Cash Flow:</td>
+                            <td style={{ border: '1.5px solid #1e3a8a', padding: '9px 6px', textAlign: 'right', fontWeight: 900, fontSize: reportOrientation === 'landscape' ? '11px' : '9.5px' }}>
                               ₹{(filteredTransactions.filter(t => t.transaction_type === 'Income').reduce((acc, t) => acc + (Number(t.amount) || 0), 0) - filteredTransactions.filter(t => t.transaction_type === 'Expense').reduce((acc, t) => acc + (Number(t.amount) || 0), 0)).toLocaleString('en-IN')}
                             </td>
                           </tr>
