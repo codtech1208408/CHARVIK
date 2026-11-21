@@ -304,6 +304,41 @@ export const EmployeePayments: React.FC = () => {
     return list;
   }, [employees, periodFilteredTasks]);
 
+  // Profile View Staff & Category Switcher State (Separate Category & Employee with Search & Select)
+  const [profileCategorySearch, setProfileCategorySearch] = useState("");
+  const [profileSelectedCategory, setProfileSelectedCategory] = useState("All");
+  const [profileEmployeeSearch, setProfileEmployeeSearch] = useState("");
+
+  const distinctEmployeeCategories = useMemo(() => {
+    const set = new Set<string>();
+    allEmployeeRecords.forEach((x) => {
+      if (x.role && x.role.trim()) set.add(x.role.trim());
+    });
+    return Array.from(set).sort();
+  }, [allEmployeeRecords]);
+
+  const filteredCategoryOptions = useMemo(() => {
+    if (!profileCategorySearch.trim()) return distinctEmployeeCategories;
+    const q = profileCategorySearch.toLowerCase();
+    return distinctEmployeeCategories.filter((cat) => cat.toLowerCase().includes(q));
+  }, [distinctEmployeeCategories, profileCategorySearch]);
+
+  const filteredProfileEmployees = useMemo(() => {
+    return allEmployeeRecords.filter((x) => {
+      const matchesCat =
+        profileSelectedCategory === "All" ||
+        (x.role && x.role.trim().toLowerCase() === profileSelectedCategory.toLowerCase());
+      if (!matchesCat) return false;
+
+      if (!profileEmployeeSearch.trim()) return true;
+      const q = profileEmployeeSearch.toLowerCase();
+      const name = (x.full_name || "").toLowerCase();
+      const code = (x.employee_code || "").toLowerCase();
+      const phone = (x.phone || "").toLowerCase();
+      return name.includes(q) || code.includes(q) || phone.includes(q);
+    });
+  }, [allEmployeeRecords, profileSelectedCategory, profileEmployeeSearch]);
+
   // Selected employee for detailed ledger
   const selectedEmployeeRecord = useMemo((): EmployeePaymentRecord | null => {
     if (allEmployeeRecords.length === 0) return null;
@@ -1684,35 +1719,14 @@ _This is an official automated monthly salary & trip record statement._`;
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
-              <div>
+              <div className="space-y-2">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                     {r.full_name} - Employee Profile
                   </h1>
-                  {/* Switch Staff Dropdown */}
-                  <select
-                    value={r.employee_code || r.full_name}
-                    onChange={(e) => {
-                      if (e.target.value === "__ALL__") {
-                        setSearchParams({ view: "all" });
-                        return;
-                      }
-                      const target = allEmployeeRecords.find(
-                        (x) => (x.employee_code || x.full_name) === e.target.value
-                      );
-                      if (target) handleSelectEmployee(target);
-                    }}
-                    className="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 shadow-2xs outline-none cursor-pointer"
-                    title="Switch Staff Member"
-                  >
-                    <option value="__ALL__">-- All Employees Directory --</option>
-                    {allEmployeeRecords.map((x) => (
-                      <option key={x.id + x.full_name} value={x.employee_code || x.full_name}>
-                        {x.full_name} ({x.role})
-                      </option>
-                    ))}
-                  </select>
-
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                    {r.role}
+                  </span>
                   <button
                     type="button"
                     onClick={() => setSearchParams({ view: "all" })}
@@ -1723,7 +1737,123 @@ _This is an official automated monthly salary & trip record statement._`;
                     <span>View All Staff</span>
                   </button>
                 </div>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">Official employee record</p>
+
+                {/* Separate Category Option & Employee Option (Both with Search & Select) */}
+                <div className="flex items-center gap-2.5 flex-wrap pt-0.5">
+                  {/* 1. CATEGORY OPTION: Search & Select */}
+                  <div className="flex items-center bg-white border border-slate-200/90 rounded-xl p-1 gap-1.5 shadow-2xs">
+                    <div className="flex items-center gap-1 pl-1.5 pr-0.5 text-[11px] font-bold text-slate-600 shrink-0">
+                      <Filter className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Category:</span>
+                    </div>
+
+                    {/* Category Search Option */}
+                    <div className="relative">
+                      <Search className="w-3 h-3 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Search category..."
+                        value={profileCategorySearch}
+                        onChange={(e) => setProfileCategorySearch(e.target.value)}
+                        className="w-28 sm:w-32 text-xs pl-6 pr-5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 outline-none focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
+                        title="Search Category / Role"
+                      />
+                      {profileCategorySearch && (
+                        <button
+                          type="button"
+                          onClick={() => setProfileCategorySearch("")}
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-0.5 leading-none"
+                          title="Clear category search"
+                        >
+                          &times;
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Category Select Option */}
+                    <select
+                      value={profileSelectedCategory}
+                      onChange={(e) => setProfileSelectedCategory(e.target.value)}
+                      className="text-xs font-bold bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-800 shadow-2xs outline-none cursor-pointer hover:border-slate-300 focus:border-blue-500"
+                      title="Select Category"
+                    >
+                      <option value="All">All Categories ({distinctEmployeeCategories.length})</option>
+                      {filteredCategoryOptions.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 2. EMPLOYEE OPTION: Search & Select */}
+                  <div className="flex items-center bg-white border border-slate-200/90 rounded-xl p-1 gap-1.5 shadow-2xs">
+                    <div className="flex items-center gap-1 pl-1.5 pr-0.5 text-[11px] font-bold text-slate-600 shrink-0">
+                      <User className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Employee:</span>
+                    </div>
+
+                    {/* Employee Search Option */}
+                    <div className="relative">
+                      <Search className="w-3 h-3 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Search employee..."
+                        value={profileEmployeeSearch}
+                        onChange={(e) => setProfileEmployeeSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && filteredProfileEmployees.length > 0) {
+                            handleSelectEmployee(filteredProfileEmployees[0]);
+                          }
+                        }}
+                        className="w-32 sm:w-36 text-xs pl-6 pr-5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 outline-none focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20"
+                        title="Search Employee by name or code (Press Enter to select)"
+                      />
+                      {profileEmployeeSearch && (
+                        <button
+                          type="button"
+                          onClick={() => setProfileEmployeeSearch("")}
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-0.5 leading-none"
+                          title="Clear employee search"
+                        >
+                          &times;
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Employee Select Option */}
+                    <select
+                      value={r.employee_code || r.full_name}
+                      onChange={(e) => {
+                        if (e.target.value === "__ALL__") {
+                          setSearchParams({ view: "all" });
+                          return;
+                        }
+                        const target = allEmployeeRecords.find(
+                          (x) => (x.employee_code || x.full_name) === e.target.value
+                        );
+                        if (target) handleSelectEmployee(target);
+                      }}
+                      className="text-xs font-bold bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-800 shadow-2xs outline-none cursor-pointer hover:border-slate-300 focus:border-emerald-500 max-w-[210px] truncate"
+                      title="Select Employee"
+                    >
+                      <option value="__ALL__">-- All Employees Directory --</option>
+                      {filteredProfileEmployees.length === 0 ? (
+                        <option disabled value="">No employees found</option>
+                      ) : (
+                        filteredProfileEmployees.map((x) => (
+                          <option key={x.id + x.full_name} value={x.employee_code || x.full_name}>
+                            {x.full_name} ({x.role})
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-400 font-medium">
+                  Official employee record &bull; Filter by category or search employee by name/code
+                </p>
               </div>
             </div>
 
