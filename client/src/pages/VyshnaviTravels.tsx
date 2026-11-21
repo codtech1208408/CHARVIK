@@ -418,38 +418,6 @@ export const VyshnaviTravels: React.FC = () => {
     }));
   };
 
-  const handleAddRouteRow = () => {
-    setRecordForm((prev) => ({
-      ...prev,
-      items: [
-        ...prev.items,
-        {
-          sr_no: prev.items.length + 1,
-          description: `LB Nagar to Gachibowli – Dropping Service\nGachibowli to LB Nagar – Pickup Service\nECL to LB Nagar – Pickup Service\n(From October 10th to November 10th)`,
-          category: 'Service',
-          staff_count: 1,
-          salary_paid: 0
-        }
-      ]
-    }));
-  };
-
-  const handleAddDriverSalaryRow = () => {
-    setRecordForm((prev) => ({
-      ...prev,
-      items: [
-        ...prev.items,
-        {
-          sr_no: prev.items.length + 1,
-          description: `Driver Salary – Two Drivers\n(From October 10th to November 10th)`,
-          category: 'Driver',
-          staff_count: 2,
-          salary_paid: 0
-        }
-      ]
-    }));
-  };
-
   const handleUpdateServiceRow = (index: number, field: keyof VyshnaviServiceItem, value: any) => {
     setRecordForm((prev) => {
       const updated = [...prev.items];
@@ -2509,34 +2477,14 @@ export const VyshnaviTravels: React.FC = () => {
                 <Users className="w-4 h-4 text-purple-600" />
                 <span>3. Particulars &amp; Services Breakdown</span>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleAddRouteRow}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold shadow-2xs cursor-pointer transition-colors"
-                  title="Insert Dropping &amp; Pickup Service particulars template"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Route Service (Drop/Pickup)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAddDriverSalaryRow}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 text-xs font-bold shadow-2xs cursor-pointer transition-colors"
-                  title="Insert Driver Salary particulars template"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Driver Salary</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAddServiceRow}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add Row</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleAddServiceRow}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Add Row</span>
+              </button>
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
