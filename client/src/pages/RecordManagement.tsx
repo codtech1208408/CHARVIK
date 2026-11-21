@@ -1312,78 +1312,9 @@ export const RecordManagement: React.FC = () => {
                 </div>
               </div>
 
-              {/* Title Header (Matching Image 1: BILL OF SUPPLY) */}
-              <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-4">
-                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-widest bg-slate-100 px-2.5 py-1 rounded">
-                  BILL OF SUPPLY / OFFICIAL SALARY RECORD
-                </span>
-                <span className="text-[11px] text-slate-500 font-medium italic">
-                  ORIGINAL FOR RECIPIENT
-                </span>
-              </div>
-
-              {/* BILL TO & INVOICE DETAILS */}
-              <div className="grid grid-cols-2 gap-4 border border-slate-300 rounded-lg p-3.5 mb-5 bg-slate-50/40 text-xs">
-                {/* Left: Bill To */}
-                <div className="space-y-1 border-r border-slate-200 pr-3">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-                    BILL TO:
-                  </span>
-                  <p className="font-black text-sm text-[#142B4A] uppercase tracking-wide break-words">
-                    {printingRecord.bill_to_name}
-                  </p>
-                  {printingRecord.bill_to_phone && (
-                    <p className="text-slate-600 text-[11px]">
-                      <strong>Mobile:</strong> {printingRecord.bill_to_phone}
-                    </p>
-                  )}
-                  {(printingRecord as any).operator_name && (
-                    <p className="text-slate-600 text-[11px]">
-                      <strong>Operator Name:</strong> {(printingRecord as any).operator_name}
-                    </p>
-                  )}
-                  {printingRecord.bill_to_address && (
-                    <p className="text-slate-600 text-[11px] break-words">
-                      <strong>Operator Address:</strong> {printingRecord.bill_to_address}
-                    </p>
-                  )}
-                  {printingRecord.bill_to_pan && (
-                    <p className="text-slate-600 text-[11px]">
-                      <strong>Operator PAN/GST:</strong> {printingRecord.bill_to_pan}
-                    </p>
-                  )}
-                </div>
-
-                {/* Right: Record / Invoice Metadata */}
-                <div className="space-y-1.5 pl-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 font-bold">Record / Invoice No:</span>
-                    <span className="font-bold tracking-wide text-blue-900 text-xs">
-                      {printingRecord.record_number}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 font-bold">Record Date:</span>
-                    <span className="font-medium text-slate-800">{printingRecord.record_date}</span>
-                  </div>
-                  {printingRecord.period_month && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500 font-bold">Billing Period:</span>
-                      <span className="font-bold text-slate-800">{printingRecord.period_month}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 font-bold">Payment Status:</span>
-                    <span className={`font-bold ${printingRecord.payment_status === 'Paid'
-                      ? 'text-emerald-700'
-                      : printingRecord.payment_status === 'Partial'
-                        ? 'text-amber-700'
-                        : 'text-rose-700'
-                      }`}>
-                      {printingRecord.payment_status}
-                    </span>
-                  </div>
-                </div>
+              {/* Simple Date Header */}
+              <div className="flex items-center justify-end mb-3 text-xs font-bold text-slate-800">
+                <span>Date: {printingRecord.record_date}</span>
               </div>
 
               {/* SERVICE TABLE (MATCHING IMAGE 2 EXACT 5 COLUMNS) */}
