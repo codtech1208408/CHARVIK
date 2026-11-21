@@ -41,7 +41,8 @@ import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
 import { exportTableToExcel } from '../utils/exportToExcel';
-import { OperatorSearchSelect } from '../components/common/OperatorSearchSelect';
+import { OperatorSearchSelect, DEFAULT_PRESET_OPERATORS } from '../components/common/OperatorSearchSelect';
+import { SearchableSelect } from '../components/common/SearchableSelect';
 import type { VyshnaviRecord, VyshnaviTransaction, VyshnaviServiceItem, Bus as BusType } from '../types';
 import vyshnaviLogo from '../assets/vyshnavi-logo.png';
 
@@ -222,10 +223,17 @@ export const VyshnaviTravels: React.FC = () => {
     items: [
       {
         sr_no: 1,
-        description: "Driver's monthly salary",
-        category: 'Driver',
+        description: `LB Nagar to Gachibowli – Dropping Service\nGachibowli to LB Nagar – Pickup Service\nECL to LB Nagar – Pickup Service\n(From October 10th to November 10th)`,
+        category: 'Service',
         staff_count: 1,
-        salary_paid: 20000
+        salary_paid: 60000
+      },
+      {
+        sr_no: 2,
+        description: `Driver Salary – Two Drivers\n(From October 10th to November 10th)`,
+        category: 'Driver',
+        staff_count: 2,
+        salary_paid: 40000
       }
     ],
     received_amount: 0,
@@ -410,6 +418,38 @@ export const VyshnaviTravels: React.FC = () => {
     }));
   };
 
+  const handleAddRouteRow = () => {
+    setRecordForm((prev) => ({
+      ...prev,
+      items: [
+        ...prev.items,
+        {
+          sr_no: prev.items.length + 1,
+          description: `LB Nagar to Gachibowli – Dropping Service\nGachibowli to LB Nagar – Pickup Service\nECL to LB Nagar – Pickup Service\n(From October 10th to November 10th)`,
+          category: 'Service',
+          staff_count: 1,
+          salary_paid: 0
+        }
+      ]
+    }));
+  };
+
+  const handleAddDriverSalaryRow = () => {
+    setRecordForm((prev) => ({
+      ...prev,
+      items: [
+        ...prev.items,
+        {
+          sr_no: prev.items.length + 1,
+          description: `Driver Salary – Two Drivers\n(From October 10th to November 10th)`,
+          category: 'Driver',
+          staff_count: 2,
+          salary_paid: 0
+        }
+      ]
+    }));
+  };
+
   const handleUpdateServiceRow = (index: number, field: keyof VyshnaviServiceItem, value: any) => {
     setRecordForm((prev) => {
       const updated = [...prev.items];
@@ -433,23 +473,33 @@ export const VyshnaviTravels: React.FC = () => {
   // Open Record Modal for Add
   const handleOpenAddRecord = () => {
     const nextRecNum = `VT-REC-${new Date().getFullYear()}-${String(records.length + 1).padStart(3, '0')}`;
+    const defaultVeh = allVehicles.length > 0 ? allVehicles[0] : '';
     setEditingRecord(null);
     setRecordForm({
       record_number: nextRecNum,
       record_date: new Date().toISOString().split('T')[0],
       period_month: '',
+      vehicle_number: defaultVeh,
       payment_status: 'Pending',
       bill_to_name: '',
       bill_to_phone: '',
       bill_to_address: '',
       bill_to_pan: '',
+      bill_to_gst: '',
       items: [
         {
           sr_no: 1,
-          description: "Driver's monthly salary",
+          description: `LB Nagar to Gachibowli – Dropping Service\nGachibowli to LB Nagar – Pickup Service\nECL to LB Nagar – Pickup Service\n(From October 10th to November 10th)`,
+          category: 'Service',
+          staff_count: 1,
+          salary_paid: 60000
+        },
+        {
+          sr_no: 2,
+          description: `Driver Salary – Two Drivers\n(From October 10th to November 10th)`,
           category: 'Driver',
           staff_count: 2,
-          salary_paid: 32000
+          salary_paid: 40000
         }
       ],
       received_amount: 0,
@@ -793,6 +843,43 @@ export const VyshnaviTravels: React.FC = () => {
               font-size: 10px !important;
               background: #ffffff !important;
               border: 1.5px solid #0f2b48 !important;
+            }
+            .vyshnavi-box-table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+              border: 2px solid #1e3a8a !important;
+              margin: 10px 0 !important;
+            }
+            .vyshnavi-box-table th {
+              background-color: #b9d8ff !important;
+              color: #0f172a !important;
+              font-weight: 900 !important;
+              font-size: 11px !important;
+              padding: 9px 10px !important;
+              border: 1.5px solid #1e3a8a !important;
+              text-align: center !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .vyshnavi-box-table td {
+              padding: 10px 12px !important;
+              border: 1.5px solid #1e3a8a !important;
+              font-size: 11px !important;
+              color: #0f172a !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .vyshnavi-box-table tr.vyshnavi-row-cream,
+            .vyshnavi-box-table tr.vyshnavi-row-cream td {
+              background-color: #fef9c3 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .vyshnavi-box-table tr.vyshnavi-row-white,
+            .vyshnavi-box-table tr.vyshnavi-row-white td {
+              background-color: #ffffff !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
             thead tr, tr.bg-slate-800 {
               background-color: #0B2545 !important;
@@ -1865,9 +1952,6 @@ export const VyshnaviTravels: React.FC = () => {
                           <td className="py-3.5 px-4 font-medium text-slate-600">{rec.record_date}</td>
                           <td className="py-3.5 px-4">
                             <div className="font-bold text-slate-900">{rec.bill_to_name}</div>
-                            {rec.bill_to_phone && (
-                              <div className="text-[11px] text-slate-400 font-medium">{rec.bill_to_phone}</div>
-                            )}
                           </td>
                           <td className="py-3.5 px-4 font-bold text-slate-800">
                             {rec.vehicle_number || rec.period_month || '—'}
@@ -2358,13 +2442,18 @@ export const VyshnaviTravels: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Vehicle Number</label>
-                <input
-                  type="text"
+                <SearchableSelect
+                  label="Vehicle Number"
+                  options={allVehicles.map((v) => ({
+                    value: v,
+                    label: v,
+                    badge: 'Fleet'
+                  }))}
                   value={recordForm.vehicle_number}
-                  onChange={(e) => setRecordForm({ ...recordForm, vehicle_number: e.target.value.toUpperCase() })}
-                  placeholder="e.g. AP 16 TC 2080"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  onChange={(val) => setRecordForm({ ...recordForm, vehicle_number: val.toUpperCase() })}
+                  placeholder="-- Select / Search Vehicle Number --"
+                  searchPlaceholder="Search vehicle number..."
+                  allowCustom={true}
                 />
               </div>
 
@@ -2384,123 +2473,101 @@ export const VyshnaviTravels: React.FC = () => {
             </div>
           </div>
 
-          {/* Section 2: Bill To (Client Details) */}
+          {/* Section 2: Bill To (Client Details - Only Client Name displayed here) */}
           <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-3">
             <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
               <Building2 className="w-4 h-4 text-emerald-600" />
               <span>2. Bill To (Client / Organization Details)</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="sm:col-span-2">
-                <OperatorSearchSelect
-                  label="Company / Client Name"
-                  required
-                  value={recordForm.bill_to_name}
-                  onChange={(val) => setRecordForm({ ...recordForm, bill_to_name: val })}
-                  onSelectOperator={(op) => {
-                    const gst = (op.gstOrPan && op.gstOrPan.length === 15) ? op.gstOrPan : '';
-                    const pan = (op.gstOrPan && op.gstOrPan.length === 10) ? op.gstOrPan : (!gst && op.gstOrPan ? op.gstOrPan : '');
-                    setRecordForm((prev) => ({
-                      ...prev,
-                      bill_to_name: op.name,
-                      bill_to_phone: op.phone || prev.bill_to_phone || '',
-                      bill_to_address: op.address || prev.bill_to_address || '',
-                      bill_to_gst: gst || prev.bill_to_gst || '',
-                      bill_to_pan: pan || prev.bill_to_pan || ''
-                    }));
-                  }}
-                  placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Contact Mobile Number</label>
-                <input
-                  type="tel"
-                  value={recordForm.bill_to_phone}
-                  onChange={(e) => setRecordForm({ ...recordForm, bill_to_phone: e.target.value })}
-                  placeholder="e.g. 9505151527"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Client Address</label>
-                <input
-                  type="text"
-                  value={recordForm.bill_to_address}
-                  onChange={(e) => setRecordForm({ ...recordForm, bill_to_address: e.target.value })}
-                  placeholder="e.g. Unit 330, JMD Megapolis, Sohna Road, Gurugram"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">GST Number</label>
-                <input
-                  type="text"
-                  value={recordForm.bill_to_gst}
-                  onChange={(e) => setRecordForm({ ...recordForm, bill_to_gst: e.target.value.toUpperCase() })}
-                  placeholder="e.g. 36AABCY5013H1Z2"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 uppercase focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">PAN Number</label>
-                <input
-                  type="text"
-                  value={recordForm.bill_to_pan}
-                  onChange={(e) => setRecordForm({ ...recordForm, bill_to_pan: e.target.value.toUpperCase() })}
-                  placeholder="e.g. AABCY5013H"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 uppercase focus:outline-none"
-                />
-              </div>
+            <div>
+              <OperatorSearchSelect
+                label="Company / Client Name"
+                required
+                value={recordForm.bill_to_name}
+                onChange={(val) => setRecordForm({ ...recordForm, bill_to_name: val })}
+                onSelectOperator={(op) => {
+                  const gst = (op.gstOrPan && op.gstOrPan.length === 15) ? op.gstOrPan : '';
+                  const pan = (op.gstOrPan && op.gstOrPan.length === 10) ? op.gstOrPan : (!gst && op.gstOrPan ? op.gstOrPan : '');
+                  setRecordForm((prev) => ({
+                    ...prev,
+                    bill_to_name: op.name,
+                    bill_to_phone: op.phone || prev.bill_to_phone || '',
+                    bill_to_address: op.address || prev.bill_to_address || '',
+                    bill_to_gst: gst || prev.bill_to_gst || '',
+                    bill_to_pan: pan || prev.bill_to_pan || ''
+                  }));
+                }}
+                placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
+              />
+              <p className="text-[11px] text-slate-500 font-medium mt-1.5 flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Client mobile number &amp; address will show directly in the official printout sheet.</span>
+              </p>
             </div>
           </div>
 
-          {/* Section 3: Services & Staff Breakdown */}
+          {/* Section 3: Services & Staff Breakdown (Particulars Box-Type) */}
           <div className="bg-slate-50/70 p-4 rounded-2xl border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
                 <Users className="w-4 h-4 text-purple-600" />
-                <span>3. Services Breakdown</span>
+                <span>3. Particulars &amp; Services Breakdown</span>
               </div>
-              <button
-                type="button"
-                onClick={handleAddServiceRow}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Add Service Row</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAddRouteRow}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold shadow-2xs cursor-pointer"
+                  title="Insert Dropping &amp; Pickup Service particulars matching template"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Route Service (Drop/Pickup)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddDriverSalaryRow}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 text-xs font-bold shadow-2xs cursor-pointer"
+                  title="Insert Driver Salary particulars matching template"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Driver Salary</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddServiceRow}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Add Row</span>
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-100/80 border-b border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-wider">
-                    <th className="py-2.5 px-3 w-12 text-center">Sr.No</th>
-                    <th className="py-2.5 px-3 min-w-[200px]">Description of Services *</th>
+                  <tr className="bg-[#b9d8ff]/60 border-b border-blue-200 text-[11px] font-black text-slate-900 uppercase tracking-wider">
+                    <th className="py-2.5 px-3 w-14 text-center border-r border-blue-200">S. No.</th>
+                    <th className="py-2.5 px-3 min-w-[260px] border-r border-blue-200">Particulars (Service Details &amp; Period) *</th>
                     <th className="py-2.5 px-3 w-44 text-right">Amount (₹) *</th>
                     <th className="py-2.5 px-3 w-12 text-center"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-200">
                   {recordForm.items.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/60">
-                      <td className="py-2 px-3 text-center font-bold text-slate-400">{idx + 1}</td>
-                      <td className="py-2 px-3">
-                        <input
-                          type="text"
+                    <tr key={idx} className={idx % 2 === 1 ? 'bg-[#fef9c3]/50 hover:bg-[#fef9c3]/80' : 'bg-white hover:bg-slate-50/60'}>
+                      <td className="py-3 px-3 text-center font-black text-slate-700 align-top pt-3 border-r border-slate-200">{idx + 1}</td>
+                      <td className="py-2.5 px-3 border-r border-slate-200">
+                        <textarea
                           required
+                          rows={3}
                           value={item.description}
                           onChange={(e) => handleUpdateServiceRow(idx, 'description', e.target.value)}
-                          placeholder="e.g. Driver's Salary for AP16TV1234 route"
-                          className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none"
+                          placeholder="e.g. LB Nagar to Gachibowli – Dropping Service&#10;Gachibowli to LB Nagar – Pickup Service&#10;ECL to LB Nagar – Pickup Service&#10;(From October 10th to November 10th)"
+                          className="w-full px-2.5 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed resize-y"
                         />
                       </td>
-                      <td className="py-2 px-3 text-right">
+                      <td className="py-2.5 px-3 text-right align-top pt-3">
                         <div className="relative inline-block w-36">
                           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
                           <input
@@ -2513,7 +2580,7 @@ export const VyshnaviTravels: React.FC = () => {
                           />
                         </div>
                       </td>
-                      <td className="py-2 px-3 text-center">
+                      <td className="py-2.5 px-3 text-center align-top pt-3">
                         <button
                           type="button"
                           onClick={() => handleRemoveServiceRow(idx)}
@@ -2526,8 +2593,8 @@ export const VyshnaviTravels: React.FC = () => {
                     </tr>
                   ))}
                   {/* Total Summary Row */}
-                  <tr className="bg-slate-50/90 font-black text-xs border-t-2 border-slate-200">
-                    <td colSpan={2} className="py-3 px-3 text-right uppercase tracking-wider text-slate-700">
+                  <tr className="bg-slate-100 font-black text-xs border-t-2 border-blue-900/30">
+                    <td colSpan={2} className="py-3 px-3 text-right uppercase tracking-wider text-slate-800 border-r border-slate-200">
                       Total:
                     </td>
                     <td className="py-3 px-3 text-right text-[#142B4A] text-sm font-black">
@@ -3364,90 +3431,170 @@ export const VyshnaviTravels: React.FC = () => {
                   </div>
 
                   {/* 2. Client & Statement Metadata */}
-                  <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
-                    {/* Bill To */}
-                    <div className="bg-slate-50/80 p-3 rounded-lg border border-slate-200">
-                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                        Billed To (Client / Operator)
-                      </span>
-                      <h3 className="text-sm font-black text-slate-900 mt-1">{printingRecord.bill_to_name}</h3>
-                      {printingRecord.bill_to_address && (
-                        <p className="text-slate-600 text-[11px] mt-0.5">{printingRecord.bill_to_address}</p>
-                      )}
-                      {printingRecord.bill_to_phone && (
-                        <p className="text-slate-600 text-[11px] mt-0.5">
-                          <span className="font-semibold text-slate-500">Contact: </span>
-                          {printingRecord.bill_to_phone}
-                        </p>
-                      )}
-                      {printingRecord.bill_to_gst && (
-                        <p className="text-slate-600 text-[11px] mt-0.5">
-                          <span className="font-semibold text-slate-500">GSTIN: </span>
-                          <span className="font-mono font-bold uppercase">{printingRecord.bill_to_gst}</span>
-                        </p>
-                      )}
-                      {printingRecord.bill_to_pan && (
-                        <p className="text-slate-600 text-[11px] mt-0.5">
-                          <span className="font-semibold text-slate-500">PAN: </span>
-                          <span className="font-mono font-bold uppercase">{printingRecord.bill_to_pan}</span>
-                        </p>
-                      )}
-                    </div>
+                  {(() => {
+                    const rawName = (printingRecord.bill_to_name || '').trim().toLowerCase();
+                    const matchedOp = DEFAULT_PRESET_OPERATORS.find(
+                      (o) => o.name.toLowerCase() === rawName || rawName.includes(o.name.toLowerCase()) || o.name.toLowerCase().includes(rawName)
+                    );
+                    const clientAddress = printingRecord.bill_to_address || matchedOp?.address || '';
+                    const clientPhone = printingRecord.bill_to_phone || matchedOp?.phone || '';
+                    const clientGst = printingRecord.bill_to_gst || (matchedOp?.gstOrPan && matchedOp.gstOrPan.length === 15 ? matchedOp.gstOrPan : '');
+                    const clientPan = printingRecord.bill_to_pan || (matchedOp?.gstOrPan && matchedOp.gstOrPan.length === 10 ? matchedOp.gstOrPan : '');
 
-                    {/* Statement Details */}
-                    <div className="bg-slate-50/80 p-3 rounded-lg border border-slate-200 space-y-1">
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-500 font-semibold">Statement / Invoice No:</span>
-                        <strong className="font-black text-[#142B4A]">{printingRecord.record_number}</strong>
-                      </div>
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-500 font-semibold">Record Date:</span>
-                        <span className="font-medium text-slate-800">{printingRecord.record_date}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-500 font-semibold">Vehicle Number:</span>
-                        <span className="font-bold text-slate-900">{printingRecord.vehicle_number || printingRecord.period_month || '—'}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200">
-                        <span className="text-slate-500 font-semibold">Payment Status:</span>
-                        <span className="font-black uppercase tracking-wider text-blue-900">
-                          {printingRecord.payment_status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                    return (
+                      <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
+                        {/* Bill To */}
+                        <div className="bg-slate-50/80 p-3 rounded-lg border border-slate-200">
+                          <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
+                            Billed To (Client / Operator)
+                          </span>
+                          <h3 className="text-sm font-black text-slate-900 mt-1">{printingRecord.bill_to_name}</h3>
+                          {clientAddress && (
+                            <p className="text-slate-600 text-[11px] mt-0.5">{clientAddress}</p>
+                          )}
+                          {clientPhone && (
+                            <p className="text-slate-600 text-[11px] mt-0.5">
+                              <span className="font-semibold text-slate-500">Contact: </span>
+                              {clientPhone}
+                            </p>
+                          )}
+                          {clientGst && (
+                            <p className="text-slate-600 text-[11px] mt-0.5">
+                              <span className="font-semibold text-slate-500">GSTIN: </span>
+                              <span className="font-mono font-bold uppercase">{clientGst}</span>
+                            </p>
+                          )}
+                          {clientPan && (
+                            <p className="text-slate-600 text-[11px] mt-0.5">
+                              <span className="font-semibold text-slate-500">PAN: </span>
+                              <span className="font-mono font-bold uppercase">{clientPan}</span>
+                            </p>
+                          )}
+                        </div>
 
-                  {/* 3. Services & Staff Breakdown Table */}
-                  <div className="mt-4 border border-slate-300 rounded overflow-hidden">
-                    <table className="w-full text-left text-xs border-collapse">
+                        {/* Statement Details */}
+                        <div className="bg-slate-50/80 p-3 rounded-lg border border-slate-200 space-y-1">
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span className="text-slate-500 font-semibold">Statement / Invoice No:</span>
+                            <strong className="font-black text-[#142B4A]">{printingRecord.record_number}</strong>
+                          </div>
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span className="text-slate-500 font-semibold">Record Date:</span>
+                            <span className="font-medium text-slate-800">{printingRecord.record_date}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span className="text-slate-500 font-semibold">Vehicle Number:</span>
+                            <span className="font-bold text-slate-900">{printingRecord.vehicle_number || printingRecord.period_month || '—'}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200">
+                            <span className="text-slate-500 font-semibold">Payment Status:</span>
+                            <span className="font-black uppercase tracking-wider text-blue-900">
+                              {printingRecord.payment_status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* 3. Services & Staff Breakdown Table - Box Type matching Image 2 */}
+                  <div className="mt-4 border-2 border-[#1e3a8a] rounded-sm overflow-hidden shadow-xs">
+                    <table className="w-full text-left text-xs border-collapse vyshnavi-box-table" style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #1e3a8a' }}>
                       <thead>
-                        <tr className="bg-slate-100 border-b border-slate-300 text-[10px] font-black text-slate-700 uppercase tracking-wider">
-                          <th className="py-2.5 px-3 w-12 text-center border-r border-slate-300">Sr.No</th>
-                          <th className="py-2.5 px-3 border-r border-slate-300">Description of Services</th>
-                          <th className="py-2.5 px-3 w-40 text-right">Amount (₹)</th>
+                        <tr style={{ backgroundColor: '#b9d8ff', color: '#0f172a', borderBottom: '2px solid #1e3a8a' }}>
+                          <th style={{ width: '60px', padding: '10px 8px', textAlign: 'center', fontWeight: '900', fontSize: '12px', borderRight: '1.5px solid #1e3a8a' }}>
+                            S. No.
+                          </th>
+                          <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: '900', fontSize: '13px', borderRight: '1.5px solid #1e3a8a' }}>
+                            Particulars
+                          </th>
+                          <th style={{ width: '160px', padding: '10px 14px', textAlign: 'center', fontWeight: '900', fontSize: '12px' }}>
+                            Amount (₹)
+                          </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {printingRecord.items?.map((item, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/40">
-                            <td className="py-2.5 px-3 text-center font-bold text-slate-500 border-r border-slate-200">
-                              {idx + 1}
-                            </td>
-                            <td className="py-2.5 px-3 font-medium text-slate-900 border-r border-slate-200">
-                              {item.description}
-                            </td>
-                            <td className="py-2.5 px-3 text-right font-black text-slate-900">
-                              ₹{(Number(item.salary_paid) || 0).toLocaleString('en-IN')}
-                            </td>
-                          </tr>
-                        ))}
+                      <tbody>
+                        {printingRecord.items?.map((item, idx) => {
+                          const isCream = idx % 2 === 1;
+                          return (
+                            <tr
+                              key={idx}
+                              className={isCream ? 'vyshnavi-row-cream' : 'vyshnavi-row-white'}
+                              style={{
+                                backgroundColor: isCream ? '#fef9c3' : '#ffffff',
+                                borderBottom: '1.5px solid #1e3a8a'
+                              }}
+                            >
+                              <td
+                                style={{
+                                  width: '60px',
+                                  padding: '12px 8px',
+                                  textAlign: 'center',
+                                  verticalAlign: 'middle',
+                                  fontWeight: '900',
+                                  fontSize: '13px',
+                                  color: '#0f172a',
+                                  borderRight: '1.5px solid #1e3a8a'
+                                }}
+                              >
+                                {idx + 1}
+                              </td>
+                              <td
+                                style={{
+                                  padding: '12px 14px',
+                                  textAlign: 'left',
+                                  verticalAlign: 'middle',
+                                  borderRight: '1.5px solid #1e3a8a',
+                                  whiteSpace: 'pre-line',
+                                  lineHeight: '1.5'
+                                }}
+                              >
+                                <div style={{ fontWeight: '800', fontSize: '12px', color: '#0a192f' }}>
+                                  {item.description}
+                                </div>
+                              </td>
+                              <td
+                                style={{
+                                  width: '160px',
+                                  padding: '12px 14px',
+                                  textAlign: 'right',
+                                  verticalAlign: 'middle',
+                                  fontWeight: '900',
+                                  fontSize: '13px',
+                                  color: '#0f172a'
+                                }}
+                              >
+                                ₹{(Number(item.salary_paid) || 0).toLocaleString('en-IN')}
+                              </td>
+                            </tr>
+                          );
+                        })}
 
                         {/* Grand Total Row */}
-                        <tr className="bg-slate-100/90 font-black text-xs border-t-2 border-slate-400">
-                          <td colSpan={2} className="py-2.5 px-3 text-right uppercase tracking-wider text-slate-800 border-r border-slate-300">
+                        <tr style={{ backgroundColor: '#f1f5f9', fontWeight: '900', fontSize: '12px', borderTop: '2px solid #1e3a8a' }}>
+                          <td
+                            colSpan={2}
+                            style={{
+                              padding: '10px 14px',
+                              textAlign: 'right',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              color: '#0f172a',
+                              borderRight: '1.5px solid #1e3a8a',
+                              fontWeight: '900'
+                            }}
+                          >
                             Grand Total:
                           </td>
-                          <td className="py-2.5 px-3 text-right text-slate-950 font-black text-sm">
+                          <td
+                            style={{
+                              padding: '10px 14px',
+                              textAlign: 'right',
+                              color: '#0a192f',
+                              fontWeight: '900',
+                              fontSize: '14px'
+                            }}
+                          >
                             ₹{(printingRecord.total_amount || 0).toLocaleString('en-IN')}
                           </td>
                         </tr>

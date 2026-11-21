@@ -24,7 +24,7 @@ export interface RegisteredOperator {
 }
 
 // Default established operators in the system
-const DEFAULT_PRESET_OPERATORS: RegisteredOperator[] = [
+export const DEFAULT_PRESET_OPERATORS: RegisteredOperator[] = [
   {
     id: 'op-1',
     name: 'Sri Krishna Travels',
