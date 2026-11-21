@@ -163,8 +163,8 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
                     setIsOpen(false);
                   }}
                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer ${value === cat
-                      ? 'bg-blue-50 text-blue-700 font-bold'
-                      : 'text-slate-700 hover:bg-slate-100'
+                    ? 'bg-blue-50 text-blue-700 font-bold'
+                    : 'text-slate-700 hover:bg-slate-100'
                     }`}
                 >
                   <span>{cat}</span>
@@ -265,42 +265,28 @@ export const RecordManagement: React.FC = () => {
   const [monthFilter, setMonthFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
 
-  // Modals & Refs
-  const formRef = useRef<HTMLDivElement>(null);
-  const printSheetRef = useRef<HTMLDivElement>(null);
+  // Modals
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ServiceRecord | null>(null);
   const [printingRecord, setPrintingRecord] = useState<ServiceRecord | null>(null);
+  const printSheetRef = useRef<HTMLDivElement>(null);
 
   const getInitialFormData = (existingRecordsCount: number = 0): Partial<ServiceRecord> => ({
     record_number: `REC-${new Date().getFullYear()}-${String(existingRecordsCount + 1).padStart(3, '0')}`,
     record_date: new Date().toISOString().split('T')[0],
-    period_month: "Aug'26",
-    bill_to_name: 'Charvik Staffing Consultancy',
-    bill_to_address: 'Opp. BSNL Office, Beside Sri Krishna Travels, Gooty Road, Anantapuramu - 515001',
-    bill_to_phone: '9505151527',
-    bill_to_pan: 'AABCY5013H',
-    operator_name: 'Charvik Staffing',
+    period_month: '',
+    bill_to_name: '',
+    bill_to_address: '',
+    bill_to_phone: '',
+    bill_to_pan: '',
+    operator_name: '',
     items: [
       {
-        id: 'item-1',
-        description: "Driver's Salary for Aug'26",
+        id: String(Date.now()),
+        description: '',
         category: 'Driver',
-        staff_count: 69,
-        salary_paid: 1858400
-      },
-      {
-        id: 'item-2',
-        description: "Helper's Salary for Aug'26",
-        category: 'Helper',
-        staff_count: 6,
-        salary_paid: 49300
-      },
-      {
-        id: 'item-3',
-        description: "Captain's Salary for Aug'26",
-        category: 'Captain',
-        staff_count: 40,
-        salary_paid: 419200
+        staff_count: 0,
+        salary_paid: 0
       }
     ],
     received_amount: 0,
@@ -313,9 +299,29 @@ export const RecordManagement: React.FC = () => {
   // Form State
   const [formData, setFormData] = useState<Partial<ServiceRecord>>(() => getInitialFormData(0));
 
-  const handleResetForm = () => {
+  const handleOpenAdd = () => {
     setEditingRecord(null);
     setFormData(getInitialFormData(records.length));
+    setIsModalOpen(true);
+  };
+
+  const handleOpenCreate = handleOpenAdd;
+
+  const handleOpenEdit = (rec: ServiceRecord) => {
+    setEditingRecord(rec);
+    setFormData({
+      ...rec,
+      items: rec.items && rec.items.length > 0 ? rec.items : [
+        {
+          id: String(Date.now()),
+          description: '',
+          category: 'Driver',
+          staff_count: 0,
+          salary_paid: 0
+        }
+      ]
+    });
+    setIsModalOpen(true);
   };
 
   // Load records
@@ -389,30 +395,6 @@ export const RecordManagement: React.FC = () => {
 
     return { totalCount, totalStaff, totalBilled, totalReceived, totalBalance };
   }, [records]);
-
-  // Scroll to inline form & create new
-  const handleOpenCreate = () => {
-    handleResetForm();
-    formRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  // Populate inline form to edit
-  const handleOpenEdit = (rec: ServiceRecord) => {
-    setEditingRecord(rec);
-    setFormData({
-      ...rec,
-      items: rec.items && rec.items.length > 0 ? rec.items : [
-        {
-          id: String(Date.now()),
-          description: '',
-          category: 'Driver',
-          staff_count: 0,
-          salary_paid: 0
-        }
-      ]
-    });
-    formRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   // Line item helpers
   const handleAddItemRow = () => {
@@ -537,7 +519,7 @@ export const RecordManagement: React.FC = () => {
         setRecords((prev) => [recordPayload, ...prev]);
         success(`Record ${recordPayload.record_number} created successfully!`);
       }
-      handleResetForm();
+      setIsModalOpen(false);
     } catch (err: any) {
       error(err.message || 'Failed to save record.');
     }
@@ -861,160 +843,6 @@ export const RecordManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* ── INLINE DATA FILLING SECTION (NORMAL INLINE FORM LIKE OTHER TABS, NO POPUP BOX) ── */}
-      <div ref={formRef} className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 sm:p-6 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-base shadow-xs">
-              +
-            </div>
-            <div>
-              <h2 className="text-base font-black text-[#142B4A] tracking-tight">
-                {editingRecord ? `Edit Record: ${editingRecord.record_number}` : 'Add Service & Salary Record'}
-              </h2>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Fill in Description of Services, Category (with Select, Search & Add More), Staff Count, and Salary Paid.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {editingRecord && (
-              <button
-                type="button"
-                onClick={handleResetForm}
-                className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center gap-1 cursor-pointer transition-all"
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>Cancel Edit</span>
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleAddItemRow}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
-            >
-              <Plus className="w-3.5 h-3.5 text-slate-950" />
-              <span>Add Service Row</span>
-            </button>
-          </div>
-        </div>
-
-        <form onSubmit={handleSaveRecord} className="space-y-4 text-xs text-slate-700">
-          {/* Exact Golden-Yellow Table from Image 2 */}
-          <div className="overflow-x-auto border-2 border-amber-300 rounded-2xl bg-white shadow-sm">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-[#FDE047] text-slate-950 font-black text-xs uppercase border-b-2 border-amber-300">
-                <tr>
-                  <th className="py-3 px-3 text-center w-14 text-slate-950">Sr. No</th>
-                  <th className="py-3 px-4 min-w-[240px] text-slate-950">Description of Services</th>
-                  <th className="py-3 px-4 min-w-[180px] text-slate-950">Category</th>
-                  <th className="py-3 px-4 min-w-[170px] text-center text-slate-950">
-                    No. of Driver/Helper/Captain
-                  </th>
-                  <th className="py-3 px-4 min-w-[160px] text-right text-slate-950">
-                    Salary Paid (₹)
-                  </th>
-                  <th className="py-3 px-2 text-center w-10"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-amber-100/70 bg-white">
-                {(formData.items || []).map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-amber-50/40 transition-colors">
-                    <td className="py-2.5 px-3 text-center font-black text-slate-900 text-sm">
-                      {idx + 1}
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Driver's Salary for Aug'26"
-                        value={item.description}
-                        onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
-                        className="w-full p-2 rounded-xl border border-slate-200 bg-white font-semibold text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400"
-                      />
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <CategorySelector
-                        value={item.category}
-                        onChange={(newCat) => handleUpdateItem(item.id, 'category', newCat)}
-                        availableCategories={availableCategories}
-                        onAddCategory={handleAddCategory}
-                      />
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <input
-                        type="number"
-                        min="0"
-                        required
-                        placeholder="0"
-                        value={item.staff_count ?? ''}
-                        onChange={(e) => handleUpdateItem(item.id, 'staff_count', Number(e.target.value))}
-                        className="w-full p-2 text-center rounded-xl border border-slate-200 bg-white font-black text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400 text-sm"
-                      />
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <input
-                        type="number"
-                        min="0"
-                        required
-                        placeholder="₹ 0"
-                        value={item.salary_paid ?? ''}
-                        onChange={(e) => handleUpdateItem(item.id, 'salary_paid', Number(e.target.value))}
-                        className="w-full p-2 text-right rounded-xl border border-slate-200 bg-white font-black text-slate-900 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400 text-sm"
-                      />
-                    </td>
-                    <td className="py-2.5 px-2 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItemRow(item.id)}
-                        className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
-                        title="Remove Row"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              {/* Total Row matching Image 2 */}
-              <tfoot className="bg-[#FEF08A] font-black border-t-2 border-amber-300 text-slate-950">
-                <tr>
-                  <td colSpan={3} className="py-3 px-4 text-center font-black text-sm uppercase tracking-wider text-slate-950">
-                    Total
-                  </td>
-                  <td className="py-3 px-4 text-center text-sm font-black text-slate-950">
-                    {formCalculations.staffCount}
-                  </td>
-                  <td className="py-3 px-4 text-right text-base font-black text-slate-950">
-                    ₹ {formCalculations.totalAmt.toLocaleString('en-IN')}
-                  </td>
-                  <td></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          {/* Form Actions */}
-          <div className="flex items-center justify-end gap-2.5 pt-2">
-            <button
-              type="button"
-              onClick={handleResetForm}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              Clear
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2.5 rounded-xl text-xs font-black bg-[#142B4A] hover:bg-[#1E3A5F] text-white shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <Save className="w-4 h-4 text-amber-300" />
-              <span>{editingRecord ? 'Update Record' : 'Save Record'}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-
       {/* Filter Toolbar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center gap-3">
         <div className="relative min-w-[200px] sm:min-w-[240px]">
@@ -1243,6 +1071,232 @@ export const RecordManagement: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* ── MODAL: ADD / EDIT BILLING & SERVICE RECORD (IDENTICAL TO SERVICE PARTNERS) ── */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingRecord ? `Edit Billing Record: ${editingRecord.record_number}` : 'Add New Billing & Service Record'}
+        subtitle="Maintain official billing details, client name, service description, category, staff count, and salary paid."
+        size="lg"
+      >
+        <form onSubmit={handleSaveRecord} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Record Number */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Record / Invoice No <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.record_number || ''}
+                onChange={(e) => setFormData({ ...formData, record_number: e.target.value })}
+                placeholder="e.g. REC-2026-001"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              />
+            </div>
+
+            {/* Record Date */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Record Date <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="date"
+                required
+                value={formData.record_date || ''}
+                onChange={(e) => setFormData({ ...formData, record_date: e.target.value })}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              />
+            </div>
+
+            {/* Client / Company Name */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Company / Client Name <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.bill_to_name || ''}
+                onChange={(e) => setFormData({ ...formData, bill_to_name: e.target.value })}
+                placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              />
+            </div>
+
+            {/* Billing Period / Month */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Billing Period / Month
+              </label>
+              <input
+                type="text"
+                value={formData.period_month || ''}
+                onChange={(e) => setFormData({ ...formData, period_month: e.target.value })}
+                placeholder="e.g. Aug'26 or Nov 2026"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              />
+            </div>
+
+            {/* Contact Phone */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Contact Phone / Mobile
+              </label>
+              <input
+                type="text"
+                value={formData.bill_to_phone || ''}
+                onChange={(e) => setFormData({ ...formData, bill_to_phone: e.target.value })}
+                placeholder="e.g. +91 95051 51527"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              />
+            </div>
+
+            {/* Payment Status */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Payment Status
+              </label>
+              <select
+                value={formData.payment_status || 'Pending'}
+                onChange={(e) => setFormData({ ...formData, payment_status: e.target.value as any })}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                <option value="Pending">Pending</option>
+                <option value="Partial">Partial</option>
+                <option value="Paid">Paid</option>
+              </select>
+            </div>
+          </div>
+
+          {/* ── SERVICES & STAFF SALARY DETAILS (Clean grid inputs, NOT box format) ── */}
+          <div className="pt-2 border-t border-slate-100 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-black text-slate-800 uppercase tracking-wide">
+                Services & Staff Breakdown
+              </label>
+              <button
+                type="button"
+                onClick={handleAddItemRow}
+                className="px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add More Service</span>
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {(formData.items || []).map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200"
+                >
+                  {/* Description of Services */}
+                  <div className="sm:col-span-5">
+                    <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                      Description of Services <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Driver's Salary for Aug'26"
+                      value={item.description}
+                      onChange={(e) => handleUpdateItem(item.id, 'description', e.target.value)}
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  {/* Category with select, search, add more */}
+                  <div className="sm:col-span-3">
+                    <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                      Category <span className="text-rose-500">*</span>
+                    </label>
+                    <CategorySelector
+                      value={item.category}
+                      onChange={(newCat) => handleUpdateItem(item.id, 'category', newCat)}
+                      availableCategories={availableCategories}
+                      onAddCategory={handleAddCategory}
+                    />
+                  </div>
+
+                  {/* Staff count */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-[10px] font-bold text-slate-600 mb-0.5 text-center">
+                      Staff Count <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      placeholder="0"
+                      value={item.staff_count !== undefined && item.staff_count !== null && item.staff_count > 0 ? item.staff_count : ''}
+                      onChange={(e) => handleUpdateItem(item.id, 'staff_count', Number(e.target.value))}
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 text-center outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  {/* Salary Paid */}
+                  <div className="sm:col-span-2 flex items-center gap-1">
+                    <div className="flex-1">
+                      <label className="block text-[10px] font-bold text-slate-600 mb-0.5 text-right">
+                        Salary Paid (₹) <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        required
+                        placeholder="₹ 0"
+                        value={item.salary_paid !== undefined && item.salary_paid !== null && item.salary_paid > 0 ? item.salary_paid : ''}
+                        onChange={(e) => handleUpdateItem(item.id, 'salary_paid', Number(e.target.value))}
+                        className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 text-right outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    {(formData.items || []).length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItemRow(item.id)}
+                        className="mt-4 p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded cursor-pointer shrink-0"
+                        title="Remove row"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Total Summary */}
+            <div className="flex items-center justify-between px-3.5 py-2 bg-blue-50/80 border border-blue-200/90 rounded-xl text-xs font-bold text-blue-950">
+              <span>Total Statement Summary:</span>
+              <div className="flex items-center gap-4">
+                <span>Total Staff: <strong className="text-blue-700">{formCalculations.staffCount}</strong></span>
+                <span>Total Salary: <strong className="text-slate-900">₹ {formCalculations.totalAmt.toLocaleString('en-IN')}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Actions */}
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 rounded-xl text-xs font-black bg-[#0284c7] hover:bg-[#0369a1] text-white shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>{editingRecord ? 'Update Record' : 'Save Record'}</span>
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* =========================================================================
           PRINT RECORD MODAL (EXACT MATCH FOR IMAGES 1, 2, 3, AND 4)
