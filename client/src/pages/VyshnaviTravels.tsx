@@ -223,10 +223,17 @@ export const VyshnaviTravels: React.FC = () => {
     items: [
       {
         sr_no: 1,
-        description: '',
+        description: `LB Nagar to Gachibowli – Dropping Service\nGachibowli to LB Nagar – Pickup Service\nECL to LB Nagar – Pickup Service\n(From October 10th to November 10th)`,
         category: 'Service',
         staff_count: 1,
-        salary_paid: 0
+        salary_paid: 60000
+      },
+      {
+        sr_no: 2,
+        description: `Driver Salary – Two Drivers\n(From October 10th to November 10th)`,
+        category: 'Driver',
+        staff_count: 2,
+        salary_paid: 40000
       }
     ],
     received_amount: 0,
@@ -498,10 +505,17 @@ export const VyshnaviTravels: React.FC = () => {
       items: [
         {
           sr_no: 1,
-          description: '',
+          description: `LB Nagar to Gachibowli – Dropping Service\nGachibowli to LB Nagar – Pickup Service\nECL to LB Nagar – Pickup Service\n(From October 10th to November 10th)`,
           category: 'Service',
           staff_count: 1,
-          salary_paid: 0
+          salary_paid: 60000
+        },
+        {
+          sr_no: 2,
+          description: `Driver Salary – Two Drivers\n(From October 10th to November 10th)`,
+          category: 'Driver',
+          staff_count: 2,
+          salary_paid: 40000
         }
       ],
       received_amount: 0,
@@ -2576,6 +2590,7 @@ export const VyshnaviTravels: React.FC = () => {
                           rows={3}
                           value={item.description}
                           onChange={(e) => handleUpdateServiceRow(idx, 'description', e.target.value)}
+                          placeholder="Enter particulars (e.g. Route dropping/pickup services, driver salary, dates/period...)"
                           className="w-full px-3 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed resize-y"
                         />
                       </td>
