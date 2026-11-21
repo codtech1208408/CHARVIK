@@ -168,7 +168,7 @@ export const OperatorSearchSelect: React.FC<OperatorSearchSelectProps> = ({
             });
           }
         }
-      } catch {}
+      } catch { }
 
       // 4. Try loading from API
       try {
@@ -191,7 +191,7 @@ export const OperatorSearchSelect: React.FC<OperatorSearchSelectProps> = ({
             }
           });
         }
-      } catch {}
+      } catch { }
 
       if (isMounted) {
         setRegisteredOperators(Array.from(map.values()));
@@ -251,21 +251,11 @@ export const OperatorSearchSelect: React.FC<OperatorSearchSelectProps> = ({
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
-      {/* Label and Live Header */}
-      <div className="flex items-center justify-between mb-1">
+      {/* Label */}
+      <div className="mb-1">
         <label className="block text-[11px] font-bold text-slate-700">
           {label} {required && <span className="text-rose-500">*</span>}
         </label>
-        <button
-          type="button"
-          onClick={handleToggle}
-          className="text-[10px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer transition-colors"
-          title="Click to view all registered operators"
-        >
-          <Building2 className="w-3 h-3 text-blue-600" />
-          <span>Select Registered Operator ({registeredOperators.length})</span>
-          <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
       </div>
 
       {/* Main Input with Search / Dropdown controls */}
@@ -385,11 +375,10 @@ export const OperatorSearchSelect: React.FC<OperatorSearchSelectProps> = ({
                     key={op.id}
                     type="button"
                     onClick={() => handleSelect(op)}
-                    className={`w-full p-2.5 rounded-xl text-left transition-all cursor-pointer flex items-start justify-between gap-3 ${
-                      isSelected
+                    className={`w-full p-2.5 rounded-xl text-left transition-all cursor-pointer flex items-start justify-between gap-3 ${isSelected
                         ? 'bg-blue-50 border border-blue-200 text-blue-950 font-bold'
                         : 'hover:bg-slate-50 text-slate-800'
-                    }`}
+                      }`}
                   >
                     <div className="flex-1 min-w-0 space-y-1">
                       {/* Company Name & Badge */}
