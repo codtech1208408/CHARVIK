@@ -369,20 +369,20 @@ export const BusRating: React.FC = () => {
         prev.map((r) =>
           r.id === editingId
             ? {
-                ...r,
-                operator: formOperator,
-                travelDate: formDate,
-                tripBusNo: formTripBusNo.trim(),
-                pnrNumber: formPnr.trim() || `PNR${Math.floor(100000 + Math.random() * 900000)}`,
-                origin: formOrigin.trim() || 'Origin City',
-                destination: formDestination.trim() || 'Destination City',
-                customerName: formCustomerName.trim(),
-                phoneNumber: formPhone.trim(),
-                calledByAgent: formAgent.trim() || 'Agent',
-                rating: formRating,
-                complaintsRemarks: formRemarks.trim(),
-                customerImages: formCustomerImages
-              }
+              ...r,
+              operator: formOperator,
+              travelDate: formDate,
+              tripBusNo: formTripBusNo.trim(),
+              pnrNumber: formPnr.trim() || `PNR${Math.floor(100000 + Math.random() * 900000)}`,
+              origin: formOrigin.trim() || 'Origin City',
+              destination: formDestination.trim() || 'Destination City',
+              customerName: formCustomerName.trim(),
+              phoneNumber: formPhone.trim(),
+              calledByAgent: formAgent.trim() || 'Agent',
+              rating: formRating,
+              complaintsRemarks: formRemarks.trim(),
+              customerImages: formCustomerImages
+            }
             : r
         )
       );
@@ -906,11 +906,10 @@ export const BusRating: React.FC = () => {
                       className="p-1 hover:scale-125 transition-transform cursor-pointer"
                     >
                       <Star
-                        className={`w-6 h-6 ${
-                          star <= formRating
+                        className={`w-6 h-6 ${star <= formRating
                             ? 'text-amber-500 fill-amber-400'
                             : 'text-slate-300 fill-transparent'
-                        }`}
+                          }`}
                       />
                     </button>
                   ))}
@@ -1162,9 +1161,8 @@ export const BusRating: React.FC = () => {
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-3.5 h-3.5 ${
-                              i < rec.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'
-                            }`}
+                            className={`w-3.5 h-3.5 ${i < rec.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'
+                              }`}
                           />
                         ))}
                       </div>

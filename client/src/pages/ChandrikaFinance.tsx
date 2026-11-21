@@ -1258,8 +1258,8 @@ export const ChandrikaFinance: React.FC = () => {
           </thead>
           <tbody>
             ${customers.map((c) => {
-              const f = computeCustomerFinancials(c, transactions);
-              return `
+      const f = computeCustomerFinancials(c, transactions);
+      return `
               <tr style="border-bottom: 1px solid #e2e8f0;">
                 <td style="padding: 6px 8px; font-family: monospace; font-weight: bold;">${c.customerCode || 'CF-' + c.id}</td>
                 <td style="padding: 6px 8px; font-weight: bold;">${c.name}</td>
@@ -1270,7 +1270,7 @@ export const ChandrikaFinance: React.FC = () => {
                 <td style="padding: 6px 8px;">${c.kycStatus || 'Verified'}</td>
               </tr>
               `;
-            }).join('')}
+    }).join('')}
           </tbody>
         </table>
 
@@ -1791,10 +1791,10 @@ export const ChandrikaFinance: React.FC = () => {
                     </td>
                     <td className="py-3 px-3 whitespace-nowrap text-right">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${t.mode === 'UPI'
-                          ? 'bg-purple-100 text-purple-700'
-                          : t.mode === 'Bank'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-emerald-100 text-emerald-700'
+                        ? 'bg-purple-100 text-purple-700'
+                        : t.mode === 'Bank'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-emerald-100 text-emerald-700'
                         }`}>
                         {t.mode}
                       </span>
@@ -1996,10 +1996,10 @@ export const ChandrikaFinance: React.FC = () => {
                     >
                       <div
                         className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${isCurrent
-                            ? 'bg-blue-600 text-white ring-4 ring-blue-100 scale-105'
-                            : isDone
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-white text-slate-400 border border-slate-300 group-hover:border-slate-400'
+                          ? 'bg-blue-600 text-white ring-4 ring-blue-100 scale-105'
+                          : isDone
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-white text-slate-400 border border-slate-300 group-hover:border-slate-400'
                           }`}
                       >
                         {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
@@ -3116,17 +3116,15 @@ export const ChandrikaFinance: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setViewAllActiveTab('balance')}
-                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-                    viewAllActiveTab === 'balance'
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${viewAllActiveTab === 'balance'
                       ? 'bg-rose-600 text-white shadow-xs'
                       : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-                  }`}
+                    }`}
                 >
                   <Percent className="w-3.5 h-3.5" />
                   <span>Balance / Outstanding</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
-                    viewAllActiveTab === 'balance' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700 font-bold'
-                  }`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${viewAllActiveTab === 'balance' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700 font-bold'
+                    }`}>
                     Auto-Accrual
                   </span>
                 </button>
@@ -3134,17 +3132,15 @@ export const ChandrikaFinance: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setViewAllActiveTab('transactions')}
-                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-                    viewAllActiveTab === 'transactions'
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${viewAllActiveTab === 'transactions'
                       ? 'bg-blue-600 text-white shadow-xs'
                       : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-                  }`}
+                    }`}
                 >
                   <ClipboardList className="w-3.5 h-3.5" />
                   <span>All Transactions History</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
-                    viewAllActiveTab === 'transactions' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700 font-bold'
-                  }`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${viewAllActiveTab === 'transactions' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700 font-bold'
+                    }`}>
                     {transactions.length}
                   </span>
                 </button>
@@ -3329,13 +3325,12 @@ export const ChandrikaFinance: React.FC = () => {
                           </td>
                           <td className="py-3 px-3 whitespace-nowrap text-right">
                             <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                t.mode === 'UPI'
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${t.mode === 'UPI'
                                   ? 'bg-purple-100 text-purple-700'
                                   : t.mode === 'Bank'
-                                  ? 'bg-blue-100 text-blue-700'
-                                  : 'bg-emerald-100 text-emerald-700'
-                              }`}
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-emerald-100 text-emerald-700'
+                                }`}
                             >
                               {t.mode}
                             </span>
@@ -3549,8 +3544,8 @@ export const ChandrikaFinance: React.FC = () => {
                           <td className="py-3 px-3.5">
                             <span
                               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold ${c.kycStatus === 'Verified'
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border border-amber-200'
                                 }`}
                             >
                               <ShieldCheck className="w-3 h-3" />

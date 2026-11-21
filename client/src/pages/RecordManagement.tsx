@@ -161,11 +161,10 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
                     onChange(cat);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer ${
-                    value === cat
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer ${value === cat
                       ? 'bg-blue-50 text-blue-700 font-bold'
                       : 'text-slate-700 hover:bg-slate-100'
-                  }`}
+                    }`}
                 >
                   <span>{cat}</span>
                   {value === cat && <Check className="w-3.5 h-3.5 text-blue-600" />}
@@ -242,7 +241,7 @@ export const RecordManagement: React.FC = () => {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch {}
+    } catch { }
     return ['Driver', 'Helper', 'Captain'];
   });
 
@@ -254,7 +253,7 @@ export const RecordManagement: React.FC = () => {
       const updated = [...prev, trimmed];
       try {
         localStorage.setItem('charvik_record_categories', JSON.stringify(updated));
-      } catch {}
+      } catch { }
       return updated;
     });
   };
