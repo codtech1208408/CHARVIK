@@ -483,12 +483,15 @@ export const RecordManagement: React.FC = () => {
     const balance = formCalculations.balance;
     const autoStatus = formCalculations.status;
 
+    const d = new Date(formData.record_date || new Date());
+    const monthYear = d.toLocaleString('en-US', { month: 'short', year: '2-digit' }).replace(' ', "'");
+
     const recordPayload: ServiceRecord = {
       id: editingRecord ? editingRecord.id : Date.now(),
-      record_number: formData.record_number?.trim() || `REC-${Date.now()}`,
+      record_number: formData.record_number?.trim() || `REC-${new Date().getFullYear()}-${String(records.length + 1).padStart(3, '0')}`,
       record_date: formData.record_date || new Date().toISOString().split('T')[0],
-      period_month: formData.period_month?.trim() || '',
-      bill_to_name: formData.bill_to_name.trim(),
+      period_month: formData.period_month?.trim() || monthYear,
+      bill_to_name: formData.bill_to_name?.trim() || 'Charvik Staffing Consultancy',
       bill_to_address: formData.bill_to_address?.trim() || '',
       bill_to_phone: formData.bill_to_phone?.trim() || '',
       bill_to_pan: formData.bill_to_pan?.trim() || '',
@@ -498,7 +501,7 @@ export const RecordManagement: React.FC = () => {
       amount_in_words: words,
       received_amount: Number(formData.received_amount || 0),
       balance_amount: balance,
-      payment_status: formData.payment_status || autoStatus,
+      payment_status: formData.payment_status || autoStatus || 'Pending',
       bank_name: formData.bank_name || DEFAULT_BANK_DETAILS.bank_name,
       bank_account_name: formData.bank_account_name || DEFAULT_BANK_DETAILS.bank_account_name,
       bank_account_no: formData.bank_account_no || DEFAULT_BANK_DETAILS.bank_account_no,
@@ -1081,94 +1084,18 @@ export const RecordManagement: React.FC = () => {
         size="lg"
       >
         <form onSubmit={handleSaveRecord} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Record Number */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Record / Invoice No <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.record_number || ''}
-                onChange={(e) => setFormData({ ...formData, record_number: e.target.value })}
-                placeholder="e.g. REC-2026-001"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-            </div>
-
-            {/* Record Date */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Record Date <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="date"
-                required
-                value={formData.record_date || ''}
-                onChange={(e) => setFormData({ ...formData, record_date: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-            </div>
-
-            {/* Client / Company Name */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Company / Client Name <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.bill_to_name || ''}
-                onChange={(e) => setFormData({ ...formData, bill_to_name: e.target.value })}
-                placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-            </div>
-
-            {/* Billing Period / Month */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Billing Period / Month
-              </label>
-              <input
-                type="text"
-                value={formData.period_month || ''}
-                onChange={(e) => setFormData({ ...formData, period_month: e.target.value })}
-                placeholder="e.g. Aug'26 or Nov 2026"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-            </div>
-
-            {/* Contact Phone */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Contact Phone / Mobile
-              </label>
-              <input
-                type="text"
-                value={formData.bill_to_phone || ''}
-                onChange={(e) => setFormData({ ...formData, bill_to_phone: e.target.value })}
-                placeholder="e.g. +91 95051 51527"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              />
-            </div>
-
-            {/* Payment Status */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Payment Status
-              </label>
-              <select
-                value={formData.payment_status || 'Pending'}
-                onChange={(e) => setFormData({ ...formData, payment_status: e.target.value as any })}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-              >
-                <option value="Pending">Pending</option>
-                <option value="Partial">Partial</option>
-                <option value="Paid">Paid</option>
-              </select>
-            </div>
+          {/* Only Date Field as requested */}
+          <div className="max-w-xs">
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Date <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="date"
+              required
+              value={formData.record_date || ''}
+              onChange={(e) => setFormData({ ...formData, record_date: e.target.value })}
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+            />
           </div>
 
           {/* ── SERVICES & STAFF SALARY DETAILS (Clean grid inputs, NOT box format) ── */}
