@@ -20,7 +20,10 @@ import {
   FileSpreadsheet,
   Phone,
   Mail,
-  MapPin
+  MapPin,
+  Check,
+  ChevronDown,
+  Filter
 } from 'lucide-react';
 import { Modal } from '../components/common/Modal';
 import { useToast } from '../components/common/Toast';
@@ -76,10 +79,185 @@ const DEFAULT_BANK_DETAILS = {
 
 export const RECORD_CATEGORIES = ['Driver', 'Helper', 'Captain'];
 
+interface CategorySelectorProps {
+  value: string;
+  onChange: (category: string) => void;
+  availableCategories: string[];
+  onAddCategory: (newCategory: string) => void;
+}
+
+const CategorySelector: React.FC<CategorySelectorProps> = ({
+  value,
+  onChange,
+  availableCategories,
+  onAddCategory
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [newCatInput, setNewCatInput] = useState('');
+  const [showAddInput, setShowAddInput] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        setShowAddInput(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredCategories = availableCategories.filter((cat) =>
+    cat.toLowerCase().includes(searchTerm.toLowerCase().trim())
+  );
+
+  const handleAdd = () => {
+    const trimmed = newCatInput.trim();
+    if (trimmed) {
+      onAddCategory(trimmed);
+      onChange(trimmed);
+      setNewCatInput('');
+      setShowAddInput(false);
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-1.5 px-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 font-bold text-xs text-slate-800 outline-none focus:border-blue-500 shadow-xs text-left"
+      >
+        <span className="truncate">{value || 'Select Category'}</span>
+        <ChevronDown className="w-3.5 h-3.5 text-slate-500 ml-1 shrink-0" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full mt-1 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 space-y-2">
+          {/* Search Category */}
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              autoFocus
+              placeholder="Search category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-8 pr-2 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          {/* Select Category List */}
+          <div className="max-h-36 overflow-y-auto space-y-0.5 divide-y divide-slate-50">
+            {filteredCategories.length > 0 ? (
+              filteredCategories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    onChange(cat);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer ${
+                    value === cat
+                      ? 'bg-blue-50 text-blue-700 font-bold'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <span>{cat}</span>
+                  {value === cat && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                </button>
+              ))
+            ) : (
+              <div className="text-center py-2 text-[11px] text-slate-400 italic">
+                No matching category
+              </div>
+            )}
+          </div>
+
+          {/* Add More Option */}
+          <div className="pt-1.5 border-t border-slate-100">
+            {!showAddInput ? (
+              <button
+                type="button"
+                onClick={() => setShowAddInput(true)}
+                className="w-full flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Add More Category</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  placeholder="New category..."
+                  value={newCatInput}
+                  onChange={(e) => setNewCatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAdd();
+                    }
+                  }}
+                  className="w-full p-1 text-xs border border-blue-400 rounded-md outline-none"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleAdd}
+                  disabled={!newCatInput.trim()}
+                  className="px-2 py-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold rounded-md cursor-pointer"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddInput(false)}
+                  className="p-1 text-slate-400 hover:text-slate-600 text-xs"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const RecordManagement: React.FC = () => {
   const { success, error } = useToast();
   const [records, setRecords] = useState<ServiceRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Dynamic Categories (Select, Search, Add More)
+  const [availableCategories, setAvailableCategories] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('charvik_record_categories');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return ['Driver', 'Helper', 'Captain'];
+  });
+
+  const handleAddCategory = (newCat: string) => {
+    const trimmed = newCat.trim();
+    if (!trimmed) return;
+    setAvailableCategories((prev) => {
+      if (prev.some((c) => c.toLowerCase() === trimmed.toLowerCase())) return prev;
+      const updated = [...prev, trimmed];
+      try {
+        localStorage.setItem('charvik_record_categories', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
 
   // Filters
   const [search, setSearch] = useState('');
@@ -187,24 +365,37 @@ export const RecordManagement: React.FC = () => {
   // Open Create Modal
   const handleOpenCreate = () => {
     setEditingRecord(null);
-    const newId = Date.now();
     const nextRecNo = `REC-${new Date().getFullYear()}-${String(records.length + 1).padStart(3, '0')}`;
     setFormData({
       record_number: nextRecNo,
       record_date: new Date().toISOString().split('T')[0],
-      period_month: '',
-      bill_to_name: '',
-      bill_to_address: '',
-      bill_to_phone: '',
-      bill_to_pan: '',
-      operator_name: '',
+      period_month: "Aug'26",
+      bill_to_name: 'Yolobus Private Limited / Sri Krishna Travels',
+      bill_to_address: 'Unit 330, JMD Megapolis, Sohna Road, Gurugram',
+      bill_to_phone: '9505151527',
+      bill_to_pan: 'AABCY5013H',
+      operator_name: 'Ravi Kumar / Sri Krishna Travels Operator',
       items: [
         {
           id: String(Date.now()),
-          description: '',
+          description: "Driver's Salary for Aug'26",
           category: 'Driver',
-          staff_count: 0,
-          salary_paid: 0
+          staff_count: 69,
+          salary_paid: 1858400
+        },
+        {
+          id: String(Date.now() + 1),
+          description: "Helper's Salary for Aug'26",
+          category: 'Helper',
+          staff_count: 6,
+          salary_paid: 49300
+        },
+        {
+          id: String(Date.now() + 2),
+          description: "Captain's Salary for Aug'26",
+          category: 'Captain',
+          staff_count: 40,
+          salary_paid: 419200
         }
       ],
       received_amount: 0,
@@ -748,7 +939,7 @@ export const RecordManagement: React.FC = () => {
           className="text-sm font-semibold py-2.5 px-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-700 outline-none cursor-pointer"
         >
           <option value="All">All Staff Categories</option>
-          {RECORD_CATEGORIES.map((c) => (
+          {availableCategories.map((c) => (
             <option key={c} value={c}>
               {c}
             </option>
@@ -1069,7 +1260,7 @@ export const RecordManagement: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 font-bold text-slate-900 uppercase text-[11px]">
                   <Users className="w-4 h-4 text-blue-600" />
-                  <span>3. Services & Staff Breakdown (Image 4 Columns)</span>
+                  <span>3. Services & Staff Breakdown</span>
                 </div>
 
                 <button
@@ -1086,9 +1277,11 @@ export const RecordManagement: React.FC = () => {
                 <table className="w-full text-left text-sm whitespace-nowrap">
                   <thead className="bg-slate-100 text-slate-900 font-bold uppercase text-[10px] border-b border-slate-200">
                     <tr>
-                      <th className="py-2.5 px-3 text-center w-12 text-slate-900">Sr.No</th>
+                      <th className="py-2.5 px-3 text-center w-12 text-slate-900">Sr. No</th>
                       <th className="py-2.5 px-3 min-w-[200px] text-slate-900">Description of Services *</th>
-                      <th className="py-2.5 px-3 min-w-[140px] text-right text-slate-900">Amount (₹) *</th>
+                      <th className="py-2.5 px-3 min-w-[170px] text-slate-900">Category *</th>
+                      <th className="py-2.5 px-3 min-w-[150px] text-center text-slate-900">No. of Driver/Helper/Captain *</th>
+                      <th className="py-2.5 px-3 min-w-[140px] text-right text-slate-900">Salary Paid (₹) *</th>
                       <th className="py-2.5 px-2 text-center w-10"></th>
                     </tr>
                   </thead>
@@ -1107,12 +1300,31 @@ export const RecordManagement: React.FC = () => {
                           />
                         </td>
                         <td className="py-2 px-3">
+                          <CategorySelector
+                            value={item.category}
+                            onChange={(newCat) => handleUpdateItem(item.id, 'category', newCat)}
+                            availableCategories={availableCategories}
+                            onAddCategory={handleAddCategory}
+                          />
+                        </td>
+                        <td className="py-2 px-3">
+                          <input
+                            type="number"
+                            min="0"
+                            required
+                            placeholder="0"
+                            value={item.staff_count ?? ''}
+                            onChange={(e) => handleUpdateItem(item.id, 'staff_count', Number(e.target.value))}
+                            className="w-full p-1.5 text-center rounded-lg border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:border-blue-500"
+                          />
+                        </td>
+                        <td className="py-2 px-3">
                           <input
                             type="number"
                             min="0"
                             required
                             placeholder="₹ 0"
-                            value={item.salary_paid || ''}
+                            value={item.salary_paid ?? ''}
                             onChange={(e) => handleUpdateItem(item.id, 'salary_paid', Number(e.target.value))}
                             className="w-full p-1.5 text-right rounded-lg border border-slate-200 bg-white font-bold text-slate-900 outline-none focus:border-blue-500"
                           />
@@ -1133,8 +1345,11 @@ export const RecordManagement: React.FC = () => {
                   {/* Totals Row */}
                   <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-slate-900">
                     <tr>
-                      <td colSpan={2} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px] text-slate-900">
+                      <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px] text-slate-900 font-extrabold">
                         Total:
+                      </td>
+                      <td className="py-2.5 px-3 text-center text-sm font-black text-blue-700">
+                        {formCalculations.staffCount} Staff
                       </td>
                       <td className="py-2 px-3 text-right text-sm font-black text-slate-900">
                         ₹{formCalculations.totalAmt.toLocaleString('en-IN')}
@@ -1464,14 +1679,16 @@ export const RecordManagement: React.FC = () => {
                 </div>
               </div>
 
-              {/* SERVICE TABLE (EXACT MATCH FOR IMAGE 4) */}
+              {/* SERVICE TABLE (MATCHING IMAGE 2 EXACT 5 COLUMNS) */}
               <div className="border border-slate-400 rounded-lg overflow-hidden mb-5">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-[#142B4A] text-white font-bold uppercase text-[11px] tracking-wide">
                     <tr>
-                      <th className="py-2.5 px-3 text-center w-14 border-r border-slate-600">Sr.No</th>
+                      <th className="py-2.5 px-3 text-center w-14 border-r border-slate-600">Sr. No</th>
                       <th className="py-2.5 px-3 border-r border-slate-600">Description of Services</th>
-                      <th className="py-2.5 px-3 text-right">Amount (₹)</th>
+                      <th className="py-2.5 px-3 border-r border-slate-600 text-center w-28">Category</th>
+                      <th className="py-2.5 px-3 border-r border-slate-600 text-center w-36">No. of Driver/Helper/Captain</th>
+                      <th className="py-2.5 px-3 text-right w-36">Salary Paid (₹)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-300 font-medium text-slate-800">
@@ -1483,6 +1700,12 @@ export const RecordManagement: React.FC = () => {
                         <td className="py-2 px-3 border-r border-slate-300 font-semibold text-slate-900 break-words">
                           {item.description}
                         </td>
+                        <td className="py-2 px-3 border-r border-slate-300 text-center font-semibold text-slate-800">
+                          {item.category || 'Driver'}
+                        </td>
+                        <td className="py-2 px-3 border-r border-slate-300 text-center font-bold text-slate-900">
+                          {item.staff_count ?? 0}
+                        </td>
                         <td className="py-2 px-3 text-right font-bold text-slate-900">
                           ₹{Number(item.salary_paid).toLocaleString('en-IN')}
                         </td>
@@ -1491,15 +1714,18 @@ export const RecordManagement: React.FC = () => {
 
                     {/* Total Row */}
                     <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-400">
-                      <td colSpan={2} className="py-2.5 px-3 text-right uppercase tracking-wider text-xs border-r border-slate-300">
+                      <td colSpan={3} className="py-2.5 px-3 text-right uppercase tracking-wider text-xs border-r border-slate-300">
                         Total
+                      </td>
+                      <td className="py-2 px-3 text-center text-xs font-black text-blue-900 border-r border-slate-300">
+                        {printingRecord.total_staff_count || printingRecord.items.reduce((acc, i) => acc + (Number(i.staff_count) || 0), 0)} Staff
                       </td>
                       <td className="py-2 px-3 text-right text-sm text-[#142B4A]">
                         ₹{Number(printingRecord.total_amount).toLocaleString('en-IN')}
                       </td>
                     </tr>
 
-                    {/* In Words Row (Exact Match for Image 4) */}
+                    {/* In Words Row */}
                     <tr className="bg-slate-50 border-t border-slate-300">
                       <td colSpan={5} className="py-2 px-3 text-xs font-semibold italic text-slate-700">
                         <strong>In words:</strong> {printingRecord.amount_in_words || numberToWordsIndian(printingRecord.total_amount)}

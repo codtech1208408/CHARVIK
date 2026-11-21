@@ -1726,6 +1726,16 @@ export const VyshnaviTravels: React.FC = () => {
           {/* Quick Export & Printout Options */}
           <button
             type="button"
+            onClick={() => navigate('/admin/letter-pad?company=vyshnavi')}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 text-xs font-black shadow-md shadow-amber-900/15 cursor-pointer transition-all"
+            title="Open Official Letter Pad for Vyshnavi Travels"
+          >
+            <FileText className="w-4 h-4 text-slate-950" />
+            <span>Letter Pad</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleQuickExportExcel}
             className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-900/15 cursor-pointer transition-all"
             title={`Export ${activeTab === 'records' ? 'Billing & Service Records' : 'Income & Expense Ledger'} to Excel`}

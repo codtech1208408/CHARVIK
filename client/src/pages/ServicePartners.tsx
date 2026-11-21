@@ -83,6 +83,7 @@ const INITIAL_SERVICE_PARTNERS: ServicePartner[] = [
     name: 'Om Bus Service Point',
     contactPerson: 'Pradeep',
     mobile: '+91 98450 66778',
+    alternateMobile: '+91 98450 66779',
     category: 'Mechanical',
     location: 'Pune',
     address: 'Wakad Highway Bypass, Pune, Maharashtra',
@@ -94,6 +95,7 @@ const INITIAL_SERVICE_PARTNERS: ServicePartner[] = [
     name: 'S N Electro Works',
     contactPerson: 'Naveen',
     mobile: '+91 96012 33445',
+    alternateMobile: '+91 96012 33446',
     category: 'Electrical',
     location: 'Vijayawada',
     address: 'Bhavanipuram Auto Nagar, Vijayawada, Andhra Pradesh',
@@ -105,6 +107,7 @@ const INITIAL_SERVICE_PARTNERS: ServicePartner[] = [
     name: 'Smart AC Solutions',
     contactPerson: 'Arun',
     mobile: '+91 91009 88776',
+    alternateMobile: '+91 91009 88777',
     category: 'AC / HVAC',
     location: 'Coimbatore',
     address: 'Gandhipuram Central, Coimbatore, Tamil Nadu',
@@ -469,7 +472,7 @@ export const ServicePartners: React.FC = () => {
                 <th className="py-3 px-4 w-12 text-center">#</th>
                 <th className="py-3 px-4">Service Partner Name</th>
                 <th className="py-3 px-4">Contact Person</th>
-                <th className="py-3 px-4">Mobile Number</th>
+                <th className="py-3 px-4">Mobile & Alternate Number</th>
                 <th className="py-3 px-4 text-center">Category</th>
                 <th className="py-3 px-4 text-center">Location</th>
                 <th className="py-3 px-4 text-center">Status</th>
@@ -506,25 +509,39 @@ export const ServicePartners: React.FC = () => {
                       {partner.contactPerson}
                     </td>
 
-                    {/* Mobile Number with Direct Call & WA */}
+                    {/* Mobile & Alternate Number with Direct Call & WA */}
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2">
-                        <a
-                          href={`tel:${partner.mobile.replace(/\s+/g, '')}`}
-                          className="inline-flex items-center gap-1.5 font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
-                        >
-                          <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>{partner.mobile}</span>
-                        </a>
-                        <a
-                          href={`https://wa.me/${partner.mobile.replace(/[^0-9]/g, '')}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
-                          title="WhatsApp Partner"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                        </a>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`tel:${partner.mobile.replace(/\s+/g, '')}`}
+                            className="inline-flex items-center gap-1.5 font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span>{partner.mobile}</span>
+                          </a>
+                          <a
+                            href={`https://wa.me/${partner.mobile.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-1 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors shrink-0"
+                            title="WhatsApp Partner"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                        {partner.alternateMobile && (
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
+                            <span className="text-[9px] uppercase font-black text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded">Alt</span>
+                            <a
+                              href={`tel:${partner.alternateMobile.replace(/\s+/g, '')}`}
+                              className="inline-flex items-center gap-1 text-slate-700 hover:text-blue-600 hover:underline"
+                            >
+                              <PhoneCall className="w-3 h-3 text-blue-500 shrink-0" />
+                              <span>{partner.alternateMobile}</span>
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </td>
 

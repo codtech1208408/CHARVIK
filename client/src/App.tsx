@@ -53,6 +53,7 @@ import { Settings } from './pages/Settings';
 import { IncomeExpense } from './pages/IncomeExpense';
 import { ServicePartners } from './pages/ServicePartners';
 import { BusRating } from './pages/BusRating';
+import { LetterPad } from './pages/LetterPad';
 
 export function App() {
   return (
@@ -122,6 +123,9 @@ export function App() {
               <Route path="donation" element={<Navigate to="/admin/donations" replace />} />
               <Route path="chandrika-finance" element={<ChandrikaFinance />} />
               <Route path="finance" element={<Navigate to="/admin/chandrika-finance" replace />} />
+              <Route path="letter-pad" element={<LetterPad />} />
+              <Route path="official-letter-pad" element={<Navigate to="/admin/letter-pad" replace />} />
+              <Route path="letterhead" element={<Navigate to="/admin/letter-pad" replace />} />
 
               {/* Specific Submodules & Secondary Views */}
               <Route path="maintenance-schedule" element={<MaintenanceSchedule />} />

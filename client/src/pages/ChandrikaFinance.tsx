@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Calendar,
   IndianRupee,
@@ -249,6 +249,7 @@ export function computeCustomerFinancials(
 }
 
 export const ChandrikaFinance: React.FC = () => {
+  const navigate = useNavigate();
   const { success, error: toastError } = useToast();
 
   // Transactions State (seeded with the user's reference image data)
@@ -1358,6 +1359,15 @@ export const ChandrikaFinance: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto shrink-0">
+          <button
+            onClick={() => navigate('/admin/letter-pad?company=chandrika')}
+            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 border border-amber-400 rounded-xl text-xs font-black transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+            title="Open Official Letter Pad for Chandrika Finance"
+          >
+            <FileText className="w-4 h-4 text-slate-950" />
+            <span>Letter Pad</span>
+          </button>
+
           <button
             onClick={() => setIsCustomersDirectoryOpen(true)}
             className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-xl text-xs font-black transition-all cursor-pointer shadow-2xs hover:shadow-xs"

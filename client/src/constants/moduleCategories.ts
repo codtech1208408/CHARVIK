@@ -74,6 +74,7 @@ export const adminVehicleManagementSubItems: NavSubItem[] = [
   { label: 'Earnings', route: '/admin/earnings', icon: TrendingUp, iconColor: 'text-purple-500', activeRoutes: ['/admin/earnings'] },
   { label: 'Record Management', route: '/admin/records', icon: FileText, iconColor: 'text-cyan-500', activeRoutes: ['/admin/records', '/admin/record-management', '/admin/record'] },
   { label: 'Captain Audit Record', route: '/admin/captain-audit', icon: ShieldCheck, iconColor: 'text-blue-600', activeRoutes: ['/admin/captain-audit', '/captain/audit-record'] },
+  { label: 'Official Letter Pad', route: '/admin/letter-pad?company=charvik', icon: FileText, iconColor: 'text-amber-500', activeRoutes: ['/admin/letter-pad', '/admin/official-letter-pad', '/admin/letterhead'] },
 ];
 
 export const adminVehicleMaintenanceSubItems: NavSubItem[] = [
@@ -91,6 +92,7 @@ export const adminVyshnaviTravelsSubItems: NavSubItem[] = [
   { label: 'Travels Statement & Billing', route: '/admin/vyshnavi-travels', icon: FileText, iconColor: 'text-teal-500', activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi'] },
   { label: 'Service Records', route: '/admin/vyshnavi-travels?tab=records', icon: ClipboardList, iconColor: 'text-blue-500', activeRoutes: ['/admin/vyshnavi-travels?tab=records'] },
   { label: 'Operator Income & Expense', route: '/admin/income-expense', icon: IndianRupee, iconColor: 'text-emerald-500', activeRoutes: ['/admin/income-expense'] },
+  { label: 'Official Letter Pad', route: '/admin/letter-pad?company=vyshnavi', icon: FileText, iconColor: 'text-amber-500', activeRoutes: ['/admin/letter-pad?company=vyshnavi'] },
 ];
 
 export const adminChandrikaFinanceSubItems: NavSubItem[] = [
@@ -100,6 +102,7 @@ export const adminChandrikaFinanceSubItems: NavSubItem[] = [
   { label: 'Loan / Amount Given', route: '/admin/chandrika-finance?tab=loan', icon: HandCoins, iconColor: 'text-orange-500', activeRoutes: ['/admin/chandrika-finance?tab=loan'] },
   { label: 'Collections (Daily / Monthly)', route: '/admin/chandrika-finance?tab=collections', icon: CalendarPlus, iconColor: 'text-purple-500', activeRoutes: ['/admin/chandrika-finance?tab=collections'] },
   { label: 'Balance / Outstanding', route: '/admin/chandrika-finance?tab=balance', icon: TrendingUp, iconColor: 'text-rose-500', activeRoutes: ['/admin/chandrika-finance?tab=balance'] },
+  { label: 'Official Letter Pad', route: '/admin/letter-pad?company=chandrika', icon: FileText, iconColor: 'text-amber-500', activeRoutes: ['/admin/letter-pad?company=chandrika'] },
 ];
 
 // =========================================================================
@@ -248,6 +251,17 @@ export const BASE_ADMIN_NAV_ITEMS: NavItemLeaf[] = [
     activeRoutes: ['/admin/chandrika-finance', '/admin/finance'],
     subItems: adminChandrikaFinanceSubItems,
     description: 'Finance ledger, loans, collections, customer records & balances'
+  },
+  {
+    id: 'letter_pad',
+    label: 'Letter Pad',
+    name: 'Letter Pad',
+    route: '/admin/letter-pad',
+    icon: FileText,
+    iconColor: 'text-orange-400',
+    activeGradient: 'bg-gradient-to-r from-orange-500 to-amber-600',
+    activeRoutes: ['/admin/letter-pad', '/admin/official-letter-pad', '/admin/letterhead'],
+    description: 'Official letterhead documents for Charvik, Vyshnavi Travels & Chandrika Finance'
   }
 ];
 

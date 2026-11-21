@@ -22,9 +22,12 @@ import {
   Route,
   MessageSquare,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Zap,
+  Check
 } from 'lucide-react';
 import { useToast } from '../components/common/Toast';
+import { api } from '../services/api';
 import * as XLSX from 'xlsx';
 import luxuryCoachHeader from '../assets/luxury-coach-header.png';
 
@@ -133,6 +136,43 @@ const KNOWN_OPERATORS = [
   'Jabbar Travels'
 ];
 
+export interface AutoServiceOption {
+  serviceNumber: string;
+  name: string;
+  origin: string;
+  destination: string;
+  operator: string;
+  defaultVehicle?: string;
+}
+
+export interface AutoVehicleOption {
+  busNumber: string;
+  operator: string;
+  model?: string;
+}
+
+const DEFAULT_SERVICES: AutoServiceOption[] = [
+  { serviceNumber: 'SR1234', name: 'SR1234 (Bengaluru → Hyderabad)', origin: 'Bengaluru', destination: 'Hyderabad', operator: 'SR Travels', defaultVehicle: 'AP 09 BK 1234' },
+  { serviceNumber: 'VT7788', name: 'VT7788 (Chennai → Bengaluru)', origin: 'Chennai', destination: 'Bengaluru', operator: 'Vaishnavi Travels', defaultVehicle: 'TS 08 UA 5678' },
+  { serviceNumber: 'YB2255', name: 'YB2255 (Hyderabad → Vijayawada)', origin: 'Hyderabad', destination: 'Vijayawada', operator: 'YoloBus', defaultVehicle: 'AP 29 ZZ 1122' },
+  { serviceNumber: 'SR9901', name: 'SR9901 (Bengaluru → Mysuru)', origin: 'Bengaluru', destination: 'Mysuru', operator: 'SR Travels', defaultVehicle: 'KA 01 AB 4321' },
+  { serviceNumber: 'VT3322', name: 'VT3322 (Hyderabad → Tirupati)', origin: 'Hyderabad', destination: 'Tirupati', operator: 'Vaishnavi Travels', defaultVehicle: 'TS 09 XY 9988' },
+  { serviceNumber: 'CT1001', name: 'CT1001 (Hyderabad → Visakhapatnam)', origin: 'Hyderabad', destination: 'Visakhapatnam', operator: 'Charvik Travels', defaultVehicle: 'AP 31 CT 1001' },
+  { serviceNumber: 'KVR4040', name: 'KVR4040 (Bengaluru → Pune)', origin: 'Bengaluru', destination: 'Pune', operator: 'KVR Travels', defaultVehicle: 'KA 04 KV 4040' },
+  { serviceNumber: 'OT5500', name: 'OT5500 (Chennai → Coimbatore)', origin: 'Chennai', destination: 'Coimbatore', operator: 'Orange Travels', defaultVehicle: 'TN 38 OT 5500' }
+];
+
+const DEFAULT_VEHICLES: AutoVehicleOption[] = [
+  { busNumber: 'AP 09 BK 1234', operator: 'SR Travels', model: 'Volvo B11R Multi-Axle' },
+  { busNumber: 'TS 08 UA 5678', operator: 'Vaishnavi Travels', model: 'Scania Metrolink HD' },
+  { busNumber: 'KA 01 AB 4321', operator: 'SR Travels', model: 'Mercedes-Benz SHD' },
+  { busNumber: 'AP 29 ZZ 1122', operator: 'YoloBus', model: 'Volvo 9600 Sleeper' },
+  { busNumber: 'TS 09 XY 9988', operator: 'Vaishnavi Travels', model: 'BharatBenz AC Sleeper' },
+  { busNumber: 'AP 31 CT 1001', operator: 'Charvik Travels', model: 'Volvo B8R Intercity' },
+  { busNumber: 'KA 04 KV 4040', operator: 'KVR Travels', model: 'Ashok Leyland Viking AC' },
+  { busNumber: 'TN 38 OT 5500', operator: 'Orange Travels', model: 'Scania 14.5M Multi-Axle' }
+];
+
 const AGENTS_LIST = ['Lokesh', 'Anil', 'Rajesh', 'Suresh', 'Kavitha', 'Admin Manager'];
 
 export const BusRating: React.FC = () => {
@@ -145,6 +185,57 @@ export const BusRating: React.FC = () => {
     } catch { }
     return INITIAL_RATINGS;
   });
+
+  // Automatic Service and Vehicle Options
+  const [servicesList, setServicesList] = useState<AutoServiceOption[]>(DEFAULT_SERVICES);
+  const [vehiclesList, setVehiclesList] = useState<AutoVehicleOption[]>(DEFAULT_VEHICLES);
+  const [selectedServiceAuto, setSelectedServiceAuto] = useState('');
+  const [selectedVehicleAuto, setSelectedVehicleAuto] = useState('');
+
+  // Fetch live fleet vehicles and routes on mount
+  useEffect(() => {
+    let isMounted = true;
+    Promise.allSettled([api.getRoutes(), api.getBuses()]).then(([routesRes, busesRes]) => {
+      if (!isMounted) return;
+      if (routesRes.status === 'fulfilled' && Array.isArray(routesRes.value) && routesRes.value.length > 0) {
+        const liveServices: AutoServiceOption[] = routesRes.value.map((r: any) => ({
+          serviceNumber: r.route_number || r.service_number || `SR-${r.id}`,
+          name: `${r.route_number || r.service_number || `SR-${r.id}`} (${r.origin || 'Origin'} → ${r.destination || 'Destination'})`,
+          origin: r.origin || '',
+          destination: r.destination || '',
+          operator: r.operator_name || r.operator || 'SR Travels'
+        }));
+        setServicesList((prev) => {
+          const merged = [...prev];
+          liveServices.forEach((ls) => {
+            if (!merged.some((m) => m.serviceNumber === ls.serviceNumber)) {
+              merged.push(ls);
+            }
+          });
+          return merged;
+        });
+      }
+
+      if (busesRes.status === 'fulfilled' && Array.isArray(busesRes.value) && busesRes.value.length > 0) {
+        const liveBuses: AutoVehicleOption[] = busesRes.value.map((b: any) => ({
+          busNumber: b.plate_number || b.bus_number || b.registration_number || '',
+          operator: b.operator_name || b.operator || 'Vaishnavi Travels',
+          model: b.model || b.bus_type || ''
+        })).filter((b: any) => b.busNumber);
+
+        setVehiclesList((prev) => {
+          const merged = [...prev];
+          liveBuses.forEach((lb) => {
+            if (!merged.some((m) => m.busNumber.toLowerCase() === lb.busNumber.toLowerCase())) {
+              merged.push(lb);
+            }
+          });
+          return merged;
+        });
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
 
   // Filter states
   const [operatorFilter, setOperatorFilter] = useState('All');
@@ -164,6 +255,56 @@ export const BusRating: React.FC = () => {
   const [formRating, setFormRating] = useState(5);
   const [formRemarks, setFormRemarks] = useState('');
   const [formCustomerImages, setFormCustomerImages] = useState<string[]>([]);
+
+  // Automatic Service Handler
+  const handleAutoSelectService = (serviceNo: string) => {
+    setSelectedServiceAuto(serviceNo);
+    if (!serviceNo) return;
+    const found = servicesList.find((s) => s.serviceNumber === serviceNo);
+    if (found) {
+      setFormTripBusNo((prev) => {
+        if (!prev) return found.serviceNumber;
+        if (selectedVehicleAuto && !prev.includes(found.serviceNumber)) {
+          return `${found.serviceNumber} / ${selectedVehicleAuto}`;
+        }
+        return found.serviceNumber;
+      });
+      setFormOrigin(found.origin);
+      setFormDestination(found.destination);
+      if (found.operator) {
+        setFormOperator(found.operator);
+      }
+      if (found.defaultVehicle) {
+        setSelectedVehicleAuto(found.defaultVehicle);
+        setFormTripBusNo(`${found.serviceNumber} / ${found.defaultVehicle}`);
+      }
+      if (!formPnr) {
+        setFormPnr(`PNR${Math.floor(100000 + Math.random() * 900000)}`);
+      }
+      success(`Service ${found.serviceNumber} details auto-filled.`);
+    }
+  };
+
+  // Automatic Vehicle Number Handler
+  const handleAutoSelectVehicle = (vehNo: string) => {
+    setSelectedVehicleAuto(vehNo);
+    if (!vehNo) return;
+    const found = vehiclesList.find((v) => v.busNumber === vehNo);
+    if (found) {
+      setFormTripBusNo((prev) => {
+        if (!prev) return found.busNumber;
+        if (selectedServiceAuto) return `${selectedServiceAuto} / ${found.busNumber}`;
+        return found.busNumber;
+      });
+      if (found.operator) {
+        setFormOperator(found.operator);
+      }
+      if (!formPnr) {
+        setFormPnr(`PNR${Math.floor(100000 + Math.random() * 900000)}`);
+      }
+      success(`Vehicle ${found.busNumber} auto-selected.`);
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -191,6 +332,8 @@ export const BusRating: React.FC = () => {
   // Handle Form Clear
   const handleClearForm = () => {
     setEditingId(null);
+    setSelectedServiceAuto('');
+    setSelectedVehicleAuto('');
     setFormOperator('SR Travels');
     setFormDate(new Date().toISOString().slice(0, 10));
     setFormTripBusNo('');
@@ -535,6 +678,61 @@ export const BusRating: React.FC = () => {
           </div>
 
           <form onSubmit={handleSaveRating} className="space-y-4">
+            {/* Automatic Selection Bar: Service & Vehicle Number */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-sky-50 border border-blue-200/80 shadow-xs space-y-2.5">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-black text-blue-900 uppercase tracking-wide">
+                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  <span>Auto-Fill Options (Select Automatically)</span>
+                </div>
+                <span className="text-[10px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200">
+                  ⚡ Automatically populates Route, Origin, Destination, Operator & Bus
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* 1. Select Service Automatically */}
+                <div>
+                  <label className="block text-[11px] font-black text-blue-900 mb-1 flex items-center gap-1">
+                    <Route className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Select Service Automatically</span>
+                  </label>
+                  <select
+                    value={selectedServiceAuto}
+                    onChange={(e) => handleAutoSelectService(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-blue-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs cursor-pointer"
+                  >
+                    <option value="">-- Choose Service / Route (Auto-Fill) --</option>
+                    {servicesList.map((s) => (
+                      <option key={s.serviceNumber} value={s.serviceNumber}>
+                        {s.name} - {s.operator}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 2. Select Vehicle Number Automatically */}
+                <div>
+                  <label className="block text-[11px] font-black text-blue-900 mb-1 flex items-center gap-1">
+                    <Bus className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Select Vehicle Number Automatically</span>
+                  </label>
+                  <select
+                    value={selectedVehicleAuto}
+                    onChange={(e) => handleAutoSelectVehicle(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-blue-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs cursor-pointer"
+                  >
+                    <option value="">-- Choose Vehicle Number (Auto-Fill) --</option>
+                    {vehiclesList.map((v) => (
+                      <option key={v.busNumber} value={v.busNumber}>
+                        {v.busNumber} ({v.operator}{v.model ? ` - ${v.model}` : ''})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Operator Name */}
               <div>
