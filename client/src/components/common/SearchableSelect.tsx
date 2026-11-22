@@ -109,7 +109,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   {selectedOption.badge}
                 </span>
               )}
-              <span className="font-bold text-slate-900 truncate" title={selectedOption.label}>
+              <span className="font-bold text-slate-900 tracking-wide text-xs whitespace-nowrap" title={selectedOption.label}>
                 {selectedOption.label}
               </span>
               {!hideBadge && selectedOption.sublabel && (

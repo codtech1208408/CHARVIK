@@ -145,10 +145,14 @@ export const VyshnaviTravels: React.FC = () => {
   const [customVehicles, setCustomVehicles] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('vyshnavi_custom_vehicles');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((v: string) => v && !v.toLowerCase().includes('general') && !v.toLowerCase().includes('fleet'));
+        }
+      }
     } catch { }
     return [
-      'General / Fleet Wide',
       'AP16TV1234',
       'AP16TC4567',
       'HR55X1200',
@@ -489,13 +493,12 @@ export const VyshnaviTravels: React.FC = () => {
   // Open Record Modal for Add
   const handleOpenAddRecord = () => {
     const nextRecNum = `VT-REC-${new Date().getFullYear()}-${String(records.length + 1).padStart(3, '0')}`;
-    const defaultVeh = allVehicles.length > 0 ? allVehicles[0] : '';
     setEditingRecord(null);
     setRecordForm({
       record_number: nextRecNum,
       record_date: new Date().toISOString().split('T')[0],
       period_month: '',
-      vehicle_number: defaultVeh,
+      vehicle_number: '',
       payment_status: 'Pending',
       bill_to_name: '',
       bill_to_phone: '',
@@ -1087,10 +1090,10 @@ export const VyshnaviTravels: React.FC = () => {
 
   // Combined Vehicles List (custom + API buses)
   const allVehicles = useMemo(() => {
-    const list = [...customVehicles];
+    const list = customVehicles.filter(v => v && !v.toLowerCase().includes('general') && !v.toLowerCase().includes('fleet'));
     buses.forEach((b) => {
       const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
-      if (reg && !list.some((v) => v.toLowerCase() === reg.toLowerCase())) {
+      if (reg && !reg.toLowerCase().includes('general') && !reg.toLowerCase().includes('fleet') && !list.some((v) => v.toLowerCase() === reg.toLowerCase())) {
         list.push(reg);
       }
     });
@@ -2339,8 +2342,8 @@ export const VyshnaviTravels: React.FC = () => {
               <FileText className="w-4 h-4 text-blue-600" />
               <span>1. Record Details & Vehicle Number</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
+              <div className="lg:col-span-3">
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Record / Invoice No <span className="text-rose-500">*</span>
                 </label>
@@ -2354,7 +2357,7 @@ export const VyshnaviTravels: React.FC = () => {
                 />
               </div>
 
-              <div>
+              <div className="lg:col-span-3">
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Record Date <span className="text-rose-500">*</span>
                 </label>
@@ -2367,7 +2370,7 @@ export const VyshnaviTravels: React.FC = () => {
                 />
               </div>
 
-              <div>
+              <div className="lg:col-span-4">
                 <SearchableSelect
                   label="Vehicle Number"
                   options={allVehicles.map((v) => ({
@@ -2383,7 +2386,7 @@ export const VyshnaviTravels: React.FC = () => {
                 />
               </div>
 
-              <div>
+              <div className="lg:col-span-2">
                 <label className="block text-xs font-bold text-slate-700 mb-1">Payment Status</label>
                 <select
                   value={recordForm.payment_status}
