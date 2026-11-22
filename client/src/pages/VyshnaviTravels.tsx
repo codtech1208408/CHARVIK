@@ -2372,14 +2372,14 @@ export const VyshnaviTravels: React.FC = () => {
                   label="Vehicle Number"
                   options={allVehicles.map((v) => ({
                     value: v,
-                    label: v,
-                    badge: 'Fleet'
+                    label: v
                   }))}
                   value={recordForm.vehicle_number}
                   onChange={(val) => setRecordForm({ ...recordForm, vehicle_number: val.toUpperCase() })}
-                  placeholder="-- Select / Search Vehicle Number --"
+                  placeholder="-- Select Vehicle Number --"
                   searchPlaceholder="Search vehicle number..."
                   allowCustom={true}
+                  hideBadge={true}
                 />
               </div>
 

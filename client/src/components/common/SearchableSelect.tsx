@@ -19,6 +19,7 @@ interface SearchableSelectProps {
   className?: string;
   disabled?: boolean;
   allowCustom?: boolean;
+  hideBadge?: boolean;
 }
 
 export const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -31,7 +32,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   onChange,
   className = '',
   disabled = false,
-  allowCustom = false
+  allowCustom = false,
+  hideBadge = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,23 +101,25 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             : 'border-slate-200 bg-white hover:border-slate-300'
         } ${disabled ? 'bg-slate-100 cursor-not-allowed text-slate-400' : 'cursor-pointer text-slate-800'}`}
       >
-        <div className="flex-1 truncate pr-2">
+        <div className="flex-1 min-w-0 pr-1">
           {selectedOption ? (
-            <div className="flex items-center gap-2 truncate">
-              {selectedOption.badge && (
+            <div className="flex items-center gap-1.5 min-w-0">
+              {!hideBadge && selectedOption.badge && (
                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0 font-bold">
                   {selectedOption.badge}
                 </span>
               )}
-              <span className="font-bold text-slate-900 truncate">{selectedOption.label}</span>
-              {selectedOption.sublabel && (
+              <span className="font-bold text-slate-900 truncate" title={selectedOption.label}>
+                {selectedOption.label}
+              </span>
+              {!hideBadge && selectedOption.sublabel && (
                 <span className="text-[11px] text-slate-500 truncate hidden sm:inline">
                   {selectedOption.sublabel}
                 </span>
               )}
             </div>
           ) : (
-            <span className="text-slate-400">{placeholder}</span>
+            <span className="text-slate-400 truncate block">{placeholder}</span>
           )}
         </div>
 
@@ -165,11 +169,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             {allowCustom && searchQuery.trim() && !options.some((opt) => opt.value.toLowerCase() === searchQuery.trim().toLowerCase()) && (
               <button
                 type="button"
-                onClick={() => handleSelect({ value: searchQuery.trim(), label: searchQuery.trim(), badge: 'Custom' })}
+                onClick={() => handleSelect({ value: searchQuery.trim(), label: searchQuery.trim(), badge: hideBadge ? undefined : 'Custom' })}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg text-left bg-blue-50/80 text-blue-700 hover:bg-blue-100 font-semibold cursor-pointer mb-1 border border-blue-200/60"
               >
                 <Plus className="w-3.5 h-3.5 text-blue-600" />
-                <span>Use "{searchQuery.trim()}" as Route</span>
+                <span>Use "{searchQuery.trim()}"</span>
               </button>
             )}
 
@@ -193,7 +197,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   >
                     <div className="flex flex-col truncate pr-2">
                       <div className="flex items-center gap-2 truncate">
-                        {opt.badge && (
+                        {!hideBadge && opt.badge && (
                           <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0 font-bold">
                             {opt.badge}
                           </span>
