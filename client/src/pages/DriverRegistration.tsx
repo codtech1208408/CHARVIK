@@ -219,8 +219,10 @@ export const DriverRegistration: React.FC = () => {
     setIsSubmitting(true);
     try {
       const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+      const newId = Date.now();
       const submissionData = {
         ...formData,
+        id: newId,
         employee_code: formData.employee_code?.trim() || `DRV-${Date.now().toString().slice(-4)}`,
         full_name: formData.full_name?.trim() || 'Driver Partner',
         phone_number: formData.phone_number?.trim() || '9999999999',

@@ -227,18 +227,19 @@ function setLocalCollection<T>(key: string, items: T[]) {
  * Live database data from Supabase is the authoritative truth across all users/devices.
  * Falls back to local/IndexedDB cache only when completely offline.
  */
-function syncRemoteCollection<T extends { id?: any; is_archived?: number; registration_number?: string; bus_number?: string }>(
+function syncRemoteCollection<T extends { id?: any; is_archived?: number; registration_number?: string; bus_number?: string; employee_code?: string }>(
   key: string,
   remoteItems: T[] | null | undefined,
   idField: string = 'id'
 ): T[] {
+  const localItems = getLocalCollection<T>(key).filter(item => (item as any)?.is_archived !== 1);
   if (Array.isArray(remoteItems) && remoteItems.length > 0) {
-    const valid = remoteItems.filter(item => (item as any)?.is_archived !== 1);
-    setLocalCollection(key, valid);
-    return valid;
+    const validRemote = remoteItems.filter(item => (item as any)?.is_archived !== 1);
+    const merged = mergeSeedCollection(localItems, validRemote);
+    setLocalCollection(key, merged);
+    return merged;
   }
-  const localItems = getLocalCollection<T>(key);
-  return localItems.filter(item => (item as any)?.is_archived !== 1);
+  return localItems;
 }
 
 // Backward compatibility alias
@@ -878,6 +879,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         // Also attempt background sync to Supabase safely (separating employees and driver_details)
         try {
           const empPayload: any = {
+            id: newId,
             employee_code: record.employee_code,
             role: record.role,
             full_name: record.full_name,
@@ -914,7 +916,7 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
             internal_remarks: record.internal_remarks || null,
             is_archived: 0
           };
-          const { data: insertedEmp } = await supabase.from('employees').insert([empPayload]).select().single();
+          const { data: insertedEmp } = await supabase.from('employees').upsert([empPayload], { onConflict: 'id' }).select().single();
 
           if (insertedEmp && (record.licence_number || record.role === 'Driver')) {
             await supabase.from('driver_details').insert([{
@@ -3550,7 +3552,7 @@ export const api = {
         timeoutPromise
       ]) as any;
       if (Array.isArray(remote) && remote.length > 0) {
-        employees = remote;
+        employees = mergeWithLocal('employees', remote);
       }
     } catch { }
 

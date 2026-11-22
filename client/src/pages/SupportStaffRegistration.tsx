@@ -235,12 +235,14 @@ export const SupportStaffRegistration: React.FC = () => {
     setIsSubmitting(true);
     try {
       const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+      const newId = Date.now();
       const submissionData = {
         ...formData,
-        employee_code: formData.employee_code?.trim() || `EMP-${Date.now().toString().slice(-4)}`,
+        id: newId,
+        employee_code: formData.employee_code?.trim() || `HLP-${Date.now().toString().slice(-4)}`,
         full_name: formData.full_name?.trim() || 'Support Staff',
         phone_number: formData.phone_number?.trim() || '9999999999',
-        role: formData.role || 'Captain'
+        role: formData.role || 'Helper'
       };
       await api.createEmployee(submissionData);
       success(`${submissionData.role} ${submissionData.full_name} (${submissionData.employee_code}) registered successfully!`);
