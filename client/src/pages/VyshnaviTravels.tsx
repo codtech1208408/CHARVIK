@@ -3674,27 +3674,7 @@ export const VyshnaviTravels: React.FC = () => {
                     </strong>
                   </div>
 
-                  {/* 4. Payment Settlement Summary */}
-                  <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-                    <div className="p-2 bg-slate-50 border border-slate-300 rounded">
-                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Billed</span>
-                      <strong className="text-sm font-black text-slate-900 block mt-0.5">
-                        ₹{(printingRecord.total_amount || 0).toLocaleString('en-IN')}
-                      </strong>
-                    </div>
-                    <div className="p-2 bg-emerald-50 border border-emerald-300 rounded">
-                      <span className="text-[10px] uppercase font-bold text-emerald-700 block">Received Amount</span>
-                      <strong className="text-sm font-black text-emerald-800 block mt-0.5">
-                        ₹{(printingRecord.received_amount || 0).toLocaleString('en-IN')}
-                      </strong>
-                    </div>
-                    <div className="p-2 bg-rose-50 border border-rose-300 rounded">
-                      <span className="text-[10px] uppercase font-bold text-rose-700 block">Balance Outstanding</span>
-                      <strong className="text-sm font-black text-rose-800 block mt-0.5">
-                        ₹{(printingRecord.balance_amount || 0).toLocaleString('en-IN')}
-                      </strong>
-                    </div>
-                  </div>
+
 
                   {/* 5. Bank Account */}
                   <div className="mt-4 border border-slate-300 rounded-lg p-3 bg-slate-50/50 text-xs">
