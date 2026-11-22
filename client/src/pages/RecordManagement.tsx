@@ -46,6 +46,7 @@ export interface ServiceRecord {
   record_number: string;
   record_date: string;
   period_month: string;
+  vehicle_number?: string;
   bill_to_name: string;
   bill_to_address: string;
   bill_to_phone: string;
@@ -232,6 +233,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
 export const RecordManagement: React.FC = () => {
   const { success, error } = useToast();
   const [records, setRecords] = useState<ServiceRecord[]>([]);
+  const [buses, setBuses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Dynamic Categories (Select, Search, Add More)
@@ -259,6 +261,18 @@ export const RecordManagement: React.FC = () => {
     });
   };
 
+  // Vehicles list from fleet
+  const vehicleList = useMemo(() => {
+    const list: string[] = [];
+    buses.forEach((b) => {
+      const reg = (b.registration_number || b.bus_number || '').split('(')[0].trim();
+      if (reg && !reg.toLowerCase().includes('general') && !list.some((v) => v.toLowerCase() === reg.toLowerCase())) {
+        list.push(reg);
+      }
+    });
+    return list;
+  }, [buses]);
+
   // Filters
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -275,6 +289,7 @@ export const RecordManagement: React.FC = () => {
     record_number: `REC-${new Date().getFullYear()}-${String(existingRecordsCount + 1).padStart(3, '0')}`,
     record_date: new Date().toISOString().split('T')[0],
     period_month: '',
+    vehicle_number: '',
     bill_to_name: '',
     bill_to_address: '',
     bill_to_phone: '',
@@ -339,6 +354,9 @@ export const RecordManagement: React.FC = () => {
 
   useEffect(() => {
     loadRecords();
+    api.getBuses().then((res) => {
+      if (Array.isArray(res)) setBuses(res);
+    }).catch(() => {});
   }, []);
 
   // Filtered Records
@@ -490,10 +508,12 @@ export const RecordManagement: React.FC = () => {
       record_number: formData.record_number?.trim() || `REC-${new Date().getFullYear()}-${String(records.length + 1).padStart(3, '0')}`,
       record_date: formData.record_date || new Date().toISOString().split('T')[0],
       period_month: formData.period_month?.trim() || monthYear,
+      vehicle_number: formData.vehicle_number?.trim() || '',
       bill_to_name: formData.bill_to_name?.trim() || 'Charvik Staffing Consultancy',
       bill_to_address: formData.bill_to_address?.trim() || '',
       bill_to_phone: formData.bill_to_phone?.trim() || '',
       bill_to_pan: formData.bill_to_pan?.trim() || '',
+      operator_name: formData.operator_name?.trim() || formData.bill_to_name?.trim() || '',
       items,
       total_staff_count: staffCount,
       total_amount: totalAmt,
@@ -1074,34 +1094,158 @@ export const RecordManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* ── MODAL: ADD / EDIT BILLING & SERVICE RECORD (IDENTICAL TO SERVICE PARTNERS) ── */}
+      {/* ── MODAL: ADD / EDIT BILLING & SERVICE RECORD ── */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingRecord ? `Edit Billing Record: ${editingRecord.record_number}` : 'Add New Billing & Service Record'}
-        subtitle="Maintain official billing details, client name, service description, category, staff count, and salary paid."
-        size="lg"
+        subtitle="Maintain official billing details, operator name, vehicle number, service description, and bank settlement details."
+        size="xl"
       >
         <form onSubmit={handleSaveRecord} className="space-y-4">
-          {/* Only Date Field as requested */}
-          <div className="max-w-xs">
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Date <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="date"
-              required
-              value={formData.record_date || ''}
-              onChange={(e) => setFormData({ ...formData, record_date: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-            />
+          {/* Section 1: Record & Vehicle Information */}
+          <div className="bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
+              <FileText className="w-4 h-4 text-blue-600" />
+              <span>1. Record & Vehicle Details</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Record / Invoice No <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.record_number || ''}
+                  onChange={(e) => setFormData({ ...formData, record_number: e.target.value })}
+                  placeholder="e.g. REC-2026-001"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Record Date <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={formData.record_date || ''}
+                  onChange={(e) => setFormData({ ...formData, record_date: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Billing Period / Month</label>
+                <input
+                  type="text"
+                  value={formData.period_month || ''}
+                  onChange={(e) => setFormData({ ...formData, period_month: e.target.value })}
+                  placeholder="e.g. Aug'26 or Nov 2026"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Vehicle Number</label>
+                <input
+                  type="text"
+                  list="charvik-record-vehicle-list"
+                  value={formData.vehicle_number || ''}
+                  onChange={(e) => setFormData({ ...formData, vehicle_number: e.target.value.toUpperCase() })}
+                  placeholder="e.g. AP16TV1234 / TS09UB9999"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+                <datalist id="charvik-record-vehicle-list">
+                  {vehicleList.map((v) => (
+                    <option key={v} value={v} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Payment Status</label>
+                <select
+                  value={formData.payment_status || 'Pending'}
+                  onChange={(e) => setFormData({ ...formData, payment_status: e.target.value as any })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Partial">Partial</option>
+                  <option value="Paid">Paid</option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          {/* ── SERVICES & STAFF SALARY DETAILS (Clean grid inputs, NOT box format) ── */}
+          {/* Section 2: Operator / Client Details */}
+          <div className="bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
+              <Building2 className="w-4 h-4 text-emerald-600" />
+              <span>2. Operator & Client Details</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <OperatorSearchSelect
+                  label="Company / Client Name"
+                  required
+                  value={formData.bill_to_name || ''}
+                  onChange={(val, op) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      bill_to_name: val,
+                      operator_name: val,
+                      bill_to_address: op?.address || prev.bill_to_address || '',
+                      bill_to_phone: op?.phone || prev.bill_to_phone || '',
+                      bill_to_pan: op?.gstOrPan || prev.bill_to_pan || ''
+                    }));
+                  }}
+                  placeholder="e.g. Yolobus Private Limited / Sri Krishna Travels"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Contact Phone / Mobile</label>
+                <input
+                  type="text"
+                  value={formData.bill_to_phone || ''}
+                  onChange={(e) => setFormData({ ...formData, bill_to_phone: e.target.value })}
+                  placeholder="e.g. 9505151527"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator Address</label>
+                <input
+                  type="text"
+                  value={formData.bill_to_address || ''}
+                  onChange={(e) => setFormData({ ...formData, bill_to_address: e.target.value })}
+                  placeholder="e.g. LB Nagar, Hyderabad, Telangana"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Operator PAN / GST</label>
+                <input
+                  type="text"
+                  value={formData.bill_to_pan || ''}
+                  onChange={(e) => setFormData({ ...formData, bill_to_pan: e.target.value.toUpperCase() })}
+                  placeholder="e.g. SAAKY9813M1Z2 / 36AAAAA0000A1Z5"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Services & Staff Salary Details */}
           <div className="pt-2 border-t border-slate-100 space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-black text-slate-800 uppercase tracking-wide">
-                Services & Staff Breakdown
+                3. Services & Staff Breakdown
               </label>
               <button
                 type="button"
@@ -1200,6 +1344,65 @@ export const RecordManagement: React.FC = () => {
               <div className="flex items-center gap-4">
                 <span>Total Staff: <strong className="text-blue-700">{formCalculations.staffCount}</strong></span>
                 <span>Total Salary: <strong className="text-slate-900">₹ {formCalculations.totalAmt.toLocaleString('en-IN')}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Bank Details for Direct Settlement (NO QR CODE) */}
+          <div className="bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-black text-slate-800 uppercase tracking-wider">
+              <CreditCard className="w-4 h-4 text-purple-600" />
+              <span>4. Bank Details for Direct Settlement</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Account Name</label>
+                <input
+                  type="text"
+                  value={formData.bank_account_name || DEFAULT_BANK_DETAILS.bank_account_name}
+                  onChange={(e) => setFormData({ ...formData, bank_account_name: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Account Number</label>
+                <input
+                  type="text"
+                  value={formData.bank_account_no || DEFAULT_BANK_DETAILS.bank_account_no}
+                  onChange={(e) => setFormData({ ...formData, bank_account_no: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">IFSC Code</label>
+                <input
+                  type="text"
+                  value={formData.bank_ifsc || DEFAULT_BANK_DETAILS.bank_ifsc}
+                  onChange={(e) => setFormData({ ...formData, bank_ifsc: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 uppercase"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Bank Name & Branch</label>
+                <input
+                  type="text"
+                  value={formData.bank_name || DEFAULT_BANK_DETAILS.bank_name}
+                  onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">UPI ID (PhonePe / GPay)</label>
+                <input
+                  type="text"
+                  value={formData.upi_id || DEFAULT_BANK_DETAILS.upi_id}
+                  onChange={(e) => setFormData({ ...formData, upi_id: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
               </div>
             </div>
           </div>
@@ -1311,9 +1514,69 @@ export const RecordManagement: React.FC = () => {
                 </div>
               </div>
 
-              {/* Simple Date Header */}
-              <div className="flex items-center justify-end mb-3 text-xs font-bold text-slate-800">
-                <span>Date: {printingRecord.record_date}</span>
+              {/* BILL TO & INVOICE DETAILS */}
+              <div className="grid grid-cols-2 gap-4 border border-slate-300 rounded-lg p-3.5 mb-4 bg-slate-50/40 text-xs">
+                {/* Left: Bill To */}
+                <div className="space-y-1 border-r border-slate-200 pr-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                    BILL TO:
+                  </span>
+                  <p className="font-black text-sm text-[#142B4A] uppercase tracking-wide break-words">
+                    {printingRecord.bill_to_name}
+                  </p>
+                  {printingRecord.bill_to_phone && (
+                    <p className="text-slate-600 text-[11px]">
+                      <strong>Mobile:</strong> {printingRecord.bill_to_phone}
+                    </p>
+                  )}
+                  {printingRecord.bill_to_address && (
+                    <p className="text-slate-600 text-[11px] break-words">
+                      <strong>Operator Address:</strong> {printingRecord.bill_to_address}
+                    </p>
+                  )}
+                  {printingRecord.bill_to_pan && (
+                    <p className="text-slate-600 text-[11px]">
+                      <strong>Operator PAN/GST:</strong> {printingRecord.bill_to_pan}
+                    </p>
+                  )}
+                </div>
+
+                {/* Right: Record / Invoice Metadata */}
+                <div className="space-y-1.5 pl-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-bold">Record / Invoice No:</span>
+                    <span className="font-bold tracking-wide text-blue-900 text-xs">
+                      {printingRecord.record_number}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-bold">Record Date:</span>
+                    <span className="font-medium text-slate-800">{printingRecord.record_date}</span>
+                  </div>
+                  {printingRecord.period_month && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-bold">Billing Period:</span>
+                      <span className="font-bold text-slate-800">{printingRecord.period_month}</span>
+                    </div>
+                  )}
+                  {printingRecord.vehicle_number && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500 font-bold">Vehicle Number:</span>
+                      <span className="font-bold text-slate-800">{printingRecord.vehicle_number}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-bold">Payment Status:</span>
+                    <span className={`font-bold ${printingRecord.payment_status === 'Paid'
+                      ? 'text-emerald-700'
+                      : printingRecord.payment_status === 'Partial'
+                        ? 'text-amber-700'
+                        : 'text-rose-700'
+                      }`}>
+                      {printingRecord.payment_status}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* SERVICE TABLE (MATCHING IMAGE 2 EXACT 5 COLUMNS) */}
@@ -1373,7 +1636,7 @@ export const RecordManagement: React.FC = () => {
               </div>
 
               {/* Received Amount Strip */}
-              <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-300 rounded-lg mb-5 text-xs font-bold">
+              <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-300 rounded-lg mb-4 text-xs font-bold">
                 <div>
                   <span className="text-slate-600">Received Amount: </span>
                   <span className="text-emerald-700 font-black">
@@ -1385,6 +1648,31 @@ export const RecordManagement: React.FC = () => {
                   <span className="text-rose-600 font-black">
                     ₹{Number(printingRecord.balance_amount || 0).toLocaleString('en-IN')}
                   </span>
+                </div>
+              </div>
+
+              {/* Bank Details for Direct Settlement (NO QR CODE) */}
+              <div className="border border-slate-300 rounded-lg p-3 mb-5 text-xs bg-slate-50/50">
+                <span className="font-black text-slate-900 uppercase text-[11px] block border-b border-slate-200 pb-1 mb-2">
+                  Bank Details for Direct Settlement
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
+                  <div>
+                    <span className="text-slate-500 font-semibold block">Account Name:</span>
+                    <strong className="font-bold text-slate-900">{printingRecord.bank_account_name || DEFAULT_BANK_DETAILS.bank_account_name}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-semibold block">Account No:</span>
+                    <strong className="font-mono font-black text-slate-900">{printingRecord.bank_account_no || DEFAULT_BANK_DETAILS.bank_account_no}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-semibold block">IFSC Code:</span>
+                    <strong className="font-mono font-bold text-slate-900">{printingRecord.bank_ifsc || DEFAULT_BANK_DETAILS.bank_ifsc}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-semibold block">Bank:</span>
+                    <span className="font-medium text-slate-800">{printingRecord.bank_name || DEFAULT_BANK_DETAILS.bank_name}</span>
+                  </div>
                 </div>
               </div>
 
