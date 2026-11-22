@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   ShieldCheck,
   Plus,
@@ -83,6 +84,7 @@ const DEFAULT_AMENITY_NAMES: string[] = [
 
 export const CaptainAuditRecord: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const { success, error } = useToast();
 
   const isAdmin = Boolean(

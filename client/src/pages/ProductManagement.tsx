@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Package,
   Boxes,
@@ -192,6 +194,8 @@ const INITIAL_SEED_USAGE: VehicleUsageRecord[] = [
 
 export const ProductManagement: React.FC = () => {
   const { success, error } = useToast();
+  const { user } = useAuth();
+  const location = useLocation();
 
   // 1. Products List State (Persistent in localStorage so all created products remain)
   const [products, setProducts] = useState<ProductItem[]>(() => {

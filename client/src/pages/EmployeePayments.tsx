@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   ArrowLeft, User, Bus, ShieldCheck, IndianRupee, CheckCircle2, Clock,
   Calendar, Download, MapPin, Hash, AlertCircle, ChevronLeft, ChevronRight, Search,
@@ -76,6 +77,8 @@ function BriefcaseIcon({ className }: { className?: string }) {
 export const EmployeePayments: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const { user } = useAuth();
 
   const empName = searchParams.get("name") || "";
   const empCode = searchParams.get("code") || "";

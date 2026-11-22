@@ -460,7 +460,6 @@ export const RecordManagement: React.FC = () => {
   // Handle Save
   const handleSaveRecord = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isUserAdmin = user?.role?.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
 
     if (!formData.bill_to_name?.trim()) {
       formData.bill_to_name = 'Charvik Staffing Consultancy';

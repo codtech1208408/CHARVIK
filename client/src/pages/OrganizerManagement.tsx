@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Building2,
   Plus,
@@ -43,6 +45,8 @@ const STORAGE_KEY = 'charvik_organizer_management_data';
 
 export const OrganizerManagement: React.FC = () => {
   const { success, error } = useToast();
+  const { user } = useAuth();
+  const location = useLocation();
 
   const [organizers, setOrganizers] = useState<OrganizerItem[]>(() => {
     try {

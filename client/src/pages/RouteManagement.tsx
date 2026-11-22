@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Navigation,
   Plus,
@@ -82,6 +83,7 @@ const normalizeRoute = (item: any, idx: number): RouteItem => {
 
 export const RouteManagement: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const isAdmin = (user?.role || '').toLowerCase().includes('admin');
   const { success, error } = useToast();
 

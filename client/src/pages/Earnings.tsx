@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   TrendingUp,
   Building2,
@@ -40,6 +41,8 @@ interface OrganizerPayment {
 export const Earnings: React.FC = () => {
   const { success, error } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
 
   // Core Data
   const [tasks, setTasks] = useState<any[]>([]);
