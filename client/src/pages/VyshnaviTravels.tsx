@@ -3588,34 +3588,6 @@ export const VyshnaviTravels: React.FC = () => {
                 <span className="text-xs text-slate-500 font-medium">
                   Record No: <strong className="text-slate-900 font-black">{printingRecord.record_number}</strong>
                 </span>
-
-                {/* Print Format Toggle Switch */}
-                <div className="flex items-center gap-1 p-0.5 bg-slate-200/70 rounded-xl border border-slate-200">
-                  <button
-                    type="button"
-                    onClick={() => setPrintFormat('colourful')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                      printFormat === 'colourful'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                    }`}
-                  >
-                    <span>🎨</span>
-                    <span>Colourful Invoice</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPrintFormat('letterhead')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                      printFormat === 'letterhead'
-                        ? 'bg-slate-800 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                    }`}
-                  >
-                    <span>📄</span>
-                    <span>Formal Document</span>
-                  </button>
-                </div>
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
@@ -3702,16 +3674,17 @@ export const VyshnaviTravels: React.FC = () => {
               >
                 {/* Top-Right Swoosh Graphic Accent */}
                 <img
-                  src="/vyshnavi-top-swoosh.png"
+                  src="/vyshnavi-top-swoosh.png?v=clean"
                   alt=""
                   style={{
                     position: 'absolute',
                     top: 0,
                     right: 0,
-                    width: '170px',
+                    width: '135px',
                     height: 'auto',
                     pointerEvents: 'none',
-                    zIndex: 1
+                    zIndex: 1,
+                    opacity: 0.95
                   }}
                 />
 
@@ -3729,7 +3702,7 @@ export const VyshnaviTravels: React.FC = () => {
                       />
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'flex-start', borderLeft: '2px solid #002B49', paddingLeft: '14px', minHeight: '68px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', borderLeft: '2px solid #002B49', paddingLeft: '14px', minHeight: '68px', marginRight: '6px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px', fontWeight: '800', color: '#002B49', lineHeight: '1.3' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                           <span style={{ fontSize: '13px' }}>📞</span>
@@ -4179,15 +4152,31 @@ export const VyshnaviTravels: React.FC = () => {
                         (e.target as HTMLImageElement).src = '/vyshnavi-logo.png';
                       }}
                     />
-                    <div style={{ display: 'flex', alignItems: 'center', borderLeft: '1.5px solid #002B49', paddingLeft: '16px', minHeight: '52px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '13px', fontWeight: '700', color: '#002B49' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '15px' }}>✉</span>
-                          <span>vyshnavitravels@yahoo.com</span>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', borderLeft: '1.5px solid #002B49', paddingLeft: '14px', minHeight: '68px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px', fontWeight: '800', color: '#002B49', lineHeight: '1.3' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ fontSize: '13px' }}>📞</span>
+                          <span>{printingRecord.company_phone || '+91 9505151527'}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '15px' }}>📍</span>
-                          <span>Hyderabad, Telangana</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ fontSize: '13px' }}>✉</span>
+                          <span>{printingRecord.company_email || 'vyshnavitravels@yahoo.com'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ fontSize: '13px' }}>🌐</span>
+                          <span>{printingRecord.company_website || 'www.vyshnavitravels.com'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>GST</span>
+                          <span>GSTIN : {printingRecord.company_gst || '36ABCDE1234F1Z5'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>PAN</span>
+                          <span>PAN : {printingRecord.company_pan || 'AABPV1234D'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ fontSize: '13px' }}>📍</span>
+                          <span>{printingRecord.company_address || 'Hyderabad, Telangana'}</span>
                         </div>
                       </div>
                     </div>

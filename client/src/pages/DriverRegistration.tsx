@@ -33,12 +33,15 @@ import { getNextEmployeeCode } from '../utils/employeeCode';
 import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
 import { useAuth } from '../context/AuthContext';
 import { printSheet } from '../utils/printSheet';
+import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
+import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import { exportTableToExcel } from '../utils/exportToExcel';
 
 export const DriverRegistration: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const [companyDetails, setCompanyDetails] = useState<CharvikCompanyDetails>(getSavedCharvikCompanyDetails());
   const { success, error } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -1058,6 +1061,13 @@ export const DriverRegistration: React.FC = () => {
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
                 />
               </div>
+
+              {/* Charvik Company & Tax Details */}
+              <CharvikCompanyDetailsFields
+                sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
+                values={companyDetails}
+                onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
+              />
             </div>
           )}
 
@@ -1203,17 +1213,22 @@ export const DriverRegistration: React.FC = () => {
               <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1 leading-tight">
                 <span className="inline-flex items-center gap-1">
                   <span className="text-[#0056b3] font-extrabold">Phone:</span>
-                  <span className="text-black">9505151527</span>
+                  <span className="text-black">{companyDetails.company_phone || '9505151527'}</span>
                 </span>
                 <span className="text-[#0056b3] font-black">•</span>
                 <span className="inline-flex items-center gap-1">
                   <span className="text-[#0056b3] font-extrabold">Email:</span>
-                  <span className="text-black">charvikstaffingconsultancy@gmail.com</span>
+                  <span className="text-black">{companyDetails.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
+                </span>
+                <span className="text-[#0056b3] font-black">•</span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-[#0056b3] font-extrabold">Web:</span>
+                  <span className="text-black">{companyDetails.company_website || 'www.charvikstaffing.com'}</span>
                 </span>
                 <span className="text-[#0056b3] font-black">•</span>
                 <span className="inline-flex items-center gap-1">
                   <span className="text-[#0056b3] font-extrabold">Location:</span>
-                  <span className="text-black">Hyderabad, Telangana</span>
+                  <span className="text-black">{companyDetails.company_address || 'Hyderabad, Telangana'}</span>
                 </span>
               </div>
               <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-700 font-bold mt-2">

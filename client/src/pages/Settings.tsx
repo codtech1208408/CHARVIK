@@ -15,6 +15,8 @@ import {
 import { api } from '../services/api';
 import { Badge } from '../components/common/Badge';
 import { useToast } from '../components/common/Toast';
+import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
+import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import { useAuth } from '../context/AuthContext';
 import {
   Users,
@@ -32,6 +34,7 @@ import {
 export const Settings: React.FC = () => {
   const { user } = useAuth();
   const { success, error } = useToast();
+  const [companyDetails, setCompanyDetails] = useState<CharvikCompanyDetails>(getSavedCharvikCompanyDetails());
 
   const [activeTab, setActiveTab] = useState<'company' | 'financial_control' | 'maintenance' | 'account' | 'notifications' | 'staff_access'>('company');
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -442,11 +445,18 @@ export const Settings: React.FC = () => {
               <label className="block text-xs font-bold text-slate-700 mb-1">Head Office Address</label>
               <textarea
                 rows={2}
-                value={settings.office_address || 'NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana'}
+                value={settings.office_address || 'Hyderabad, Telangana'}
                 onChange={(e) => handleInputChange('office_address', e.target.value)}
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
               />
             </div>
+
+            {/* Charvik Company & Tax Details */}
+            <CharvikCompanyDetailsFields
+              sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
+              values={companyDetails}
+              onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
+            />
 
             <div className="pt-3 border-t border-slate-100 flex justify-end">
               <button

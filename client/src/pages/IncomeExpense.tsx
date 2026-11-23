@@ -36,6 +36,8 @@ import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
 import { printSheet } from '../utils/printSheet';
 import { exportTableToExcel } from '../utils/exportToExcel';
+import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
+import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 
 export interface IncomeExpenseItem {
   id: number;
@@ -89,6 +91,7 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
   hideHero = false
 }) => {
   const { success, error } = useToast();
+  const [companyDetails, setCompanyDetails] = useState<CharvikCompanyDetails>(getSavedCharvikCompanyDetails());
 
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<IncomeExpenseItem[]>([]);
@@ -1626,6 +1629,13 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
             />
           </div>
 
+          {/* Charvik Company & Tax Details */}
+          <CharvikCompanyDetailsFields
+            sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
+            values={companyDetails}
+            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
+          />
+
           {/* Action Buttons */}
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
             <button
@@ -1737,17 +1747,22 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
                 <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1.5 leading-tight">
                   <span className="inline-flex items-center gap-1">
                     <span className="text-[#0056b3] font-extrabold">Phone:</span>
-                    <span className="text-black">9505151527</span>
+                    <span className="text-black">{companyDetails.company_phone || '9505151527'}</span>
                   </span>
                   <span className="text-[#0056b3] font-black">•</span>
                   <span className="inline-flex items-center gap-1">
                     <span className="text-[#0056b3] font-extrabold">Email:</span>
-                    <span className="text-black">charvikstaffingconsultancy@gmail.com</span>
+                    <span className="text-black">{companyDetails.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
+                  </span>
+                  <span className="text-[#0056b3] font-black">•</span>
+                  <span className="inline-flex items-center gap-1">
+                    <span className="text-[#0056b3] font-extrabold">Web:</span>
+                    <span className="text-black">{companyDetails.company_website || 'www.charvikstaffing.com'}</span>
                   </span>
                   <span className="text-[#0056b3] font-black">•</span>
                   <span className="inline-flex items-center gap-1">
                     <span className="text-[#0056b3] font-extrabold">Location:</span>
-                    <span className="text-black">Hyderabad, Telangana</span>
+                    <span className="text-black">{companyDetails.company_address || 'Hyderabad, Telangana'}</span>
                   </span>
                 </div>
               </div>

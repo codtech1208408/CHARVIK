@@ -32,6 +32,7 @@ import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
 import { exportTableToExcel } from '../utils/exportToExcel';
 import { OperatorSearchSelect } from '../components/common/OperatorSearchSelect';
+import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
 
 export interface RecordItem {
   id: string;
@@ -1608,88 +1609,18 @@ export const RecordManagement: React.FC = () => {
           </div>
 
           {/* Section 5: Charvik Company & Tax Details (Shown on Printout Header) */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <span>🏢</span>
-                <span>5. Charvik Staffing & Consultancy Company & Tax Details (Printout Header)</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    ...DEFAULT_CHARVIK_COMPANY_DETAILS
-                  }));
-                }}
-                className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-              >
-                Reset to Standard Defaults
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Company Phone Number</label>
-                <input
-                  type="text"
-                  value={formData.company_phone || ''}
-                  onChange={(e) => setFormData({ ...formData, company_phone: e.target.value })}
-                  placeholder="+91 9505151527"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Company Email</label>
-                <input
-                  type="email"
-                  value={formData.company_email || ''}
-                  onChange={(e) => setFormData({ ...formData, company_email: e.target.value })}
-                  placeholder="charvikstaffingconsultancy@gmail.com"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Official Website</label>
-                <input
-                  type="text"
-                  value={formData.company_website || ''}
-                  onChange={(e) => setFormData({ ...formData, company_website: e.target.value })}
-                  placeholder="www.charvikstaffing.com"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Company GSTIN</label>
-                <input
-                  type="text"
-                  value={formData.company_gst || ''}
-                  onChange={(e) => setFormData({ ...formData, company_gst: e.target.value.toUpperCase() })}
-                  placeholder="36ABCDE1234F1Z5"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Company PAN</label>
-                <input
-                  type="text"
-                  value={formData.company_pan || ''}
-                  onChange={(e) => setFormData({ ...formData, company_pan: e.target.value.toUpperCase() })}
-                  placeholder="AABPC1234D"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">Address / Location</label>
-                <input
-                  type="text"
-                  value={formData.company_address || ''}
-                  onChange={(e) => setFormData({ ...formData, company_address: e.target.value })}
-                  placeholder="Hyderabad, Telangana"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-          </div>
+          <CharvikCompanyDetailsFields
+            sectionTitle="5. Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
+            values={{
+              company_phone: formData.company_phone,
+              company_email: formData.company_email,
+              company_website: formData.company_website,
+              company_gst: formData.company_gst,
+              company_pan: formData.company_pan,
+              company_address: formData.company_address
+            }}
+            onChange={(updated) => setFormData((prev) => ({ ...prev, ...updated }))}
+          />
 
           {/* Modal Actions */}
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
@@ -1729,34 +1660,6 @@ export const RecordManagement: React.FC = () => {
                 <span className="text-xs text-slate-500 font-medium">
                   Record No: <strong className="text-slate-900 font-black">{printingRecord.record_number}</strong>
                 </span>
-
-                {/* Print Format Toggle Switch */}
-                <div className="flex items-center gap-1 p-0.5 bg-slate-200/70 rounded-xl border border-slate-200">
-                  <button
-                    type="button"
-                    onClick={() => setPrintFormat('colourful')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                      printFormat === 'colourful'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                    }`}
-                  >
-                    <span>🎨</span>
-                    <span>Colourful Invoice</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPrintFormat('letterhead')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                      printFormat === 'letterhead'
-                        ? 'bg-slate-800 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                    }`}
-                  >
-                    <span>📄</span>
-                    <span>Formal Document</span>
-                  </button>
-                </div>
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
@@ -1829,16 +1732,17 @@ export const RecordManagement: React.FC = () => {
               >
                 {/* Top-Right Swoosh Graphic Accent */}
                 <img
-                  src="/vyshnavi-top-swoosh.png"
+                  src="/vyshnavi-top-swoosh.png?v=clean"
                   alt=""
                   style={{
                     position: 'absolute',
                     top: 0,
                     right: 0,
-                    width: '170px',
+                    width: '135px',
                     height: 'auto',
                     pointerEvents: 'none',
-                    zIndex: 1
+                    zIndex: 1,
+                    opacity: 0.95
                   }}
                 />
 
@@ -1856,7 +1760,7 @@ export const RecordManagement: React.FC = () => {
                       />
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'flex-start', borderLeft: '2px solid #002B49', paddingLeft: '14px', minHeight: '68px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', borderLeft: '2px solid #002B49', paddingLeft: '14px', minHeight: '68px', marginRight: '6px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px', fontWeight: '800', color: '#002B49', lineHeight: '1.3' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                           <span style={{ fontSize: '13px' }}>📞</span>
@@ -2268,36 +2172,43 @@ export const RecordManagement: React.FC = () => {
                   display: printFormat === 'letterhead' ? 'block' : 'none'
                 }}
               >
-                {/* Top Letterhead Header (Official Enclosed Charvik Letterhead) */}
-                <div className="border-2 border-[#0056b3] rounded-xl p-2.5 sm:p-3 bg-white text-center mb-3">
-                  <div className="flex justify-center items-center mb-2">
-                    <img
-                      src="/charvik-print-logo.png?v=20261120_print"
-                      alt="CHARVIK STAFFING CONSULTANCY"
-                      className="h-14 max-h-[58px] w-auto max-w-[320px] object-contain block mx-auto"
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/logo-brand.png'; }}
-                    />
-                  </div>
-                  <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1 leading-tight">
-                    <span className="inline-flex items-center gap-1">
-                      <span className="text-[#0056b3] font-extrabold">Phone:</span>
-                      <span className="text-black">{printingRecord.company_phone || '9505151527'}</span>
-                    </span>
-                    <span className="text-[#0056b3] font-black">•</span>
-                    <span className="inline-flex items-center gap-1">
-                      <span className="text-[#0056b3] font-extrabold">Email:</span>
-                      <span className="text-black">{printingRecord.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
-                    </span>
-                    <span className="text-[#0056b3] font-black">•</span>
-                    <span className="inline-flex items-center gap-1">
-                      <span className="text-[#0056b3] font-extrabold">Web:</span>
-                      <span className="text-black">{printingRecord.company_website || 'www.charvikstaffing.com'}</span>
-                    </span>
-                    <span className="text-[#0056b3] font-black">•</span>
-                    <span className="inline-flex items-center gap-1">
-                      <span className="text-[#0056b3] font-extrabold">Location:</span>
-                      <span className="text-black">{printingRecord.company_address || 'Hyderabad, Telangana'}</span>
-                    </span>
+                {/* Top Official Header: Colorful Logo on Left, Contact info on Right with vertical divider */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1.5px solid #002B49', marginBottom: '14px' }}>
+                  <img
+                    src="/charvik-invoice-logo.png"
+                    alt="CHARVIK Staffing & Consultancy"
+                    style={{ height: '65px', maxHeight: '72px', width: 'auto', maxWidth: '280px', display: 'block', objectFit: 'contain' }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/logo-brand.png';
+                    }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'flex-start', borderLeft: '1.5px solid #002B49', paddingLeft: '14px', minHeight: '68px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px', fontWeight: '800', color: '#002B49', lineHeight: '1.3' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <span style={{ fontSize: '13px' }}>📞</span>
+                        <span>{printingRecord.company_phone || '+91 9505151527'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <span style={{ fontSize: '13px' }}>✉</span>
+                        <span>{printingRecord.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <span style={{ fontSize: '13px' }}>🌐</span>
+                        <span>{printingRecord.company_website || 'www.charvikstaffing.com'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>GST</span>
+                        <span>GSTIN : {printingRecord.company_gst || '36ABCDE1234F1Z5'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>PAN</span>
+                        <span>PAN : {printingRecord.company_pan || 'AABPC1234D'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <span style={{ fontSize: '13px' }}>📍</span>
+                        <span>{printingRecord.company_address || 'Hyderabad, Telangana'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
