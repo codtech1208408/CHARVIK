@@ -865,7 +865,7 @@ ${formattedTrips}
 ${formattedPayments}
 ════════════════════════════
 🏢 *CHARVIK STAFFING CONSULTANCY*
-📍 NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana
+📍 Hyderabad, Telangana
 📞 Helpline: +91 9505151527
 📧 charvikstaffingconsultancy@gmail.com
 🌐 www.charvikstaffing.com

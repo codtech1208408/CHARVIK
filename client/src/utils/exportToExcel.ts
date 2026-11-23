@@ -45,7 +45,7 @@ export function buildFormattedWorksheet(params: {
   const wsData: any[][] = [];
   wsData.push(['CHARVIK STAFFING CONSULTANCY']);
   wsData.push(['STAFFING | MANPOWER SOLUTIONS | FLEET MAINTENANCE SUPPORT | OPERATIONAL SERVICES']);
-  wsData.push(['NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana | Phone: 9505151527 | Email: charvikstaffingconsulrancy@gmail.com']);
+  wsData.push(['Hyderabad, Telangana | Phone: 9505151527 | Email: charvikstaffingconsulrancy@gmail.com']);
   wsData.push([title]);
 
   let metaRowIdx = 4;

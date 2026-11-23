@@ -282,6 +282,33 @@ export const TaskManagement: React.FC = () => {
     }));
   }, [buses]);
 
+  const driverSearchOptions: SearchOption[] = useMemo(() => {
+    return drivers.map((d) => ({
+      value: d.full_name,
+      label: d.full_name,
+      sublabel: `${d.employee_code}${d.salary ? ` • ₹${Number(d.salary).toLocaleString('en-IN')}` : ''}${d.phone_number ? ` • 📞 ${d.phone_number}` : ''}`,
+      badge: d.employment_type || undefined
+    }));
+  }, [drivers]);
+
+  const helperSearchOptions: SearchOption[] = useMemo(() => {
+    return helpers.map((h) => ({
+      value: h.full_name,
+      label: h.full_name,
+      sublabel: `${h.employee_code}${h.salary ? ` • ₹${Number(h.salary).toLocaleString('en-IN')}` : ''}${h.phone_number ? ` • 📞 ${h.phone_number}` : ''}`,
+      badge: h.employment_type || undefined
+    }));
+  }, [helpers]);
+
+  const captainSearchOptions: SearchOption[] = useMemo(() => {
+    return captains.map((c) => ({
+      value: c.full_name,
+      label: c.full_name,
+      sublabel: `${c.employee_code}${c.phone_number ? ` • 📞 ${c.phone_number}` : ''}`,
+      badge: c.employment_type || undefined
+    }));
+  }, [captains]);
+
   const routeSearchOptions: SearchOption[] = useMemo(() => {
     return routes.map((r: any) => ({
       value: `${r.starting_city} → ${r.ending_city}`,
@@ -1879,20 +1906,15 @@ export const TaskManagement: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Driver 1 Employee *</label>
-                  <select
+                  <SearchableSelect
+                    label="Select Driver 1 Employee *"
                     required
+                    placeholder="-- Search or Select Driver 1 --"
+                    searchPlaceholder="Search driver by name, code, phone..."
+                    options={driverSearchOptions}
                     value={formData.driver1?.employee_name || ''}
-                    onChange={(e) => handleDriver1Select(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-amber-200 bg-white font-semibold outline-none shadow-2xs"
-                  >
-                    <option value="">-- Select Driver 1 --</option>
-                    {drivers.map((d) => (
-                      <option key={d.id} value={d.full_name}>
-                        {d.full_name} ({d.employee_code}){d.salary ? ` • ₹${Number(d.salary).toLocaleString('en-IN')}` : ''}{d.employment_type ? ` [${d.employment_type}]` : ''}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => handleDriver1Select(val)}
+                  />
                 </div>
 
                 <div>
@@ -1958,18 +1980,13 @@ export const TaskManagement: React.FC = () => {
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-[11px] font-bold text-slate-700">Select Driver 2 Employee</label>
                   </div>
-                  <select
+                  <SearchableSelect
+                    placeholder="-- None (Single Driver Duty) --"
+                    searchPlaceholder="Search driver by name, code, phone..."
+                    options={driverSearchOptions}
                     value={formData.driver2?.employee_name || ''}
-                    onChange={(e) => handleDriver2Select(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-blue-200 bg-white font-semibold outline-none shadow-2xs"
-                  >
-                    <option value="">-- None (Single Driver Duty) --</option>
-                    {drivers.map((d) => (
-                      <option key={d.id} value={d.full_name}>
-                        {d.full_name} ({d.employee_code}){d.salary ? ` • ₹${Number(d.salary).toLocaleString('en-IN')}` : ''}{d.employment_type ? ` [${d.employment_type}]` : ''}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => handleDriver2Select(val)}
+                  />
                 </div>
 
                 <div>
@@ -2033,18 +2050,13 @@ export const TaskManagement: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Helper Employee</label>
-                  <select
+                  <SearchableSelect
+                    placeholder="-- None (No Helper Required) --"
+                    searchPlaceholder="Search helper by name, code, phone..."
+                    options={helperSearchOptions}
                     value={formData.helper?.employee_name || ''}
-                    onChange={(e) => handleHelperSelect(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-xl border border-emerald-200 bg-white font-semibold outline-none shadow-2xs"
-                  >
-                    <option value="">-- None (No Helper Required) --</option>
-                    {helpers.map((h) => (
-                      <option key={h.id} value={h.full_name}>
-                        {h.full_name} ({h.employee_code}){h.salary ? ` • ₹${Number(h.salary).toLocaleString('en-IN')}` : ''}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => handleHelperSelect(val)}
+                  />
                 </div>
 
                 <div>
@@ -2101,18 +2113,13 @@ export const TaskManagement: React.FC = () => {
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Select Captain Employee</label>
-                <select
+                <SearchableSelect
+                  placeholder="-- None (No Captain Assigned) --"
+                  searchPlaceholder="Search captain by name, code, phone..."
+                  options={captainSearchOptions}
                   value={formData.captain?.employee_name || ''}
-                  onChange={(e) => handleCaptainSelect(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-purple-200 bg-white font-semibold outline-none shadow-2xs"
-                >
-                  <option value="">-- None (No Captain Assigned) --</option>
-                  {captains.map((c) => (
-                    <option key={c.id} value={c.full_name}>
-                      {c.full_name} ({c.employee_code})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => handleCaptainSelect(val)}
+                />
               </div>
             </div>
           </div>

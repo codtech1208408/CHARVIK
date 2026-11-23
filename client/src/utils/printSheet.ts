@@ -469,13 +469,9 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
             </span>
             <span class="charvik-contact-sep">•</span>
             <span class="charvik-contact-item">
-              <span class="charvik-contact-label">Web:</span>
-              <span class="charvik-contact-val">www.charvikstaffing.com</span>
+              <span class="charvik-contact-label">Location:</span>
+              <span class="charvik-contact-val">Hyderabad, Telangana</span>
             </span>
-          </div>
-          <div class="charvik-letterhead-address-pill">
-            <span class="charvik-address-label">Office:</span>
-            <span>NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana</span>
           </div>
         </div>
         ` : ''}

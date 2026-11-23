@@ -64,11 +64,57 @@ export interface ServiceRecord {
   bank_account_no: string;
   bank_ifsc: string;
   bank_branch: string;
+  company_phone?: string;
+  company_email?: string;
+  company_website?: string;
+  company_gst?: string;
+  company_pan?: string;
+  company_address?: string;
   upi_id: string;
   qr_code_url: string;
   remarks: string;
   created_at?: string;
 }
+
+export const DEFAULT_CHARVIK_COMPANY_DETAILS = {
+  company_phone: '+91 9505151527',
+  company_email: 'charvikstaffingconsultancy@gmail.com',
+  company_website: 'www.charvikstaffing.com',
+  company_gst: '36ABCDE1234F1Z5',
+  company_pan: 'AABPC1234D',
+  company_address: 'Hyderabad, Telangana'
+};
+
+export const getSavedCharvikCompanyDetails = () => {
+  try {
+    const saved = localStorage.getItem('charvik_company_details');
+    if (saved) return { ...DEFAULT_CHARVIK_COMPANY_DETAILS, ...JSON.parse(saved) };
+  } catch {}
+  return DEFAULT_CHARVIK_COMPANY_DETAILS;
+};
+
+export const getParticularIcon = (desc: string) => {
+  const d = (desc || '').toLowerCase();
+  if (d.includes('stopping') || d.includes('consistency') || d.includes('week') || d.includes('month') || d.includes('date') || d.includes('stay')) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '5px', background: '#ffedd5', color: '#ea580c', fontSize: '13px', marginRight: '8px', verticalAlign: 'middle', border: '1px solid #fdba74', flexShrink: 0 }}>
+        📅
+      </span>
+    );
+  }
+  if (d.includes('captain') || d.includes('supervision') || d.includes('passenger') || d.includes('care') || d.includes('route') || d.includes('trip') || d.includes('bus') || d.includes('driver')) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '5px', background: '#dbeafe', color: '#2563eb', fontSize: '13px', marginRight: '8px', verticalAlign: 'middle', border: '1px solid #bfdbfe', flexShrink: 0 }}>
+        🚌
+      </span>
+    );
+  }
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '5px', background: '#e0e7ff', color: '#4f46e5', fontSize: '13px', marginRight: '8px', verticalAlign: 'middle', border: '1px solid #c7d2fe', flexShrink: 0 }}>
+      👥
+    </span>
+  );
+};
 
 const DEFAULT_BANK_DETAILS = {
   bank_name: 'Kotak Mahindra Bank, VANASTHALIPURAM HYDERABAD',
@@ -283,6 +329,7 @@ export const RecordManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ServiceRecord | null>(null);
   const [printingRecord, setPrintingRecord] = useState<ServiceRecord | null>(null);
+  const [printFormat, setPrintFormat] = useState<'colourful' | 'letterhead'>('colourful');
   const printSheetRef = useRef<HTMLDivElement>(null);
 
   const getInitialFormData = (existingRecordsCount: number = 0): Partial<ServiceRecord> => ({
@@ -307,6 +354,7 @@ export const RecordManagement: React.FC = () => {
     received_amount: 0,
     payment_status: 'Pending',
     ...DEFAULT_BANK_DETAILS,
+    ...getSavedCharvikCompanyDetails(),
     qr_code_url: '',
     remarks: ''
   });
@@ -326,6 +374,12 @@ export const RecordManagement: React.FC = () => {
     setEditingRecord(rec);
     setFormData({
       ...rec,
+      company_phone: rec.company_phone || getSavedCharvikCompanyDetails().company_phone,
+      company_email: rec.company_email || getSavedCharvikCompanyDetails().company_email,
+      company_website: rec.company_website || getSavedCharvikCompanyDetails().company_website,
+      company_gst: rec.company_gst || getSavedCharvikCompanyDetails().company_gst,
+      company_pan: rec.company_pan || getSavedCharvikCompanyDetails().company_pan,
+      company_address: rec.company_address || getSavedCharvikCompanyDetails().company_address,
       items: rec.items && rec.items.length > 0 ? rec.items : [
         {
           id: String(Date.now()),
@@ -526,10 +580,27 @@ export const RecordManagement: React.FC = () => {
       bank_account_no: formData.bank_account_no || DEFAULT_BANK_DETAILS.bank_account_no,
       bank_ifsc: formData.bank_ifsc || DEFAULT_BANK_DETAILS.bank_ifsc,
       bank_branch: formData.bank_branch || DEFAULT_BANK_DETAILS.bank_branch,
+      company_phone: formData.company_phone || getSavedCharvikCompanyDetails().company_phone,
+      company_email: formData.company_email || getSavedCharvikCompanyDetails().company_email,
+      company_website: formData.company_website || getSavedCharvikCompanyDetails().company_website,
+      company_gst: formData.company_gst || getSavedCharvikCompanyDetails().company_gst,
+      company_pan: formData.company_pan || getSavedCharvikCompanyDetails().company_pan,
+      company_address: formData.company_address || getSavedCharvikCompanyDetails().company_address,
       upi_id: formData.upi_id || DEFAULT_BANK_DETAILS.upi_id,
       qr_code_url: formData.qr_code_url || '',
       remarks: formData.remarks || ''
     };
+
+    try {
+      localStorage.setItem('charvik_company_details', JSON.stringify({
+        company_phone: recordPayload.company_phone,
+        company_email: recordPayload.company_email,
+        company_website: recordPayload.company_website,
+        company_gst: recordPayload.company_gst,
+        company_pan: recordPayload.company_pan,
+        company_address: recordPayload.company_address
+      }));
+    } catch {}
 
     try {
       if (editingRecord) {
@@ -679,6 +750,132 @@ export const RecordManagement: React.FC = () => {
         }, 1500);
       }
     }, 400);
+  };
+
+  // Print Colourful Invoice via Isolated IFrame (Matching Image 1)
+  const handlePrintColourfulInvoice = (recordToPrint: ServiceRecord) => {
+    const printElement = document.getElementById('charvik-printable-colourful-invoice');
+    if (!printElement) {
+      handlePrint();
+      return;
+    }
+
+    let iframe = document.getElementById('charvik-print-frame') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'charvik-print-frame';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      iframe.style.visibility = 'hidden';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .map((el) => el.outerHTML)
+      .join('\n');
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>Charvik Invoice - ${recordToPrint.record_number || 'Sheet'}</title>
+          ${styles}
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 4mm 6mm;
+            }
+            * {
+              box-sizing: border-box !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              color: #002B49 !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            #charvik-printable-colourful-invoice {
+              width: 100% !important;
+              max-width: 100% !important;
+              background: #ffffff !important;
+              color: #002B49 !important;
+              padding: 16px 20px !important;
+              margin: 0 auto !important;
+              border: 2px solid #0056b3 !important;
+              border-radius: 6px !important;
+              min-height: 1030px !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: space-between !important;
+              position: relative !important;
+              overflow: hidden !important;
+            }
+            @media print {
+              #charvik-printable-colourful-invoice {
+                border: 2px solid #0056b3 !important;
+                page-break-inside: avoid !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${printElement.outerHTML}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    const triggerPrint = () => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch {
+        window.print();
+      }
+    };
+
+    const imgs = doc.querySelectorAll('img');
+    let loadedCount = 0;
+    const totalImgs = imgs.length;
+
+    if (totalImgs === 0) {
+      setTimeout(triggerPrint, 250);
+    } else {
+      for (let i = 0; i < totalImgs; i++) {
+        if (imgs[i].complete) {
+          loadedCount++;
+          if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+        } else {
+          imgs[i].onload = () => {
+            loadedCount++;
+            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+          };
+          imgs[i].onerror = () => {
+            loadedCount++;
+            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+          };
+        }
+      }
+    }
   };
 
   // Export to Excel / CSV
@@ -1057,12 +1254,15 @@ export const RecordManagement: React.FC = () => {
                         {/* Print Record Button (Matching Images 1, 2, 3) */}
                         <button
                           type="button"
-                          onClick={() => setPrintingRecord(r)}
+                          onClick={() => {
+                            setPrintingRecord(r);
+                            setPrintFormat('colourful');
+                          }}
                           className="px-2.5 py-1.5 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
-                          title="Print Official Record Sheet"
+                          title="Printout / Colourful Invoice"
                         >
                           <Printer className="w-3.5 h-3.5 text-blue-700" />
-                          <span>Print</span>
+                          <span>Printout</span>
                         </button>
 
                         {/* Edit */}
@@ -1407,6 +1607,90 @@ export const RecordManagement: React.FC = () => {
             </div>
           </div>
 
+          {/* Section 5: Charvik Company & Tax Details (Shown on Printout Header) */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <span>🏢</span>
+                <span>5. Charvik Staffing & Consultancy Company & Tax Details (Printout Header)</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    ...DEFAULT_CHARVIK_COMPANY_DETAILS
+                  }));
+                }}
+                className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+              >
+                Reset to Standard Defaults
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Company Phone Number</label>
+                <input
+                  type="text"
+                  value={formData.company_phone || ''}
+                  onChange={(e) => setFormData({ ...formData, company_phone: e.target.value })}
+                  placeholder="+91 9505151527"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Company Email</label>
+                <input
+                  type="email"
+                  value={formData.company_email || ''}
+                  onChange={(e) => setFormData({ ...formData, company_email: e.target.value })}
+                  placeholder="charvikstaffingconsultancy@gmail.com"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Official Website</label>
+                <input
+                  type="text"
+                  value={formData.company_website || ''}
+                  onChange={(e) => setFormData({ ...formData, company_website: e.target.value })}
+                  placeholder="www.charvikstaffing.com"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Company GSTIN</label>
+                <input
+                  type="text"
+                  value={formData.company_gst || ''}
+                  onChange={(e) => setFormData({ ...formData, company_gst: e.target.value.toUpperCase() })}
+                  placeholder="36ABCDE1234F1Z5"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Company PAN</label>
+                <input
+                  type="text"
+                  value={formData.company_pan || ''}
+                  onChange={(e) => setFormData({ ...formData, company_pan: e.target.value.toUpperCase() })}
+                  placeholder="AABPC1234D"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 uppercase focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Address / Location</label>
+                <input
+                  type="text"
+                  value={formData.company_address || ''}
+                  onChange={(e) => setFormData({ ...formData, company_address: e.target.value })}
+                  placeholder="Hyderabad, Telangana"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Modal Actions */}
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <button
@@ -1435,32 +1719,80 @@ export const RecordManagement: React.FC = () => {
           isOpen={!!printingRecord}
           onClose={() => setPrintingRecord(null)}
           title={`Print Official Record: ${printingRecord.record_number}`}
-          subtitle="Official Charvik letterhead format with salary statement, bank details, and QR code."
+          subtitle="Support for Colourful Invoice and Formal Document styles."
           maxWidth="max-w-4xl"
         >
           <div className="space-y-4">
             {/* Action Bar */}
-            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 no-print">
-              <div className="flex items-center gap-2 text-xs text-slate-600">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Ready for high-quality printing or PDF export.</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 no-print">
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-500 font-medium">
+                  Record No: <strong className="text-slate-900 font-black">{printingRecord.record_number}</strong>
+                </span>
+
+                {/* Print Format Toggle Switch */}
+                <div className="flex items-center gap-1 p-0.5 bg-slate-200/70 rounded-xl border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setPrintFormat('colourful')}
+                    className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                      printFormat === 'colourful'
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                    }`}
+                  >
+                    <span>🎨</span>
+                    <span>Colourful Invoice</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPrintFormat('letterhead')}
+                    className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                      printFormat === 'letterhead'
+                        ? 'bg-slate-800 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                    }`}
+                  >
+                    <span>📄</span>
+                    <span>Formal Document</span>
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={() => handleExportSingleRecordExcel(printingRecord)}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   <span>Export Excel</span>
                 </button>
+                {/* Printout Button - Prints Colourful Invoice (Matching User's Reference Template) */}
                 <button
                   type="button"
-                  onClick={handlePrint}
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  onClick={() => {
+                    setPrintFormat('colourful');
+                    setTimeout(() => handlePrintColourfulInvoice(printingRecord), 100);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 hover:from-blue-800 hover:to-indigo-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer"
+                  title="Printout (Colourful Template)"
                 >
-                  <Printer className="w-4 h-4" />
-                  <span>Print Record Sheet</span>
+                  <Printer className="w-4 h-4 text-amber-300" />
+                  <span>Printout</span>
+                </button>
+                {/* Print Document Button - Prints Formal Enclosed Sheet */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPrintFormat('letterhead');
+                    setTimeout(() => handlePrint(), 100);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
+                  title="Print Formal Official Document"
+                >
+                  <Printer className="w-4 h-4 text-white" />
+                  <span>Print Document</span>
                 </button>
                 <button
                   type="button"
@@ -1473,43 +1805,501 @@ export const RecordManagement: React.FC = () => {
             </div>
 
             {/* Printable Document Container */}
-            <div
-              ref={printSheetRef}
-              id="charvik-official-record-sheet"
-              className="bg-white p-6 sm:p-8 rounded-xl border border-slate-300 shadow-sm text-slate-900 max-w-[800px] mx-auto print:border-0 print:p-0 print:shadow-none print:max-w-none"
-              style={{ fontFamily: 'Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
-            >
-              {/* Top Letterhead Header (Official Enclosed Charvik Letterhead) */}
-              <div className="border-2 border-[#0056b3] rounded-xl p-2.5 sm:p-3 bg-white text-center mb-3">
-                <div className="flex justify-center items-center mb-2">
+            <div className="bg-slate-100 p-4 rounded-2xl overflow-y-auto max-h-[75vh]">
+              {/* 1. THE COLOURFUL PRINTABLE A4 INVOICE SHEET (MATCHING USER'S IMAGE 1) */}
+              <div
+                id="charvik-printable-colourful-invoice"
+                className="bg-white mx-auto shadow-2xl font-sans"
+                style={{
+                  width: '100%',
+                  maxWidth: '780px',
+                  minHeight: '1040px',
+                  backgroundColor: '#ffffff',
+                  color: '#002B49',
+                  border: '2.5px solid #004b93',
+                  borderRadius: '6px',
+                  padding: '18px 22px 24px 22px',
+                  boxSizing: 'border-box',
+                  display: printFormat === 'colourful' ? 'flex' : 'none',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Top-Right Swoosh Graphic Accent */}
+                <img
+                  src="/vyshnavi-top-swoosh.png"
+                  alt=""
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '170px',
+                    height: 'auto',
+                    pointerEvents: 'none',
+                    zIndex: 1
+                  }}
+                />
+
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                  {/* Top Header: Logo on left, Contact Details on right */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', paddingBottom: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                      <img
+                        src="/charvik-invoice-logo.png"
+                        alt="CHARVIK Staffing & Consultancy"
+                        style={{ height: '70px', maxHeight: '76px', width: 'auto', maxWidth: '300px', display: 'block', objectFit: 'contain' }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/logo-brand.png';
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'flex-start', borderLeft: '2px solid #002B49', paddingLeft: '14px', minHeight: '68px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px', fontWeight: '800', color: '#002B49', lineHeight: '1.3' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ fontSize: '13px' }}>📞</span>
+                          <span>{printingRecord.company_phone || '+91 9505151527'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ fontSize: '13px' }}>✉</span>
+                          <span>{printingRecord.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ fontSize: '13px' }}>🌐</span>
+                          <span>{printingRecord.company_website || 'www.charvikstaffing.com'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>GST</span>
+                          <span>GSTIN : {printingRecord.company_gst || '36ABCDE1234F1Z5'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>PAN</span>
+                          <span>PAN : {printingRecord.company_pan || 'AABPC1234D'}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <span style={{ fontSize: '13px' }}>📍</span>
+                          <span>{printingRecord.company_address || 'Hyderabad, Telangana'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Horizontal Line Under Header */}
+                  <div style={{ borderBottom: '1.5px solid #004b93', width: '100%', margin: '4px 0 12px 0' }}></div>
+
+                  {/* Centered INVOICE Pill with Orange Slashes */}
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 0 14px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '380px' }}>
+                      <span style={{ color: '#ea580c', fontWeight: '900', fontSize: '20px', letterSpacing: '-2px' }}>///</span>
+                      <div
+                        style={{
+                          flex: 1,
+                          backgroundColor: '#004b93',
+                          color: '#ffffff',
+                          textAlign: 'center',
+                          padding: '6px 20px',
+                          borderRadius: '24px',
+                          fontWeight: '900',
+                          fontSize: '18px',
+                          letterSpacing: '0.12em',
+                          boxShadow: '0 2px 4px rgba(0, 75, 147, 0.25)'
+                        }}
+                      >
+                        INVOICE
+                      </div>
+                      <span style={{ color: '#ea580c', fontWeight: '900', fontSize: '20px', letterSpacing: '-2px' }}>///</span>
+                    </div>
+                  </div>
+
+                  {/* Metadata: Billed To Card (Left) & Statement Details Card (Right) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.08fr 0.92fr', gap: '14px', marginBottom: '14px' }}>
+                    {/* Billed To Box */}
+                    <div
+                      style={{
+                        border: '1.5px solid #93c5fd',
+                        borderRadius: '10px',
+                        padding: '10px 14px',
+                        backgroundColor: '#eef6fc',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
+                        <span style={{ fontSize: '13px' }}>👥</span>
+                        <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: '#004b93', letterSpacing: '0.04em' }}>
+                          BILLED TO (CLIENT / OPERATOR)
+                        </span>
+                      </div>
+                      <h3 style={{ margin: '0 0 3px 0', fontSize: '16px', fontWeight: '900', color: '#002B49' }}>
+                        {printingRecord.bill_to_name || 'Sri Krishna Travels'}
+                      </h3>
+                      {printingRecord.bill_to_address && (
+                        <p style={{ margin: '0 0 2px 0', fontSize: '11.5px', fontWeight: '700', color: '#1e3a8a' }}>
+                          📍 {printingRecord.bill_to_address}
+                        </p>
+                      )}
+                      {printingRecord.bill_to_phone && (
+                        <p style={{ margin: '0 0 2px 0', fontSize: '11.5px', fontWeight: '700', color: '#1e3a8a' }}>
+                          📞 Contact : {printingRecord.bill_to_phone}
+                        </p>
+                      )}
+                      {printingRecord.bill_to_pan && (
+                        <p style={{ margin: 0, fontSize: '11.5px', fontWeight: '800', color: '#1e3a8a' }}>
+                          🪪 PAN : {printingRecord.bill_to_pan}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Invoice Details Box */}
+                    <div
+                      style={{
+                        border: '1.5px solid #93c5fd',
+                        borderRadius: '10px',
+                        padding: '10px 14px',
+                        backgroundColor: '#eef6fc',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none', margin: 0, fontSize: '11.5px', color: '#002B49', backgroundColor: 'transparent' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                              <span style={{ marginRight: '6px' }}>📄</span>Invoice No.
+                            </td>
+                            <td style={{ padding: '3px 6px', border: 'none', fontWeight: '800', width: '10px' }}>:</td>
+                            <td style={{ padding: '3px 0', border: 'none', fontWeight: '900', color: '#004b93' }}>{printingRecord.record_number}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                              <span style={{ marginRight: '6px' }}>📅</span>Invoice Date
+                            </td>
+                            <td style={{ padding: '3px 6px', border: 'none', fontWeight: '800' }}>:</td>
+                            <td style={{ padding: '3px 0', border: 'none', fontWeight: '800' }}>{printingRecord.record_date}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                              <span style={{ marginRight: '6px' }}>🚌</span>Vehicle Number
+                            </td>
+                            <td style={{ padding: '3px 6px', border: 'none', fontWeight: '800' }}>:</td>
+                            <td style={{ padding: '3px 0', border: 'none', fontWeight: '800' }}>{printingRecord.vehicle_number || printingRecord.period_month || '-'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                              <span style={{ marginRight: '6px' }}>🪙</span>Payment Status
+                            </td>
+                            <td style={{ padding: '3px 6px', border: 'none', fontWeight: '800' }}>:</td>
+                            <td style={{ padding: '3px 0', border: 'none' }}>
+                              <span
+                                style={{
+                                  backgroundColor: '#fed7aa',
+                                  color: '#9a3412',
+                                  padding: '2px 10px',
+                                  borderRadius: '12px',
+                                  fontSize: '10.5px',
+                                  fontWeight: '900',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.04em',
+                                  display: 'inline-block'
+                                }}
+                              >
+                                {printingRecord.payment_status || 'PENDING'}
+                              </span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Particulars Table with Royal Blue Header & Row Badges */}
+                  <div style={{ border: '2px solid #004b93', borderRadius: '4px', overflow: 'hidden', margin: '0 0 12px 0' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none', margin: 0, backgroundColor: '#ffffff' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#004b93', color: '#ffffff' }}>
+                          <th style={{ width: '65px', padding: '9px 8px', textAlign: 'center', fontWeight: '900', fontSize: '12px', borderRight: '1px solid #2563eb', color: '#ffffff', letterSpacing: '0.04em' }}>
+                            S. NO.
+                          </th>
+                          <th style={{ padding: '9px 14px', textAlign: 'center', fontWeight: '900', fontSize: '12px', borderRight: '1px solid #2563eb', color: '#ffffff', letterSpacing: '0.04em' }}>
+                            PARTICULARS
+                          </th>
+                          <th style={{ width: '160px', padding: '9px 14px', textAlign: 'center', fontWeight: '900', fontSize: '12px', color: '#ffffff', letterSpacing: '0.04em' }}>
+                            AMOUNT (₹)
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {printingRecord.items.map((item, idx) => {
+                          const itemDesc = item.description || 'Staffing & Fleet Service';
+                          const itemAmt = Number(item.salary_paid || 0);
+                          return (
+                            <tr
+                              key={idx}
+                              style={{
+                                backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fbff',
+                                borderBottom: '1px solid #bfdbfe'
+                              }}
+                            >
+                              <td
+                                style={{
+                                  width: '65px',
+                                  padding: '10px 8px',
+                                  textAlign: 'center',
+                                  verticalAlign: 'middle',
+                                  fontWeight: '900',
+                                  fontSize: '13px',
+                                  color: '#004b93',
+                                  borderRight: '1px solid #bfdbfe'
+                                }}
+                              >
+                                {idx + 1}
+                              </td>
+                              <td
+                                style={{
+                                  padding: '10px 14px',
+                                  textAlign: 'left',
+                                  verticalAlign: 'middle',
+                                  borderRight: '1px solid #bfdbfe',
+                                  fontWeight: '800',
+                                  fontSize: '13px',
+                                  color: '#002B49',
+                                  whiteSpace: 'pre-line',
+                                  lineHeight: '1.4'
+                                }}
+                              >
+                                {getParticularIcon(itemDesc)}
+                                <span>{itemDesc}</span>
+                              </td>
+                              <td
+                                style={{
+                                  width: '160px',
+                                  padding: '10px 16px',
+                                  textAlign: 'right',
+                                  verticalAlign: 'middle',
+                                  fontWeight: '900',
+                                  fontSize: '14px',
+                                  color: '#002B49'
+                                }}
+                              >
+                                ₹{itemAmt.toLocaleString('en-IN')}
+                              </td>
+                            </tr>
+                          );
+                        })}
+
+                        {/* Grand Total Row */}
+                        <tr style={{ backgroundColor: '#004b93', color: '#ffffff', borderTop: '2px solid #004b93' }}>
+                          <td
+                            colSpan={2}
+                            style={{
+                              padding: '11px 18px',
+                              textAlign: 'right',
+                              fontWeight: '900',
+                              fontSize: '13px',
+                              letterSpacing: '0.06em',
+                              color: '#ffffff',
+                              borderRight: '1px solid #2563eb'
+                            }}
+                          >
+                            GRAND TOTAL :
+                          </td>
+                          <td
+                            style={{
+                              padding: '11px 18px',
+                              textAlign: 'right',
+                              fontWeight: '900',
+                              fontSize: '16px',
+                              color: '#ffedd5',
+                              backgroundColor: '#ea580c',
+                              letterSpacing: '0.02em'
+                            }}
+                          >
+                            ₹{Number(printingRecord.total_amount || 0).toLocaleString('en-IN')}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Amount in Words Box */}
+                  <div
+                    style={{
+                      border: '1.5px solid #93c5fd',
+                      borderRadius: '6px',
+                      padding: '8px 14px',
+                      backgroundColor: '#eef6fc',
+                      margin: '0 0 14px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    <span style={{ fontSize: '15px' }}>🪙</span>
+                    <span style={{ fontWeight: '700', color: '#475569' }}>Amount in Words :</span>
+                    <span style={{ fontWeight: '900', color: '#004b93', textTransform: 'capitalize' }}>
+                      {printingRecord.amount_in_words || numberToWordsIndian(printingRecord.total_amount)}
+                    </span>
+                  </div>
+
+                  {/* Bottom Area: Bank & Notice on Left, Team Graphic & Signature on Right */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '16px', alignItems: 'flex-start' }}>
+                    {/* Left: Accounts & Notice */}
+                    <div>
+                      {/* Bank Details Box */}
+                      <div style={{ border: '1.5px solid #004b93', borderRadius: '6px', overflow: 'hidden', marginBottom: '10px' }}>
+                        <div style={{ backgroundColor: '#004b93', color: '#ffffff', padding: '5px 10px', fontSize: '11px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>🏛️</span>
+                          <span>ACCOUNTS <span style={{ fontWeight: '600', opacity: 0.9 }}>(Bank Details for Direct Settlement)</span></span>
+                        </div>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none', margin: 0, fontSize: '11px', color: '#002B49', backgroundColor: '#f0f7ff' }}>
+                          <tbody>
+                            <tr style={{ borderBottom: '1px solid #bfdbfe' }}>
+                              <td style={{ padding: '4px 10px', border: 'none', fontWeight: '700', width: '95px' }}>Account Name</td>
+                              <td style={{ padding: '4px 4px', border: 'none', fontWeight: '700', width: '10px' }}>:</td>
+                              <td style={{ padding: '4px 8px', border: 'none', fontWeight: '900', color: '#002B49' }}>{printingRecord.bank_account_name || 'Charvik Staffing & Consultancy'}</td>
+                            </tr>
+                            <tr style={{ borderBottom: '1px solid #bfdbfe' }}>
+                              <td style={{ padding: '4px 10px', border: 'none', fontWeight: '700' }}>Account No.</td>
+                              <td style={{ padding: '4px 4px', border: 'none', fontWeight: '700' }}>:</td>
+                              <td style={{ padding: '4px 8px', border: 'none', fontWeight: '900', fontFamily: 'monospace', color: '#002B49' }}>{printingRecord.bank_account_no || '284353146'}</td>
+                            </tr>
+                            <tr style={{ borderBottom: '1px solid #bfdbfe' }}>
+                              <td style={{ padding: '4px 10px', border: 'none', fontWeight: '700' }}>IFSC Code</td>
+                              <td style={{ padding: '4px 4px', border: 'none', fontWeight: '700' }}>:</td>
+                              <td style={{ padding: '4px 8px', border: 'none', fontWeight: '900', fontFamily: 'monospace', color: '#002B49' }}>{printingRecord.bank_ifsc || 'KKBK0007466'}</td>
+                            </tr>
+                            <tr>
+                              <td style={{ padding: '4px 10px', border: 'none', fontWeight: '700' }}>Bank</td>
+                              <td style={{ padding: '4px 4px', border: 'none', fontWeight: '700' }}>:</td>
+                              <td style={{ padding: '4px 8px', border: 'none', fontWeight: '800', color: '#002B49' }}>{printingRecord.bank_name || 'Kotak Mahindra Bank'}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Notice Block with Amber Border & Megaphone */}
+                      <div
+                        style={{
+                          backgroundColor: '#fffbeb',
+                          border: '1.5px solid #fcd34d',
+                          borderRadius: '6px',
+                          padding: '8px 12px',
+                          fontSize: '10.5px',
+                          color: '#002B49',
+                          lineHeight: '1.45'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+                          <span
+                            style={{
+                              backgroundColor: '#ea580c',
+                              color: '#ffffff',
+                              padding: '1px 8px',
+                              borderRadius: '10px',
+                              fontWeight: '900',
+                              fontSize: '10px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <span>📣</span> Notice:
+                          </span>
+                        </div>
+                        <div style={{ fontWeight: '600' }}>1. Please settle statement balance before next cycle.</div>
+                        <div style={{ fontWeight: '600' }}>2. Computer generated statement by Charvik Staffing & Consultancy.</div>
+                      </div>
+                    </div>
+
+                    {/* Right: Team Illustration + Signature */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%', minHeight: '180px' }}>
+                      {/* Team Illustration */}
+                      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: '6px' }}>
+                        <img
+                          src="/charvik-team-illustration.png"
+                          alt="Charvik Staffing Team"
+                          style={{ maxHeight: '105px', maxWidth: '230px', objectFit: 'contain', display: 'block' }}
+                        />
+                      </div>
+
+                      {/* Signature graphic */}
+                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '-4px' }}>
+                        <img
+                          src="/vyshnavi-signature.png"
+                          alt="Signature"
+                          style={{ height: '32px', width: 'auto', display: 'block' }}
+                        />
+                      </div>
+
+                      {/* Signature line & titles */}
+                      <div style={{ width: '210px', borderTop: '2px solid #004b93', marginTop: '4px', marginBottom: '4px' }}></div>
+                      <div style={{ fontSize: '11px', fontWeight: '900', color: '#004b93', textAlign: 'center' }}>
+                        Authorized Signatory / Seal
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: '900', color: '#002B49', textAlign: 'center' }}>
+                        Charvik Staffing & Consultancy
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Wave Graphic Accent */}
+                <div style={{ margin: '14px -22px -24px -22px', position: 'relative', zIndex: 1 }}>
                   <img
-                    src="/charvik-print-logo.png?v=20261120_print"
-                    alt="CHARVIK STAFFING CONSULTANCY"
-                    className="h-14 max-h-[58px] w-auto max-w-[320px] object-contain block mx-auto"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/logo-brand.png'; }}
+                    src="/vyshnavi-bottom-wave.png"
+                    alt=""
+                    style={{ width: '100%', height: 'auto', maxHeight: '42px', display: 'block', objectFit: 'cover' }}
                   />
                 </div>
-                <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1.5 leading-tight">
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Phone:</span>
-                    <span className="text-black">9505151527</span>
-                  </span>
-                  <span className="text-[#0056b3] font-black">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Email:</span>
-                    <span className="text-black">charvikstaffingconsultancy@gmail.com</span>
-                  </span>
-                  <span className="text-[#0056b3] font-black">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Web:</span>
-                    <span className="text-black">www.charvikstaffing.com</span>
-                  </span>
-                </div>
-                <div className="inline-block border border-[#0056b3] rounded-md px-3 py-1 text-[11px] font-semibold text-black bg-slate-50 max-w-[98%] leading-snug">
-                  <span className="text-[#0056b3] font-extrabold mr-1">Office:</span>
-                  <span>NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana</span>
-                </div>
               </div>
+
+              {/* 2. THE FORMAL PRINTABLE A4 LETTERHEAD SHEET (EXISTING FORMAL DOCUMENT) */}
+              <div
+                ref={printSheetRef}
+                id="charvik-official-record-sheet"
+                className="bg-white p-6 sm:p-8 rounded-xl border border-slate-300 shadow-sm text-slate-900 max-w-[800px] mx-auto print:border-0 print:p-0 print:shadow-none print:max-w-none"
+                style={{
+                  fontFamily: 'Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  display: printFormat === 'letterhead' ? 'block' : 'none'
+                }}
+              >
+                {/* Top Letterhead Header (Official Enclosed Charvik Letterhead) */}
+                <div className="border-2 border-[#0056b3] rounded-xl p-2.5 sm:p-3 bg-white text-center mb-3">
+                  <div className="flex justify-center items-center mb-2">
+                    <img
+                      src="/charvik-print-logo.png?v=20261120_print"
+                      alt="CHARVIK STAFFING CONSULTANCY"
+                      className="h-14 max-h-[58px] w-auto max-w-[320px] object-contain block mx-auto"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/logo-brand.png'; }}
+                    />
+                  </div>
+                  <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1 leading-tight">
+                    <span className="inline-flex items-center gap-1">
+                      <span className="text-[#0056b3] font-extrabold">Phone:</span>
+                      <span className="text-black">{printingRecord.company_phone || '9505151527'}</span>
+                    </span>
+                    <span className="text-[#0056b3] font-black">•</span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="text-[#0056b3] font-extrabold">Email:</span>
+                      <span className="text-black">{printingRecord.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
+                    </span>
+                    <span className="text-[#0056b3] font-black">•</span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="text-[#0056b3] font-extrabold">Web:</span>
+                      <span className="text-black">{printingRecord.company_website || 'www.charvikstaffing.com'}</span>
+                    </span>
+                    <span className="text-[#0056b3] font-black">•</span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="text-[#0056b3] font-extrabold">Location:</span>
+                      <span className="text-black">{printingRecord.company_address || 'Hyderabad, Telangana'}</span>
+                    </span>
+                  </div>
+                </div>
 
               {/* BILL TO & INVOICE DETAILS */}
               <div className="grid grid-cols-2 gap-4 border border-slate-300 rounded-lg p-3.5 mb-4 bg-slate-50/40 text-xs">
@@ -1691,7 +2481,8 @@ export const RecordManagement: React.FC = () => {
               </div>
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
       )}
 
       {/* Print Specific CSS Fallback */}

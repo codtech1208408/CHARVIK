@@ -607,7 +607,7 @@ export const ChandrikaFinance: React.FC = () => {
             <img src="/chandrika-finance-logo.png" alt="Chandrika Finance" style="height: 52px; width: auto; object-fit: contain; display: block;" onerror="this.src='/chandrika-finance-logo-transparent.png'" />
             <div>
               <h1 style="margin: 0; color: #1E3A8A; font-size: 20px; font-weight: 900; letter-spacing: 0.5px;">CHANDRIKA FINANCE</h1>
-              <p style="margin: 3px 0 0; color: #64748b; font-size: 10px; font-weight: 600;">NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana</p>
+              <p style="margin: 3px 0 0; color: #64748b; font-size: 10px; font-weight: 600;">Hyderabad, Telangana</p>
               <p style="margin: 2px 0 0; color: #64748b; font-size: 10px;">Phone: 9505151527 | Email: charvikstaffingconsulrancy@gmail.com</p>
               <div style="display: inline-block; margin-top: 6px; padding: 3px 10px; background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 6px; font-size: 10.5px; font-weight: bold; color: #3730A3;">
                 OFFICIAL BORROWER REGISTRATION & KYC ENROLLMENT DOSSIER
@@ -1207,7 +1207,7 @@ export const ChandrikaFinance: React.FC = () => {
             </div>
           </div>
           <div style="font-size: 9.5px; color: #475569; text-align: center; background: #f8fafc; padding: 5px 10px; border-radius: 4px; border: 1px solid #e2e8f0; font-weight: 600;">
-            📍 NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana
+            📍 Hyderabad, Telangana
           </div>
         </div>
 

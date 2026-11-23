@@ -1452,13 +1452,9 @@ export const EmployeeManagement: React.FC = () => {
                     </span>
                     <span className="text-[#0056b3] font-black">•</span>
                     <span className="inline-flex items-center gap-1">
-                      <span className="text-[#0056b3] font-extrabold">Web:</span>
-                      <span className="text-black">www.charvikstaffing.com</span>
+                      <span className="text-[#0056b3] font-extrabold">Location:</span>
+                      <span className="text-black">Hyderabad, Telangana</span>
                     </span>
-                  </div>
-                  <div className="inline-block border border-[#0056b3] rounded-md px-3 py-1 text-[10.5px] font-semibold text-black bg-slate-50 max-w-[98%] leading-snug">
-                    <span className="text-[#0056b3] font-extrabold mr-1">Office:</span>
-                    <span>NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana</span>
                   </div>
                   <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-700 font-bold mt-2">
                     <div>

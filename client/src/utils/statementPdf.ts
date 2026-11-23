@@ -146,32 +146,19 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
   doc.setFontSize(7.5);
   doc.setTextColor(51, 65, 85);
   doc.text(
-    "Phone: +91 9505151527   |   Email: charvikstaffingconsultancy@gmail.com   |   Web: www.charvikstaffing.com",
+    "Phone: +91 9505151527   |   Email: charvikstaffingconsultancy@gmail.com   |   Web: www.charvikstaffing.com   |   Hyderabad, Telangana",
     pageWidth / 2,
-    32,
-    { align: "center" }
-  );
-
-  // 4. Office Address Box
-  doc.setDrawColor(203, 213, 225);
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(marginX, 38.5, contentWidth, 7, 2, 2, "FD");
-  doc.setFontSize(6.8);
-  doc.setTextColor(71, 85, 105);
-  doc.text(
-    "Office: NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana",
-    pageWidth / 2,
-    43,
+    33,
     { align: "center" }
   );
 
   // 5. Title Ribbon (Navy Blue Bar)
   doc.setFillColor(20, 43, 74);
-  doc.roundedRect(marginX, 48, contentWidth, 9.5, 2, 2, "F");
+  doc.roundedRect(marginX, 40, contentWidth, 9.5, 2, 2, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(255, 255, 255);
-  doc.text("MONTHLY SALARY & TRIP SETTLEMENT STATEMENT", marginX + 4, 54.5);
+  doc.text("MONTHLY SALARY & TRIP SETTLEMENT STATEMENT", marginX + 4, 46.5);
   doc.setFontSize(8);
   doc.setTextColor(147, 197, 253);
   doc.text(`Cycle: ${monthLabel}`, pageWidth - marginX - 4, 54.5, { align: "right" });
@@ -659,10 +646,7 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
           <span>Phone: <strong style="color: #0f172a;">+91 9505151527</strong></span>
           <span>Email: <strong style="color: #0f172a;">charvikstaffingconsultancy@gmail.com</strong></span>
           <span>Web: <strong style="color: #0f172a;">www.charvikstaffing.com</strong></span>
-        </div>
-
-        <div style="display: inline-block; padding: 3px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-size: 9px; color: #475569; line-height: 1.35; max-width: 720px; background: #f8fafc;">
-          <strong>Office:</strong> NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana
+          <span>Location: <strong style="color: #0f172a;">Hyderabad, Telangana</strong></span>
         </div>
       </div>
 
