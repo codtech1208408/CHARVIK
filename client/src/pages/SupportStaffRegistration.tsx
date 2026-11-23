@@ -1123,16 +1123,13 @@ export const SupportStaffRegistration: React.FC = () => {
           <div id="printable-support-sheet" className="border-2 border-black overflow-hidden font-sans printable-sheet">
             {/* Official Charvik Letterhead Header */}
             <div className="bg-white border-b-2 border-black p-2.5 text-center">
-              <div className="flex justify-center items-center mb-1">
+              <div className="flex justify-center items-center mb-2">
                 <img
                   src="/charvik-print-logo.png?v=20261120_print"
                   alt="CHARVIK STAFFING CONSULTANCY"
                   className="h-14 max-h-[58px] w-auto max-w-[320px] object-contain block mx-auto"
                   onError={(e) => { (e.target as HTMLImageElement).src = '/logo-brand.png'; }}
                 />
-              </div>
-              <div className="text-[11px] font-extrabold text-[#00448a] tracking-widest uppercase my-1 text-center">
-                Manpower Solutions &nbsp;•&nbsp; Recruitment &nbsp;•&nbsp; Payroll Support
               </div>
               <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1 leading-tight">
                 <span className="inline-flex items-center gap-1">

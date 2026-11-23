@@ -51,7 +51,7 @@ export const PublicFooter: React.FC = () => {
             <div className="flex items-center">
               <Link to="/" className="flex items-center py-1 group cursor-pointer" title="Charvik Staffing Consultancy">
                 <img
-                  src="/logo-navbar.png?v=20261119_clean_v6"
+                  src="/logo-navbar.png?v=20261123_clean_v7"
                   alt="Charvik Staffing Consultancy Logo"
                   className="h-16 sm:h-20 w-auto max-w-[280px] object-contain transition-transform group-hover:scale-[1.02]"
                 />

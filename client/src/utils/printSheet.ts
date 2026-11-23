@@ -457,9 +457,6 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
               onerror="this.src='/logo-brand.png'" 
             />
           </div>
-          <div class="charvik-letterhead-tagline">
-            Manpower Solutions &nbsp;•&nbsp; Recruitment &nbsp;•&nbsp; Payroll Support
-          </div>
           <div class="charvik-letterhead-contacts">
             <span class="charvik-contact-item">
               <span class="charvik-contact-label">Phone:</span>

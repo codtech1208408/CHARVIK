@@ -141,20 +141,14 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
     doc.text("CHARVIK STAFFING CONSULTANCY", pageWidth / 2, 17, { align: "center" });
   }
 
-  // 2. Tagline (Clean ASCII)
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
-  doc.setTextColor(20, 43, 74);
-  doc.text("MANPOWER SOLUTIONS  |  RECRUITMENT  |  PAYROLL SUPPORT", pageWidth / 2, 31, { align: "center" });
-
-  // 3. Contact Strip
+  // 2. Contact Strip
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(51, 65, 85);
   doc.text(
     "Phone: +91 9505151527   |   Email: charvikstaffingconsultancy@gmail.com   |   Web: www.charvikstaffing.com",
     pageWidth / 2,
-    35.5,
+    32,
     { align: "center" }
   );
 
@@ -660,10 +654,7 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
           alt="Charvik Staffing Consultancy" 
           style="height: 52px; max-width: 320px; object-fit: contain; margin-bottom: 6px;" 
         />
-        <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #142B4A; margin-bottom: 4px;">
-          MANPOWER SOLUTIONS  |  RECRUITMENT  |  PAYROLL SUPPORT
-        </div>
-        
+
         <div style="display: flex; justify-content: center; align-items: center; gap: 12px; font-size: 10px; color: #334155; font-weight: 600; margin-bottom: 6px; flex-wrap: wrap;">
           <span>Phone: <strong style="color: #0f172a;">+91 9505151527</strong></span>
           <span>Email: <strong style="color: #0f172a;">charvikstaffingconsultancy@gmail.com</strong></span>
