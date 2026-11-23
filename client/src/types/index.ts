@@ -425,6 +425,12 @@ export interface VyshnaviRecord {
   bank_account_no?: string;
   bank_ifsc?: string;
   bank_branch?: string;
+  company_phone?: string;
+  company_email?: string;
+  company_website?: string;
+  company_gst?: string;
+  company_pan?: string;
+  company_address?: string;
   upi_id?: string;
   qr_code_url?: string;
   remarks?: string;

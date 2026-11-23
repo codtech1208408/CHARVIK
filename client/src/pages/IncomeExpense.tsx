@@ -1018,12 +1018,12 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
                 type="button"
                 onClick={() => setTypeFilter(t)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${typeFilter === t
-                    ? t === 'Income'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : t === 'Expense'
-                        ? 'bg-rose-600 text-white shadow-xs'
-                        : 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                  ? t === 'Income'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : t === 'Expense'
+                      ? 'bg-rose-600 text-white shadow-xs'
+                      : 'bg-slate-900 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
                   }`}
               >
                 {t === 'Income' ? '+ Income' : t === 'Expense' ? '- Expense' : 'All'}
@@ -1163,8 +1163,8 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
                       <td className="py-3 px-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${isIncome
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-rose-50 text-rose-700 border border-rose-200'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-rose-50 text-rose-700 border border-rose-200'
                             }`}
                         >
                           {isIncome ? <Plus className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
@@ -1278,8 +1278,8 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
                   }));
                 }}
                 className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${formData.transaction_type === 'Income'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
                   }`}
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -1296,8 +1296,8 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
                   }));
                 }}
                 className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${formData.transaction_type === 'Expense'
-                    ? 'bg-rose-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-rose-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
                   }`}
               >
                 <Minus className="w-3.5 h-3.5" />
@@ -1641,8 +1641,8 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
             <button
               type="submit"
               className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-sm transition-all cursor-pointer flex items-center gap-1.5 ${formData.transaction_type === 'Income'
-                  ? 'bg-emerald-600 hover:bg-emerald-700'
-                  : 'bg-rose-600 hover:bg-rose-700'
+                ? 'bg-emerald-600 hover:bg-emerald-700'
+                : 'bg-rose-600 hover:bg-rose-700'
                 }`}
             >
               <CheckCircle2 className="w-4 h-4" />
@@ -1873,8 +1873,8 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
                 type="button"
                 onClick={() => setStandaloneCatType('Income')}
                 className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${standaloneCatType === 'Income'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
                   }`}
               >
                 <span>Income Categories ({incomeCategories.length})</span>
@@ -1883,8 +1883,8 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
                 type="button"
                 onClick={() => setStandaloneCatType('Expense')}
                 className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${standaloneCatType === 'Expense'
-                    ? 'bg-rose-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-rose-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
                   }`}
               >
                 <span>Expense Categories ({expenseCategories.length})</span>
