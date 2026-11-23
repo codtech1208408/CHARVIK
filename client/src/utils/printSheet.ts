@@ -3,6 +3,8 @@
  * Matches the official Charvik printed letterhead format with enclosed rounded banner
  */
 
+import { getSavedCharvikCompanyDetails } from './charvikCompanyDetails';
+
 interface PrintOptions {
   title: string;
   subtitle?: string;
@@ -117,6 +119,8 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
     second: '2-digit',
     hour12: true
   });
+
+  const comp = getSavedCharvikCompanyDetails();
 
   const htmlDoc = `
     <!DOCTYPE html>
@@ -445,53 +449,88 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
       </style>
     </head>
     <body>
-      <div class="printable-sheet" style="width: 100%; max-width: 100%; box-sizing: border-box;">
-        <!-- Official Enclosed Charvik Letterhead Header (Crisp Vector Quality & Correct Hyderabad Contact Details) -->
+      <div class="printable-sheet" style="width: 100%; max-width: 100%; box-sizing: border-box; border: 2px solid #002B49; border-radius: 4px; padding: 18px 22px 22px; background: #ffffff;">
+        <!-- Official Header: Colorful Logo on Left, Contact info on Right with vertical divider -->
         ${!hideHeader ? `
-        <div class="charvik-letterhead-container">
-          <div class="charvik-letterhead-logo-row">
-            <img 
-              src="/charvik-print-logo.png?v=20261120_print" 
-              alt="CHARVIK STAFFING CONSULTANCY" 
-              class="charvik-brand-logo"
-              onerror="this.src='/logo-brand.png'" 
-            />
-          </div>
-          <div class="charvik-letterhead-contacts">
-            <span class="charvik-contact-item">
-              <span class="charvik-contact-label">Phone:</span>
-              <span class="charvik-contact-val">9505151527</span>
-            </span>
-            <span class="charvik-contact-sep">•</span>
-            <span class="charvik-contact-item">
-              <span class="charvik-contact-label">Email:</span>
-              <span class="charvik-contact-val">charvikstaffingconsultancy@gmail.com</span>
-            </span>
-            <span class="charvik-contact-sep">•</span>
-            <span class="charvik-contact-item">
-              <span class="charvik-contact-label">Location:</span>
-              <span class="charvik-contact-val">Hyderabad, Telangana</span>
-            </span>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 2px solid #002B49; margin-bottom: 12px;">
+          <img
+            src="/charvik-invoice-logo.png"
+            alt="CHARVIK Staffing & Consultancy"
+            style="height: 60px; max-height: 68px; width: auto; max-width: 280px; display: block; object-fit: contain;"
+            onerror="this.src='/logo-brand.png'"
+          />
+          <div style="display: flex; align-items: flex-start; border-left: 2px solid #002B49; padding-left: 14px; min-height: 68px;">
+            <div style="display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; font-weight: 800; color: #002B49; line-height: 1.35;">
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <span style="font-size: 12px;">📞</span>
+                <span>${comp.company_phone || '+91 9505151527'}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <span style="font-size: 12px;">✉</span>
+                <span>${comp.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <span style="font-size: 12px;">🌐</span>
+                <span>${comp.company_website || 'www.charvikstaffing.com'}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <span style="border: 1px solid #002B49; border-radius: 3px; padding: 0 4px; font-size: 9px; font-weight: 900; letter-spacing: 0.05em;">GST</span>
+                <span>GSTIN : ${comp.company_gst || '36ABCDE1234F1Z5'}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <span style="border: 1px solid #002B49; border-radius: 3px; padding: 0 4px; font-size: 9px; font-weight: 900; letter-spacing: 0.05em;">PAN</span>
+                <span>PAN : ${comp.company_pan || 'AABPC1234D'}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <span style="font-size: 12px;">📍</span>
+                <span>${comp.company_address || 'Hyderabad, Telangana'}</span>
+              </div>
+            </div>
           </div>
         </div>
         ` : ''}
 
+        <!-- Centered Document Title with Accent Slashes -->
+        <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0 14px 0;">
+          <div style="display: flex; align-items: center; gap: 8px; width: 100%; max-width: 480px;">
+            <span style="color: #ea580c; font-weight: 900; font-size: 18px; letter-spacing: -2px;">///</span>
+            <div style="flex: 1; background-color: #002B49; color: #ffffff; text-align: center; padding: 6px 18px; border-radius: 20px; font-weight: 900; font-size: 13.5px; letter-spacing: 0.08em; text-transform: uppercase;">
+              ${title}
+            </div>
+            <span style="color: #ea580c; font-weight: 900; font-size: 18px; letter-spacing: -2px;">///</span>
+          </div>
+        </div>
+
         <!-- Title & Meta Strip Box -->
         ${!hideMetaBar ? `
-        <div class="charvik-meta-bar">
-          <div class="charvik-meta-left">
-            <span class="charvik-meta-title">${title}</span>
-            ${subtitle ? `<span class="charvik-meta-subtitle">• ${subtitle}</span>` : ''}
+        <div class="charvik-meta-bar" style="border: 1.5px solid #93c5fd; border-radius: 6px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; background: #eef6fc; margin-bottom: 14px;">
+          <div class="charvik-meta-left" style="font-size: 11px; font-weight: 700; color: #1e3a8a;">
+            <span>Official Record Statement</span>
+            ${subtitle ? `<span style="margin-left: 6px;">• ${subtitle}</span>` : ''}
           </div>
-          <div class="charvik-meta-datetime">
+          <div class="charvik-meta-datetime" style="font-size: 11px; font-weight: 800; color: #002B49;">
             Date: ${dateLabel} &nbsp;|&nbsp; Time: ${timeLabel}
           </div>
         </div>
         ` : ''}
 
         <!-- Printable Table / Body -->
-        <div class="print-body" style="width: 100%; max-width: 100%; box-sizing: border-box;">
+        <div class="print-body" style="width: 100%; max-width: 100%; box-sizing: border-box; margin-bottom: 16px;">
           ${bodyContent}
+        </div>
+
+        <!-- Bottom Notice & Authorized Signatory Strip -->
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; padding-top: 14px; border-top: 1.5px solid #002B49; margin-top: 18px;">
+          <div style="font-size: 10.5px; color: #475569; line-height: 1.45;">
+            <div style="font-weight: 800; color: #002B49; margin-bottom: 2px;">Notice:</div>
+            <div>1. This is a computer generated official statement by Charvik Staffing & Consultancy.</div>
+            <div>2. Location: ${comp.company_address || 'Hyderabad, Telangana'}</div>
+          </div>
+          <div style="text-align: center; min-width: 200px;">
+            <div style="width: 180px; border-top: 1.5px dashed #002B49; margin: 0 auto 5px auto;"></div>
+            <div style="font-size: 11px; font-weight: 900; color: #002B49;">Authorized Signatory / Seal</div>
+            <div style="font-size: 10px; font-weight: 700; color: #475569;">Charvik Staffing & Consultancy</div>
+          </div>
         </div>
       </div>
     </body>

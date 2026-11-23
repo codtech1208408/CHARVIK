@@ -1732,13 +1732,13 @@ export const RecordManagement: React.FC = () => {
               >
                 {/* Top-Right Swoosh Graphic Accent */}
                 <img
-                  src="/vyshnavi-top-swoosh.png?v=clean"
+                  src="/vyshnavi-top-swoosh.png?v=clean_20261124_01"
                   alt=""
                   style={{
                     position: 'absolute',
                     top: 0,
                     right: 0,
-                    width: '135px',
+                    width: '120px',
                     height: 'auto',
                     pointerEvents: 'none',
                     zIndex: 1,

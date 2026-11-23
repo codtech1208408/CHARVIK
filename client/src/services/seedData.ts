@@ -2953,7 +2953,7 @@ export const BASE_APP_SETTINGS: any = [
   },
   {
     "key": "office_address",
-    "value": "NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana",
+    "value": "Hyderabad, Telangana",
     "description": "Head office address",
     "updated_at": "2026-10-16 17:01:55"
   },

@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatEmployeeId } from "./employeeCode";
 import { CHARVIK_LOGO_BASE64 } from "./charvikLogoData";
+import { getSavedCharvikCompanyDetails } from "./charvikCompanyDetails";
 
 export interface StatementPdfData {
   employee: {
@@ -142,11 +143,12 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
   }
 
   // 2. Contact Strip
+  const comp = getSavedCharvikCompanyDetails();
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(51, 65, 85);
   doc.text(
-    "Phone: +91 9505151527   |   Email: charvikstaffingconsultancy@gmail.com   |   Web: www.charvikstaffing.com   |   Hyderabad, Telangana",
+    `Phone: ${comp.company_phone || '+91 9505151527'}   |   Email: ${comp.company_email || 'charvikstaffingconsultancy@gmail.com'}   |   Web: ${comp.company_website || 'www.charvikstaffing.com'}   |   ${comp.company_address || 'Hyderabad, Telangana'}`,
     pageWidth / 2,
     33,
     { align: "center" }

@@ -49,7 +49,7 @@ export const DEFAULT_PRESET_OPERATORS: RegisteredOperator[] = [
     contactPerson: 'Ramya',
     phone: '9505151527',
     email: 'charvikstaffingconsulrancy@gmail.com',
-    address: 'NH65, opp. Bajaj Electronic, beside Kakinada Subbayya Gari Hotel, Agamaiah Nagar Colony, Bank Colony, L. B. Nagar, Vanasthalipuram, Hyderabad, Telangana',
+    address: 'Hyderabad, Telangana',
     gstOrPan: '36GGGGG0000WG6G'
   },
   {
