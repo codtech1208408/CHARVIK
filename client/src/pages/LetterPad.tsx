@@ -382,9 +382,8 @@ export const LetterPad: React.FC = () => {
   const [respectTo, setRespectTo] = useState('');
   const [letterMatter, setLetterMatter] = useState('');
 
-  // Search & filter in saved records table
+  // Search in saved records table
   const [tableSearch, setTableSearch] = useState('');
-  const [tableCompanyFilter, setTableCompanyFilter] = useState<'All' | CompanyKey>('All');
 
   // Sync active company when URL changes
   useEffect(() => {
@@ -846,46 +845,26 @@ export const LetterPad: React.FC = () => {
           </button>
         </div>
 
-        {/* Company Selector Buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => handleSwitchCompany('charvik')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer border ${
-              activeCompany === 'charvik'
-                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                : 'bg-blue-50 text-blue-900 border-blue-200 hover:bg-blue-100'
-            }`}
-          >
-            <Building2 className="w-4 h-4" />
-            <span>Charvik Consultancy</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSwitchCompany('vyshnavi')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer border ${
-              activeCompany === 'vyshnavi'
-                ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
-                : 'bg-teal-50 text-teal-900 border-teal-200 hover:bg-teal-100'
-            }`}
-          >
-            <Bus className="w-4 h-4" />
-            <span>Vyshnavi Travels</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleSwitchCompany('chandrika')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer border ${
-              activeCompany === 'chandrika'
-                ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
-                : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
-            }`}
-          >
-            <Landmark className="w-4 h-4" />
-            <span>Chandrika Finance</span>
-          </button>
+        {/* Active Company Badge (Dedicated Tab Mode) */}
+        <div className="flex items-center gap-2">
+          {activeCompany === 'charvik' && (
+            <div className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-900 border border-blue-200 text-xs font-black flex items-center gap-2 shadow-xs">
+              <Building2 className="w-4 h-4 text-blue-600" />
+              <span>Charvik Staffing & Consultancy</span>
+            </div>
+          )}
+          {activeCompany === 'vyshnavi' && (
+            <div className="px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-900 border border-teal-200 text-xs font-black flex items-center gap-2 shadow-xs">
+              <Bus className="w-4 h-4 text-teal-600" />
+              <span>Vyshnavi Travels</span>
+            </div>
+          )}
+          {activeCompany === 'chandrika' && (
+            <div className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-black flex items-center gap-2 shadow-xs">
+              <Landmark className="w-4 h-4 text-amber-600" />
+              <span>Chandrika Finance</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1010,7 +989,7 @@ export const LetterPad: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
             {/* Search */}
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -1022,18 +1001,6 @@ export const LetterPad: React.FC = () => {
                 className="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-
-            {/* Filter by Company */}
-            <select
-              value={tableCompanyFilter}
-              onChange={(e) => setTableCompanyFilter(e.target.value as any)}
-              className="text-xs font-bold px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none cursor-pointer"
-            >
-              <option value="All">All Companies</option>
-              <option value="charvik">Charvik Consultancy</option>
-              <option value="vyshnavi">Vyshnavi Travels</option>
-              <option value="chandrika">Chandrika Finance</option>
-            </select>
           </div>
         </div>
 
@@ -1043,7 +1010,6 @@ export const LetterPad: React.FC = () => {
             <thead className="bg-slate-50 text-slate-700 font-bold uppercase text-[10px] border-b border-slate-200">
               <tr>
                 <th className="py-2.5 px-3 text-center w-12">#</th>
-                <th className="py-2.5 px-3">Company</th>
                 <th className="py-2.5 px-3">Serial Number</th>
                 <th className="py-2.5 px-3">Date</th>
                 <th className="py-2.5 px-3">Letter Title</th>
@@ -1054,31 +1020,14 @@ export const LetterPad: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400 font-medium italic">
-                    No saved letters yet. Use the editor above and click "Save Record" to add copies.
+                  <td colSpan={6} className="py-8 text-center text-slate-400 font-medium italic">
+                    No saved letters for {currentConfig.name} yet. Use the editor above and click "Save Record" to add copies.
                   </td>
                 </tr>
               ) : (
                 filteredRecords.map((rec, idx) => (
                   <tr key={rec.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-2.5 px-3 text-center font-bold text-slate-500">{idx + 1}</td>
-                    <td className="py-2.5 px-3 font-bold">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                          rec.company === 'charvik'
-                            ? 'bg-blue-100 text-blue-800'
-                            : rec.company === 'vyshnavi'
-                            ? 'bg-teal-100 text-teal-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {rec.company === 'charvik'
-                          ? 'Charvik'
-                          : rec.company === 'vyshnavi'
-                          ? 'Vyshnavi'
-                          : 'Chandrika'}
-                      </span>
-                    </td>
                     <td className="py-2.5 px-3 font-mono font-bold text-slate-900">
                       {rec.serialNumber}
                     </td>
