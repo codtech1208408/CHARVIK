@@ -91,7 +91,7 @@ export const adminVehicleMaintenanceSubItems: NavSubItem[] = [
 export const adminVyshnaviTravelsSubItems: NavSubItem[] = [
   { label: 'Travels Statement & Billing', route: '/admin/vyshnavi-travels', icon: FileText, iconColor: 'text-teal-500', activeRoutes: ['/admin/vyshnavi-travels', '/admin/vyshnavi'] },
   { label: 'Service Records', route: '/admin/vyshnavi-travels?tab=records', icon: ClipboardList, iconColor: 'text-blue-500', activeRoutes: ['/admin/vyshnavi-travels?tab=records'] },
-  { label: 'Operator Income & Expense', route: '/admin/income-expense', icon: IndianRupee, iconColor: 'text-emerald-500', activeRoutes: ['/admin/income-expense'] },
+  { label: 'Income & Expense', route: '/admin/income-expense', icon: IndianRupee, iconColor: 'text-emerald-500', activeRoutes: ['/admin/income-expense'] },
   { label: 'Official Letter Pad', route: '/admin/letter-pad?company=vyshnavi', icon: FileText, iconColor: 'text-amber-500', activeRoutes: ['/admin/letter-pad?company=vyshnavi'] },
 ];
 
