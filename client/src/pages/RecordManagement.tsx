@@ -643,15 +643,17 @@ export const RecordManagement: React.FC = () => {
       return;
     }
 
-    // Create a hidden isolated iframe to guarantee no viewport clipping from modal or body overflow
+    // Create an offscreen isolated iframe to guarantee correct Chromium layout calculation
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
+    iframe.style.top = '-10000px';
+    iframe.style.left = '-10000px';
+    iframe.style.width = '1024px';
+    iframe.style.height = '1440px';
     iframe.style.border = '0';
-    iframe.style.visibility = 'hidden';
+    iframe.style.opacity = '0';
+    iframe.style.pointerEvents = 'none';
+    iframe.style.zIndex = '-9999';
     document.body.appendChild(iframe);
 
     const doc = iframe.contentWindow?.document || iframe.contentDocument;
@@ -664,6 +666,11 @@ export const RecordManagement: React.FC = () => {
     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
       .map((el) => el.outerHTML)
       .join('\n');
+
+    const clone = printContent.cloneNode(true) as HTMLElement;
+    clone.style.display = 'block';
+    clone.style.visibility = 'visible';
+    clone.style.opacity = '1';
 
     doc.open();
     doc.write(`
@@ -710,6 +717,8 @@ export const RecordManagement: React.FC = () => {
               max-width: 100% !important;
               min-height: auto !important;
               box-sizing: border-box !important;
+              display: block !important;
+              visibility: visible !important;
             }
             table {
               width: 100% !important;
@@ -732,7 +741,7 @@ export const RecordManagement: React.FC = () => {
         </head>
         <body>
           <div id="isolated-print-wrapper">
-            ${printContent.outerHTML}
+            ${clone.outerHTML}
           </div>
         </body>
       </html>
@@ -770,12 +779,14 @@ export const RecordManagement: React.FC = () => {
       iframe = document.createElement('iframe');
       iframe.id = 'charvik-print-frame';
       iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
+      iframe.style.top = '-10000px';
+      iframe.style.left = '-10000px';
+      iframe.style.width = '1024px';
+      iframe.style.height = '1440px';
       iframe.style.border = '0';
-      iframe.style.visibility = 'hidden';
+      iframe.style.opacity = '0';
+      iframe.style.pointerEvents = 'none';
+      iframe.style.zIndex = '-9999';
       document.body.appendChild(iframe);
     }
 
@@ -788,6 +799,11 @@ export const RecordManagement: React.FC = () => {
     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
       .map((el) => el.outerHTML)
       .join('\n');
+
+    const clone = printElement.cloneNode(true) as HTMLElement;
+    clone.style.display = 'flex';
+    clone.style.visibility = 'visible';
+    clone.style.opacity = '1';
 
     doc.open();
     doc.write(`
@@ -833,6 +849,8 @@ export const RecordManagement: React.FC = () => {
               justify-content: space-between !important;
               position: relative !important;
               box-sizing: border-box !important;
+              visibility: visible !important;
+              opacity: 1 !important;
             }
             @media print {
               #charvik-printable-colourful-invoice {
@@ -843,7 +861,7 @@ export const RecordManagement: React.FC = () => {
           </style>
         </head>
         <body>
-          ${printElement.outerHTML}
+          ${clone.outerHTML}
         </body>
       </html>
     `);
@@ -865,21 +883,29 @@ export const RecordManagement: React.FC = () => {
     if (totalImgs === 0) {
       setTimeout(triggerPrint, 250);
     } else {
+      let isPrinted = false;
+      const safeTrigger = () => {
+        if (!isPrinted) {
+          isPrinted = true;
+          triggerPrint();
+        }
+      };
       for (let i = 0; i < totalImgs; i++) {
         if (imgs[i].complete) {
           loadedCount++;
-          if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+          if (loadedCount === totalImgs) setTimeout(safeTrigger, 200);
         } else {
           imgs[i].onload = () => {
             loadedCount++;
-            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+            if (loadedCount === totalImgs) setTimeout(safeTrigger, 200);
           };
           imgs[i].onerror = () => {
             loadedCount++;
-            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+            if (loadedCount === totalImgs) setTimeout(safeTrigger, 200);
           };
         }
       }
+      setTimeout(safeTrigger, 500);
     }
   };
 
@@ -1680,20 +1706,20 @@ export const RecordManagement: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setPrintFormat('colourful');
-                    setTimeout(() => handlePrintColourfulInvoice(printingRecord), 100);
+                    handlePrintColourfulInvoice(printingRecord);
                   }}
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 hover:from-blue-800 hover:to-indigo-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer"
-                  title="Printout (Colourful Template)"
+                  title="Printout (Official Template)"
                 >
                   <Printer className="w-4 h-4 text-amber-300" />
                   <span>Printout</span>
                 </button>
-                {/* Print Document Button - Prints Formal Enclosed Sheet */}
+                {/* Print Document Button - Also Prints Official Sheet */}
                 <button
                   type="button"
                   onClick={() => {
-                    setPrintFormat('letterhead');
-                    setTimeout(() => handlePrint(), 100);
+                    setPrintFormat('colourful');
+                    handlePrintColourfulInvoice(printingRecord);
                   }}
                   className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
                   title="Print Formal Official Document"
@@ -1727,7 +1753,7 @@ export const RecordManagement: React.FC = () => {
                   borderRadius: '12px',
                   padding: '18px 22px 20px 22px',
                   boxSizing: 'border-box',
-                  display: printFormat === 'colourful' ? 'flex' : 'none',
+                  display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   position: 'relative'

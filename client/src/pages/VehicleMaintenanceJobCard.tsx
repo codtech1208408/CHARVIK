@@ -353,11 +353,14 @@ export const VehicleMaintenanceJobCard: React.FC = () => {
       iframe = document.createElement('iframe');
       iframe.id = 'jobcard-print-frame';
       iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
+      iframe.style.top = '-10000px';
+      iframe.style.left = '-10000px';
+      iframe.style.width = '1024px';
+      iframe.style.height = '1440px';
       iframe.style.border = '0';
+      iframe.style.opacity = '0';
+      iframe.style.pointerEvents = 'none';
+      iframe.style.zIndex = '-9999';
       document.body.appendChild(iframe);
     }
 

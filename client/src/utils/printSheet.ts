@@ -404,11 +404,14 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
       iframe = document.createElement('iframe');
       iframe.id = 'charvik-universal-print-frame';
       iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
+      iframe.style.top = '-10000px';
+      iframe.style.left = '-10000px';
+      iframe.style.width = '1024px';
+      iframe.style.height = '1440px';
       iframe.style.border = '0';
+      iframe.style.opacity = '0';
+      iframe.style.pointerEvents = 'none';
+      iframe.style.zIndex = '-9999';
       document.body.appendChild(iframe);
     }
 
@@ -434,21 +437,29 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
       if (totalImgs === 0) {
         setTimeout(triggerPrint, 250);
       } else {
+        let isPrinted = false;
+        const safeTrigger = () => {
+          if (!isPrinted) {
+            isPrinted = true;
+            triggerPrint();
+          }
+        };
         for (let i = 0; i < totalImgs; i++) {
           if (imgs[i].complete) {
             loadedCount++;
-            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+            if (loadedCount === totalImgs) setTimeout(safeTrigger, 200);
           } else {
             imgs[i].onload = () => {
               loadedCount++;
-              if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+              if (loadedCount === totalImgs) setTimeout(safeTrigger, 200);
             };
             imgs[i].onerror = () => {
               loadedCount++;
-              if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+              if (loadedCount === totalImgs) setTimeout(safeTrigger, 200);
             };
           }
         }
+        setTimeout(safeTrigger, 500);
       }
       return;
     }

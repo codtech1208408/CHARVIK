@@ -528,11 +528,14 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
       iframe = document.createElement('iframe');
       iframe.id = 'charvik-voucher-print-frame';
       iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
+      iframe.style.top = '-10000px';
+      iframe.style.left = '-10000px';
+      iframe.style.width = '1024px';
+      iframe.style.height = '1440px';
       iframe.style.border = '0';
+      iframe.style.opacity = '0';
+      iframe.style.pointerEvents = 'none';
+      iframe.style.zIndex = '-9999';
       document.body.appendChild(iframe);
     }
 
@@ -545,6 +548,11 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
       .map((el) => el.outerHTML)
       .join('\n');
+
+    const clone = printArea.cloneNode(true) as HTMLElement;
+    clone.style.display = 'block';
+    clone.style.visibility = 'visible';
+    clone.style.opacity = '1';
 
     doc.open();
     doc.write(`
@@ -583,6 +591,9 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
               margin: 0 auto !important;
               padding: 12px !important;
               box-sizing: border-box !important;
+              display: block !important;
+              visibility: visible !important;
+              opacity: 1 !important;
             }
             table {
               width: 100% !important;
@@ -605,7 +616,7 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
         </head>
         <body>
           <div style="padding: 10px;">
-            ${printArea.outerHTML}
+            ${clone.outerHTML}
           </div>
         </body>
       </html>
@@ -628,21 +639,29 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
     if (totalImgs === 0) {
       setTimeout(triggerPrint, 250);
     } else {
+      let isPrinted = false;
+      const safeTrigger = () => {
+        if (!isPrinted) {
+          isPrinted = true;
+          triggerPrint();
+        }
+      };
       for (let i = 0; i < totalImgs; i++) {
         if (imgs[i].complete) {
           loadedCount++;
-          if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+          if (loadedCount === totalImgs) setTimeout(safeTrigger, 200);
         } else {
           imgs[i].onload = () => {
             loadedCount++;
-            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+            if (loadedCount === totalImgs) setTimeout(safeTrigger, 200);
           };
           imgs[i].onerror = () => {
             loadedCount++;
-            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
+            if (loadedCount === totalImgs) setTimeout(safeTrigger, 200);
           };
         }
       }
+      setTimeout(safeTrigger, 500);
     }
   };
 
