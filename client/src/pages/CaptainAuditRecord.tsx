@@ -652,7 +652,6 @@ export const CaptainAuditRecord: React.FC = () => {
     });
     buses.forEach((b: any) => {
       if (b.operator_name) rawOps.push(b.operator_name);
-      if (b.make) rawOps.push(b.make);
     });
     const unique = Array.from(new Set(rawOps.map((s) => s.trim()).filter(Boolean)));
     return unique.map((op) => ({
@@ -673,15 +672,10 @@ export const CaptainAuditRecord: React.FC = () => {
       const b = (t.vehicle_number || t.bus_number || '').trim();
       if (b && !unique.includes(b)) unique.push(b);
     });
-    return unique.map((busNo) => {
-      const found = buses.find((b: any) => (b.bus_number || b.registration_number || '').trim().toLowerCase() === busNo.toLowerCase());
-      const sub = found ? `${found.make || ''} ${found.model || ''} ${found.operator_name ? `• ${found.operator_name}` : ''}`.trim() : undefined;
-      return {
-        value: busNo,
-        label: busNo,
-        sublabel: sub
-      };
-    });
+    return unique.map((busNo) => ({
+      value: busNo,
+      label: busNo
+    }));
   }, [buses, tasks]);
 
   const routeSearchOptions: SearchOption[] = useMemo(() => {
