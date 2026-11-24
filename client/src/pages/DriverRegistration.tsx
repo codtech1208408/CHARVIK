@@ -33,7 +33,6 @@ import { getNextEmployeeCode } from '../utils/employeeCode';
 import { BASE_FLEET_EMPLOYEES } from '../services/seedData';
 import { useAuth } from '../context/AuthContext';
 import { printSheet } from '../utils/printSheet';
-import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
 import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import { exportTableToExcel } from '../utils/exportToExcel';
 
@@ -1062,12 +1061,6 @@ export const DriverRegistration: React.FC = () => {
                 />
               </div>
 
-              {/* Charvik Company & Tax Details */}
-              <CharvikCompanyDetailsFields
-                sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
-                values={companyDetails}
-                onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
-              />
             </div>
           )}
 
@@ -1219,16 +1212,6 @@ export const DriverRegistration: React.FC = () => {
                 <span className="inline-flex items-center gap-1">
                   <span className="text-[#0056b3] font-extrabold">Email:</span>
                   <span className="text-black">{companyDetails.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
-                </span>
-                <span className="text-[#0056b3] font-black">•</span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="text-[#0056b3] font-extrabold">Web:</span>
-                  <span className="text-black">{companyDetails.company_website || 'www.charvikstaffing.com'}</span>
-                </span>
-                <span className="text-[#0056b3] font-black">•</span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="text-[#0056b3] font-extrabold">Location:</span>
-                  <span className="text-black">{companyDetails.company_address || 'Hyderabad, Telangana'}</span>
                 </span>
               </div>
               <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-700 font-bold mt-2">

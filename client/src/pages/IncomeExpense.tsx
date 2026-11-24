@@ -36,7 +36,6 @@ import { api } from '../services/api';
 import { numberToWordsIndian } from '../utils/numberToWords';
 import { printSheet } from '../utils/printSheet';
 import { exportTableToExcel } from '../utils/exportToExcel';
-import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
 import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 
 export interface IncomeExpenseItem {
@@ -1648,13 +1647,6 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
               className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-600 bg-white"
             />
           </div>
-
-          {/* Charvik Company & Tax Details */}
-          <CharvikCompanyDetailsFields
-            sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
-            values={companyDetails}
-            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
-          />
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">

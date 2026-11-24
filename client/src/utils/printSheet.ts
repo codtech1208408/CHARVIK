@@ -375,32 +375,6 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
             </div>
           </div>
         </div>
-
-        <!-- Official Bottom Footer Address Card -->
-        <div
-          class="print-footer-card"
-          style="
-            border: 1.5px solid #000000;
-            border-radius: 8px;
-            padding: 6px 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background-color: #ffffff;
-            color: #000000;
-            margin-top: 10px;
-            page-break-inside: avoid;
-          "
-        >
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 18px;">📍</span>
-            <div style="border-left: 1.5px solid #000000; height: 32px;"></div>
-          </div>
-          <div style="font-size: 11px; font-weight: 700; color: #000000; line-height: 1.4;">
-            H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel,<br />
-            Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.
-          </div>
-        </div>
       </div>
     </body>
     </html>

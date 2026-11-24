@@ -1,4 +1,3 @@
-import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
 import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -1199,12 +1198,6 @@ export const NewTyres: React.FC = () => {
           </div>
 
           
-          {/* Charvik Company & Tax Details */}
-          <CharvikCompanyDetailsFields
-            sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
-            values={companyDetails}
-            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
-          />
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button

@@ -33,7 +33,6 @@ import {
   Sparkles
 } from 'lucide-react';
 import { api } from '../services/api';
-import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
 import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import type { Employee } from '../types';
 import { Badge } from '../components/common/Badge';
@@ -1193,12 +1192,6 @@ export const EmployeeManagement: React.FC = () => {
             </p>
           </div>
 
-          {/* Charvik Company & Tax Details */}
-          <CharvikCompanyDetailsFields
-            sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
-            values={companyDetails}
-            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
-          />
 
           <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
             <button
@@ -1459,16 +1452,6 @@ export const EmployeeManagement: React.FC = () => {
                     <span className="inline-flex items-center gap-1">
                       <span className="text-[#0056b3] font-extrabold">Email:</span>
                       <span className="text-black">{companyDetails.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
-                    </span>
-                    <span className="text-[#0056b3] font-black">•</span>
-                    <span className="inline-flex items-center gap-1">
-                      <span className="text-[#0056b3] font-extrabold">Web:</span>
-                      <span className="text-black">{companyDetails.company_website || 'www.charvikstaffing.com'}</span>
-                    </span>
-                    <span className="text-[#0056b3] font-black">•</span>
-                    <span className="inline-flex items-center gap-1">
-                      <span className="text-[#0056b3] font-extrabold">Location:</span>
-                      <span className="text-black">{companyDetails.company_address || 'Hyderabad, Telangana'}</span>
                     </span>
                   </div>
                   <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-700 font-bold mt-2">
@@ -2657,12 +2640,6 @@ export const EmployeeManagement: React.FC = () => {
             </div>
           )}
 
-          {/* Charvik Company & Tax Details */}
-          <CharvikCompanyDetailsFields
-            sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
-            values={companyDetails}
-            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
-          />
 
           {/* Modal Footer Controls */}
           <div className="flex items-center justify-between pt-3 border-t border-slate-100">

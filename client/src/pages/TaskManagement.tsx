@@ -37,7 +37,6 @@ import { useToast } from '../components/common/Toast';
 import { PrintButton } from '../components/common/PrintButton';
 import { exportTableToExcel } from '../utils/exportToExcel';
 import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
-import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
 import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -2144,12 +2143,6 @@ export const TaskManagement: React.FC = () => {
             </p>
           </div>
 
-          {/* Charvik Company & Tax Details for Official Printouts */}
-          <CharvikCompanyDetailsFields
-            sectionTitle="4. Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
-            values={companyDetails}
-            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
-          />
 
           {/* Bottom Tally Bar & Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">

@@ -440,28 +440,6 @@ export const generateTripDutySalaryLedgerHtml = (
           </tr>
         </tfoot>
       </table>
-
-      <!-- Present Address Box at Bottom -->
-      <div
-        style="
-          border: 1.5px solid ${borderColor};
-          border-radius: 8px;
-          padding: 6px 14px;
-          font-size: 11px;
-          font-weight: 700;
-          color: #334155;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: #ffffff;
-        "
-      >
-        <span style="font-size: 16px; color: ${isColourful ? '#e11d48' : '#000000'};">📍</span>
-        <div style="border-left: 1.5px solid ${isColourful ? '#004B9E' : '#000000'}; height: 26px;"></div>
-        <div style="font-size: 11px; font-weight: 700; line-height: 1.35; color: #1e293b;">
-          ${comp.company_address || 'H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.'}
-        </div>
-      </div>
     </div>
   `;
 };
@@ -2676,13 +2654,6 @@ _This is an official automated monthly salary & trip record statement._`;
                         Next
                       </button>
                     </div>
-                  </div>
-
-                  {/* Present Address Box at Bottom */}
-                  <div className="border-[1.5px] border-[#004B9E] rounded-lg px-4 py-2 bg-white text-[11px] font-bold text-slate-700 flex items-center gap-2 mt-2">
-                    <span className="text-rose-600 text-sm">📍</span>
-                    <div className="border-l-[1.5px] border-[#004B9E] h-5 mx-1"></div>
-                    <span>H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.</span>
                   </div>
                 </div>
               </div>

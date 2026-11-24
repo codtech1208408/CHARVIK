@@ -1,4 +1,3 @@
-import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
 import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
@@ -874,12 +873,6 @@ export const ServicePartners: React.FC = () => {
 
           {/* Actions */}
           
-          {/* Charvik Company & Tax Details */}
-          <CharvikCompanyDetailsFields
-            sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
-            values={companyDetails}
-            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
-          />
 
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
             <button

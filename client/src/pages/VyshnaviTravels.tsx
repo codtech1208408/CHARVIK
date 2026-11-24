@@ -3818,30 +3818,6 @@ export const VyshnaviTravels: React.FC = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Footer Address Card */}
-                <div
-                  style={{
-                    border: '1.5px solid #000000',
-                    borderRadius: '8px',
-                    padding: '6px 14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    backgroundColor: '#ffffff',
-                    color: '#000000',
-                    marginTop: '14px'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '18px' }}>📍</span>
-                    <div style={{ borderLeft: '1.5px solid #000000', height: '32px' }}></div>
-                  </div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#000000', lineHeight: '1.4' }}>
-                    H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel,<br />
-                    Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.
-                  </div>
-                </div>
               </div>
 
               {/* 2. THE FORMAL PRINTABLE A4 LETTERHEAD SHEET (EXISTING FORMAL DOCUMENT) */}
