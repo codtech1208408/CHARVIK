@@ -860,6 +860,7 @@ export const VyshnaviTravels: React.FC = () => {
     }
 
     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .filter((el) => !el.textContent?.includes('visibility: hidden'))
       .map((el) => el.outerHTML)
       .join('\n');
 
@@ -1357,6 +1358,7 @@ export const VyshnaviTravels: React.FC = () => {
     }
 
     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .filter((el) => !el.textContent?.includes('visibility: hidden'))
       .map((el) => el.outerHTML)
       .join('\n');
 

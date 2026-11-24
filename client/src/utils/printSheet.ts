@@ -110,6 +110,7 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
 
   // Collect page styles to preserve fonts, icons, and tailwind utilities
   const existingStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+    .filter((el) => !el.textContent?.includes('visibility: hidden'))
     .map((el) => el.outerHTML)
     .join('\n');
 

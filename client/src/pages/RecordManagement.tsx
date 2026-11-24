@@ -664,6 +664,7 @@ export const RecordManagement: React.FC = () => {
 
     // Collect all stylesheets and style elements to retain exact Tailwind design
     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .filter((el) => !el.textContent?.includes('visibility: hidden'))
       .map((el) => el.outerHTML)
       .join('\n');
 
@@ -797,6 +798,7 @@ export const RecordManagement: React.FC = () => {
     }
 
     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .filter((el) => !el.textContent?.includes('visibility: hidden'))
       .map((el) => el.outerHTML)
       .join('\n');
 
@@ -827,7 +829,7 @@ export const RecordManagement: React.FC = () => {
               margin: 0 !important;
               padding: 0 !important;
               background: #ffffff !important;
-              color: #002B49 !important;
+              color: #000000 !important;
               width: 100% !important;
               max-width: 100% !important;
               font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
@@ -853,16 +855,27 @@ export const RecordManagement: React.FC = () => {
               visibility: visible !important;
               opacity: 1 !important;
             }
+            #charvik-printable-colourful-invoice * {
+              visibility: visible !important;
+            }
             @media print {
               html, body {
                 margin: 0 !important;
                 padding: 0 !important;
                 height: auto !important;
               }
+              body * {
+                visibility: visible !important;
+              }
               #charvik-printable-colourful-invoice {
                 border: 2px solid #000000 !important;
                 min-height: auto !important;
                 page-break-inside: avoid !important;
+                visibility: visible !important;
+                display: flex !important;
+              }
+              #charvik-printable-colourful-invoice * {
+                visibility: visible !important;
               }
             }
           </style>
@@ -2257,38 +2270,6 @@ export const RecordManagement: React.FC = () => {
         </div>
       </Modal>
       )}
-
-      {/* Print Specific CSS Fallback */}
-      <style>{`
-        @media print {
-          html, body {
-            overflow: visible !important;
-            height: auto !important;
-            background: #ffffff !important;
-          }
-          body * {
-            visibility: hidden !important;
-          }
-          #charvik-official-record-sheet, #charvik-official-record-sheet * {
-            visibility: visible !important;
-          }
-          #charvik-official-record-sheet {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            border: none !important;
-            box-shadow: none !important;
-            background: white !important;
-          }
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };
