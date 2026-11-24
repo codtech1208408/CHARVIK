@@ -1,3 +1,5 @@
+import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
+import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -35,6 +37,8 @@ export const Repairs: React.FC = () => {
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [companyDetails, setCompanyDetails] = useState<CharvikCompanyDetails>(getSavedCharvikCompanyDetails());
+
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingRepair, setEditingRepair] = useState<RepairWorkOrder | null>(null);
 
@@ -557,6 +561,14 @@ export const Repairs: React.FC = () => {
               <span>Marking this repair as Completed will confirm vehicle return-to-service and set bus status to Active.</span>
             </div>
           )}
+
+          
+          {/* Charvik Company & Tax Details */}
+          <CharvikCompanyDetailsFields
+            sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
+            values={companyDetails}
+            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
+          />
 
           <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
             <button

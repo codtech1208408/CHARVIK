@@ -1,3 +1,5 @@
+import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
+import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import React, { useState, useEffect } from 'react';
 import {
   Snowflake,
@@ -41,6 +43,8 @@ export const AcMaintenance: React.FC = () => {
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [companyDetails, setCompanyDetails] = useState<CharvikCompanyDetails>(getSavedCharvikCompanyDetails());
+
   const [editingRecord, setEditingRecord] = useState<AcRecord | null>(null);
 
   // Renewal Modal
@@ -968,6 +972,14 @@ export const AcMaintenance: React.FC = () => {
               className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none"
             />
           </div>
+
+          
+          {/* Charvik Company & Tax Details */}
+          <CharvikCompanyDetailsFields
+            sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
+            values={companyDetails}
+            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
+          />
 
           <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
             <button

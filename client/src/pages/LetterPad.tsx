@@ -1,3 +1,5 @@
+import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
+import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
@@ -61,31 +63,31 @@ interface CompanyConfig {
 const COMPANIES: Record<CompanyKey, CompanyConfig> = {
   charvik: {
     key: 'charvik',
-    name: 'CHARVIK STAFFING CONSULTANCY',
-    tagline: 'YOUR TALENT | OUR SUPPORT | A BRIGHTER FUTURE',
-    logo: charvikLogo,
+    name: 'CHARVIK STAFFING & CONSULTANCY',
+    tagline: 'Staffing Consultancy',
+    logo: '/charvik-invoice-logo.png',
     serialPrefix: 'CSC',
-    phone: '+91 9505151527',
-    email: 'info@charvikconsultancy.com',
-    website: 'www.charvikconsultancy.com',
-    address: '# 2-2-178, 1st Floor, Main Road, L.B. Nagar, Hyderabad - 500074, Telangana',
-    themeColor: '#032B69',
-    accentColor: '#F97316',
-    footerText: 'CHARVIK STAFFING CONSULTANCY • ISO CERTIFIED MANPOWER SOLUTIONS'
+    phone: '9505151527',
+    email: 'charvikstaffingconsulrancy@gmail.com',
+    website: 'charvikstaffingconsulrancy.in',
+    address: 'H.No.5-5-990, Plot No.74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.',
+    themeColor: '#004b93',
+    accentColor: '#ea580c',
+    footerText: 'CHARVIK STAFFING & CONSULTANCY'
   },
   vyshnavi: {
     key: 'vyshnavi',
-    name: 'VAISHNAVI TRAVELS',
-    tagline: 'All Types of Bus Passenger & Transport Services',
-    logo: vyshnaviLogo,
+    name: 'VYSHNAVI TRAVELS',
+    tagline: 'Your Journey Our Responsibility',
+    logo: '/vyshnavi-logo.png',
     serialPrefix: 'VT',
-    phone: '+91 9396151527',
-    email: 'vyshnavitravels@gmail.com',
-    website: 'www.vyshnavitravels.in',
-    address: 'Near Bus Terminal, Vanasthalipuram, Hyderabad, Telangana - 500070',
-    themeColor: '#006666',
-    accentColor: '#F97316',
-    footerText: 'VAISHNAVI TRAVELS • INTERCITY LUXURY BUS PASSENGER FLEET'
+    phone: '+91 9000202241',
+    email: 'vyshnavitravels@yahoo.com',
+    website: 'www.vyshnavitravels.com',
+    address: 'H.No.5-5-990, Plot No.74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.',
+    themeColor: '#004b93',
+    accentColor: '#ea580c',
+    footerText: 'VYSHNAVI TRAVELS • INTERCITY LUXURY BUS PASSENGER FLEET'
   },
   chandrika: {
     key: 'chandrika',
@@ -107,7 +109,7 @@ const INITIAL_SAVED_LETTERS: LetterRecord[] = [
   {
     id: 'LET-1001',
     company: 'charvik',
-    companyName: 'CHARVIK STAFFING CONSULTANCY',
+    companyName: 'CHARVIK STAFFING & CONSULTANCY',
     date: '21-11-2026',
     serialNumber: 'CSC/2026/0001',
     title: 'Staffing Deployment Order for Interstate Fleet Operations',
@@ -118,13 +120,13 @@ This is to officially certify that Charvik Staffing Consultancy has provisioned 
 
 All personnel have successfully cleared statutory background verification, commercial driving fitness checks, and route orientation. We request your operational team to accept duty rosters and facilitate trip authorizations accordingly.
 
-For any operational inquiries or duty adjustments, our operations helpline (+91 9505151527) remains accessible 24/7.`,
+For any operational inquiries or duty adjustments, our operations helpline (9505151527) remains accessible 24/7.`,
     createdAt: new Date().toISOString()
   },
   {
     id: 'LET-1002',
     company: 'vyshnavi',
-    companyName: 'VAISHNAVI TRAVELS',
+    companyName: 'VYSHNAVI TRAVELS',
     date: '21-11-2026',
     serialNumber: 'VT/2026/0001',
     title: 'Intercity Bus Service Clearance & Route Authorization',
@@ -133,7 +135,7 @@ For any operational inquiries or duty adjustments, our operations helpline (+91 
 
 Sub: Intercity Passenger Coach Route Operation Clearance.
 
-This letter confirms that Vaishnavi Travels bus coach bearing registration number TS 08 UA 5678 (Scania Metrolink HD) is operating on an authorized scheduled passenger route between Hyderabad and Bengaluru.
+This letter confirms that Vyshnavi Travels bus coach bearing registration number TS 08 UA 5678 (Scania Metrolink HD) is operating on an authorized scheduled passenger route between Hyderabad and Bengaluru.
 
 All vehicle passenger permits, commercial comprehensive insurance coverage, speed governor certificates, and driver license endorsements are valid and in full compliance with Central Motor Vehicles Rules (CMVR). Kindly extend clearance at toll plazas and passenger checkpoints.`,
     createdAt: new Date().toISOString()
@@ -157,6 +159,177 @@ We thank you for choosing Chandrika Finance as your trusted financial partner.`,
   }
 ];
 
+// ── Vector Top Corner Swooshes ──
+const CharvikTopSwoosh: React.FC = () => (
+  <svg
+    viewBox="0 0 260 120"
+    style={{
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      width: '210px',
+      height: 'auto',
+      pointerEvents: 'none',
+      zIndex: 1
+    }}
+  >
+    {/* Dark lower swoop */}
+    <path
+      d="M 70 0 C 120 0 190 20 260 70 L 260 35 C 200 10 140 0 100 0 Z"
+      fill="#1e293b"
+    />
+    {/* Orange upper swoop */}
+    <path
+      d="M 30 0 C 90 0 180 15 260 95 L 260 65 C 190 15 110 0 60 0 Z"
+      fill="#ea580c"
+    />
+  </svg>
+);
+
+const VyshnaviTopSwoosh: React.FC = () => (
+  <svg
+    viewBox="0 0 260 120"
+    style={{
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      width: '210px',
+      height: 'auto',
+      pointerEvents: 'none',
+      zIndex: 1
+    }}
+  >
+    {/* Blue upper corner wedge */}
+    <path
+      d="M 90 0 C 140 0 200 20 260 70 L 260 0 Z"
+      fill="#004b93"
+    />
+    {/* Orange lower ribbon */}
+    <path
+      d="M 40 0 C 100 0 190 20 260 100 L 260 72 C 200 22 120 0 75 0 Z"
+      fill="#ea580c"
+    />
+  </svg>
+);
+
+// ── Orange Address Card Footer (Matching Uploaded Image) ──
+const LetterPadFooterAddressCard: React.FC = () => (
+  <div
+    style={{
+      marginTop: '28px',
+      border: '2px solid #ea580c',
+      borderRadius: '8px',
+      padding: '6px 14px',
+      backgroundColor: '#ffffff',
+      display: 'flex',
+      alignItems: 'center',
+      boxSizing: 'border-box'
+    }}
+  >
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingRight: '12px',
+        marginRight: '12px',
+        borderRight: '1.5px solid #ea580c'
+      }}
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    </div>
+    <div style={{ flex: 1, textAlign: 'center', color: '#002B49', fontSize: '10.5px', fontWeight: 700, lineHeight: 1.45 }}>
+      <div>H.No.5-5-990, Plot No.74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada</div>
+      <div>Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.</div>
+    </div>
+  </div>
+);
+
+// ── Ref No & Date Strip (Matching Uploaded Image) ──
+const LetterPadRefDateStrip: React.FC<{ serialNumber: string; letterDate: string }> = ({
+  serialNumber,
+  letterDate
+}) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+    {/* Ref No Badge & Pill */}
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div
+        style={{
+          backgroundColor: '#ea580c',
+          color: '#000000',
+          fontSize: '11px',
+          fontWeight: 900,
+          padding: '4px 10px',
+          borderRadius: '5px',
+          marginRight: '8px',
+          letterSpacing: '0.3px',
+          lineHeight: '18px'
+        }}
+      >
+        Ref. No. :
+      </div>
+      <div
+        style={{
+          border: '1.5px solid #ea580c',
+          borderRadius: '9999px',
+          padding: '2px 14px',
+          minWidth: '140px',
+          height: '26px',
+          display: 'flex',
+          alignItems: 'center',
+          fontSize: '11px',
+          fontWeight: 800,
+          color: '#0f172a',
+          backgroundColor: '#ffffff',
+          boxSizing: 'border-box'
+        }}
+      >
+        {serialNumber}
+      </div>
+    </div>
+
+    {/* Date Badge & Pill */}
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div
+        style={{
+          backgroundColor: '#ea580c',
+          color: '#000000',
+          fontSize: '11px',
+          fontWeight: 900,
+          padding: '4px 10px',
+          borderRadius: '5px',
+          marginRight: '8px',
+          letterSpacing: '0.3px',
+          lineHeight: '18px'
+        }}
+      >
+        Date :
+      </div>
+      <div
+        style={{
+          border: '1.5px solid #ea580c',
+          borderRadius: '9999px',
+          padding: '2px 14px',
+          minWidth: '130px',
+          height: '26px',
+          display: 'flex',
+          alignItems: 'center',
+          fontSize: '11px',
+          fontWeight: 800,
+          color: '#0f172a',
+          backgroundColor: '#ffffff',
+          boxSizing: 'border-box'
+        }}
+      >
+        {letterDate}
+      </div>
+    </div>
+  </div>
+);
+
 export const LetterPad: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -169,6 +342,9 @@ export const LetterPad: React.FC = () => {
   const [activeCompany, setActiveCompany] = useState<CompanyKey>(
     COMPANIES[initialCompany] ? initialCompany : 'charvik'
   );
+
+  // Dynamic Charvik Company Details state
+  const [companyDetails, setCompanyDetails] = useState<CharvikCompanyDetails>(getSavedCharvikCompanyDetails);
 
   // Saved records state
   const [savedRecords, setSavedRecords] = useState<LetterRecord[]>(() => {
@@ -310,12 +486,6 @@ export const LetterPad: React.FC = () => {
 
   // High quality print / PDF trigger
   const handlePrint = () => {
-    const printContent = document.getElementById('letterpad-official-preview-sheet');
-    if (!printContent) {
-      window.print();
-      return;
-    }
-
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
     iframe.style.right = '0';
@@ -334,6 +504,57 @@ export const LetterPad: React.FC = () => {
 
     const currentConfig = COMPANIES[activeCompany];
 
+    // Address lines for Charvik and Vyshnavi
+    const footerAddressHtml = `
+      <div style="margin-top: 24px; border: 2px solid #ea580c; border-radius: 8px; padding: 6px 14px; background-color: #ffffff; display: flex; align-items: center; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; justify-content: center; padding-right: 12px; margin-right: 12px; border-right: 1.5px solid #ea580c;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </div>
+        <div style="flex: 1; text-align: center; color: #002B49; font-size: 10.5px; font-weight: 700; line-height: 1.45;">
+          <div>H.No.5-5-990, Plot No.74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada</div>
+          <div>Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.</div>
+        </div>
+      </div>
+    `;
+
+    // Ref No & Date bar HTML
+    const refDateBarHtml = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <div style="display: flex; align-items: center;">
+          <div style="background-color: #ea580c; color: #000000; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 5px; margin-right: 8px; letter-spacing: 0.3px; line-height: 18px;">
+            Ref. No. :
+          </div>
+          <div style="border: 1.5px solid #ea580c; border-radius: 9999px; padding: 2px 14px; min-width: 140px; height: 26px; display: flex; align-items: center; font-size: 11px; font-weight: 800; color: #0f172a; background-color: #ffffff; box-sizing: border-box;">
+            ${serialNumber}
+          </div>
+        </div>
+        <div style="display: flex; align-items: center;">
+          <div style="background-color: #ea580c; color: #000000; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 5px; margin-right: 8px; letter-spacing: 0.3px; line-height: 18px;">
+            Date :
+          </div>
+          <div style="border: 1.5px solid #ea580c; border-radius: 9999px; padding: 2px 14px; min-width: 130px; height: 26px; display: flex; align-items: center; font-size: 11px; font-weight: 800; color: #0f172a; background-color: #ffffff; box-sizing: border-box;">
+            ${letterDate}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Signoff HTML
+    const signoffHtml = `
+      <div style="margin-top: 28px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div></div>
+        <div style="text-align: right; min-width: 180px;">
+          <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Thanking You,</div>
+          <div style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Yours Faithfully,</div>
+          <div style="font-size: 12px; font-weight: 800; color: #0f172a; margin-bottom: 42px;">For ${currentConfig.name}</div>
+          <div style="border-top: 1px solid #64748b; padding-top: 4px; font-size: 11px; font-weight: 700; color: #334155; display: inline-block; min-width: 160px; text-align: center;">Authorised Signatory</div>
+        </div>
+      </div>
+    `;
+
     doc.open();
     doc.write(`
       <!DOCTYPE html>
@@ -343,7 +564,7 @@ export const LetterPad: React.FC = () => {
           <style>
             @page {
               size: A4 portrait;
-              margin: 12mm 14mm 12mm 14mm;
+              margin: ${activeCompany === 'vyshnavi' ? '10mm 12mm 10mm 12mm' : '12mm 14mm 12mm 14mm'};
             }
             * {
               box-sizing: border-box;
@@ -365,67 +586,21 @@ export const LetterPad: React.FC = () => {
               display: flex;
               flex-direction: column;
               justify-content: space-between;
+              position: relative;
+              background: #ffffff;
+              ${activeCompany === 'vyshnavi' ? 'border: 2.5px solid #004b93; border-radius: 12px; padding: 18px 22px;' : ''}
             }
-            .letter-header {
-              border-bottom: 2px solid ${currentConfig.themeColor};
-              padding-bottom: 12px;
-              margin-bottom: 16px;
+            .watermark-container {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              opacity: 0.12;
+              pointer-events: none;
+              z-index: 0;
               text-align: center;
-            }
-            .logo-img {
-              max-height: 70px;
-              max-width: 280px;
-              object-fit: contain;
-              margin: 0 auto 6px auto;
-              display: block;
-            }
-            .company-name {
-              font-size: 20px;
-              font-weight: 900;
-              color: ${currentConfig.themeColor};
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-            }
-            .company-tagline {
-              font-size: 10px;
-              font-weight: 700;
-              color: ${currentConfig.accentColor};
-              letter-spacing: 1px;
-              margin-bottom: 6px;
-              text-transform: uppercase;
-            }
-            .contact-pills {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              flex-wrap: wrap;
-              gap: 12px;
-              font-size: 11px;
-              font-weight: 600;
-              color: #334155;
-              margin-bottom: 4px;
-            }
-            .address-bar {
-              font-size: 10px;
-              font-weight: 500;
-              color: #475569;
-              background: #f8fafc;
-              border: 1px solid #e2e8f0;
-              border-radius: 9999px;
-              padding: 3px 12px;
-              display: inline-block;
-              margin-top: 4px;
-            }
-            .ref-bar {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              font-size: 12px;
-              font-weight: 700;
-              color: #0f172a;
-              border-bottom: 1px solid #cbd5e1;
-              padding-bottom: 8px;
-              margin-bottom: 18px;
+              width: 440px;
+              max-width: 75%;
             }
             .recipient-block {
               margin-bottom: 16px;
@@ -439,7 +614,7 @@ export const LetterPad: React.FC = () => {
             .title-block {
               font-size: 14px;
               font-weight: 800;
-              color: ${currentConfig.themeColor};
+              color: ${activeCompany === 'charvik' ? '#002B49' : activeCompany === 'vyshnavi' ? '#004b93' : currentConfig.themeColor};
               text-decoration: underline;
               margin-bottom: 16px;
             }
@@ -450,69 +625,111 @@ export const LetterPad: React.FC = () => {
               white-space: pre-wrap;
               word-break: break-word;
               flex: 1;
-              min-height: 380px;
-            }
-            .signoff-section {
-              margin-top: 40px;
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-end;
-              padding-top: 20px;
-            }
-            .signoff-box {
-              text-align: right;
-            }
-            .signoff-for {
-              font-size: 12px;
-              font-weight: 800;
-              color: #0f172a;
-            }
-            .signoff-space {
-              height: 60px;
-            }
-            .signoff-title {
-              font-size: 12px;
-              font-weight: 700;
-              color: #334155;
-              border-top: 1px solid #94a3b8;
-              padding-top: 4px;
-              display: inline-block;
-              min-width: 170px;
-            }
-            .footer-strip {
-              margin-top: 24px;
-              padding-top: 8px;
-              border-top: 3px solid ${currentConfig.themeColor};
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              font-size: 9px;
-              font-weight: 700;
-              color: #64748b;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
+              min-height: 340px;
             }
           </style>
         </head>
         <body>
           <div class="letter-sheet">
-            <div>
-              <!-- Header -->
-              <div class="letter-header">
-                <img src="${currentConfig.logo}" class="logo-img" alt="${currentConfig.name}" />
-                <div class="contact-pills">
-                  <span>📞 ${currentConfig.phone}</span>
-                  <span>✉️ ${currentConfig.email}</span>
-                  <span>🌐 ${currentConfig.website}</span>
-                </div>
-                <div class="address-bar">📍 ${currentConfig.address}</div>
-              </div>
+            ${
+              (activeCompany === 'charvik' || activeCompany === 'vyshnavi')
+                ? `<div class="watermark-container">
+                    <img src="${activeCompany === 'charvik' ? '/charvik-invoice-logo.png' : '/vyshnavi-logo.png'}" style="width: 100%; height: auto; object-fit: contain;" />
+                  </div>`
+                : ''
+            }
 
-              <!-- Ref No & Date -->
-              <div class="ref-bar">
-                <span><strong>Ref No:</strong> ${serialNumber}</span>
-                <span><strong>Date:</strong> ${letterDate}</span>
-              </div>
+            <div style="position: relative; z-index: 1;">
+              ${
+                activeCompany === 'charvik'
+                  ? `
+                    <!-- Top-Right Swoosh -->
+                    <svg viewBox="0 0 260 120" style="position: absolute; top: 0; right: 0; width: 210px; height: auto; pointer-events: none; z-index: 1;">
+                      <path d="M 70 0 C 120 0 190 20 260 70 L 260 35 C 200 10 140 0 100 0 Z" fill="#1e293b" />
+                      <path d="M 30 0 C 90 0 180 15 260 95 L 260 65 C 190 15 110 0 60 0 Z" fill="#ea580c" />
+                    </svg>
+
+                    <!-- Top Header -->
+                    <div style="display: flex; align-items: center; position: relative; z-index: 2; padding-top: 4px;">
+                      <div>
+                        <img src="/charvik-invoice-logo.png" style="height: 64px; max-height: 70px; width: auto; object-fit: contain; display: block;" />
+                      </div>
+                      <div style="width: 1.5px; height: 54px; background-color: #002B49; margin: 0 16px;"></div>
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ea580c; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 9px; font-weight: bold;">📞</div>
+                          <span style="font-size: 13px; font-weight: 800; color: #002B49;">${companyDetails.company_phone || '9505151527'}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ea580c; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 9px; font-weight: bold;">✉️</div>
+                          <span style="font-size: 12px; font-weight: 800; color: #002B49;">${companyDetails.company_email || 'charvikstaffingconsulrancy@gmail.com'}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ea580c; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 9px; font-weight: bold;">🌐</div>
+                          <span style="font-size: 12px; font-weight: 800; color: #002B49;">${companyDetails.company_website || 'charvikstaffingconsulrancy.in'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Orange Divider -->
+                    <div style="width: 100%; height: 3.5px; background-color: #ea580c; margin-top: 12px; margin-bottom: 14px;"></div>
+
+                    <!-- Ref No & Date -->
+                    ${refDateBarHtml}
+                  `
+                  : activeCompany === 'vyshnavi'
+                  ? `
+                    <!-- Top-Right Swoosh -->
+                    <svg viewBox="0 0 260 120" style="position: absolute; top: 0; right: 0; width: 210px; height: auto; pointer-events: none; z-index: 1;">
+                      <path d="M 90 0 C 140 0 200 20 260 70 L 260 0 Z" fill="#004b93" />
+                      <path d="M 40 0 C 100 0 190 20 260 100 L 260 72 C 200 22 120 0 75 0 Z" fill="#ea580c" />
+                    </svg>
+
+                    <!-- Top Header -->
+                    <div style="display: flex; align-items: center; position: relative; z-index: 2; padding-top: 4px;">
+                      <div>
+                        <img src="/vyshnavi-logo.png" style="height: 64px; max-height: 72px; width: auto; object-fit: contain; display: block;" />
+                      </div>
+                      <div style="width: 1.5px; height: 54px; background-color: #004b93; margin: 0 16px;"></div>
+                      <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #004b93; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 9px; font-weight: bold;">📞</div>
+                          <span style="font-size: 14px; font-weight: 900; color: #004b93;">+91 9000202241</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #004b93; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 9px; font-weight: bold;">✉️</div>
+                          <span style="font-size: 13px; font-weight: 800; color: #004b93;">vyshnavitravels@yahoo.com</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Orange Divider -->
+                    <div style="width: 100%; height: 3.5px; background-color: #ea580c; margin-top: 12px; margin-bottom: 14px;"></div>
+
+                    <!-- Ref No & Date -->
+                    ${refDateBarHtml}
+                  `
+                  : `
+                    <!-- Chandrika Finance Header (Untouched) -->
+                    <div style="border-bottom: 2px solid ${currentConfig.themeColor}; padding-bottom: 12px; margin-bottom: 16px; text-align: center;">
+                      <img src="${currentConfig.logo}" style="max-height: 70px; max-width: 280px; object-fit: contain; margin: 0 auto 6px auto; display: block;" alt="${currentConfig.name}" />
+                      <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; font-size: 11px; font-weight: 600; color: #334155; margin-bottom: 4px;">
+                        <span>📞 ${currentConfig.phone}</span>
+                        <span>✉️ ${currentConfig.email}</span>
+                        <span>🌐 ${currentConfig.website}</span>
+                      </div>
+                      <div style="font-size: 10px; font-weight: 500; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 9999px; padding: 3px 12px; display: inline-block; margin-top: 4px;">
+                        📍 ${currentConfig.address}
+                      </div>
+                    </div>
+
+                    <!-- Ref No & Date (Chandrika) -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 18px;">
+                      <span><strong>Ref No:</strong> ${serialNumber}</span>
+                      <span><strong>Date:</strong> ${letterDate}</span>
+                    </div>
+                  `
+              }
 
               <!-- Recipient -->
               ${
@@ -536,20 +753,30 @@ export const LetterPad: React.FC = () => {
             </div>
 
             <!-- Signoff & Footer -->
-            <div>
-              <div class="signoff-section">
-                <div></div>
-                <div class="signoff-box">
-                  <div class="signoff-for">For ${currentConfig.name}</div>
-                  <div class="signoff-space"></div>
-                  <div class="signoff-title">Authorised Signatory</div>
-                </div>
-              </div>
+            <div style="position: relative; z-index: 1;">
+              ${
+                activeCompany === 'charvik' || activeCompany === 'vyshnavi'
+                  ? `
+                    ${signoffHtml}
+                    ${footerAddressHtml}
+                  `
+                  : `
+                    <!-- Chandrika Signoff & Footer Strip (Untouched) -->
+                    <div style="margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 20px;">
+                      <div></div>
+                      <div style="text-align: right;">
+                        <div style="font-size: 12px; font-weight: 800; color: #0f172a;">For ${currentConfig.name}</div>
+                        <div style="height: 60px;"></div>
+                        <div style="font-size: 12px; font-weight: 700; color: #334155; border-top: 1px solid #94a3b8; padding-top: 4px; display: inline-block; min-width: 170px;">Authorised Signatory</div>
+                      </div>
+                    </div>
 
-              <div class="footer-strip">
-                <span>${currentConfig.footerText}</span>
-                <span>Page 1 of 1</span>
-              </div>
+                    <div style="margin-top: 24px; padding-top: 8px; border-top: 3px solid ${currentConfig.themeColor}; display: flex; justify-content: space-between; align-items: center; font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
+                      <span>${currentConfig.footerText}</span>
+                      <span>Page 1 of 1</span>
+                    </div>
+                  `
+              }
             </div>
           </div>
         </body>
@@ -587,7 +814,7 @@ export const LetterPad: React.FC = () => {
     <div className="space-y-6 pb-16">
       {/* ── TOP ACTION BAR (EXACT MATCH FOR USER VIDEO TOP BUTTONS) ── */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-xs">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* New Letter Button */}
           <button
             type="button"
@@ -619,28 +846,57 @@ export const LetterPad: React.FC = () => {
           </button>
         </div>
 
-        {/* Active Company Badge Only (Dedicated tab mode) */}
-        <div className="flex items-center gap-2">
-          {activeCompany === 'charvik' && (
-            <div className="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-900 border border-blue-200 text-xs font-black flex items-center gap-2 shadow-xs">
-              <Building2 className="w-4 h-4 text-blue-600" />
-              <span>Charvik Staffing Consultancy</span>
-            </div>
-          )}
-          {activeCompany === 'vyshnavi' && (
-            <div className="px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-900 border border-teal-200 text-xs font-black flex items-center gap-2 shadow-xs">
-              <Bus className="w-4 h-4 text-teal-600" />
-              <span>Vyshnavi Travels</span>
-            </div>
-          )}
-          {activeCompany === 'chandrika' && (
-            <div className="px-3.5 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-black flex items-center gap-2 shadow-xs">
-              <Landmark className="w-4 h-4 text-amber-600" />
-              <span>Chandrika Finance</span>
-            </div>
-          )}
+        {/* Company Selector Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => handleSwitchCompany('charvik')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer border ${
+              activeCompany === 'charvik'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                : 'bg-blue-50 text-blue-900 border-blue-200 hover:bg-blue-100'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>Charvik Consultancy</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSwitchCompany('vyshnavi')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer border ${
+              activeCompany === 'vyshnavi'
+                ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                : 'bg-teal-50 text-teal-900 border-teal-200 hover:bg-teal-100'
+            }`}
+          >
+            <Bus className="w-4 h-4" />
+            <span>Vyshnavi Travels</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSwitchCompany('chandrika')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer border ${
+              activeCompany === 'chandrika'
+                ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
+            }`}
+          >
+            <Landmark className="w-4 h-4" />
+            <span>Chandrika Finance</span>
+          </button>
         </div>
       </div>
+
+      {/* ── OPTIONAL CHARVIK COMPANY DETAILS ACCORDION (ONLY ON CHARVIK TAB) ── */}
+      {activeCompany === 'charvik' && (
+        <CharvikCompanyDetailsFields
+          sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
+          values={companyDetails}
+          onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
+        />
+      )}
 
       {/* ── EDITOR CARD: EXACT MATCH FOR VIDEO "CHARVIK Letter Pad – Letter Editor" ── */}
       <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 sm:p-6 space-y-4">
@@ -849,16 +1105,16 @@ export const LetterPad: React.FC = () => {
                             handleLoadLetter(rec);
                             setTimeout(() => handlePrint(), 300);
                           }}
-                          className="p-1 rounded hover:bg-emerald-50 text-emerald-600 transition-colors cursor-pointer"
-                          title="Print Letterhead"
+                          className="p-1 rounded hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+                          title="Print Letter"
                         >
                           <Printer className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteLetter(rec.id, rec.serialNumber)}
-                          className="p-1 rounded hover:bg-rose-50 text-rose-500 transition-colors cursor-pointer"
-                          title="Delete Letter"
+                          className="p-1 rounded hover:bg-rose-50 text-rose-600 transition-colors cursor-pointer"
+                          title="Delete Record"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -872,7 +1128,7 @@ export const LetterPad: React.FC = () => {
         </div>
       </div>
 
-      {/* ── LIVE LETTER PAD A4 PREVIEW (MATCHING VIDEO EXACT SHEET & FORMAT) ── */}
+      {/* ── LIVE LETTER PAD A4 PREVIEW (EXACT MATCH FOR USER UPLOADED IMAGES) ── */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-1.5 text-xs font-black text-slate-800 uppercase tracking-wide">
@@ -893,58 +1149,173 @@ export const LetterPad: React.FC = () => {
           <div
             id="letterpad-official-preview-sheet"
             ref={printAreaRef}
-            className="w-full max-w-[760px] min-h-[960px] bg-white rounded-lg shadow-2xl p-8 sm:p-12 flex flex-col justify-between border border-slate-300 text-slate-900"
-            style={{ fontFamily: 'Arial, sans-serif' }}
+            className="w-full max-w-[760px] min-h-[960px] bg-white rounded-lg shadow-2xl flex flex-col justify-between text-slate-900"
+            style={{
+              fontFamily: 'Arial, sans-serif',
+              position: 'relative',
+              overflow: 'hidden',
+              padding: activeCompany === 'vyshnavi' ? '22px 26px 20px 26px' : '22px 26px 20px 26px',
+              border: activeCompany === 'vyshnavi' ? '2.5px solid #004b93' : '1px solid #cbd5e1',
+              borderRadius: activeCompany === 'vyshnavi' ? '12px' : '6px'
+            }}
           >
-            <div>
-              {/* Official Header */}
+            {/* Watermark in Center (Charvik & Vyshnavi) */}
+            {(activeCompany === 'charvik' || activeCompany === 'vyshnavi') && (
               <div
-                className="text-center pb-3 mb-4 border-b-2"
-                style={{ borderColor: currentConfig.themeColor }}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  opacity: 0.12,
+                  pointerEvents: 'none',
+                  zIndex: 0,
+                  textAlign: 'center',
+                  width: '440px',
+                  maxWidth: '75%'
+                }}
               >
-                <div className="flex justify-center items-center mb-1">
-                  <img
-                    src={currentConfig.logo}
-                    alt={currentConfig.name}
-                    className="max-h-16 max-w-[260px] object-contain"
-                  />
-                </div>
-
-                {/* Contact Strip */}
-                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-700 mt-2">
-                  <span className="flex items-center gap-1">
-                    <Phone className="w-3 h-3 text-slate-600" />
-                    <span>{currentConfig.phone}</span>
-                  </span>
-                  <span>|</span>
-                  <span className="flex items-center gap-1">
-                    <Mail className="w-3 h-3 text-slate-600" />
-                    <span>{currentConfig.email}</span>
-                  </span>
-                  <span>|</span>
-                  <span className="flex items-center gap-1">
-                    <Globe className="w-3 h-3 text-slate-600" />
-                    <span>{currentConfig.website}</span>
-                  </span>
-                </div>
-
-                {/* Address Capsule */}
-                <div className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-full px-3 py-0.5 mt-1.5">
-                  <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
-                  <span>{currentConfig.address}</span>
-                </div>
+                <img
+                  src={activeCompany === 'charvik' ? '/charvik-invoice-logo.png' : '/vyshnavi-logo.png'}
+                  alt=""
+                  style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+                />
               </div>
+            )}
 
-              {/* Ref No & Date Strip */}
-              <div className="flex justify-between items-center text-xs font-bold text-slate-900 border-b border-slate-300 pb-2 mb-4">
-                <span>
-                  <strong className="text-slate-600">Ref No:</strong>{' '}
-                  <span className="font-mono">{serialNumber}</span>
-                </span>
-                <span>
-                  <strong className="text-slate-600">Date:</strong> {letterDate}
-                </span>
-              </div>
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              {/* Official Header */}
+              {activeCompany === 'charvik' ? (
+                <div style={{ position: 'relative', zIndex: 1, paddingBottom: '4px' }}>
+                  <CharvikTopSwoosh />
+                  <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 2 }}>
+                    <div>
+                      <img
+                        src="/charvik-invoice-logo.png"
+                        alt="Charvik Staffing & Consultancy"
+                        style={{ height: '62px', maxHeight: '68px', width: 'auto', objectFit: 'contain', display: 'block' }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/logo-brand.png';
+                        }}
+                      />
+                    </div>
+                    <div style={{ width: '1.5px', height: '54px', backgroundColor: '#002B49', margin: '0 16px' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '9px', fontWeight: 'bold' }}>
+                          📞
+                        </div>
+                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#002B49' }}>
+                          {companyDetails.company_phone || '9505151527'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '9px', fontWeight: 'bold' }}>
+                          ✉️
+                        </div>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#002B49' }}>
+                          {companyDetails.company_email || 'charvikstaffingconsulrancy@gmail.com'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '9px', fontWeight: 'bold' }}>
+                          🌐
+                        </div>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#002B49' }}>
+                          {companyDetails.company_website || 'charvikstaffingconsulrancy.in'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ width: '100%', height: '3.5px', backgroundColor: '#ea580c', marginTop: '12px', marginBottom: '14px' }} />
+                  <LetterPadRefDateStrip serialNumber={serialNumber} letterDate={letterDate} />
+                </div>
+              ) : activeCompany === 'vyshnavi' ? (
+                <div style={{ position: 'relative', zIndex: 1, paddingBottom: '4px' }}>
+                  <VyshnaviTopSwoosh />
+                  <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 2 }}>
+                    <div>
+                      <img
+                        src="/vyshnavi-logo.png"
+                        alt="Vyshnavi Travels"
+                        style={{ height: '64px', maxHeight: '72px', width: 'auto', objectFit: 'contain', display: 'block' }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/vyshnavi-tab-logo.jpg';
+                        }}
+                      />
+                    </div>
+                    <div style={{ width: '1.5px', height: '54px', backgroundColor: '#004b93', margin: '0 16px' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#004b93', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '9px', fontWeight: 'bold' }}>
+                          📞
+                        </div>
+                        <span style={{ fontSize: '14px', fontWeight: 900, color: '#004b93' }}>
+                          +91 9000202241
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#004b93', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '9px', fontWeight: 'bold' }}>
+                          ✉️
+                        </div>
+                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#004b93' }}>
+                          vyshnavitravels@yahoo.com
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ width: '100%', height: '3.5px', backgroundColor: '#ea580c', marginTop: '12px', marginBottom: '14px' }} />
+                  <LetterPadRefDateStrip serialNumber={serialNumber} letterDate={letterDate} />
+                </div>
+              ) : (
+                /* Chandrika Finance Header (Untouched) */
+                <div>
+                  <div
+                    className="text-center pb-3 mb-4 border-b-2"
+                    style={{ borderColor: currentConfig.themeColor }}
+                  >
+                    <div className="flex justify-center items-center mb-1">
+                      <img
+                        src={currentConfig.logo}
+                        alt={currentConfig.name}
+                        className="max-h-16 max-w-[260px] object-contain"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-700 mt-2">
+                      <span className="flex items-center gap-1">
+                        <Phone className="w-3 h-3 text-slate-600" />
+                        <span>{currentConfig.phone}</span>
+                      </span>
+                      <span>|</span>
+                      <span className="flex items-center gap-1">
+                        <Mail className="w-3 h-3 text-slate-600" />
+                        <span>{currentConfig.email}</span>
+                      </span>
+                      <span>|</span>
+                      <span className="flex items-center gap-1">
+                        <Globe className="w-3 h-3 text-slate-600" />
+                        <span>{currentConfig.website}</span>
+                      </span>
+                    </div>
+
+                    <div className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-full px-3 py-0.5 mt-1.5">
+                      <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
+                      <span>{currentConfig.address}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs font-bold text-slate-900 border-b border-slate-300 pb-2 mb-4">
+                    <span>
+                      <strong className="text-slate-600">Ref No:</strong>{' '}
+                      <span className="font-mono">{serialNumber}</span>
+                    </span>
+                    <span>
+                      <strong className="text-slate-600">Date:</strong> {letterDate}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Recipient */}
               {respectTo.trim() && (
@@ -958,7 +1329,7 @@ export const LetterPad: React.FC = () => {
               {letterTitle.trim() && (
                 <div
                   className="text-xs sm:text-sm font-black underline mb-4"
-                  style={{ color: currentConfig.themeColor }}
+                  style={{ color: activeCompany === 'charvik' ? '#002B49' : activeCompany === 'vyshnavi' ? '#004b93' : currentConfig.themeColor }}
                 >
                   <strong>Sub:</strong> {letterTitle}
                 </div>
@@ -974,35 +1345,61 @@ export const LetterPad: React.FC = () => {
               </div>
             </div>
 
-            {/* Bottom Signoff & Footer Bar */}
-            <div className="pt-8">
-              <div className="flex justify-between items-end pb-4">
-                <div></div>
-                <div className="text-right space-y-1">
-                  <div className="text-xs font-bold text-slate-900">
-                    Thanking You,
+            {/* Bottom Signoff & Footer */}
+            <div className="pt-6" style={{ position: 'relative', zIndex: 1 }}>
+              {activeCompany === 'charvik' || activeCompany === 'vyshnavi' ? (
+                <div>
+                  <div className="flex justify-between items-end pb-2">
+                    <div></div>
+                    <div className="text-right space-y-1">
+                      <div className="text-xs font-bold text-slate-900">
+                        Thanking You,
+                      </div>
+                      <div className="text-xs font-medium text-slate-700">
+                        Yours Faithfully,
+                      </div>
+                      <div className="text-xs font-black text-slate-900 pt-1">
+                        For {currentConfig.name}
+                      </div>
+                      <div className="h-10"></div>
+                      <div className="text-xs font-bold text-slate-800 border-t border-slate-400 pt-1 inline-block min-w-[160px]">
+                        Authorised Signatory
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs font-medium text-slate-700">
-                    Yours Faithfully,
+                  <LetterPadFooterAddressCard />
+                </div>
+              ) : (
+                /* Chandrika Signoff & Footer (Untouched) */
+                <div>
+                  <div className="flex justify-between items-end pb-4">
+                    <div></div>
+                    <div className="text-right space-y-1">
+                      <div className="text-xs font-bold text-slate-900">
+                        Thanking You,
+                      </div>
+                      <div className="text-xs font-medium text-slate-700">
+                        Yours Faithfully,
+                      </div>
+                      <div className="text-xs font-black text-slate-900 pt-1">
+                        For {currentConfig.name}
+                      </div>
+                      <div className="h-12"></div>
+                      <div className="text-xs font-bold text-slate-800 border-t border-slate-400 pt-1 inline-block min-w-[160px]">
+                        Authorised Signatory
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs font-black text-slate-900 pt-1">
-                    For {currentConfig.name}
-                  </div>
-                  <div className="h-12"></div>
-                  <div className="text-xs font-bold text-slate-800 border-t border-slate-400 pt-1 inline-block min-w-[160px]">
-                    Authorised Signatory
+
+                  <div
+                    className="pt-2 border-t-4 flex justify-between items-center text-[9px] font-bold text-slate-500 uppercase tracking-wider"
+                    style={{ borderColor: currentConfig.themeColor }}
+                  >
+                    <span>{currentConfig.footerText}</span>
+                    <span>Page 1 of 1</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Decorative Brand Wave Strip Matching Video */}
-              <div
-                className="pt-2 border-t-4 flex justify-between items-center text-[9px] font-bold text-slate-500 uppercase tracking-wider"
-                style={{ borderColor: currentConfig.themeColor }}
-              >
-                <span>{currentConfig.footerText}</span>
-                <span>Page 1 of 1</span>
-              </div>
+              )}
             </div>
           </div>
         </div>

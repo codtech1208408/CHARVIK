@@ -1,3 +1,5 @@
+import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompanyDetailsFields';
+import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -107,6 +109,8 @@ export const VehicleMaintenance: React.FC = () => {
 
   // Modals
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false);
+  const [companyDetails, setCompanyDetails] = useState<CharvikCompanyDetails>(getSavedCharvikCompanyDetails());
+
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [isUpdateOdometerOpen, setIsUpdateOdometerOpen] = useState(false);
   const [newOdometerVal, setNewOdometerVal] = useState<number | string>('');
@@ -969,7 +973,15 @@ export const VehicleMaintenance: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+        
+          {/* Charvik Company & Tax Details */}
+          <CharvikCompanyDetailsFields
+            sectionTitle="Charvik Staffing & Consultancy Company & Tax Details (Printout Header)"
+            values={companyDetails}
+            onChange={(updated) => setCompanyDetails((prev) => ({ ...prev, ...updated }))}
+          />
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
           <button
             type="button"
             onClick={handleCloseVehicleModal}

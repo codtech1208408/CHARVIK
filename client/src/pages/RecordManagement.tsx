@@ -1730,21 +1730,22 @@ export const RecordManagement: React.FC = () => {
                   overflow: 'hidden'
                 }}
               >
-                {/* Top-Right Swoosh Graphic Accent */}
-                <img
-                  src="/vyshnavi-top-swoosh.png?v=clean_20261124_01"
-                  alt=""
+                {/* Top-Right Smooth Vector Swoosh Accent */}
+                <svg
+                  viewBox="0 0 160 100"
                   style={{
                     position: 'absolute',
                     top: 0,
                     right: 0,
-                    width: '120px',
+                    width: '130px',
                     height: 'auto',
                     pointerEvents: 'none',
-                    zIndex: 1,
-                    opacity: 0.95
+                    zIndex: 1
                   }}
-                />
+                >
+                  <path d="M 65 0 C 95 0 135 20 160 65 L 160 0 Z" fill="#004b93" />
+                  <path d="M 30 0 C 70 0 130 25 160 95 L 160 70 C 135 25 90 0 55 0 Z" fill="#ea580c" />
+                </svg>
 
                 <div style={{ position: 'relative', zIndex: 2 }}>
                   {/* Top Header: Logo on left, Contact Details on right */}
