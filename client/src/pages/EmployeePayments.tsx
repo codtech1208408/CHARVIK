@@ -4477,11 +4477,8 @@ _This is an official automated monthly salary & trip record statement._`;
               />
             </div>
 
-            {/* Modal Footer Note */}
-            <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
-              <span>
-                💡 <strong>Note:</strong> Select <strong>"Save as PDF"</strong> in the print dialog to export high-definition colourful PDF, or select your physical printer for crisp black &amp; white printouts.
-              </span>
+            {/* Modal Footer */}
+            <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex justify-end items-center">
               <button
                 type="button"
                 onClick={() => setPrintingSlipData(null)}
