@@ -1750,12 +1750,12 @@ export const RecordManagement: React.FC = () => {
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <div style={{ borderLeft: '1.5px solid #000000', height: '46px', margin: '0 16px' }}></div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: '900', color: '#000000' }}>
-                          <span style={{ fontSize: '14px' }}>📞</span>
+                        <div style={{ display: 'block', fontSize: '15px', fontWeight: '900', color: '#000000', whiteSpace: 'nowrap', marginBottom: '3px' }}>
+                          <span style={{ fontSize: '14px', marginRight: '6px' }}>📞</span>
                           <span>{printingRecord.company_phone || '+91 9505151527'}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#000000' }}>
-                          <span style={{ fontSize: '13px' }}>✉</span>
+                        <div style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#000000', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '13px', marginRight: '6px' }}>✉</span>
                           <span>{printingRecord.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
                         </div>
                       </div>
@@ -2026,31 +2026,16 @@ export const RecordManagement: React.FC = () => {
                       (e.target as HTMLImageElement).src = '/logo-brand.png';
                     }}
                   />
-                  <div style={{ display: 'flex', alignItems: 'flex-start', borderLeft: '1.5px solid #002B49', paddingLeft: '14px', minHeight: '68px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px', fontWeight: '800', color: '#002B49', lineHeight: '1.3' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                        <span style={{ fontSize: '13px' }}>📞</span>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ borderLeft: '1.5px solid #000000', height: '46px', margin: '0 16px' }}></div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left' }}>
+                      <div style={{ display: 'block', fontSize: '15px', fontWeight: '900', color: '#000000', whiteSpace: 'nowrap', marginBottom: '3px' }}>
+                        <span style={{ fontSize: '14px', marginRight: '6px' }}>📞</span>
                         <span>{printingRecord.company_phone || '+91 9505151527'}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                        <span style={{ fontSize: '13px' }}>✉</span>
+                      <div style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#000000', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: '13px', marginRight: '6px' }}>✉</span>
                         <span>{printingRecord.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                        <span style={{ fontSize: '13px' }}>🌐</span>
-                        <span>{printingRecord.company_website || 'www.charvikstaffing.com'}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                        <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>GST</span>
-                        <span>GSTIN : {printingRecord.company_gst || '36ABCDE1234F1Z5'}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                        <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>PAN</span>
-                        <span>PAN : {printingRecord.company_pan || 'AABPC1234D'}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                        <span style={{ fontSize: '13px' }}>📍</span>
-                        <span>{printingRecord.company_address || 'Hyderabad, Telangana'}</span>
                       </div>
                     </div>
                   </div>

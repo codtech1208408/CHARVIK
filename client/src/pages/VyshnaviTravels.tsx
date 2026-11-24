@@ -3546,12 +3546,12 @@ export const VyshnaviTravels: React.FC = () => {
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <div style={{ borderLeft: '1.5px solid #004b93', height: '46px', margin: '0 16px' }}></div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: '900', color: '#004b93' }}>
-                          <span style={{ fontSize: '14px' }}>📞</span>
+                        <div style={{ display: 'block', fontSize: '15px', fontWeight: '900', color: '#004b93', whiteSpace: 'nowrap', marginBottom: '3px' }}>
+                          <span style={{ fontSize: '14px', marginRight: '6px' }}>📞</span>
                           <span>+91 9000202241</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#004b93' }}>
-                          <span style={{ fontSize: '13px' }}>✉</span>
+                        <div style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#004b93', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '13px', marginRight: '6px' }}>✉</span>
                           <span>vyshnavitravels@yahoo.com</span>
                         </div>
                       </div>

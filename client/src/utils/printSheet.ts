@@ -313,14 +313,12 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
             />
             <div style="display: flex; align-items: center;">
               <div style="border-left: 1.5px solid ${primaryColor}; height: 46px; margin: 0 16px;"></div>
-              <div style="display: flex; flexDirection: column; gap: 4px; text-align: left;">
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 900; color: ${primaryColor};">
-                  <span style="font-size: 14px;">📞</span>
-                  <span>${companyPhone}</span>
+              <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
+                <div style="display: block; font-size: 15px; font-weight: 900; color: ${primaryColor}; line-height: 1.3; white-space: nowrap;">
+                  <span style="display: inline-block; font-size: 14px; margin-right: 6px;">📞</span><span>${companyPhone}</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: ${primaryColor};">
-                  <span style="font-size: 13px;">✉</span>
-                  <span>${companyEmail}</span>
+                <div style="display: block; font-size: 12px; font-weight: 700; color: ${primaryColor}; line-height: 1.3; white-space: nowrap;">
+                  <span style="display: inline-block; font-size: 13px; margin-right: 6px;">✉</span><span>${companyEmail}</span>
                 </div>
               </div>
             </div>
