@@ -1719,9 +1719,6 @@ export const CaptainAuditRecord: React.FC = () => {
                 onChange={handleOperatorSelect}
                 allowCustom={true}
               />
-              <p className="text-[11px] text-blue-600 font-medium">
-                💡 Selecting Operator will auto-fill Bus Number, Route, Captain, Drivers &amp; Helper.
-              </p>
             </div>
 
             {/* Bus Number */}
@@ -1867,63 +1864,7 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 2: Driver Freshup Image Upload */}
-          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-black text-slate-800 flex items-center gap-1">
-                  <Camera className="w-4 h-4 text-blue-600" />
-                  <span>Driver Freshup Image / Crew Photo</span>
-                </label>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Upload crew / driver freshup photos. Max 5 files.
-                </p>
-              </div>
-              <span className="text-xs font-bold text-slate-400">
-                {driverFreshupPictures.length} / 5 uploaded
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {driverFreshupPictures.map((picUrl, idx) => (
-                <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-slate-300 bg-white">
-                  <img src={picUrl} alt={`Freshup ${idx + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(idx, 'freshup')}
-                    className="absolute top-1 right-1 p-1 bg-rose-600/90 hover:bg-rose-700 text-white rounded-full transition-colors cursor-pointer shadow-sm"
-                    title="Remove"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-
-              {driverFreshupPictures.length < 5 && (
-                <div>
-                  <input
-                    type="file"
-                    ref={driverFreshupFileInputRef}
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => handleFileUpload(e, 'freshup')}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => driverFreshupFileInputRef.current?.click()}
-                    disabled={uploadingDriverFreshupPhoto}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-blue-50/50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    <Upload className="w-4 h-4" />
-                    <span>{uploadingDriverFreshupPhoto ? 'Uploading...' : 'Add Driver Freshup Photo'}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Card 3: Amenities Checklist with Edit & Delete */}
+          {/* Card 2: Amenities Checklist with Edit & Delete */}
           <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -2108,7 +2049,7 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 4: Bus Cleaning Picture */}
+          {/* Card 3: Bus Cleaning Picture */}
           <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
             <div className="flex items-center justify-between">
               <div>
@@ -2163,7 +2104,7 @@ export const CaptainAuditRecord: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 5: Staff Picture */}
+          {/* Card 4: Staff Picture */}
           <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
             <div className="flex items-center justify-between">
               <div>
@@ -2212,6 +2153,62 @@ export const CaptainAuditRecord: React.FC = () => {
                   >
                     <Upload className="w-4 h-4" />
                     <span>{uploadingStaffPhoto ? 'Uploading...' : 'Add file'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card 5: Driver Freshup Image / Crew Photo (Below Staff Picture) */}
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-black text-slate-800 flex items-center gap-1">
+                  <Camera className="w-4 h-4 text-blue-600" />
+                  <span>Driver Freshup Image / Crew Photo</span>
+                </label>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Upload crew / driver freshup photos. Max 5 files.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-slate-400">
+                {driverFreshupPictures.length} / 5 uploaded
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {driverFreshupPictures.map((picUrl, idx) => (
+                <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-slate-300 bg-white">
+                  <img src={picUrl} alt={`Freshup ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(idx, 'freshup')}
+                    className="absolute top-1 right-1 p-1 bg-rose-600/90 hover:bg-rose-700 text-white rounded-full transition-colors cursor-pointer shadow-sm"
+                    title="Remove"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+
+              {driverFreshupPictures.length < 5 && (
+                <div>
+                  <input
+                    type="file"
+                    ref={driverFreshupFileInputRef}
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleFileUpload(e, 'freshup')}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => driverFreshupFileInputRef.current?.click()}
+                    disabled={uploadingDriverFreshupPhoto}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-blue-50/50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>{uploadingDriverFreshupPhoto ? 'Uploading...' : 'Add Driver Freshup Photo'}</span>
                   </button>
                 </div>
               )}
