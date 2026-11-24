@@ -14,6 +14,8 @@ import { PrintButton } from "../components/common/PrintButton";
 import { printSheet } from "../utils/printSheet";
 import { formatEmployeeId } from "../utils/employeeCode";
 import { exportTableToExcel } from "../utils/exportToExcel";
+import { Modal } from "../components/common/Modal";
+import { getSavedCharvikCompanyDetails } from "../utils/charvikCompanyDetails";
 import {
   generateSalaryStatementHtml,
   downloadSalaryStatementPdf,
@@ -22,6 +24,251 @@ import {
   parseTripDateToTime,
   type StatementPdfData
 } from "../utils/statementPdf";
+
+export interface PaymentSlipData {
+  voucherNumber: string;
+  employeeName: string;
+  employeeCode: string;
+  grossSalary: number;
+  advanceAmount: number;
+  balanceDue: number;
+  date?: string;
+  vehicleNumber?: string;
+  route?: string;
+}
+
+export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'colourful') => {
+  const comp = getSavedCharvikCompanyDetails();
+  const isColourful = mode === 'colourful';
+
+  const borderColor = isColourful ? '#072346' : '#000000';
+  const pillBorder = isColourful ? '#072346' : '#000000';
+  const pillBg = isColourful ? 'linear-gradient(135deg, #072346, #0284c7)' : '#ffffff';
+  const pillColor = isColourful ? '#ffffff' : '#000000';
+  const logoFilter = isColourful ? 'none' : 'grayscale(100%) contrast(140%)';
+  const headerDividerColor = isColourful ? '#0284c7' : '#000000';
+  const sec1Bg = isColourful ? '#f8fafc' : '#ffffff';
+  const sec1Text = isColourful ? '#072346' : '#000000';
+  const grossColor = isColourful ? '#0f172a' : '#000000';
+  const advanceColor = isColourful ? '#15803d' : '#000000';
+  const balanceColor = isColourful ? '#be123c' : '#000000';
+  const addressBorder = isColourful ? '1.5px solid #0284c7' : '1.5px solid #000000';
+  const addressBg = isColourful ? '#f0f9ff' : '#ffffff';
+  const addressColor = isColourful ? '#072346' : '#000000';
+
+  return `
+    <div
+      id="charvik-printable-payment-slip"
+      style="
+        width: 100%;
+        max-width: 680px;
+        min-height: 940px;
+        margin: 0 auto;
+        background: #ffffff;
+        color: #000000;
+        border: 2px solid \${borderColor};
+        border-radius: 12px;
+        padding: 18px 22px 20px 22px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-family: Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        position: relative;
+      "
+    >
+      <div>
+        <!-- Top Header: Logo on left, Contact Details on right -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px;">
+          <div style="display: flex; flex-direction: column; align-items: flex-start;">
+            <img
+              src="/charvik-invoice-logo.png"
+              alt="CHARVIK Staffing & Consultancy"
+              style="height: 62px; max-height: 68px; width: auto; max-width: 280px; display: block; object-fit: contain; filter: \${logoFilter};"
+              onerror="this.src='/logo-brand.png'"
+            />
+          </div>
+
+          <div style="display: flex; align-items: center;">
+            <div style="border-left: 1.5px solid \${headerDividerColor}; height: 46px; margin: 0 16px;"></div>
+            <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
+              <div style="display: block; font-size: 15px; font-weight: 900; color: \${isColourful ? '#072346' : '#000000'}; white-space: nowrap; margin-bottom: 2px;">
+                <span style="font-size: 14px; margin-right: 6px; \${isColourful ? 'color: #ea580c;' : ''}">📞</span>
+                <span>\${comp.company_phone || '9505151527'}</span>
+              </div>
+              <div style="display: block; font-size: 12px; font-weight: 700; color: \${isColourful ? '#072346' : '#000000'}; white-space: nowrap; margin-bottom: 2px;">
+                <span style="font-size: 13px; margin-right: 6px; \${isColourful ? 'color: #0284c7;' : ''}">✉</span>
+                <span>\${comp.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
+              </div>
+              <div style="display: block; font-size: 12px; font-weight: 700; color: \${isColourful ? '#072346' : '#000000'}; white-space: nowrap;">
+                <span style="font-size: 13px; margin-right: 6px; \${isColourful ? 'color: #0d9488;' : ''}">🌐</span>
+                <span>\${comp.company_website || 'www.charvikstaffingconsultancy.in'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horizontal Line Under Header -->
+        <div style="border-bottom: 2px solid \${borderColor}; width: 100%; margin: 6px 0 14px 0;"></div>
+
+        <!-- Centered Pill: PAYMENT SLIP -->
+        <div style="display: flex; justify-content: center; align-items: center; margin: 0 0 14px 0;">
+          <div
+            style="
+              background: \${pillBg};
+              color: \${pillColor};
+              border: 2px solid \${pillBorder};
+              text-align: center;
+              padding: 4px 38px;
+              border-radius: 20px;
+              font-weight: 900;
+              font-size: 17px;
+              letter-spacing: 0.12em;
+              display: inline-block;
+            "
+          >
+            PAYMENT SLIP
+          </div>
+        </div>
+
+        <!-- Boxed Data Table (Section 1 and Section 2 matching reference image) -->
+        <div
+          style="
+            border: 2px solid \${borderColor};
+            border-radius: 10px;
+            overflow: hidden;
+            width: 100%;
+            background: #ffffff;
+            margin-top: 10px;
+          "
+        >
+          <!-- Section 1: Trip & Employee Info -->
+          <div style="background: \${sec1Bg};">
+            <div style="display: flex; border-bottom: 1.5px solid \${borderColor};">
+              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text};">
+                Trip ID / Voucher
+              </div>
+              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: \${sec1Text};">
+                :
+              </div>
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text}; font-family: monospace;">
+                \${data.voucherNumber}
+              </div>
+            </div>
+
+            <div style="display: flex; border-bottom: 1.5px solid \${borderColor};">
+              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text};">
+                Employee Name
+              </div>
+              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: \${sec1Text};">
+                :
+              </div>
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text};">
+                \${data.employeeName}
+              </div>
+            </div>
+
+            <div style="display: flex;">
+              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text};">
+                Employee Code / ID
+              </div>
+              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: \${sec1Text};">
+                :
+              </div>
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text}; font-family: monospace;">
+                \${data.employeeCode}
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Divider (Double border separating Section 1 & Section 2) -->
+          <div style="border-top: 3px double \${borderColor};"></div>
+
+          <!-- Section 2: Salary Figures -->
+          <div style="background: #ffffff;">
+            <div style="display: flex; border-bottom: 1.5px solid \${borderColor};">
+              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: #000000;">
+                Gross Trip Salary
+              </div>
+              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: #000000;">
+                :
+              </div>
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 15px; color: \${grossColor};">
+                ₹\${Number(data.grossSalary).toLocaleString('en-IN')}
+              </div>
+            </div>
+
+            <div style="display: flex; border-bottom: 1.5px solid \${borderColor};">
+              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: #000000;">
+                Advance / Paid Amount
+              </div>
+              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: #000000;">
+                :
+              </div>
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 15px; color: \${advanceColor};">
+                ₹\${Number(data.advanceAmount).toLocaleString('en-IN')}
+              </div>
+            </div>
+
+            <div style="display: flex;">
+              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: #000000;">
+                Remaining Balance Due
+              </div>
+              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: #000000;">
+                :
+              </div>
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 15px; color: \${balanceColor};">
+                ₹\${Number(data.balanceDue).toLocaleString('en-IN')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Signatures and Address Card -->
+      <div>
+        <!-- Three Signatures (Prepared By, Verified By, Received By) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 40px 0 24px 0;">
+          <div style="text-align: center;">
+            <div style="border-top: 1.5px solid #000000; width: 130px; margin: 0 auto 6px auto;"></div>
+            <span style="font-size: 12px; font-weight: 900; color: #000000;">Prepared By</span>
+          </div>
+          <div style="text-align: center;">
+            <div style="border-top: 1.5px solid #000000; width: 130px; margin: 0 auto 6px auto;"></div>
+            <span style="font-size: 12px; font-weight: 900; color: #000000;">Verified By</span>
+          </div>
+          <div style="text-align: center;">
+            <div style="border-top: 1.5px solid #000000; width: 130px; margin: 0 auto 6px auto;"></div>
+            <span style="font-size: 12px; font-weight: 900; color: #000000;">Received By</span>
+          </div>
+        </div>
+
+        <!-- Official Bottom Footer Address Card -->
+        <div
+          style="
+            border: \${addressBorder};
+            border-radius: 8px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: \${addressBg};
+            color: \${addressColor};
+            margin-top: 12px;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 18px;">📍</span>
+            <div style="border-left: 1.5px solid \${isColourful ? '#0284c7' : '#000000'}; height: 32px;"></div>
+          </div>
+          <div style="font-size: 11px; font-weight: 700; line-height: 1.4;">
+            \${comp.company_address || 'H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.'}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+};
 
 interface TripEntry {
   id: number | string;
@@ -112,6 +359,110 @@ export const EmployeePayments: React.FC = () => {
     notes: ""
   });
   const [previewProofModal, setPreviewProofModal] = useState<string | null>(null);
+
+  // Payment Slip Preview & Print Modal State (Matching User's Reference Template)
+  const [printingSlipData, setPrintingSlipData] = useState<PaymentSlipData | null>(null);
+  const [slipFormat, setSlipFormat] = useState<'bw' | 'colourful'>('bw');
+
+  const executePrintPaymentSlip = (data: PaymentSlipData, mode: 'bw' | 'colourful') => {
+    const slipHtml = generatePaymentSlipHtml(data, mode);
+    let iframe = document.getElementById("charvik-payment-slip-frame") as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.id = "charvik-payment-slip-frame";
+      iframe.style.position = "fixed";
+      iframe.style.top = "-10000px";
+      iframe.style.left = "-10000px";
+      iframe.style.width = "1024px";
+      iframe.style.height = "1440px";
+      iframe.style.opacity = "0";
+      iframe.style.pointerEvents = "none";
+      iframe.style.border = "none";
+      iframe.style.zIndex = "-9999";
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${data.voucherNumber || 'Payment Slip'} - Charvik</title>
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 6mm 8mm;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+              display: flex;
+              justify-content: center;
+              font-family: Arial, sans-serif;
+            }
+            #charvik-printable-payment-slip {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${slipHtml}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    const triggerPrint = () => {
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (e) {
+          console.error("Print payment slip error:", e);
+        }
+      }, 350);
+    };
+
+    const imgs = doc.getElementsByTagName("img");
+    if (imgs.length === 0) {
+      triggerPrint();
+    } else {
+      let loaded = 0;
+      const total = imgs.length;
+      let fired = false;
+      const done = () => {
+        if (fired) return;
+        fired = true;
+        triggerPrint();
+      };
+      for (let i = 0; i < total; i++) {
+        if (imgs[i].complete) {
+          loaded++;
+        } else {
+          imgs[i].onload = () => {
+            loaded++;
+            if (loaded >= total) done();
+          };
+          imgs[i].onerror = () => {
+            loaded++;
+            if (loaded >= total) done();
+          };
+        }
+      }
+      if (loaded >= total) done();
+      setTimeout(done, 1500);
+    }
+  };
 
   // Edit / Delete Trip Modals
   const [editingTrip, setEditingTrip] = useState<{
@@ -576,63 +927,18 @@ export const EmployeePayments: React.FC = () => {
 
     // If user clicked "Confirm & Print Receipt"
     if (shouldPrint) {
-      printSheet({
-        title: "PAYMENT SLIP",
-        subtitle: `Receipt No: ${receiptNo} | Staff: ${targetStaff.full_name} (${targetStaff.employee_code})`,
-        orientation: "portrait",
-        hideMetaBar: true,
-        htmlContent: `
-          <div style="font-family: sans-serif; padding: 20px; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
-            <div style="text-align: center; border-bottom: 2px solid #072346; padding-bottom: 14px; margin-bottom: 18px;">
-              <h2 style="margin: 0; color: #072346; font-size: 22px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">PAYMENT SLIP</h2>
-              <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Staff Remuneration & Advance Payment Record</p>
-            </div>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
-              <tr>
-                <td style="padding: 8px 0; color: #64748b;">Receipt Number:</td>
-                <td style="padding: 8px 0; font-weight: bold; font-family: monospace; text-align: right;">${receiptNo}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #64748b;">Payment Date:</td>
-                <td style="padding: 8px 0; font-weight: bold; text-align: right;">${paymentFormData.date}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #64748b;">Staff Member:</td>
-                <td style="padding: 8px 0; font-weight: bold; text-align: right;">${targetStaff.full_name} (${targetStaff.employee_code})</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #64748b;">Staff Role:</td>
-                <td style="padding: 8px 0; font-weight: bold; text-align: right;">${targetStaff.role}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #64748b;">Payment Type:</td>
-                <td style="padding: 8px 0; font-weight: bold; text-align: right;">${paymentFormData.payment_type}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #64748b;">Payment Mode:</td>
-                <td style="padding: 8px 0; font-weight: bold; text-align: right;">${paymentFormData.payment_mode}</td>
-              </tr>
-              ${paymentFormData.notes ? `
-              <tr>
-                <td style="padding: 8px 0; color: #64748b;">Notes:</td>
-                <td style="padding: 8px 0; font-weight: bold; text-align: right;">${paymentFormData.notes}</td>
-              </tr>` : ''}
-              <tr style="border-top: 2px dashed #cbd5e1; border-bottom: 2px dashed #cbd5e1;">
-                <td style="padding: 14px 0; font-size: 15px; font-weight: bold; color: #142B4A;">Amount Paid:</td>
-                <td style="padding: 14px 0; font-size: 18px; font-weight: 900; color: #047857; text-align: right;">₹${payAmount.toLocaleString("en-IN")}</td>
-              </tr>
-            </table>
-            <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 12px; color: #64748b;">
-              <div>
-                <p style="margin: 0; border-top: 1px solid #cbd5e1; padding-top: 6px; width: 140px; text-align: center;">Staff Signature</p>
-              </div>
-              <div>
-                <p style="margin: 0; border-top: 1px solid #cbd5e1; padding-top: 6px; width: 140px; text-align: center;">Authorized Signatory</p>
-              </div>
-            </div>
-          </div>
-        `
-      });
+      const slipData: PaymentSlipData = {
+        voucherNumber: receiptNo,
+        employeeName: `${targetStaff.full_name} (${targetStaff.role})`,
+        employeeCode: formatEmployeeId(targetStaff.employee_code, targetStaff.role),
+        grossSalary: payAmount,
+        advanceAmount: paymentFormData.payment_type === 'Advance' ? payAmount : 0,
+        balanceDue: 0,
+        date: paymentFormData.date
+      };
+      setPrintingSlipData(slipData);
+      setSlipFormat('bw');
+      executePrintPaymentSlip(slipData, 'bw');
     }
   };
 
@@ -1324,152 +1630,35 @@ _This is an official automated monthly salary & trip record statement._`;
 
   // 1. Print Individual Payment Receipt / Slip
   const handlePrintReceipt = (payment: RecordedPayment) => {
-    printSheet({
-      title: "PAYMENT SLIP",
-      subtitle: `Receipt No: ${payment.id} | Staff: ${payment.employee_name} (${payment.employee_code})`,
-      orientation: "portrait",
-      hideMetaBar: true,
-      htmlContent: `
-        <div style="font-family: sans-serif; padding: 20px; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 14px; background: #ffffff;">
-          <div style="text-align: center; border-bottom: 2px solid #072346; padding-bottom: 14px; margin-bottom: 18px;">
-            <h2 style="margin: 0; color: #072346; font-size: 22px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">PAYMENT SLIP</h2>
-            <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Staff Remuneration & Advance Payment Record</p>
-          </div>
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
-            <tr>
-              <td style="padding: 8px 0; color: #64748b;">Receipt Number:</td>
-              <td style="padding: 8px 0; font-weight: bold; font-family: monospace; text-align: right;">${payment.id}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #64748b;">Payment Date:</td>
-              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.payment_date || (payment as any).date}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #64748b;">Staff Member:</td>
-              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.employee_name} (${payment.employee_code})</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #64748b;">Staff Role:</td>
-              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.role}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #64748b;">Payment Type:</td>
-              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.payment_type}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; color: #64748b;">Payment Mode:</td>
-              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.payment_mode}</td>
-            </tr>
-            ${payment.notes ? `
-            <tr>
-              <td style="padding: 8px 0; color: #64748b;">Notes:</td>
-              <td style="padding: 8px 0; font-weight: bold; text-align: right;">${payment.notes}</td>
-            </tr>` : ''}
-            <tr style="border-top: 2px dashed #cbd5e1; border-bottom: 2px dashed #cbd5e1;">
-              <td style="padding: 14px 0; font-size: 15px; font-weight: bold; color: #142B4A;">Amount Paid:</td>
-              <td style="padding: 14px 0; font-size: 18px; font-weight: 900; color: #047857; text-align: right;">₹${payment.amount.toLocaleString("en-IN")}</td>
-            </tr>
-          </table>
-          <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 12px; color: #64748b;">
-            <div>
-              <p style="margin: 0; border-top: 1px solid #cbd5e1; padding-top: 6px; width: 140px; text-align: center;">Staff Signature</p>
-            </div>
-            <div>
-              <p style="margin: 0; border-top: 1px solid #cbd5e1; padding-top: 6px; width: 140px; text-align: center;">Authorized Signatory</p>
-            </div>
-          </div>
-        </div>
-      `
-    });
+    const slipData: PaymentSlipData = {
+      voucherNumber: payment.id,
+      employeeName: payment.employee_name,
+      employeeCode: payment.employee_code,
+      grossSalary: payment.amount,
+      advanceAmount: payment.payment_type === 'Advance' ? payment.amount : 0,
+      balanceDue: 0,
+      date: payment.payment_date || (payment as any).date
+    };
+    setPrintingSlipData(slipData);
+    setSlipFormat('bw');
   };
 
   // 2. Print Single Trip Duty & Remuneration Slip
   const handlePrintTripSlip = (trip: TripEntry) => {
     if (!r) return;
-    printSheet({
-      title: "PAYMENT SLIP",
-      subtitle: `Trip ID: #${trip.id} | Staff: ${r.full_name} (${formatEmployeeId(r.employee_code, r.role)})`,
-      orientation: "portrait",
-      hideMetaBar: true,
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 650px; margin: 0 auto; border: 1.5px solid #cbd5e1; border-radius: 14px; background: #ffffff;">
-          <div style="border-bottom: 2.5px solid #072346; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <h2 style="margin: 0; color: #072346; font-size: 22px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">PAYMENT SLIP</h2>
-              <p style="margin: 3px 0 0; color: #64748b; font-size: 12px; font-weight: 600;">Official Trip Duty Voucher & Staff Remuneration Record</p>
-            </div>
-            <div style="text-align: right;">
-              <span style="background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: bold; border: 1px solid #bfdbfe;">
-                ${trip.isPaid ? 'PAID IN FULL' : 'PAYMENT DUE'}
-              </span>
-            </div>
-          </div>
-
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
-            <tr style="background: #f8fafc;">
-              <td style="padding: 9px 12px; font-weight: bold; color: #64748b; width: 35%;">Trip ID / Voucher:</td>
-              <td style="padding: 9px 12px; font-weight: 800; font-family: monospace; color: #142B4A;">#${trip.id}</td>
-            </tr>
-            <tr>
-              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Employee Name:</td>
-              <td style="padding: 9px 12px; font-weight: 800; color: #0f172a;">${r.full_name} (${r.role})</td>
-            </tr>
-            <tr style="background: #f8fafc;">
-              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Employee Code / ID:</td>
-              <td style="padding: 9px 12px; font-weight: 700; font-family: monospace;">${formatEmployeeId(r.employee_code, r.role)}</td>
-            </tr>
-            <tr>
-              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Trip Date:</td>
-              <td style="padding: 9px 12px; font-weight: 700;">${trip.date}</td>
-            </tr>
-            <tr style="background: #f8fafc;">
-              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Vehicle Number:</td>
-              <td style="padding: 9px 12px; font-weight: 800; font-family: monospace; color: #142B4A;">${trip.vehicle_number}</td>
-            </tr>
-            <tr>
-              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Task / Route Details:</td>
-              <td style="padding: 9px 12px; font-weight: 700;">${trip.route_corridor}</td>
-            </tr>
-            ${trip.service_number ? `
-            <tr style="background: #f8fafc;">
-              <td style="padding: 9px 12px; font-weight: bold; color: #64748b;">Service Number:</td>
-              <td style="padding: 9px 12px; font-weight: 700; font-family: monospace;">${trip.service_number}</td>
-            </tr>` : ''}
-          </table>
-
-          <div style="background: #f1f5f9; border-radius: 8px; padding: 14px; margin-bottom: 24px; border: 1px solid #cbd5e1;">
-            <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid #cbd5e1; font-size: 13px;">
-              <span style="font-weight: 600; color: #475569;">Gross Trip Salary:</span>
-              <strong style="color: #0f172a; font-family: monospace;">₹${trip.salary.toLocaleString("en-IN")}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #cbd5e1; font-size: 13px;">
-              <span style="font-weight: 600; color: #15803d;">Advance / Paid Amount:</span>
-              <strong style="color: #166534; font-family: monospace;">₹${trip.advance.toLocaleString("en-IN")}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding-top: 8px; font-size: 15px;">
-              <span style="font-weight: 800; color: #be123c;">Remaining Balance Due:</span>
-              <strong style="color: #9f1239; font-weight: 900; font-family: monospace;">₹${trip.balance_due.toLocaleString("en-IN")}</strong>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 11px; color: #64748b;">
-            <div style="text-align: center; width: 140px;">
-              <div style="border-top: 1px solid #94a3b8; padding-top: 5px;">Staff Signature</div>
-            </div>
-            <div style="text-align: center; width: 140px;">
-              <div style="border-top: 1px solid #94a3b8; padding-top: 5px;">Supervisor Sign</div>
-            </div>
-            <div style="text-align: center; width: 140px;">
-              <div style="border-top: 1px solid #94a3b8; padding-top: 5px;">Accounts Incharge</div>
-            </div>
-          </div>
-
-          <div style="margin-top: 20px; text-align: right; font-size: 10px; color: #94a3b8;">
-            Printed on: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true })}
-          </div>
-        </div>
-      `
-    });
+    const slipData: PaymentSlipData = {
+      voucherNumber: `#${trip.id}`,
+      employeeName: `${r.full_name} (${r.role})`,
+      employeeCode: formatEmployeeId(r.employee_code, r.role),
+      grossSalary: trip.salary,
+      advanceAmount: trip.advance,
+      balanceDue: trip.balance_due,
+      date: trip.date,
+      vehicleNumber: trip.vehicle_number,
+      route: trip.route_corridor
+    };
+    setPrintingSlipData(slipData);
+    setSlipFormat('bw');
   };
 
   // 3. Print Complete Trip Ledger for this Employee
@@ -3891,6 +4080,106 @@ _This is an official automated monthly salary & trip record statement._`;
                 className="px-5 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Payment Slip Preview & Print Modal (Matching User's Reference Template) */}
+      {printingSlipData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-black text-slate-800 flex items-center gap-2">
+                  <span>📄 Payment Slip</span>
+                  <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold">
+                    {printingSlipData.voucherNumber}
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  {printingSlipData.employeeName} ({printingSlipData.employeeCode})
+                </p>
+              </div>
+
+              {/* Format Switcher */}
+              <div className="flex items-center gap-2 bg-slate-200/80 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setSlipFormat('bw')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    slipFormat === 'bw'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  🖨️ Black & White (Printout)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSlipFormat('colourful')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    slipFormat === 'colourful'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  🌈 Colourful (Save as PDF)
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => executePrintPaymentSlip(printingSlipData, 'bw')}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-black bg-slate-900 hover:bg-black text-white shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>🖨️</span>
+                  <span>Print Slip (B&W)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => executePrintPaymentSlip(printingSlipData, 'colourful')}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>💾</span>
+                  <span>Save as PDF (Colourful)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintingSlipData(null)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body Preview */}
+            <div className="flex-1 overflow-y-auto p-4 bg-slate-100 flex justify-center items-start">
+              <div
+                className="bg-white shadow-lg rounded-xl overflow-hidden"
+                style={{ width: '100%', maxWidth: '680px' }}
+                dangerouslySetInnerHTML={{
+                  __html: generatePaymentSlipHtml(printingSlipData, slipFormat)
+                }}
+              />
+            </div>
+
+            {/* Modal Footer Note */}
+            <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
+              <span>
+                💡 <strong>Note:</strong> Select <strong>"Save as PDF"</strong> in the print dialog to export high-definition colourful PDF, or select your physical printer for crisp black &amp; white printouts.
+              </span>
+              <button
+                type="button"
+                onClick={() => setPrintingSlipData(null)}
+                className="px-4 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+              >
+                Close Preview
               </button>
             </div>
           </div>
