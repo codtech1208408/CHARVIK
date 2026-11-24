@@ -356,7 +356,7 @@ export const AdminLayout: React.FC = () => {
     location.pathname === '/operator/';
 
   return (
-    <div className="min-h-screen bg-[#F0F4F9] flex flex-col">
+    <div className="min-h-screen bg-[#F0F4F9] flex flex-col overflow-x-hidden">
       {/* Full-width Top Navigation Header - Fixed at Top */}
       <ErrorBoundary fallbackTitle="Top Navigation Bar">
         <Navbar
@@ -367,7 +367,7 @@ export const AdminLayout: React.FC = () => {
         />
       </ErrorBoundary>
 
-      <div className="flex-1 flex flex-row pt-[100px] relative">
+      <div className="flex-1 flex flex-row pt-[100px] relative overflow-x-hidden">
         {/* Sidebar - Positioned under Top Header */}
         <ErrorBoundary fallbackTitle="Sidebar Navigation">
           <Sidebar
@@ -381,7 +381,7 @@ export const AdminLayout: React.FC = () => {
 
         {/* Main Content Area */}
         <div
-          className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarVisible ? 'lg:pl-[88px]' : 'lg:pl-0'
+          className={`flex-1 flex flex-col transition-all duration-300 overflow-x-hidden ${isSidebarVisible ? 'lg:pl-[88px]' : 'lg:pl-0'
             }`}
         >
           <main className="flex-1 p-4 sm:p-6 lg:p-6 w-full max-w-full pb-24 lg:pb-8">
