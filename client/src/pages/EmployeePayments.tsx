@@ -283,6 +283,219 @@ interface TripEntry {
   slot?: "driver1" | "driver2" | "helper" | "captain";
 }
 
+// Generate Trip Duty & Salary Ledger Printable HTML (Matching User's Reference Template)
+export const generateTripDutySalaryLedgerHtml = (
+  employee: { full_name: string; employee_code: string; role?: string },
+  trips: TripEntry[],
+  mode: 'bw' | 'colourful' = 'colourful'
+) => {
+  const comp = getSavedCharvikCompanyDetails();
+  const isColourful = mode === 'colourful';
+  const borderColor = isColourful ? '#004B9E' : '#000000';
+  const pillBg = isColourful ? '#004B9E' : '#000000';
+  const headerText = isColourful ? '#004B9E' : '#000000';
+  const totalBg = isColourful ? '#dbeafe' : '#f1f5f9';
+  const totalText = isColourful ? '#004B9E' : '#000000';
+  const logoFilter = isColourful ? 'none' : 'grayscale(100%) contrast(140%)';
+
+  const sortedTrips = [...trips].sort(
+    (a, b) => parseTripDateToTime(a.date) - parseTripDateToTime(b.date)
+  );
+
+  const totalSal = sortedTrips.reduce((a, b) => a + (Number(b.salary) || 0), 0);
+  const totalAdv = sortedTrips.reduce((a, b) => a + (Number(b.advance) || 0), 0);
+  const totalDue = sortedTrips.reduce((a, b) => a + (Number(b.balance_due) || 0), 0);
+
+  const empId = formatEmployeeId(employee.employee_code, employee.role || 'Driver');
+
+  return `
+    <div
+      id="charvik-printable-trip-duty-salary-ledger"
+      style="
+        width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
+        background: #ffffff;
+        color: #000000;
+        border: 2px solid ${borderColor};
+        border-radius: 14px;
+        padding: 16px 20px 18px 20px;
+        box-sizing: border-box;
+        font-family: Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      "
+    >
+      <!-- Top Header: Logo on Left, Vertical Divider, Phone and Email on Right -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 6px;">
+        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+          <img
+            src="/charvik-invoice-logo.png"
+            alt="CHARVIK Staffing & Consultancy"
+            style="height: 54px; max-height: 58px; width: auto; max-width: 280px; display: block; object-fit: contain; filter: ${logoFilter};"
+            onerror="this.src='/logo-brand.png'"
+          />
+        </div>
+
+        <div style="display: flex; align-items: center;">
+          <div style="border-left: 1.5px solid ${borderColor}; height: 42px; margin: 0 16px;"></div>
+          <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 900; color: ${headerText}; white-space: nowrap;">
+              <span style="font-size: 15px; ${isColourful ? 'color: #004B9E;' : ''}">📞</span>
+              <span>9505151527</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: ${headerText}; white-space: nowrap;">
+              <span style="font-size: 13px; ${isColourful ? 'color: #004B9E;' : ''}">✉</span>
+              <span>charvikstaffingconsulrancy@gmail.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horizontal Divider -->
+      <div style="border-bottom: 2.5px solid ${borderColor}; width: 100%; margin: 8px 0 16px 0;"></div>
+
+      <!-- Subheader: Pill on Left, Driver Name & Employee ID Box on Right -->
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px;">
+        <!-- Left: Pill Badge -->
+        <div
+          style="
+            background: ${pillBg};
+            color: #ffffff;
+            padding: 8px 26px;
+            border-radius: 9999px;
+            font-weight: 900;
+            font-size: 16px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            white-space: nowrap;
+          "
+        >
+          TRIP DUTY &amp; SALARY LEDGER
+        </div>
+
+        <!-- Right: Outlined Details Box -->
+        <div
+          style="
+            border: 1.5px solid ${borderColor};
+            border-radius: 10px;
+            padding: 6px 14px;
+            min-width: 270px;
+            background: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+          "
+        >
+          <div style="display: flex; align-items: flex-end;">
+            <span style="white-space: nowrap; font-weight: 900;">Driver Name :</span>
+            <span style="flex: 1; border-bottom: 1.5px solid #000000; margin-left: 6px; padding-left: 6px; font-weight: 900; line-height: 1.2;">
+              ${employee.full_name}
+            </span>
+          </div>
+          <div style="display: flex; align-items: flex-end;">
+            <span style="white-space: nowrap; font-weight: 900;">Employee ID :</span>
+            <span style="flex: 1; border-bottom: 1.5px solid #000000; margin-left: 6px; padding-left: 6px; font-weight: 900; font-family: monospace; line-height: 1.2;">
+              ${empId}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <table
+        style="
+          width: 100%;
+          border-collapse: collapse;
+          border: 2px solid ${borderColor};
+          margin-bottom: 16px;
+          font-size: 12px;
+        "
+      >
+        <thead>
+          <tr style="background: ${pillBg}; color: #ffffff; font-weight: 900; text-transform: uppercase; font-size: 11px;">
+            <th style="padding: 8px 4px; text-align: center; width: 5%; border-right: 1.5px solid #ffffff;">#</th>
+            <th style="padding: 8px 6px; text-align: center; width: 14%; border-right: 1.5px solid #ffffff;">DATE</th>
+            <th style="padding: 8px 8px; text-align: center; width: 24%; border-right: 1.5px solid #ffffff;">TASK / ROUTE</th>
+            <th style="padding: 8px 6px; text-align: center; width: 16%; border-right: 1.5px solid #ffffff;">VEHICLE NO</th>
+            <th style="padding: 8px 6px; text-align: center; width: 13%; border-right: 1.5px solid #ffffff;">SALARY</th>
+            <th style="padding: 8px 6px; text-align: center; width: 13%; border-right: 1.5px solid #ffffff;">PAID AMOUNT</th>
+            <th style="padding: 8px 6px; text-align: center; width: 15%; border-right: 1.5px solid #ffffff;">REMAINING DUE</th>
+            <th style="padding: 8px 6px; text-align: center; width: 12%;">STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sortedTrips.map((t, idx) => {
+            const formattedDate = (() => {
+              if (!t.date) return "-";
+              const parts = t.date.split("-");
+              return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : t.date;
+            })();
+            const isPaid = t.isPaid;
+            const statusColor = isPaid
+              ? (isColourful ? '#16a34a' : '#000000')
+              : (isColourful ? '#dc2626' : '#000000');
+            const statusText = isPaid ? 'PAID' : 'PENDING';
+
+            return `
+              <tr style="border-bottom: 1.5px solid ${borderColor};">
+                <td style="padding: 7px 4px; text-align: center; font-weight: 800; border-right: 1.5px solid ${borderColor};">${idx + 1}</td>
+                <td style="padding: 7px 6px; text-align: center; font-weight: 800; border-right: 1.5px solid ${borderColor}; white-space: nowrap;">${formattedDate}</td>
+                <td style="padding: 7px 8px; text-align: center; font-weight: 800; border-right: 1.5px solid ${borderColor};">${t.route_corridor || '-'}</td>
+                <td style="padding: 7px 6px; text-align: center; font-weight: 800; font-family: monospace; border-right: 1.5px solid ${borderColor}; white-space: nowrap;">${t.vehicle_number || '-'}</td>
+                <td style="padding: 7px 6px; text-align: center; font-weight: 900; font-family: monospace; border-right: 1.5px solid ${borderColor}; white-space: nowrap;">₹${(Number(t.salary) || 0).toLocaleString('en-IN')}</td>
+                <td style="padding: 7px 6px; text-align: center; font-weight: 900; font-family: monospace; border-right: 1.5px solid ${borderColor}; white-space: nowrap;">₹${(Number(t.advance) || 0).toLocaleString('en-IN')}</td>
+                <td style="padding: 7px 6px; text-align: center; font-weight: 900; font-family: monospace; border-right: 1.5px solid ${borderColor}; white-space: nowrap;">₹${(Number(t.balance_due) || 0).toLocaleString('en-IN')}</td>
+                <td style="padding: 7px 6px; text-align: center; font-weight: 900; color: ${statusColor}; border-right: none;">${statusText}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+        <tfoot>
+          <tr style="background: ${totalBg}; font-weight: 900; font-size: 13px; border-top: 2px solid ${borderColor};">
+            <td colspan="4" style="padding: 8px 12px; text-align: center; font-weight: 900; color: ${totalText}; text-transform: uppercase; border-right: 1.5px solid ${borderColor};">
+              TOTAL (${sortedTrips.length} TRIPS)
+            </td>
+            <td style="padding: 8px 6px; text-align: center; font-weight: 900; font-family: monospace; color: ${totalText}; border-right: 1.5px solid ${borderColor}; white-space: nowrap;">
+              ₹${totalSal.toLocaleString('en-IN')}
+            </td>
+            <td style="padding: 8px 6px; text-align: center; font-weight: 900; font-family: monospace; color: ${totalText}; border-right: 1.5px solid ${borderColor}; white-space: nowrap;">
+              ₹${totalAdv.toLocaleString('en-IN')}
+            </td>
+            <td style="padding: 8px 6px; text-align: center; font-weight: 900; font-family: monospace; color: ${totalText}; border-right: 1.5px solid ${borderColor}; white-space: nowrap;">
+              ₹${totalDue.toLocaleString('en-IN')}
+            </td>
+            <td style="padding: 8px 6px; background: ${totalBg};"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <!-- Present Address Box at Bottom -->
+      <div
+        style="
+          border: 1.5px solid ${borderColor};
+          border-radius: 8px;
+          padding: 6px 14px;
+          font-size: 11px;
+          font-weight: 700;
+          color: #334155;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: #ffffff;
+        "
+      >
+        <span style="font-size: 16px; color: ${isColourful ? '#e11d48' : '#000000'};">📍</span>
+        <div style="border-left: 1.5px solid ${isColourful ? '#004B9E' : '#000000'}; height: 26px;"></div>
+        <div style="font-size: 11px; font-weight: 700; line-height: 1.35; color: #1e293b;">
+          ${comp.company_address || 'H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.'}
+        </div>
+      </div>
+    </div>
+  `;
+};
+
 interface RecordedPayment {
   id: string;
   employee_name: string;
@@ -429,6 +642,111 @@ export const EmployeePayments: React.FC = () => {
           iframe.contentWindow?.print();
         } catch (e) {
           console.error("Print payment slip error:", e);
+        }
+      }, 350);
+    };
+
+    const imgs = doc.getElementsByTagName("img");
+    if (imgs.length === 0) {
+      triggerPrint();
+    } else {
+      let loaded = 0;
+      const total = imgs.length;
+      let fired = false;
+      const done = () => {
+        if (fired) return;
+        fired = true;
+        triggerPrint();
+      };
+      for (let i = 0; i < total; i++) {
+        if (imgs[i].complete) {
+          loaded++;
+        } else {
+          imgs[i].onload = () => {
+            loaded++;
+            if (loaded >= total) done();
+          };
+          imgs[i].onerror = () => {
+            loaded++;
+            if (loaded >= total) done();
+          };
+        }
+      }
+      if (loaded >= total) done();
+      setTimeout(done, 1500);
+    }
+  };
+
+  // Isolated Print for Trip Duty & Salary Ledger
+  const executePrintTripLedger = (
+    employee: { full_name: string; employee_code: string; role?: string },
+    trips: TripEntry[],
+    mode: 'bw' | 'colourful'
+  ) => {
+    const ledgerHtml = generateTripDutySalaryLedgerHtml(employee, trips, mode);
+    let iframe = document.getElementById("charvik-trip-ledger-frame") as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.id = "charvik-trip-ledger-frame";
+      iframe.style.position = "fixed";
+      iframe.style.top = "-10000px";
+      iframe.style.left = "-10000px";
+      iframe.style.width = "1024px";
+      iframe.style.height = "1440px";
+      iframe.style.opacity = "0";
+      iframe.style.pointerEvents = "none";
+      iframe.style.border = "none";
+      iframe.style.zIndex = "-9999";
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${employee.full_name} - Trip Duty & Salary Ledger</title>
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 6mm 8mm;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+              display: flex;
+              justify-content: center;
+              font-family: Arial, sans-serif;
+            }
+            #charvik-printable-trip-duty-salary-ledger {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${ledgerHtml}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    const triggerPrint = () => {
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (e) {
+          console.error("Print Trip Ledger error:", e);
         }
       }, 350);
     };
@@ -1661,94 +1979,13 @@ _This is an official automated monthly salary & trip record statement._`;
     setSlipFormat('bw');
   };
 
-  // 3. Print Complete Trip Ledger for this Employee
-  const handlePrintTripLedger = () => {
+  // 3. Print Complete Trip Ledger for this Employee (Matching User's Reference Template)
+  const handlePrintTripLedger = (mode: 'bw' | 'colourful' = 'bw') => {
     if (!r || filteredTrips.length === 0) {
       error("No trips available to print for this employee.");
       return;
     }
-    const sortedTrips = [...filteredTrips].sort(
-      (a, b) => parseTripDateToTime(a.date) - parseTripDateToTime(b.date)
-    );
-    const totalSal = sortedTrips.reduce((a, b) => a + (b.salary || 0), 0);
-    const totalAdv = sortedTrips.reduce((a, b) => a + (b.advance || 0), 0);
-    const totalDue = sortedTrips.reduce((a, b) => a + (b.balance_due || 0), 0);
-
-    const tripRows = sortedTrips
-      .map((t, idx) => {
-        const formattedDate = (() => {
-          if (!t.date) return "-";
-          const parts = t.date.split("-");
-          return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : t.date;
-        })();
-        return `
-          <tr style="border-bottom: 1px solid #cbd5e1; font-size: 12px;">
-            <td style="padding: 8px; text-align: center; font-weight: bold; color: #64748b;">${idx + 1}</td>
-            <td style="padding: 8px 10px; font-weight: 700; white-space: nowrap;">${formattedDate}</td>
-            <td style="padding: 8px 10px; font-weight: bold; color: #0f172a;">${t.route_corridor}</td>
-            <td style="padding: 8px 10px; font-family: monospace; font-weight: 800; color: #142B4A; white-space: nowrap;">${t.vehicle_number}</td>
-            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 800; font-size: 13px; white-space: nowrap;">₹${t.salary.toLocaleString("en-IN")}</td>
-            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 800; color: #166534; font-size: 13px; white-space: nowrap;">₹${t.advance.toLocaleString("en-IN")}</td>
-            <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 900; color: ${t.balance_due > 0 ? '#e11d48' : '#64748b'}; font-size: 13px; white-space: nowrap;">₹${t.balance_due.toLocaleString("en-IN")}</td>
-            <td style="padding: 8px; text-align: center;">
-              <span style="padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; background: ${t.isPaid ? '#ecfdf5' : '#fff1f2'}; color: ${t.isPaid ? '#047857' : '#e11d48'}; border: 1px solid ${t.isPaid ? '#a7f3d0' : '#fecdd3'}; display: inline-block;">
-                ${t.isPaid ? 'PAID' : 'PENDING'}
-              </span>
-            </td>
-          </tr>
-        `;
-      })
-      .join("");
-
-    printSheet({
-      title: `${r.full_name} - Trip Duty & Salary Ledger`,
-      subtitle: `Official Fleet Trips Record | Staff ID: ${formatEmployeeId(r.employee_code, r.role)} | Role: ${r.role}`,
-      orientation: "portrait",
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; padding: 4px; color: #0f172a;">
-          <div style="border-bottom: 2px solid #072346; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end;">
-            <div>
-              <div style="font-size: 15px; font-weight: 900; color: #072346; text-transform: uppercase;">
-                ${r.full_name} — TRIP DUTY &amp; SALARY LEDGER
-              </div>
-              <div style="font-size: 11px; font-weight: 600; color: #475569; margin-top: 2px;">
-                Role: <strong>${r.role}</strong> &nbsp;|&nbsp; Staff ID: <strong>${formatEmployeeId(r.employee_code, r.role)}</strong> &nbsp;|&nbsp; Contact: <strong>${r.phone || '-'}</strong>
-              </div>
-            </div>
-            <div style="text-align: right; font-size: 11px; color: #475569; font-weight: bold;">
-              Total Trips: <span style="color: #072346; font-size: 13px; font-weight: 900;">${filteredTrips.length}</span>
-            </div>
-          </div>
-
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; border: 1.5px solid #072346;">
-            <thead>
-              <tr style="background: #072346; color: white; font-size: 11px; text-transform: uppercase;">
-                <th style="padding: 8px 6px; text-align: center; width: 35px;">#</th>
-                <th style="padding: 8px 8px; text-align: left; width: 85px;">Date</th>
-                <th style="padding: 8px 10px; text-align: left;">Task / Route</th>
-                <th style="padding: 8px 10px; text-align: left; width: 105px;">Vehicle No</th>
-                <th style="padding: 8px 10px; text-align: right; width: 95px;">Salary</th>
-                <th style="padding: 8px 10px; text-align: right; width: 95px;">Paid Amount</th>
-                <th style="padding: 8px 10px; text-align: right; width: 105px;">Remaining Due</th>
-                <th style="padding: 8px 6px; text-align: center; width: 75px;">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tripRows}
-            </tbody>
-            <tfoot>
-              <tr style="background: #f1f5f9; font-weight: 900; font-size: 12px; border-top: 2px solid #072346;">
-                <td colspan="4" style="padding: 9px 12px; text-transform: uppercase; font-weight: 900; color: #072346;">Total (${filteredTrips.length} Trips)</td>
-                <td style="padding: 9px 10px; text-align: right; font-family: monospace; font-size: 13px; font-weight: 900;">₹${totalSal.toLocaleString("en-IN")}</td>
-                <td style="padding: 9px 10px; text-align: right; font-family: monospace; color: #166534; font-size: 13px; font-weight: 900;">₹${totalAdv.toLocaleString("en-IN")}</td>
-                <td style="padding: 9px 10px; text-align: right; font-family: monospace; color: #e11d48; font-size: 13px; font-weight: 900;">₹${totalDue.toLocaleString("en-IN")}</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      `
-    });
+    executePrintTripLedger(r, filteredTrips, mode);
   };
 
   // 4. Save Trip Edit
@@ -2222,49 +2459,117 @@ _This is an official automated monthly salary & trip record statement._`;
                 </div>
               </div>
 
-              {/* Records of Trips */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-base font-bold text-slate-800">Records of Trips</h3>
-                  <div className="flex items-center gap-2">
+              {/* Records of Trips: TRIP DUTY & SALARY LEDGER (Matches exact template in image) */}
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-base font-black text-slate-800 uppercase tracking-wide">
+                    Trip Duty &amp; Salary Ledger
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Print Report (Black & White) */}
+                    <button
+                      type="button"
+                      onClick={() => handlePrintTripLedger('bw')}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-colors shadow-2xs cursor-pointer"
+                      title="Print official Black & White report"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      <span>Print Report</span>
+                    </button>
+
+                    {/* Save as PDF (Colourful) */}
+                    <button
+                      type="button"
+                      onClick={() => handlePrintTripLedger('colourful')}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#004B9E] hover:bg-[#00367A] text-white transition-colors shadow-2xs cursor-pointer"
+                      title="Save colorful report as PDF"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Save as PDF</span>
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => handleOpenWhatsAppModal(r)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-2xs cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-2xs cursor-pointer"
                       title="Send Complete Monthly Statement to Employee via WhatsApp"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
                       <span>Send WhatsApp</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={handlePrintTripLedger}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
-                      title="Print All Trips for this Employee"
-                    >
-                      <Printer className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Print Trips</span>
-                    </button>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs" style={{ minWidth: "750px" }}>
-                      <thead className="bg-gradient-to-r from-[#0B3A79] via-[#0E52A5] to-[#1E70EB] text-white uppercase font-bold tracking-wider text-xs border-b border-blue-900/30">
-                        <tr>
-                          <th className="py-3 px-3">DATE</th>
-                          <th className="py-3 px-3">TASK DETAILS</th>
-                          <th className="py-3 px-3">VEHICLE NO.</th>
-                          <th className="py-3 px-3">SALARY AMOUNT</th>
-                          <th className="py-3 px-3">PAID AMOUNT</th>
-                          <th className="py-3 px-3">REMAINING DUE</th>
-                          <th className="py-3 px-3 text-center">ACTION</th>
+
+                {/* On-Screen Card formatted identically to the reference template */}
+                <div className="border-2 border-[#004B9E] rounded-2xl bg-white p-4 sm:p-6 shadow-sm space-y-4">
+                  {/* Top Header: Logo on left, vertical divider, Phone and Email on right */}
+                  <div className="flex flex-wrap items-center justify-between gap-4 pb-1">
+                    <img
+                      src="/charvik-invoice-logo.png"
+                      alt="CHARVIK Staffing & Consultancy"
+                      className="h-12 sm:h-14 w-auto max-w-[260px] object-contain block"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/logo-brand.png'; }}
+                    />
+                    <div className="flex items-center">
+                      <div className="border-l-[1.5px] border-[#004B9E] h-10 sm:h-11 mx-3 sm:mx-4"></div>
+                      <div className="flex flex-col gap-1 text-left">
+                        <div className="flex items-center gap-2 text-sm sm:text-base font-black text-[#004B9E] whitespace-nowrap">
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#004B9E] text-white text-[10px]">📞</span>
+                          <span>9505151527</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#004B9E] whitespace-nowrap">
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#004B9E] text-white text-[10px]">✉</span>
+                          <span>charvikstaffingconsulrancy@gmail.com</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Horizontal Divider */}
+                  <div className="border-b-[2.5px] border-[#004B9E] w-full"></div>
+
+                  {/* Subheader: Pill on left, Driver Name & Employee ID Box on right */}
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="bg-[#004B9E] text-white px-6 sm:px-8 py-2 rounded-full font-black text-sm sm:text-base uppercase tracking-wider shadow-xs whitespace-nowrap">
+                      TRIP DUTY &amp; SALARY LEDGER
+                    </div>
+
+                    <div className="border-[1.5px] border-[#004B9E] rounded-xl px-4 py-2 bg-white text-xs sm:text-sm font-bold text-slate-900 min-w-[260px] space-y-1">
+                      <div className="flex items-center">
+                        <span className="whitespace-nowrap font-extrabold text-slate-800">Driver Name :</span>
+                        <span className="flex-1 border-b-[1.5px] border-slate-900 ml-2 pl-2 font-black text-slate-900">
+                          {r.full_name}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="whitespace-nowrap font-extrabold text-slate-800">Employee ID :</span>
+                        <span className="flex-1 border-b-[1.5px] border-slate-900 ml-2 pl-2 font-black font-mono text-slate-900">
+                          {formatEmployeeId(r.employee_code, r.role)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* The Ledger Table */}
+                  <div className="overflow-x-auto border-2 border-[#004B9E] rounded-lg">
+                    <table className="w-full text-center border-collapse text-xs" style={{ minWidth: "750px" }}>
+                      <thead>
+                        <tr className="bg-[#004B9E] text-white font-black text-xs uppercase tracking-wider">
+                          <th className="py-2.5 px-2 w-10 border-r border-white">#</th>
+                          <th className="py-2.5 px-3 w-28 border-r border-white">DATE</th>
+                          <th className="py-2.5 px-3 border-r border-white">TASK / ROUTE</th>
+                          <th className="py-2.5 px-3 w-32 border-r border-white">VEHICLE NO</th>
+                          <th className="py-2.5 px-3 w-28 border-r border-white">SALARY</th>
+                          <th className="py-2.5 px-3 w-28 border-r border-white">PAID AMOUNT</th>
+                          <th className="py-2.5 px-3 w-32 border-r border-white">REMAINING DUE</th>
+                          <th className="py-2.5 px-3 w-24 border-r border-white">STATUS</th>
+                          <th className="py-2.5 px-3 w-28 no-print">ACTION</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 text-slate-700">
+                      <tbody className="divide-y divide-[#004B9E]/30 text-slate-900 font-semibold">
                         {paginatedTrips.length === 0 ? (
                           <tr>
-                            <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
+                            <td colSpan={9} className="py-10 text-center text-slate-400 font-medium">
                               No trip records found for this employee.
                             </td>
                           </tr>
@@ -2276,28 +2581,37 @@ _This is an official automated monthly salary & trip record statement._`;
                               if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
                               return trip.date;
                             })();
+                            const isPaid = trip.isPaid;
 
                             return (
-                              <tr key={String(trip.id) + idx} className="hover:bg-slate-50/60 transition-colors">
-                                <td className="py-2 px-3 font-medium whitespace-nowrap text-slate-600">
+                              <tr key={String(trip.id) + idx} className="hover:bg-blue-50/40 transition-colors border-b border-[#004B9E]/30">
+                                <td className="py-2 px-2 text-center font-bold text-slate-700 border-r border-[#004B9E]/40">
+                                  {(currentPage - 1) * rowsPerPage + idx + 1}
+                                </td>
+                                <td className="py-2 px-3 text-center font-bold whitespace-nowrap text-slate-800 border-r border-[#004B9E]/40">
                                   {formattedDate}
                                 </td>
-                                <td className="py-2 px-3 font-medium text-slate-800">
+                                <td className="py-2 px-3 text-center font-bold text-slate-900 border-r border-[#004B9E]/40">
                                   {trip.route_corridor}
                                 </td>
-                                <td className="py-2 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
+                                <td className="py-2 px-3 text-center font-mono font-black text-slate-900 whitespace-nowrap border-r border-[#004B9E]/40">
                                   {trip.vehicle_number}
                                 </td>
-                                <td className="py-2 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
+                                <td className="py-2 px-3 text-center font-mono font-black text-slate-900 whitespace-nowrap border-r border-[#004B9E]/40">
                                   ₹{trip.salary.toLocaleString("en-IN")}
                                 </td>
-                                <td className="py-2 px-3 font-mono font-bold text-emerald-600 whitespace-nowrap">
+                                <td className="py-2 px-3 text-center font-mono font-black text-slate-900 whitespace-nowrap border-r border-[#004B9E]/40">
                                   ₹{trip.advance.toLocaleString("en-IN")}
                                 </td>
-                                <td className="py-2 px-3 font-mono font-bold text-rose-600 whitespace-nowrap">
+                                <td className="py-2 px-3 text-center font-mono font-black text-slate-900 whitespace-nowrap border-r border-[#004B9E]/40">
                                   ₹{trip.balance_due.toLocaleString("en-IN")}
                                 </td>
-                                <td className="py-2 px-3 text-center whitespace-nowrap">
+                                <td className="py-2 px-3 text-center whitespace-nowrap border-r border-[#004B9E]/40">
+                                  <span className={`font-black uppercase ${isPaid ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                    {isPaid ? 'PAID' : 'PENDING'}
+                                  </span>
+                                </td>
+                                <td className="py-2 px-3 text-center whitespace-nowrap no-print">
                                   <div className="flex items-center justify-center gap-1">
                                     <button
                                       type="button"
@@ -2347,11 +2661,28 @@ _This is an official automated monthly salary & trip record statement._`;
                           })
                         )}
                       </tbody>
+                      <tfoot>
+                        <tr className="bg-[#dbeafe] font-black text-xs border-t-2 border-[#004B9E]">
+                          <td colSpan={4} className="py-2.5 px-4 text-center font-black uppercase text-[#004B9E] border-r border-[#004B9E]">
+                            TOTAL ({filteredTrips.length} TRIPS)
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-black text-[#004B9E] whitespace-nowrap border-r border-[#004B9E]">
+                            ₹{filteredTrips.reduce((a, b) => a + (b.salary || 0), 0).toLocaleString("en-IN")}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-black text-[#004B9E] whitespace-nowrap border-r border-[#004B9E]">
+                            ₹{filteredTrips.reduce((a, b) => a + (b.advance || 0), 0).toLocaleString("en-IN")}
+                          </td>
+                          <td className="py-2.5 px-3 text-center font-mono font-black text-[#004B9E] whitespace-nowrap border-r border-[#004B9E]">
+                            ₹{filteredTrips.reduce((a, b) => a + (b.balance_due || 0), 0).toLocaleString("en-IN")}
+                          </td>
+                          <td colSpan={2} className="py-2.5 px-3 bg-[#dbeafe]"></td>
+                        </tr>
+                      </tfoot>
                     </table>
                   </div>
 
                   {/* Pagination Bar */}
-                  <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <div className="pt-2 flex items-center justify-between text-xs text-slate-500 font-medium">
                     <span>
                       Showing {filteredTrips.length === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1}-
                       {Math.min(currentPage * rowsPerPage, filteredTrips.length)} of {filteredTrips.length}
@@ -2375,6 +2706,13 @@ _This is an official automated monthly salary & trip record statement._`;
                         Next
                       </button>
                     </div>
+                  </div>
+
+                  {/* Present Address Box at Bottom */}
+                  <div className="border-[1.5px] border-[#004B9E] rounded-lg px-4 py-2 bg-white text-[11px] font-bold text-slate-700 flex items-center gap-2 mt-2">
+                    <span className="text-rose-600 text-sm">📍</span>
+                    <div className="border-l-[1.5px] border-[#004B9E] h-5 mx-1"></div>
+                    <span>H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.</span>
                   </div>
                 </div>
               </div>
