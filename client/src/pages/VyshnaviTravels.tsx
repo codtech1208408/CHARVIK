@@ -902,22 +902,29 @@ export const VyshnaviTravels: React.FC = () => {
               max-width: 100% !important;
               background: #ffffff !important;
               color: #000000 !important;
-              padding: 18px 22px !important;
+              padding: 16px 20px !important;
               margin: 0 auto !important;
               border: 2.5px solid #004b93 !important;
               border-radius: 12px !important;
-              min-height: 1030px !important;
+              min-height: auto !important;
               display: flex !important;
               flex-direction: column !important;
               justify-content: space-between !important;
+              gap: 12px !important;
               position: relative !important;
               box-sizing: border-box !important;
               visibility: visible !important;
               opacity: 1 !important;
             }
             @media print {
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+              }
               #vyshnavi-printable-colourful-invoice {
                 border: 2.5px solid #004b93 !important;
+                min-height: auto !important;
                 page-break-inside: avoid !important;
               }
             }
@@ -3537,7 +3544,7 @@ export const VyshnaviTravels: React.FC = () => {
                 style={{
                   width: '100%',
                   maxWidth: '780px',
-                  minHeight: '1040px',
+                  minHeight: 'auto',
                   backgroundColor: '#ffffff',
                   color: '#000000',
                   border: '2.5px solid #004b93',
@@ -3842,7 +3849,7 @@ export const VyshnaviTravels: React.FC = () => {
                 style={{
                   width: '100%',
                   maxWidth: '780px',
-                  minHeight: '1040px',
+                  minHeight: 'auto',
                   backgroundColor: '#ffffff',
                   color: '#002B49',
                   border: '2px solid #002B49',

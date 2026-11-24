@@ -177,13 +177,14 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           box-sizing: border-box !important;
           border: ${outerBorder} !important;
           border-radius: 12px !important;
-          padding: 18px 22px 20px 22px !important;
+          padding: 14px 18px !important;
           background: #ffffff !important;
           color: #000000 !important;
-          min-height: 980px !important;
+          min-height: auto !important;
           display: flex !important;
           flex-direction: column !important;
           justify-content: space-between !important;
+          gap: 12px !important;
         }
 
         /* Table Styling: Crisp Black Grid, White Header, Bold Amounts */
@@ -281,20 +282,25 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
         }
 
         @media print {
-          body {
+          html, body {
             padding: 0 !important;
             margin: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
+            height: auto !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
           .printable-sheet {
             border: ${outerBorder} !important;
-            page-break-inside: avoid !important;
+            min-height: auto !important;
+            page-break-inside: auto !important;
           }
           .no-print {
             display: none !important;
+          }
+          .print-notice-signatory, .print-footer-card {
+            page-break-inside: avoid !important;
           }
         }
       </style>
@@ -352,7 +358,7 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           </div>
 
           <!-- Bottom Notice & Signatory -->
-          <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; align-items: flex-start; margin-top: 10px;">
+          <div class="print-notice-signatory" style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; align-items: flex-start; margin-top: 10px; page-break-inside: avoid;">
             <div>
               <div style="font-size: 11px; color: #000000; line-height: 1.45;">
                 <div style="font-weight: 900; margin-bottom: 2px;">Notice :</div>
@@ -360,7 +366,7 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
                 <div>2. Computer generated statement by ${noticeCompany}.</div>
               </div>
             </div>
-            <div style="border-left: 1.5px solid #000000; min-height: 90px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-left: 12px;">
+            <div style="border-left: 1.5px solid #000000; min-height: 80px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-left: 12px;">
               <div style="width: 200px; border-top: 1.5px solid #000000; margin-bottom: 6px;"></div>
               <div style="font-size: 12px; font-weight: 800; color: #000000; text-align: center;">
                 ${companySignTitle}
@@ -371,6 +377,7 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
 
         <!-- Official Bottom Footer Address Card -->
         <div
+          class="print-footer-card"
           style="
             border: 1.5px solid #000000;
             border-radius: 8px;
@@ -380,7 +387,8 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
             gap: 12px;
             background-color: #ffffff;
             color: #000000;
-            margin-top: 14px;
+            margin-top: 10px;
+            page-break-inside: avoid;
           "
         >
           <div style="display: flex; align-items: center; gap: 10px;">
