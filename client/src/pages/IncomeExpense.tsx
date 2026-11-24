@@ -560,7 +560,7 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
       <html lang="en">
         <head>
           <meta charset="utf-8" />
-          <title>Charvik Official Voucher - #${voucherItem?.id}</title>
+          <title>Vyshnavi Travels Official Voucher - #${voucherItem?.id}</title>
           ${styles}
           <style>
             @page {
@@ -704,6 +704,7 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
     printSheet({
       title: 'Income & Expense Transactions Ledger',
       subtitle: `Total Transactions: ${filteredTransactions.length} | Income: Rs ${stats.totalIncome.toLocaleString('en-IN')} | Expenses: Rs ${stats.totalExpense.toLocaleString('en-IN')}`,
+      companyName: 'Vyshnavi Travels',
       elementId: 'income-expense-records-table-container',
       orientation: 'landscape'
     });
@@ -1753,35 +1754,25 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
           <div className="space-y-4">
             {/* The Printable Sheet */}
             <div id="printable-voucher" className="voucher bg-white p-5 rounded-2xl border border-slate-300 shadow-sm space-y-3 font-sans">
-              {/* Official Charvik Letterhead Header */}
+              {/* Official Vyshnavi Travels Letterhead Header */}
               <div className="border-2 border-[#0056b3] rounded-xl p-2.5 sm:p-3 bg-white text-center mb-3">
                 <div className="flex justify-center items-center mb-2">
                   <img
-                    src="/charvik-print-logo.png?v=20261120_print"
-                    alt="CHARVIK STAFFING CONSULTANCY"
+                    src="/vyshnavi-logo.png"
+                    alt="VYSHNAVI TRAVELS"
                     className="h-14 max-h-[58px] w-auto max-w-[320px] object-contain block mx-auto"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/logo-brand.png'; }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/vyshnavi-tab-logo.jpg'; }}
                   />
                 </div>
                 <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1.5 leading-tight">
                   <span className="inline-flex items-center gap-1">
                     <span className="text-[#0056b3] font-extrabold">Phone:</span>
-                    <span className="text-black">{companyDetails.company_phone || '9505151527'}</span>
+                    <span className="text-black">+91 9000202241</span>
                   </span>
                   <span className="text-[#0056b3] font-black">•</span>
                   <span className="inline-flex items-center gap-1">
                     <span className="text-[#0056b3] font-extrabold">Email:</span>
-                    <span className="text-black">{companyDetails.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
-                  </span>
-                  <span className="text-[#0056b3] font-black">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Web:</span>
-                    <span className="text-black">{companyDetails.company_website || 'www.charvikstaffing.com'}</span>
-                  </span>
-                  <span className="text-[#0056b3] font-black">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Location:</span>
-                    <span className="text-black">{companyDetails.company_address || 'Hyderabad, Telangana'}</span>
+                    <span className="text-black">vyshnavitravels@yahoo.com</span>
                   </span>
                 </div>
               </div>

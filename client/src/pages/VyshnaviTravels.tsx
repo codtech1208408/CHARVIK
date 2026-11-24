@@ -3886,20 +3886,12 @@ export const VyshnaviTravels: React.FC = () => {
                           <span>{printingRecord.company_email || 'vyshnavitravels@yahoo.com'}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                          <span style={{ fontSize: '13px' }}>🌐</span>
-                          <span>{printingRecord.company_website || 'www.vyshnavitravels.com'}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                           <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>GST</span>
                           <span>GSTIN : {printingRecord.company_gst || '36ABCDE1234F1Z5'}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
                           <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>PAN</span>
                           <span>PAN : {printingRecord.company_pan || 'AABPV1234D'}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                          <span style={{ fontSize: '13px' }}>📍</span>
-                          <span>{printingRecord.company_address || 'Hyderabad, Telangana'}</span>
                         </div>
                       </div>
                     </div>
@@ -4468,12 +4460,6 @@ export const VyshnaviTravels: React.FC = () => {
                         <span>vyshnavitravels@yahoo.com</span>
                         <span className="vyshnavi-icon-pill" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1d4ed8', borderRadius: '50%', width: '22px', height: '22px' }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" /></svg>
-                        </span>
-                      </div>
-                      <div className="vyshnavi-contact-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#1e3a8a', fontWeight: '600' }}>
-                        <span>Hyderabad, Telangana</span>
-                        <span className="vyshnavi-icon-pill" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1d4ed8', borderRadius: '50%', width: '22px', height: '22px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" /></svg>
                         </span>
                       </div>
                     </div>
