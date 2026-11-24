@@ -13,7 +13,7 @@ export const DEFAULT_CHARVIK_COMPANY_DETAILS: CharvikCompanyDetails = {
   company_website: 'www.charvikstaffing.com',
   company_gst: '36ABCDE1234F1Z5',
   company_pan: 'AABPC1234D',
-  company_address: 'Hyderabad, Telangana'
+  company_address: 'H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.'
 };
 
 export const getSavedCharvikCompanyDetails = (): CharvikCompanyDetails => {

@@ -826,156 +826,14 @@ export const VyshnaviTravels: React.FC = () => {
 
   // Print Letterhead Action via Isolated IFrame
   const handlePrintLetterhead = (recordToPrint: VyshnaviRecord) => {
-    const printElement = document.getElementById('vyshnavi-printable-letterhead');
-    if (!printElement) {
-      window.print();
-      return;
-    }
-
-    let iframe = document.getElementById('vyshnavi-print-frame') as HTMLIFrameElement;
-    if (!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.id = 'vyshnavi-print-frame';
-      iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = '0';
-      document.body.appendChild(iframe);
-    }
-
-    const doc = iframe.contentWindow?.document || iframe.contentDocument;
-    if (!doc) {
-      window.print();
-      return;
-    }
-
-    const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-      .map((el) => el.outerHTML)
-      .join('\n');
-
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
-      <html lang="en">
-        <head>
-          <meta charset="utf-8" />
-          <title>Vyshnavi Travels - ${recordToPrint.record_number || 'Statement'}</title>
-          ${styles}
-          <style>
-            @page {
-              size: A4 portrait;
-              margin: 6mm 8mm;
-            }
-            * {
-              box-sizing: border-box !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            html, body {
-              margin: 0 !important;
-              padding: 0 !important;
-              background: #ffffff !important;
-              color: #0f172a !important;
-              width: 100% !important;
-              max-width: 100% !important;
-              font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            #isolated-letterhead-wrap {
-              width: 100% !important;
-              max-width: 100% !important;
-              background: #ffffff !important;
-              padding: 0 !important;
-              margin: 0 !important;
-            }
-            #vyshnavi-printable-letterhead {
-              width: 100% !important;
-              max-width: 100% !important;
-              background: #ffffff !important;
-              color: #002B49 !important;
-              padding: 22px 26px !important;
-              margin: 0 auto !important;
-              border: 2px solid #002B49 !important;
-              border-radius: 4px !important;
-              box-sizing: border-box !important;
-              min-height: 1040px !important;
-              display: flex !important;
-              flex-direction: column !important;
-              justify-content: space-between !important;
-            }
-            .vyshnavi-header-logo,
-            #vyshnavi-printable-letterhead img {
-              height: 65px !important;
-              max-height: 72px !important;
-              width: auto !important;
-              max-width: 280px !important;
-              display: block !important;
-              object-fit: contain !important;
-            }
-            table {
-              border-collapse: collapse !important;
-            }
-            @media print {
-              #vyshnavi-printable-letterhead {
-                border: 2px solid #002B49 !important;
-                box-shadow: none !important;
-                padding: 20px 24px !important;
-                min-height: 1020px !important;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div id="isolated-letterhead-wrap">
-            ${printElement.outerHTML}
-          </div>
-        </body>
-      </html>
-    `);
-    doc.close();
-
-    const triggerPrint = () => {
-      try {
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-      } catch (e) {
-        window.print();
-      }
-    };
-
-    const imgs = doc.getElementsByTagName('img');
-    let loadedCount = 0;
-    const totalImgs = imgs.length;
-
-    if (totalImgs === 0) {
-      setTimeout(triggerPrint, 250);
-    } else {
-      for (let i = 0; i < totalImgs; i++) {
-        if (imgs[i].complete) {
-          loadedCount++;
-          if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
-        } else {
-          imgs[i].onload = () => {
-            loadedCount++;
-            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
-          };
-          imgs[i].onerror = () => {
-            loadedCount++;
-            if (loadedCount === totalImgs) setTimeout(triggerPrint, 250);
-          };
-        }
-      }
-    }
+    handlePrintColourfulInvoice(recordToPrint);
   };
 
-  // Print Colourful Invoice via Isolated IFrame (Matching Image 1)
+  // Print Colourful Invoice via Isolated IFrame (Matching Reference Template)
   const handlePrintColourfulInvoice = (recordToPrint: VyshnaviRecord) => {
     const printElement = document.getElementById('vyshnavi-printable-colourful-invoice');
     if (!printElement) {
-      handlePrintLetterhead(recordToPrint);
+      window.print();
       return;
     }
 
@@ -1035,21 +893,21 @@ export const VyshnaviTravels: React.FC = () => {
               width: 100% !important;
               max-width: 100% !important;
               background: #ffffff !important;
-              color: #002B49 !important;
-              padding: 16px 20px !important;
+              color: #000000 !important;
+              padding: 18px 22px !important;
               margin: 0 auto !important;
-              border: 2px solid #0056b3 !important;
-              border-radius: 6px !important;
+              border: 2.5px solid #004b93 !important;
+              border-radius: 12px !important;
               min-height: 1030px !important;
               display: flex !important;
               flex-direction: column !important;
               justify-content: space-between !important;
               position: relative !important;
-              overflow: hidden !important;
+              box-sizing: border-box !important;
             }
             @media print {
               #vyshnavi-printable-colourful-invoice {
-                border: 2px solid #0056b3 !important;
+                border: 2.5px solid #004b93 !important;
                 page-break-inside: avoid !important;
               }
             }
@@ -3651,7 +3509,7 @@ export const VyshnaviTravels: React.FC = () => {
 
             {/* Scrollable Document Container */}
             <div className="bg-slate-100 p-4 rounded-2xl overflow-y-auto max-h-[75vh]">
-              {/* 1. THE COLOURFUL PRINTABLE A4 INVOICE SHEET (MATCHING USER'S IMAGE 1) */}
+              {/* 1. THE OFFICIAL PRINTABLE A4 INVOICE SHEET (MATCHING USER'S REFERENCE TEMPLATE) */}
               <div
                 id="vyshnavi-printable-colourful-invoice"
                 className="bg-white mx-auto shadow-2xl font-sans"
@@ -3660,103 +3518,65 @@ export const VyshnaviTravels: React.FC = () => {
                   maxWidth: '780px',
                   minHeight: '1040px',
                   backgroundColor: '#ffffff',
-                  color: '#002B49',
+                  color: '#000000',
                   border: '2.5px solid #004b93',
-                  borderRadius: '6px',
-                  padding: '18px 22px 24px 22px',
+                  borderRadius: '12px',
+                  padding: '18px 22px 20px 22px',
                   boxSizing: 'border-box',
                   display: printFormat === 'colourful' ? 'flex' : 'none',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  position: 'relative',
-                  overflow: 'hidden'
+                  position: 'relative'
                 }}
               >
-                {/* Top-Right Smooth Vector Swoosh Accent */}
-                <svg
-                  viewBox="0 0 160 100"
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    width: '130px',
-                    height: 'auto',
-                    pointerEvents: 'none',
-                    zIndex: 1
-                  }}
-                >
-                  <path d="M 65 0 C 95 0 135 20 160 65 L 160 0 Z" fill="#004b93" />
-                  <path d="M 30 0 C 70 0 130 25 160 95 L 160 70 C 135 25 90 0 55 0 Z" fill="#ea580c" />
-                </svg>
-
-                <div style={{ position: 'relative', zIndex: 2 }}>
+                <div>
                   {/* Top Header: Logo on left, Contact Details on right */}
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', paddingBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                       <img
                         src={vyshnaviLogo || "/vyshnavi-logo.png"}
                         alt="Vyshnavi Travels"
-                        style={{ height: '70px', maxHeight: '76px', width: 'auto', maxWidth: '300px', display: 'block', objectFit: 'contain' }}
+                        style={{ height: '62px', maxHeight: '68px', width: 'auto', maxWidth: '280px', display: 'block', objectFit: 'contain' }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = '/vyshnavi-logo.png';
                         }}
                       />
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'flex-start', borderLeft: '2px solid #002B49', paddingLeft: '14px', minHeight: '68px', marginRight: '6px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '12px', fontWeight: '800', color: '#002B49', lineHeight: '1.3' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                          <span style={{ fontSize: '13px' }}>📞</span>
-                          <span>{printingRecord.company_phone || '+91 9505151527'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{ borderLeft: '1.5px solid #004b93', height: '46px', margin: '0 16px' }}></div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: '900', color: '#004b93' }}>
+                          <span style={{ fontSize: '14px' }}>📞</span>
+                          <span>+91 9000202241</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: '700', color: '#004b93' }}>
                           <span style={{ fontSize: '13px' }}>✉</span>
-                          <span>{printingRecord.company_email || 'vyshnavitravels@yahoo.com'}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                          <span style={{ fontSize: '13px' }}>🌐</span>
-                          <span>{printingRecord.company_website || 'www.vyshnavitravels.com'}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                          <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>GST</span>
-                          <span>GSTIN : {printingRecord.company_gst || '36ABCDE1234F1Z5'}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                          <span style={{ border: '1px solid #002B49', borderRadius: '3px', padding: '0 4px', fontSize: '9px', fontWeight: '900', letterSpacing: '0.05em' }}>PAN</span>
-                          <span>PAN : {printingRecord.company_pan || 'AABPV1234D'}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                          <span style={{ fontSize: '13px' }}>📍</span>
-                          <span>{printingRecord.company_address || 'Hyderabad, Telangana'}</span>
+                          <span>vyshnavitravels@yahoo.com</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Horizontal Line Under Header */}
-                  <div style={{ borderBottom: '1.5px solid #004b93', width: '100%', margin: '4px 0 12px 0' }}></div>
+                  <div style={{ borderBottom: '2px solid #004b93', width: '100%', margin: '4px 0 12px 0' }}></div>
 
-                  {/* Centered INVOICE Pill with Orange Slashes */}
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 0 14px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '380px' }}>
-                      <span style={{ color: '#ea580c', fontWeight: '900', fontSize: '20px', letterSpacing: '-2px' }}>///</span>
-                      <div
-                        style={{
-                          flex: 1,
-                          backgroundColor: '#004b93',
-                          color: '#ffffff',
-                          textAlign: 'center',
-                          padding: '6px 20px',
-                          borderRadius: '24px',
-                          fontWeight: '900',
-                          fontSize: '18px',
-                          letterSpacing: '0.12em',
-                          boxShadow: '0 2px 4px rgba(0, 75, 147, 0.25)'
-                        }}
-                      >
-                        INVOICE
-                      </div>
-                      <span style={{ color: '#ea580c', fontWeight: '900', fontSize: '20px', letterSpacing: '-2px' }}>///</span>
+                  {/* Centered INVOICE Pill */}
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 0 12px 0' }}>
+                    <div
+                      style={{
+                        backgroundColor: '#004b93',
+                        color: '#ffffff',
+                        textAlign: 'center',
+                        padding: '4px 44px',
+                        borderRadius: '20px',
+                        fontWeight: '900',
+                        fontSize: '18px',
+                        letterSpacing: '0.12em',
+                        display: 'inline-block'
+                      }}
+                    >
+                      INVOICE
                     </div>
                   </div>
 
@@ -3766,107 +3586,75 @@ export const VyshnaviTravels: React.FC = () => {
                     const matchedOp = DEFAULT_PRESET_OPERATORS.find(
                       (o) => o.name.toLowerCase() === rawName || rawName.includes(o.name.toLowerCase()) || o.name.toLowerCase().includes(rawName)
                     );
-                    const clientAddress = printingRecord.bill_to_address || matchedOp?.address || '';
-                    const clientPhone = printingRecord.bill_to_phone || matchedOp?.phone || '';
-                    const clientGst = printingRecord.bill_to_gst || (matchedOp?.gstOrPan && matchedOp.gstOrPan.length === 15 ? matchedOp.gstOrPan : '');
-                    const clientPan = printingRecord.bill_to_pan || (matchedOp?.gstOrPan && matchedOp.gstOrPan.length === 10 ? matchedOp.gstOrPan : '');
+                    const clientAddress = printingRecord.bill_to_address || matchedOp?.address || 'Hyderabad, Telangana';
+                    const clientPhone = printingRecord.bill_to_phone || matchedOp?.phone || '9309019527';
+                    const clientPan = printingRecord.bill_to_pan || (matchedOp?.gstOrPan && matchedOp.gstOrPan.length === 10 ? matchedOp.gstOrPan : '') || 'SAAKY9813M1ZZ';
 
                     return (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1.08fr 0.92fr', gap: '14px', marginBottom: '14px' }}>
-                        {/* Billed To Box (Light blue background, rounded border) */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '12px' }}>
+                        {/* Billed To Box */}
                         <div
                           style={{
-                            border: '1.5px solid #93c5fd',
-                            borderRadius: '10px',
+                            border: '1.5px solid #000000',
+                            borderRadius: '8px',
                             padding: '10px 14px',
-                            backgroundColor: '#eef6fc',
+                            backgroundColor: '#ffffff',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'center'
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
-                            <span style={{ fontSize: '13px' }}>👥</span>
-                            <span style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: '#004b93', letterSpacing: '0.04em' }}>
-                              BILLED TO (CLIENT / OPERATOR)
-                            </span>
+                          <div style={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', color: '#000000', letterSpacing: '0.04em', marginBottom: '3px' }}>
+                            BILLED TO (CLIENT / OPERATOR)
                           </div>
-                          <h3 style={{ margin: '0 0 3px 0', fontSize: '16px', fontWeight: '900', color: '#002B49' }}>
+                          <h3 style={{ margin: '0 0 3px 0', fontSize: '16px', fontWeight: '900', color: '#004b93' }}>
                             {printingRecord.bill_to_name || 'Sri Krishna Travels'}
                           </h3>
-                          {clientAddress && (
-                            <p style={{ margin: '0 0 2px 0', fontSize: '11.5px', fontWeight: '700', color: '#1e3a8a' }}>
-                              📍 {clientAddress}
-                            </p>
-                          )}
-                          {clientPhone && (
-                            <p style={{ margin: '0 0 2px 0', fontSize: '11.5px', fontWeight: '700', color: '#1e3a8a' }}>
-                              📞 Contact : {clientPhone}
-                            </p>
-                          )}
-                          {(clientPan || clientGst) && (
-                            <p style={{ margin: 0, fontSize: '11.5px', fontWeight: '800', color: '#1e3a8a' }}>
-                              🪪 {clientPan ? `PAN : ${clientPan}` : `GSTIN : ${clientGst}`}
-                            </p>
-                          )}
+                          <div style={{ fontSize: '12px', fontWeight: '600', color: '#000000', marginBottom: '2px' }}>
+                            {clientAddress}
+                          </div>
+                          <div style={{ fontSize: '12px', fontWeight: '700', color: '#000000', marginBottom: '2px' }}>
+                            Contact : {clientPhone}
+                          </div>
+                          <div style={{ fontSize: '12px', fontWeight: '700', color: '#000000' }}>
+                            PAN : {clientPan}
+                          </div>
                         </div>
 
-                        {/* Invoice Details Box (Light blue background, rounded border) */}
+                        {/* Statement Details Box */}
                         <div
                           style={{
-                            border: '1.5px solid #93c5fd',
-                            borderRadius: '10px',
+                            border: '1.5px solid #000000',
+                            borderRadius: '8px',
                             padding: '10px 14px',
-                            backgroundColor: '#eef6fc',
+                            backgroundColor: '#ffffff',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'center'
                           }}
                         >
-                          <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none', margin: 0, fontSize: '11.5px', color: '#002B49', backgroundColor: 'transparent' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none', margin: 0, fontSize: '12px', color: '#000000', backgroundColor: 'transparent' }}>
                             <tbody>
                               <tr>
-                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>
-                                  <span style={{ marginRight: '6px' }}>📄</span>Invoice No.
-                                </td>
+                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>Statement / Invoice No.</td>
                                 <td style={{ padding: '3px 6px', border: 'none', fontWeight: '800', width: '10px' }}>:</td>
-                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '900', color: '#004b93' }}>{printingRecord.record_number}</td>
+                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '800' }}>{printingRecord.record_number || 'VT-REC-2026-001'}</td>
                               </tr>
                               <tr>
-                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>
-                                  <span style={{ marginRight: '6px' }}>📅</span>Invoice Date
-                                </td>
+                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>Record Date</td>
                                 <td style={{ padding: '3px 6px', border: 'none', fontWeight: '800' }}>:</td>
-                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '800' }}>{printingRecord.record_date}</td>
+                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '800' }}>{printingRecord.record_date || '2026-11-08'}</td>
                               </tr>
                               <tr>
-                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>
-                                  <span style={{ marginRight: '6px' }}>🚌</span>Vehicle Number
-                                </td>
+                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>Vehicle Number</td>
                                 <td style={{ padding: '3px 6px', border: 'none', fontWeight: '800' }}>:</td>
                                 <td style={{ padding: '3px 0', border: 'none', fontWeight: '800' }}>{printingRecord.vehicle_number || printingRecord.period_month || '-'}</td>
                               </tr>
                               <tr>
-                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>
-                                  <span style={{ marginRight: '6px' }}>🪙</span>Payment Status
-                                </td>
+                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '700', whiteSpace: 'nowrap' }}>Payment Status</td>
                                 <td style={{ padding: '3px 6px', border: 'none', fontWeight: '800' }}>:</td>
-                                <td style={{ padding: '3px 0', border: 'none' }}>
-                                  <span
-                                    style={{
-                                      backgroundColor: '#fed7aa',
-                                      color: '#9a3412',
-                                      padding: '2px 10px',
-                                      borderRadius: '12px',
-                                      fontSize: '10.5px',
-                                      fontWeight: '900',
-                                      textTransform: 'uppercase',
-                                      letterSpacing: '0.04em',
-                                      display: 'inline-block'
-                                    }}
-                                  >
-                                    {printingRecord.payment_status || 'PENDING'}
-                                  </span>
+                                <td style={{ padding: '3px 0', border: 'none', fontWeight: '900', color: '#ea580c', textTransform: 'uppercase' }}>
+                                  {printingRecord.payment_status || 'PARTIAL'}
                                 </td>
                               </tr>
                             </tbody>
@@ -3876,18 +3664,18 @@ export const VyshnaviTravels: React.FC = () => {
                     );
                   })()}
 
-                  {/* Particulars Table with Royal Blue Header & Row Badges */}
-                  <div style={{ border: '2px solid #004b93', borderRadius: '4px', overflow: 'hidden', margin: '0 0 12px 0' }}>
+                  {/* Particulars Table with Crisp Black Grid */}
+                  <div style={{ border: '1.5px solid #000000', borderRadius: '4px', overflow: 'hidden', margin: '0 0 12px 0' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none', margin: 0, backgroundColor: '#ffffff' }}>
                       <thead>
-                        <tr style={{ backgroundColor: '#004b93', color: '#ffffff' }}>
-                          <th style={{ width: '65px', padding: '9px 8px', textAlign: 'center', fontWeight: '900', fontSize: '12px', borderRight: '1px solid #2563eb', color: '#ffffff', letterSpacing: '0.04em' }}>
+                        <tr style={{ backgroundColor: '#ffffff', color: '#000000', borderBottom: '1px solid #000000' }}>
+                          <th style={{ width: '70px', padding: '8px', textAlign: 'center', fontWeight: '900', fontSize: '12px', borderRight: '1px solid #000000', color: '#000000' }}>
                             S. NO.
                           </th>
-                          <th style={{ padding: '9px 14px', textAlign: 'center', fontWeight: '900', fontSize: '12px', borderRight: '1px solid #2563eb', color: '#ffffff', letterSpacing: '0.04em' }}>
+                          <th style={{ padding: '8px 14px', textAlign: 'center', fontWeight: '900', fontSize: '12px', borderRight: '1px solid #000000', color: '#000000' }}>
                             PARTICULARS
                           </th>
-                          <th style={{ width: '160px', padding: '9px 14px', textAlign: 'center', fontWeight: '900', fontSize: '12px', color: '#ffffff', letterSpacing: '0.04em' }}>
+                          <th style={{ width: '160px', padding: '8px 14px', textAlign: 'center', fontWeight: '900', fontSize: '12px', color: '#000000' }}>
                             AMOUNT (₹)
                           </th>
                         </tr>
@@ -3900,88 +3688,26 @@ export const VyshnaviTravels: React.FC = () => {
                             const itemDesc = item.description || item.particulars || item.service || item.service_details || item.route || item.name || 'Fleet Service & Operations';
                             const itemAmt = Number(item.salary_paid ?? item.amount ?? item.salary ?? item.total ?? 0);
                             return (
-                              <tr
-                                key={idx}
-                                style={{
-                                  backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fbff',
-                                  borderBottom: '1px solid #bfdbfe'
-                                }}
-                              >
-                                <td
-                                  style={{
-                                    width: '65px',
-                                    padding: '10px 8px',
-                                    textAlign: 'center',
-                                    verticalAlign: 'middle',
-                                    fontWeight: '900',
-                                    fontSize: '13px',
-                                    color: '#004b93',
-                                    borderRight: '1px solid #bfdbfe'
-                                  }}
-                                >
+                              <tr key={idx} style={{ borderBottom: '1px solid #000000' }}>
+                                <td style={{ width: '70px', padding: '8px', textAlign: 'center', fontWeight: '700', fontSize: '12px', borderRight: '1px solid #000000', color: '#000000' }}>
                                   {idx + 1}
                                 </td>
-                                <td
-                                  style={{
-                                    padding: '10px 14px',
-                                    textAlign: 'left',
-                                    verticalAlign: 'middle',
-                                    borderRight: '1px solid #bfdbfe',
-                                    fontWeight: '800',
-                                    fontSize: '13px',
-                                    color: '#002B49',
-                                    whiteSpace: 'pre-line',
-                                    lineHeight: '1.4'
-                                  }}
-                                >
-                                  {getParticularIcon(itemDesc)}
-                                  <span>{itemDesc}</span>
+                                <td style={{ padding: '8px 14px', textAlign: 'left', fontWeight: '700', fontSize: '12px', borderRight: '1px solid #000000', color: '#000000' }}>
+                                  {itemDesc}
                                 </td>
-                                <td
-                                  style={{
-                                    width: '160px',
-                                    padding: '10px 16px',
-                                    textAlign: 'right',
-                                    verticalAlign: 'middle',
-                                    fontWeight: '900',
-                                    fontSize: '14px',
-                                    color: '#002B49'
-                                  }}
-                                >
+                                <td style={{ width: '160px', padding: '8px 14px', textAlign: 'right', fontWeight: '900', fontSize: '13px', color: '#000000' }}>
                                   ₹{itemAmt.toLocaleString('en-IN')}
                                 </td>
                               </tr>
                             );
                           });
                         })()}
-
-                        {/* Grand Total Row (Royal Blue Bar with Bright Orange Amount) */}
-                        <tr style={{ backgroundColor: '#004b93', color: '#ffffff', borderTop: '2px solid #004b93' }}>
-                          <td
-                            colSpan={2}
-                            style={{
-                              padding: '11px 18px',
-                              textAlign: 'right',
-                              fontWeight: '900',
-                              fontSize: '13px',
-                              letterSpacing: '0.06em',
-                              color: '#ffffff',
-                              borderRight: '1px solid #2563eb'
-                            }}
-                          >
+                        {/* Summary Row */}
+                        <tr style={{ backgroundColor: '#ffffff', color: '#000000', borderTop: '1px solid #000000' }}>
+                          <td colSpan={2} style={{ padding: '8px 14px', textAlign: 'right', fontWeight: '900', fontSize: '13px', color: '#000000', borderRight: '1px solid #000000' }}>
                             GRAND TOTAL :
                           </td>
-                          <td
-                            style={{
-                              padding: '11px 18px',
-                              textAlign: 'right',
-                              fontWeight: '900',
-                              fontSize: '16px',
-                              color: '#ffedd5',
-                              backgroundColor: '#ea580c',
-                              letterSpacing: '0.02em'
-                            }}
-                          >
+                          <td style={{ padding: '8px 14px', textAlign: 'right', fontWeight: '900', fontSize: '14px', color: '#000000' }}>
                             ₹{(printingRecord.total_amount || 0).toLocaleString('en-IN')}
                           </td>
                         </tr>
@@ -3992,133 +3718,99 @@ export const VyshnaviTravels: React.FC = () => {
                   {/* Amount in Words Box */}
                   <div
                     style={{
-                      border: '1.5px solid #93c5fd',
+                      border: '1.5px solid #000000',
                       borderRadius: '6px',
-                      padding: '8px 14px',
-                      backgroundColor: '#eef6fc',
-                      margin: '0 0 14px 0',
+                      padding: '6px 14px',
+                      backgroundColor: '#ffffff',
+                      margin: '0 0 12px 0',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      fontSize: '12px'
+                      fontSize: '12px',
+                      color: '#000000'
                     }}
                   >
-                    <span style={{ fontSize: '15px' }}>🪙</span>
-                    <span style={{ fontWeight: '700', color: '#475569' }}>Amount in Words :</span>
-                    <span style={{ fontWeight: '900', color: '#004b93', textTransform: 'capitalize' }}>
+                    <span style={{ fontWeight: '700' }}>Amount in Words :</span>
+                    <span style={{ fontWeight: '900', textTransform: 'capitalize' }}>
                       {printingRecord.amount_in_words || numberToWordsIndian(printingRecord.total_amount)}
                     </span>
                   </div>
 
-                  {/* Bottom Area: Bank & Notice on Left, Bus Graphic & Signature on Right */}
+                  {/* Bottom Section: Accounts on Left, Signatory on Right */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '16px', alignItems: 'flex-start' }}>
                     {/* Left: Accounts & Notice */}
                     <div>
                       {/* Bank Details Box */}
-                      <div style={{ border: '1.5px solid #004b93', borderRadius: '6px', overflow: 'hidden', marginBottom: '10px' }}>
-                        <div style={{ backgroundColor: '#004b93', color: '#ffffff', padding: '5px 10px', fontSize: '11px', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>🏛️</span>
-                          <span>ACCOUNTS <span style={{ fontWeight: '600', opacity: 0.9 }}>(Bank Details for Direct Settlement)</span></span>
+                      <div style={{ border: '1.5px solid #000000', borderRadius: '6px', overflow: 'hidden', marginBottom: '8px' }}>
+                        <div style={{ backgroundColor: '#ffffff', color: '#000000', padding: '4px 10px', fontSize: '11px', fontWeight: '900', borderBottom: '1px solid #000000' }}>
+                          ACCOUNTS
                         </div>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none', margin: 0, fontSize: '11px', color: '#002B49', backgroundColor: '#f0f7ff' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', border: 'none', margin: 0, fontSize: '11px', color: '#000000', backgroundColor: '#ffffff' }}>
                           <tbody>
-                            <tr style={{ borderBottom: '1px solid #bfdbfe' }}>
-                              <td style={{ padding: '4px 10px', border: 'none', fontWeight: '700', width: '95px' }}>Account Name</td>
-                              <td style={{ padding: '4px 4px', border: 'none', fontWeight: '700', width: '10px' }}>:</td>
-                              <td style={{ padding: '4px 8px', border: 'none', fontWeight: '900', color: '#002B49' }}>{printingRecord.bank_account_name || 'Vyshnavi Travels'}</td>
+                            <tr style={{ borderBottom: '1px solid #000000' }}>
+                              <td style={{ padding: '3px 10px', border: 'none', fontWeight: '700', width: '95px' }}>Account Name</td>
+                              <td style={{ padding: '3px 4px', border: 'none', fontWeight: '700', width: '10px' }}>:</td>
+                              <td style={{ padding: '3px 8px', border: 'none', fontWeight: '800' }}>{printingRecord.bank_account_name || 'Vyshnavi Travels'}</td>
                             </tr>
-                            <tr style={{ borderBottom: '1px solid #bfdbfe' }}>
-                              <td style={{ padding: '4px 10px', border: 'none', fontWeight: '700' }}>Account No.</td>
-                              <td style={{ padding: '4px 4px', border: 'none', fontWeight: '700' }}>:</td>
-                              <td style={{ padding: '4px 8px', border: 'none', fontWeight: '900', fontFamily: 'monospace', color: '#002B49' }}>{printingRecord.bank_account_no || '284353146'}</td>
+                            <tr style={{ borderBottom: '1px solid #000000' }}>
+                              <td style={{ padding: '3px 10px', border: 'none', fontWeight: '700' }}>Account No.</td>
+                              <td style={{ padding: '3px 4px', border: 'none', fontWeight: '700' }}>:</td>
+                              <td style={{ padding: '3px 8px', border: 'none', fontWeight: '900' }}>{printingRecord.bank_account_no || '284353146'}</td>
                             </tr>
-                            <tr style={{ borderBottom: '1px solid #bfdbfe' }}>
-                              <td style={{ padding: '4px 10px', border: 'none', fontWeight: '700' }}>IFSC Code</td>
-                              <td style={{ padding: '4px 4px', border: 'none', fontWeight: '700' }}>:</td>
-                              <td style={{ padding: '4px 8px', border: 'none', fontWeight: '900', fontFamily: 'monospace', color: '#002B49' }}>{printingRecord.bank_ifsc || 'KKBK0007466'}</td>
+                            <tr style={{ borderBottom: '1px solid #000000' }}>
+                              <td style={{ padding: '3px 10px', border: 'none', fontWeight: '700' }}>IFSC Code</td>
+                              <td style={{ padding: '3px 4px', border: 'none', fontWeight: '700' }}>:</td>
+                              <td style={{ padding: '3px 8px', border: 'none', fontWeight: '900' }}>{printingRecord.bank_ifsc || 'KKBK0007466'}</td>
                             </tr>
                             <tr>
-                              <td style={{ padding: '4px 10px', border: 'none', fontWeight: '700' }}>Bank</td>
-                              <td style={{ padding: '4px 4px', border: 'none', fontWeight: '700' }}>:</td>
-                              <td style={{ padding: '4px 8px', border: 'none', fontWeight: '800', color: '#002B49' }}>{printingRecord.bank_name || 'Kotak Mahindra Bank'}</td>
+                              <td style={{ padding: '3px 10px', border: 'none', fontWeight: '700' }}>Bank</td>
+                              <td style={{ padding: '3px 4px', border: 'none', fontWeight: '700' }}>:</td>
+                              <td style={{ padding: '3px 8px', border: 'none', fontWeight: '800' }}>{printingRecord.bank_name || 'Kotak Mahindra Bank'}</td>
                             </tr>
                           </tbody>
                         </table>
                       </div>
 
-                      {/* Notice Block with Amber Border & Megaphone */}
-                      <div
-                        style={{
-                          backgroundColor: '#fffbeb',
-                          border: '1.5px solid #fcd34d',
-                          borderRadius: '6px',
-                          padding: '8px 12px',
-                          fontSize: '10.5px',
-                          color: '#002B49',
-                          lineHeight: '1.45'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-                          <span
-                            style={{
-                              backgroundColor: '#ea580c',
-                              color: '#ffffff',
-                              padding: '1px 8px',
-                              borderRadius: '10px',
-                              fontWeight: '900',
-                              fontSize: '10px',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            <span>📣</span> Notice:
-                          </span>
-                        </div>
-                        <div style={{ fontWeight: '600' }}>1. Please settle statement balance before next cycle.</div>
-                        <div style={{ fontWeight: '600' }}>2. Computer generated statement by Vyshnavi Travels.</div>
+                      {/* Notice */}
+                      <div style={{ fontSize: '11px', color: '#000000', lineHeight: '1.45' }}>
+                        <div style={{ fontWeight: '900', marginBottom: '2px' }}>Notice :</div>
+                        <div>1. Please settle statement balance before next cycle.</div>
+                        <div>2. Computer generated statement by Vyshnavi Travels.</div>
                       </div>
                     </div>
 
-                    {/* Right: Coach Bus Illustration + Signature */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%', minHeight: '180px' }}>
-                      {/* Coach Illustration */}
-                      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: '6px' }}>
-                        <img
-                          src="/vyshnavi-coach-illustration.png"
-                          alt="Luxury Coach"
-                          style={{ maxHeight: '105px', maxWidth: '230px', objectFit: 'contain', display: 'block' }}
-                        />
-                      </div>
-
-                      {/* Signature graphic */}
-                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '-4px' }}>
-                        <img
-                          src="/vyshnavi-signature.png"
-                          alt="Signature"
-                          style={{ height: '32px', width: 'auto', display: 'block' }}
-                        />
-                      </div>
-
-                      {/* Signature line & titles */}
-                      <div style={{ width: '210px', borderTop: '2px solid #004b93', marginTop: '4px', marginBottom: '4px' }}></div>
-                      <div style={{ fontSize: '11px', fontWeight: '900', color: '#004b93', textAlign: 'center' }}>
-                        Authorized Signatory / Seal
-                      </div>
-                      <div style={{ fontSize: '11px', fontWeight: '900', color: '#002B49', textAlign: 'center' }}>
-                        Vyshnavi Travels
+                    {/* Right: Divider & Authorized Signature */}
+                    <div style={{ borderLeft: '1.5px solid #000000', minHeight: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', paddingLeft: '12px' }}>
+                      <div style={{ width: '200px', borderTop: '1.5px solid #000000', marginBottom: '6px' }}></div>
+                      <div style={{ fontSize: '12px', fontWeight: '800', color: '#000000', textAlign: 'center' }}>
+                        Authorized Signature
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Bottom Wave Graphic Accent */}
-                <div style={{ margin: '14px -22px -24px -22px', position: 'relative', zIndex: 1 }}>
-                  <img
-                    src="/vyshnavi-bottom-wave.png"
-                    alt=""
-                    style={{ width: '100%', height: 'auto', maxHeight: '42px', display: 'block', objectFit: 'cover' }}
-                  />
+                {/* Footer Address Card */}
+                <div
+                  style={{
+                    border: '1.5px solid #000000',
+                    borderRadius: '8px',
+                    padding: '6px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    backgroundColor: '#ffffff',
+                    color: '#000000',
+                    marginTop: '14px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '18px' }}>📍</span>
+                    <div style={{ borderLeft: '1.5px solid #000000', height: '32px' }}></div>
+                  </div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#000000', lineHeight: '1.4' }}>
+                    H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel,<br />
+                    Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.
+                  </div>
                 </div>
               </div>
 

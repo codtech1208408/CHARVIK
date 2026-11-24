@@ -1,6 +1,6 @@
 /**
  * Universal Print Sheet Utility
- * Matches the official Charvik printed letterhead format with enclosed rounded banner
+ * Matches the official Charvik & Vyshnavi reference templates exactly
  */
 
 import { getSavedCharvikCompanyDetails } from './charvikCompanyDetails';
@@ -43,7 +43,7 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
   }
 
   const {
-    title = 'PAYMENT SLIP',
+    title = 'INVOICE',
     subtitle = '',
     dateLabel = new Date().toLocaleDateString('en-IN', {
       day: '2-digit',
@@ -122,12 +122,28 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
 
   const comp = getSavedCharvikCompanyDetails();
 
+  const isVyshnavi = Boolean(
+    options.companyName?.toLowerCase().includes('vyshnavi') ||
+    options.title?.toLowerCase().includes('vyshnavi') ||
+    options.subtitle?.toLowerCase().includes('vyshnavi') ||
+    (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('vyshnavi'))
+  );
+
+  const primaryColor = isVyshnavi ? '#004b93' : '#000000';
+  const outerBorder = isVyshnavi ? '2.5px solid #004b93' : '2px solid #000000';
+  const logoSrc = isVyshnavi ? '/vyshnavi-logo.png' : '/charvik-invoice-logo.png';
+  const logoAlt = isVyshnavi ? 'Vyshnavi Travels' : 'CHARVIK Staffing & Consultancy';
+  const companyPhone = isVyshnavi ? '+91 9000202241' : (comp.company_phone || '+91 9505151527');
+  const companyEmail = isVyshnavi ? 'vyshnavitravels@yahoo.com' : (comp.company_email || 'charvikstaffingconsultancy@gmail.com');
+  const companySignTitle = isVyshnavi ? 'Authorized Signature' : 'Authorized Signatory';
+  const noticeCompany = isVyshnavi ? 'Vyshnavi Travels' : 'Charvik Staffing & Consultancy';
+
   const htmlDoc = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>${title} - Official Print Sheet</title>
+      <title>${title} - Official Print Document</title>
       ${existingStyles}
       <style>
         @page {
@@ -140,8 +156,8 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           box-sizing: border-box !important;
         }
         html, body {
-          font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-          color: #0f172a;
+          font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          color: #000000 !important;
           font-size: 11.5px;
           line-height: 1.35;
           background: #ffffff;
@@ -155,150 +171,35 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           print-color-adjust: exact !important;
         }
 
-        /* 1. Official Enclosed Charvik Letterhead Container (High-Resolution Vector Format) */
-        .charvik-letterhead-container {
-          border: 2px solid #0056b3;
-          border-radius: 12px;
-          padding: 8px 14px 10px;
-          margin-bottom: 8px;
-          text-align: center;
-          background: #ffffff;
-          box-sizing: border-box !important;
-          width: 100% !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        .charvik-letterhead-logo-row {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin-bottom: 2px;
-        }
-        .charvik-brand-logo {
-          height: 56px !important;
-          max-height: 60px !important;
-          width: auto !important;
-          max-width: 320px !important;
-          object-fit: contain !important;
-          display: block;
-          margin: 0 auto;
-        }
-        .charvik-letterhead-tagline {
-          font-size: 11px;
-          font-weight: 800;
-          color: #00448a;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          margin-top: 3px;
-          margin-bottom: 6px;
-          text-align: center;
-          line-height: 1.3;
-        }
-        .charvik-letterhead-contacts {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          align-items: center;
-          gap: 14px;
-          font-size: 11.5px;
-          font-weight: 700;
-          color: #000000;
-          margin-bottom: 6px;
-          letter-spacing: 0.2px;
-          line-height: 1.35;
-        }
-        .charvik-contact-item {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          white-space: nowrap;
-        }
-        .charvik-contact-label {
-          color: #0056b3;
-          font-weight: 800;
-        }
-        .charvik-contact-val {
-          color: #000000;
-          font-weight: 700;
-        }
-        .charvik-contact-sep {
-          color: #0056b3;
-          font-weight: 900;
-          font-size: 13px;
-        }
-        .charvik-letterhead-address-pill {
-          display: inline-block;
-          border: 1.5px solid #0056b3;
-          border-radius: 6px;
-          padding: 3px 14px;
-          font-size: 10.5px;
-          font-weight: 600;
-          color: #000000;
-          background: #f8fafc;
-          max-width: 98%;
-          line-height: 1.4;
-          margin: 0 auto;
-          box-sizing: border-box !important;
-        }
-        .charvik-address-label {
-          color: #0056b3;
-          font-weight: 800;
-          margin-right: 4px;
-        }
-
-        /* 2. Title & Meta Strip Box */
-        .charvik-meta-bar {
-          border: 1.5px solid #0056b3;
-          border-radius: 4px;
-          padding: 5px 10px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: #f8fafc;
-          margin-bottom: 8px;
+        .printable-sheet {
           width: 100% !important;
           max-width: 100% !important;
           box-sizing: border-box !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        .charvik-meta-left {
-          display: flex;
-          align-items: baseline;
-          gap: 8px;
-        }
-        .charvik-meta-title {
-          font-size: 12px;
-          font-weight: 900;
-          color: #072346;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
-        }
-        .charvik-meta-subtitle {
-          font-size: 11px;
-          font-weight: 700;
-          color: #334155;
-        }
-        .charvik-meta-datetime {
-          font-size: 10.5px;
-          font-weight: 700;
-          color: #475569;
-          white-space: nowrap;
+          border: ${outerBorder} !important;
+          border-radius: 12px !important;
+          padding: 18px 22px 20px 22px !important;
+          background: #ffffff !important;
+          color: #000000 !important;
+          min-height: 980px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
         }
 
-        /* 3. Table Styling: Zero Right-Side Overflow, Bold Crisp Readable Text & Numbers */
+        /* Table Styling: Crisp Black Grid, White Header, Bold Amounts */
         table, .printable-sheet table, .print-body table {
           width: 100% !important;
           max-width: 100% !important;
           min-width: 0 !important;
           border-collapse: collapse !important;
-          font-size: 12px !important;
-          border: 1.5px solid #072346 !important;
+          font-size: 11.5px !important;
+          border: 1.5px solid #000000 !important;
           margin-top: 2px !important;
           margin-bottom: 12px !important;
           page-break-inside: auto;
           table-layout: auto !important;
           box-sizing: border-box !important;
+          background: #ffffff !important;
         }
         thead {
           display: table-header-group;
@@ -308,20 +209,22 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           page-break-after: auto;
         }
         th {
-          background-color: #072346 !important;
-          color: #ffffff !important;
-          font-weight: 800 !important;
+          background-color: #ffffff !important;
+          color: #000000 !important;
+          font-weight: 900 !important;
           text-transform: uppercase !important;
-          letter-spacing: 0.4px !important;
+          letter-spacing: 0.04em !important;
           padding: 8px 10px !important;
           font-size: 11px !important;
-          border: 1px solid #072346 !important;
-          text-align: left !important;
+          border: 1px solid #000000 !important;
+          text-align: center !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
-          word-break: normal !important;
           white-space: nowrap !important;
           box-sizing: border-box !important;
+        }
+        th.text-left, td.text-left {
+          text-align: left !important;
         }
         th.text-center, td.text-center {
           text-align: center !important;
@@ -330,68 +233,37 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
           text-align: right !important;
         }
         td {
-          padding: 8px 10px !important;
-          border: 1px solid #cbd5e1 !important;
+          padding: 7px 10px !important;
+          border: 1px solid #000000 !important;
           vertical-align: middle !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-          color: #0f172a !important;
+          font-size: 11.5px !important;
+          font-weight: 700 !important;
+          color: #000000 !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
-          word-break: normal !important;
-          overflow-wrap: break-word !important;
           box-sizing: border-box !important;
           line-height: 1.35 !important;
         }
-        /* Numeric columns & currencies stay bold, clear, and on one line */
-        td[style*="text-align: right"], td[style*="monospace"], td[style*="font-family"], td:has(span.font-mono), .tabular-nums {
+        td[style*="text-align: right"], td[style*="monospace"], td:has(span.font-mono), .tabular-nums {
           font-variant-numeric: tabular-nums;
-          font-weight: 800;
+          font-weight: 800 !important;
           white-space: nowrap !important;
-          font-size: 12.5px !important;
-        }
-        tbody tr:nth-child(even) {
-          background-color: #f8fafc !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
         }
         tfoot tr {
-          background-color: #f1f5f9 !important;
+          background-color: #ffffff !important;
           font-weight: 900 !important;
-          border-top: 2px solid #072346 !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+          border-top: 2px solid #000000 !important;
         }
         tfoot td {
-          padding: 9px 10px !important;
-          font-size: 13px !important;
+          padding: 8px 10px !important;
+          font-size: 12px !important;
           font-weight: 900 !important;
-          color: #072346 !important;
+          color: #000000 !important;
+          border: 1px solid #000000 !important;
           white-space: nowrap !important;
         }
-          vertical-align: middle !important;
-          font-size: 9px !important;
-          color: #0f172a !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-          word-break: break-word !important;
-          overflow-wrap: break-word !important;
-          white-space: normal !important;
-          box-sizing: border-box !important;
-        }
-        tbody tr:nth-child(even) {
-          background-color: #f8fafc !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-        }
-        a, td [class*="text-blue"], td [class*="text-indigo"] {
-          color: #1d4ed8 !important;
-          text-decoration: underline !important;
-          font-weight: 600 !important;
-        }
 
-        /* 4. Cloned Sheets & Modals Styling */
-        .printable-sheet, .print-body {
+        .print-body {
           width: 100% !important;
           max-width: 100% !important;
           min-width: 0 !important;
@@ -401,9 +273,6 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
         }
         [class*="min-w-"] {
           min-width: 0 !important;
-        }
-        .whitespace-nowrap {
-          white-space: normal !important;
         }
         img {
           max-width: 100% !important;
@@ -420,27 +289,9 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          .charvik-letterhead-container {
-            border: 2px solid #0056b3 !important;
-            background: #ffffff !important;
+          .printable-sheet {
+            border: ${outerBorder} !important;
             page-break-inside: avoid !important;
-          }
-          .charvik-letterhead-tagline {
-            color: #00448a !important;
-            font-weight: 800 !important;
-          }
-          .charvik-letterhead-contacts, .charvik-contact-val {
-            color: #000000 !important;
-            font-weight: 700 !important;
-          }
-          .charvik-contact-label, .charvik-contact-sep, .charvik-address-label {
-            color: #0056b3 !important;
-            font-weight: 800 !important;
-          }
-          .charvik-letterhead-address-pill {
-            border: 1.5px solid #0056b3 !important;
-            color: #000000 !important;
-            background: #f8fafc !important;
           }
           .no-print {
             display: none !important;
@@ -449,87 +300,98 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
       </style>
     </head>
     <body>
-      <div class="printable-sheet" style="width: 100%; max-width: 100%; box-sizing: border-box; border: 2px solid #002B49; border-radius: 4px; padding: 18px 22px 22px; background: #ffffff;">
-        <!-- Official Header: Colorful Logo on Left, Contact info on Right with vertical divider -->
-        ${!hideHeader ? `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 2px solid #002B49; margin-bottom: 12px;">
-          <img
-            src="/charvik-invoice-logo.png"
-            alt="CHARVIK Staffing & Consultancy"
-            style="height: 60px; max-height: 68px; width: auto; max-width: 280px; display: block; object-fit: contain;"
-            onerror="this.src='/logo-brand.png'"
-          />
-          <div style="display: flex; align-items: flex-start; border-left: 2px solid #002B49; padding-left: 14px; min-height: 68px;">
-            <div style="display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; font-weight: 800; color: #002B49; line-height: 1.35;">
-              <div style="display: flex; align-items: center; gap: 7px;">
-                <span style="font-size: 12px;">📞</span>
-                <span>${comp.company_phone || '+91 9505151527'}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 7px;">
-                <span style="font-size: 12px;">✉</span>
-                <span>${comp.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 7px;">
-                <span style="font-size: 12px;">🌐</span>
-                <span>${comp.company_website || 'www.charvikstaffing.com'}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 7px;">
-                <span style="border: 1px solid #002B49; border-radius: 3px; padding: 0 4px; font-size: 9px; font-weight: 900; letter-spacing: 0.05em;">GST</span>
-                <span>GSTIN : ${comp.company_gst || '36ABCDE1234F1Z5'}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 7px;">
-                <span style="border: 1px solid #002B49; border-radius: 3px; padding: 0 4px; font-size: 9px; font-weight: 900; letter-spacing: 0.05em;">PAN</span>
-                <span>PAN : ${comp.company_pan || 'AABPC1234D'}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 7px;">
-                <span style="font-size: 12px;">📍</span>
-                <span>${comp.company_address || 'Hyderabad, Telangana'}</span>
+      <div class="printable-sheet">
+        <div>
+          <!-- Official Header: Full Brand Logo on Left, Phone & Email on Right with vertical divider -->
+          ${!hideHeader ? `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px;">
+            <img
+              src="${logoSrc}"
+              alt="${logoAlt}"
+              style="height: 62px; max-height: 68px; width: auto; max-width: 280px; display: block; object-fit: contain;"
+              onerror="this.src='/logo-brand.png'"
+            />
+            <div style="display: flex; align-items: center;">
+              <div style="border-left: 1.5px solid ${primaryColor}; height: 46px; margin: 0 16px;"></div>
+              <div style="display: flex; flexDirection: column; gap: 4px; text-align: left;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 900; color: ${primaryColor};">
+                  <span style="font-size: 14px;">📞</span>
+                  <span>${companyPhone}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: ${primaryColor};">
+                  <span style="font-size: 13px;">✉</span>
+                  <span>${companyEmail}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        ` : ''}
+          <div style="border-bottom: 2px solid ${primaryColor}; width: 100%; margin: 4px 0 12px 0;"></div>
+          ` : ''}
 
-        <!-- Centered Document Title with Accent Slashes -->
-        <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0 14px 0;">
-          <div style="display: flex; align-items: center; gap: 8px; width: 100%; max-width: 480px;">
-            <span style="color: #ea580c; font-weight: 900; font-size: 18px; letter-spacing: -2px;">///</span>
-            <div style="flex: 1; background-color: #002B49; color: #ffffff; text-align: center; padding: 6px 18px; border-radius: 20px; font-weight: 900; font-size: 13.5px; letter-spacing: 0.08em; text-transform: uppercase;">
+          <!-- Centered Capsule Pill Banner -->
+          <div style="display: flex; justify-content: center; align-items: center; margin: 0 0 12px 0;">
+            <div style="background-color: ${primaryColor}; color: #ffffff; text-align: center; padding: 4px 44px; border-radius: 20px; font-weight: 900; font-size: 16px; letter-spacing: 0.12em; text-transform: uppercase;">
               ${title}
             </div>
-            <span style="color: #ea580c; font-weight: 900; font-size: 18px; letter-spacing: -2px;">///</span>
+          </div>
+
+          <!-- Metadata Box Strip -->
+          ${!hideMetaBar ? `
+          <div style="border: 1.5px solid #000000; border-radius: 6px; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; background: #ffffff; margin-bottom: 12px; font-size: 11.5px; color: #000000;">
+            <div style="font-weight: 700;">
+              <span>Statement: <strong>${title}</strong></span>
+              ${subtitle ? `<span style="margin-left: 8px;">• ${subtitle}</span>` : ''}
+            </div>
+            <div style="font-weight: 800; white-space: nowrap;">
+              Date: ${dateLabel} &nbsp;|&nbsp; Time: ${timeLabel}
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Printable Table / Content Body -->
+          <div class="print-body" style="width: 100%; max-width: 100%; box-sizing: border-box; margin-bottom: 14px;">
+            ${bodyContent}
+          </div>
+
+          <!-- Bottom Notice & Signatory -->
+          <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 16px; align-items: flex-start; margin-top: 10px;">
+            <div>
+              <div style="font-size: 11px; color: #000000; line-height: 1.45;">
+                <div style="font-weight: 900; margin-bottom: 2px;">Notice :</div>
+                <div>1. Please settle statement balance before next cycle.</div>
+                <div>2. Computer generated statement by ${noticeCompany}.</div>
+              </div>
+            </div>
+            <div style="border-left: 1.5px solid #000000; min-height: 90px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-left: 12px;">
+              <div style="width: 200px; border-top: 1.5px solid #000000; margin-bottom: 6px;"></div>
+              <div style="font-size: 12px; font-weight: 800; color: #000000; text-align: center;">
+                ${companySignTitle}
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Title & Meta Strip Box -->
-        ${!hideMetaBar ? `
-        <div class="charvik-meta-bar" style="border: 1.5px solid #93c5fd; border-radius: 6px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; background: #eef6fc; margin-bottom: 14px;">
-          <div class="charvik-meta-left" style="font-size: 11px; font-weight: 700; color: #1e3a8a;">
-            <span>Official Record Statement</span>
-            ${subtitle ? `<span style="margin-left: 6px;">• ${subtitle}</span>` : ''}
+        <!-- Official Bottom Footer Address Card -->
+        <div
+          style="
+            border: 1.5px solid #000000;
+            border-radius: 8px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: #ffffff;
+            color: #000000;
+            margin-top: 14px;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 18px;">📍</span>
+            <div style="border-left: 1.5px solid #000000; height: 32px;"></div>
           </div>
-          <div class="charvik-meta-datetime" style="font-size: 11px; font-weight: 800; color: #002B49;">
-            Date: ${dateLabel} &nbsp;|&nbsp; Time: ${timeLabel}
-          </div>
-        </div>
-        ` : ''}
-
-        <!-- Printable Table / Body -->
-        <div class="print-body" style="width: 100%; max-width: 100%; box-sizing: border-box; margin-bottom: 16px;">
-          ${bodyContent}
-        </div>
-
-        <!-- Bottom Notice & Authorized Signatory Strip -->
-        <div style="display: flex; align-items: flex-end; justify-content: space-between; padding-top: 14px; border-top: 1.5px solid #002B49; margin-top: 18px;">
-          <div style="font-size: 10.5px; color: #475569; line-height: 1.45;">
-            <div style="font-weight: 800; color: #002B49; margin-bottom: 2px;">Notice:</div>
-            <div>1. This is a computer generated official statement by Charvik Staffing & Consultancy.</div>
-            <div>2. Location: ${comp.company_address || 'Hyderabad, Telangana'}</div>
-          </div>
-          <div style="text-align: center; min-width: 200px;">
-            <div style="width: 180px; border-top: 1.5px dashed #002B49; margin: 0 auto 5px auto;"></div>
-            <div style="font-size: 11px; font-weight: 900; color: #002B49;">Authorized Signatory / Seal</div>
-            <div style="font-size: 10px; font-weight: 700; color: #475569;">Charvik Staffing & Consultancy</div>
+          <div style="font-size: 11px; font-weight: 700; color: #000000; line-height: 1.4;">
+            H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel,<br />
+            Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.
           </div>
         </div>
       </div>
