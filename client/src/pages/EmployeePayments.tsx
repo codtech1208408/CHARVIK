@@ -66,7 +66,7 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
         margin: 0 auto;
         background: #ffffff;
         color: #000000;
-        border: 2px solid \${borderColor};
+        border: 2px solid ${borderColor};
         border-radius: 12px;
         padding: 18px 22px 20px 22px;
         box-sizing: border-box;
@@ -84,40 +84,40 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
             <img
               src="/charvik-invoice-logo.png"
               alt="CHARVIK Staffing & Consultancy"
-              style="height: 62px; max-height: 68px; width: auto; max-width: 280px; display: block; object-fit: contain; filter: \${logoFilter};"
+              style="height: 62px; max-height: 68px; width: auto; max-width: 280px; display: block; object-fit: contain; filter: ${logoFilter};"
               onerror="this.src='/logo-brand.png'"
             />
           </div>
 
           <div style="display: flex; align-items: center;">
-            <div style="border-left: 1.5px solid \${headerDividerColor}; height: 46px; margin: 0 16px;"></div>
+            <div style="border-left: 1.5px solid ${headerDividerColor}; height: 46px; margin: 0 16px;"></div>
             <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
-              <div style="display: block; font-size: 15px; font-weight: 900; color: \${isColourful ? '#072346' : '#000000'}; white-space: nowrap; margin-bottom: 2px;">
-                <span style="font-size: 14px; margin-right: 6px; \${isColourful ? 'color: #ea580c;' : ''}">📞</span>
-                <span>\${comp.company_phone || '9505151527'}</span>
+              <div style="display: block; font-size: 15px; font-weight: 900; color: ${isColourful ? '#072346' : '#000000'}; white-space: nowrap; margin-bottom: 2px;">
+                <span style="font-size: 14px; margin-right: 6px; ${isColourful ? 'color: #ea580c;' : ''}">📞</span>
+                <span>${comp.company_phone || '9505151527'}</span>
               </div>
-              <div style="display: block; font-size: 12px; font-weight: 700; color: \${isColourful ? '#072346' : '#000000'}; white-space: nowrap; margin-bottom: 2px;">
-                <span style="font-size: 13px; margin-right: 6px; \${isColourful ? 'color: #0284c7;' : ''}">✉</span>
-                <span>\${comp.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
+              <div style="display: block; font-size: 12px; font-weight: 700; color: ${isColourful ? '#072346' : '#000000'}; white-space: nowrap; margin-bottom: 2px;">
+                <span style="font-size: 13px; margin-right: 6px; ${isColourful ? 'color: #0284c7;' : ''}">✉</span>
+                <span>${comp.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
               </div>
-              <div style="display: block; font-size: 12px; font-weight: 700; color: \${isColourful ? '#072346' : '#000000'}; white-space: nowrap;">
-                <span style="font-size: 13px; margin-right: 6px; \${isColourful ? 'color: #0d9488;' : ''}">🌐</span>
-                <span>\${comp.company_website || 'www.charvikstaffingconsultancy.in'}</span>
+              <div style="display: block; font-size: 12px; font-weight: 700; color: ${isColourful ? '#072346' : '#000000'}; white-space: nowrap;">
+                <span style="font-size: 13px; margin-right: 6px; ${isColourful ? 'color: #0d9488;' : ''}">🌐</span>
+                <span>${comp.company_website || 'www.charvikstaffingconsultancy.in'}</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Horizontal Line Under Header -->
-        <div style="border-bottom: 2px solid \${borderColor}; width: 100%; margin: 6px 0 14px 0;"></div>
+        <div style="border-bottom: 2px solid ${borderColor}; width: 100%; margin: 6px 0 14px 0;"></div>
 
         <!-- Centered Pill: PAYMENT SLIP -->
         <div style="display: flex; justify-content: center; align-items: center; margin: 0 0 14px 0;">
           <div
             style="
-              background: \${pillBg};
-              color: \${pillColor};
-              border: 2px solid \${pillBorder};
+              background: ${pillBg};
+              color: ${pillColor};
+              border: 2px solid ${pillBorder};
               text-align: center;
               padding: 4px 38px;
               border-radius: 20px;
@@ -134,7 +134,7 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
         <!-- Boxed Data Table (Section 1 and Section 2 matching reference image) -->
         <div
           style="
-            border: 2px solid \${borderColor};
+            border: 2px solid ${borderColor};
             border-radius: 10px;
             overflow: hidden;
             width: 100%;
@@ -143,70 +143,70 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
           "
         >
           <!-- Section 1: Trip & Employee Info -->
-          <div style="background: \${sec1Bg};">
-            <div style="display: flex; border-bottom: 1.5px solid \${borderColor};">
-              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text};">
+          <div style="background: ${sec1Bg};">
+            <div style="display: flex; border-bottom: 1.5px solid ${borderColor};">
+              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: ${sec1Text};">
                 Trip ID / Voucher
               </div>
-              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: \${sec1Text};">
+              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: ${sec1Text};">
                 :
               </div>
-              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text}; font-family: monospace;">
-                \${data.voucherNumber}
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: ${sec1Text}; font-family: monospace;">
+                ${data.voucherNumber}
               </div>
             </div>
 
-            <div style="display: flex; border-bottom: 1.5px solid \${borderColor};">
-              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text};">
+            <div style="display: flex; border-bottom: 1.5px solid ${borderColor};">
+              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: ${sec1Text};">
                 Employee Name
               </div>
-              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: \${sec1Text};">
+              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: ${sec1Text};">
                 :
               </div>
-              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text};">
-                \${data.employeeName}
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: ${sec1Text};">
+                ${data.employeeName}
               </div>
             </div>
 
             <div style="display: flex;">
-              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text};">
+              <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: ${sec1Text};">
                 Employee Code / ID
               </div>
-              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: \${sec1Text};">
+              <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: ${sec1Text};">
                 :
               </div>
-              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: \${sec1Text}; font-family: monospace;">
-                \${data.employeeCode}
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: ${sec1Text}; font-family: monospace;">
+                ${data.employeeCode}
               </div>
             </div>
           </div>
 
           <!-- Section Divider (Double border separating Section 1 & Section 2) -->
-          <div style="border-top: 3px double \${borderColor};"></div>
+          <div style="border-top: 3px double ${borderColor};"></div>
 
           <!-- Section 2: Salary Figures -->
           <div style="background: #ffffff;">
-            <div style="display: flex; border-bottom: 1.5px solid \${borderColor};">
+            <div style="display: flex; border-bottom: 1.5px solid ${borderColor};">
               <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: #000000;">
                 Gross Trip Salary
               </div>
               <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: #000000;">
                 :
               </div>
-              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 15px; color: \${grossColor};">
-                ₹\${Number(data.grossSalary).toLocaleString('en-IN')}
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 15px; color: ${grossColor};">
+                ₹${Number(data.grossSalary).toLocaleString('en-IN')}
               </div>
             </div>
 
-            <div style="display: flex; border-bottom: 1.5px solid \${borderColor};">
+            <div style="display: flex; border-bottom: 1.5px solid ${borderColor};">
               <div style="width: 44%; padding: 11px 16px; font-weight: 900; font-size: 14px; color: #000000;">
                 Advance / Paid Amount
               </div>
               <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: #000000;">
                 :
               </div>
-              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 15px; color: \${advanceColor};">
-                ₹\${Number(data.advanceAmount).toLocaleString('en-IN')}
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 15px; color: ${advanceColor};">
+                ₹${Number(data.advanceAmount).toLocaleString('en-IN')}
               </div>
             </div>
 
@@ -217,8 +217,8 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
               <div style="width: 6%; padding: 11px 4px; font-weight: 900; font-size: 14px; text-align: center; color: #000000;">
                 :
               </div>
-              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 15px; color: \${balanceColor};">
-                ₹\${Number(data.balanceDue).toLocaleString('en-IN')}
+              <div style="width: 50%; padding: 11px 16px; font-weight: 900; font-size: 15px; color: ${balanceColor};">
+                ₹${Number(data.balanceDue).toLocaleString('en-IN')}
               </div>
             </div>
           </div>
@@ -246,23 +246,23 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
         <!-- Official Bottom Footer Address Card -->
         <div
           style="
-            border: \${addressBorder};
+            border: ${addressBorder};
             border-radius: 8px;
             padding: 6px 14px;
             display: flex;
             align-items: center;
             gap: 12px;
-            background-color: \${addressBg};
-            color: \${addressColor};
+            background-color: ${addressBg};
+            color: ${addressColor};
             margin-top: 12px;
           "
         >
           <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 18px;">📍</span>
-            <div style="border-left: 1.5px solid \${isColourful ? '#0284c7' : '#000000'}; height: 32px;"></div>
+            <div style="border-left: 1.5px solid ${isColourful ? '#0284c7' : '#000000'}; height: 32px;"></div>
           </div>
           <div style="font-size: 11px; font-weight: 700; line-height: 1.4;">
-            \${comp.company_address || 'H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.'}
+            ${comp.company_address || 'H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.'}
           </div>
         </div>
       </div>
@@ -4114,7 +4114,7 @@ _This is an official automated monthly salary & trip record statement._`;
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  🖨️ Black & White (Printout)
+                  Black & White
                 </button>
                 <button
                   type="button"
@@ -4125,7 +4125,7 @@ _This is an official automated monthly salary & trip record statement._`;
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  🌈 Colourful (Save as PDF)
+                  Colourful
                 </button>
               </div>
 
@@ -4133,19 +4133,19 @@ _This is an official automated monthly salary & trip record statement._`;
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => executePrintPaymentSlip(printingSlipData, 'bw')}
+                  onClick={() => executePrintPaymentSlip(printingSlipData, slipFormat)}
                   className="px-3.5 py-1.5 rounded-xl text-xs font-black bg-slate-900 hover:bg-black text-white shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
                 >
-                  <span>🖨️</span>
-                  <span>Print Slip (B&W)</span>
+                  <Printer className="w-4 h-4" />
+                  <span>Print Slip</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => executePrintPaymentSlip(printingSlipData, 'colourful')}
                   className="px-3.5 py-1.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
                 >
-                  <span>💾</span>
-                  <span>Save as PDF (Colourful)</span>
+                  <Download className="w-4 h-4" />
+                  <span>Save as PDF</span>
                 </button>
                 <button
                   type="button"
