@@ -27,7 +27,8 @@ import {
   Info,
   Users,
   Save,
-  ImageIcon
+  ImageIcon,
+  Download
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
@@ -37,6 +38,7 @@ import { CharvikCompanyDetailsFields } from '../components/common/CharvikCompany
 import { getSavedCharvikCompanyDetails, type CharvikCompanyDetails } from '../utils/charvikCompanyDetails';
 import { printSheet } from '../utils/printSheet';
 import { exportTableToExcel } from '../utils/exportToExcel';
+import { SearchableSelect, type SearchOption } from '../components/common/SearchableSelect';
 
 export interface AmenityCheckItem {
   id: string;
@@ -50,14 +52,22 @@ export interface CaptainAuditRecordItem {
   id: number | string;
   audit_date: string;
   audit_time: string;
+  operator_name?: string;
   bus_number: string;
   route: string;
   captain_name: string;
   captain_phone?: string;
   driver_name?: string;
   driver_phone?: string;
+  driver_2_name?: string;
+  driver_2_phone?: string;
+  helper_name?: string;
+  helper_phone?: string;
+  audited_by?: string;
+  verified_by?: string;
   staff_pictures: string[];
   cleaning_pictures: string[];
+  driver_freshup_pictures?: string[];
   amenities: AmenityCheckItem[];
   overall_status: 'Passed' | 'Needs Attention';
   remarks?: string;
@@ -67,22 +77,343 @@ export interface CaptainAuditRecordItem {
   updated_at?: string;
 }
 
-const DEFAULT_AMENITY_NAMES: string[] = [
-  'Blanket',
-  'Charging Point',
-  'AC',
-  'First Add Box',
-  'Fire Cylinder',
-  'Spare Tyre (Stepny)',
-  'Cleaning',
-  'Driver Dress',
-  'Captain Dress',
-  'Water Bottle',
-  'Birth Cleaning',
-  'GPs Tracking',
-  'Bus Branding',
-  'Tyre Condition'
+export const DEFAULT_AMENITY_NAMES: string[] = [
+  'Cleanliness (Interior & Exterior)',
+  'Seat & Covers Condition',
+  'AC / Cooling',
+  'Charging Points',
+  'Lighting (Interior & Exterior)',
+  'Fire Safety (Extinguisher / Hammer)',
+  'First Aid Box',
+  'Tools & Emergency Kit',
+  'Tyre Condition (Including Spare)',
+  'Other Remarks'
 ];
+
+export const generateVehicleAuditReportHtml = (record: CaptainAuditRecordItem, mode: 'bw' | 'colourful') => {
+  const isColourful = mode === 'colourful';
+  const borderColor = isColourful ? '#002B66' : '#000000';
+  const pillBg = isColourful ? '#002B66' : '#000000';
+  const logoFilter = isColourful ? 'none' : 'grayscale(100%) contrast(140%)';
+  const primaryText = isColourful ? '#002B66' : '#000000';
+  const tagBg = isColourful ? '#e0f2fe' : '#ffffff';
+  const generalRemarksTagBg = isColourful ? '#bfdbfe' : '#ffffff';
+
+  const defaultItems = [
+    'Cleanliness (Interior & Exterior)',
+    'Seat & Covers Condition',
+    'AC / Cooling',
+    'Charging Points',
+    'Lighting (Interior & Exterior)',
+    'Fire Safety (Extinguisher / Hammer)',
+    'First Aid Box',
+    'Tools & Emergency Kit',
+    'Tyre Condition (Including Spare)',
+    'Other Remarks'
+  ];
+
+  // Map amenities or fallback to default 10 items
+  const items = (record.amenities && record.amenities.length > 0)
+    ? record.amenities
+    : defaultItems.map((name, i) => ({
+      id: `item-${i}`,
+      name,
+      status: 'OK' as const,
+      remarks: ''
+    }));
+
+  return `
+    <div
+      id="charvik-printable-vehicle-audit-report"
+      style="
+        width: 100%;
+        max-width: 720px;
+        min-height: 980px;
+        margin: 0 auto;
+        background: #ffffff;
+        color: #000000;
+        border: 2px solid ${borderColor};
+        border-radius: 14px;
+        padding: 18px 22px 20px 22px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-family: Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        position: relative;
+      "
+    >
+      <div>
+        <!-- Top Header: Logo on left, Phone and Email only on right -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 6px;">
+          <div style="display: flex; flex-direction: column; align-items: flex-start;">
+            <img
+              src="/charvik-invoice-logo.png"
+              alt="CHARVIK Staffing & Consultancy"
+              style="height: 60px; max-height: 65px; width: auto; max-width: 280px; display: block; object-fit: contain; filter: ${logoFilter};"
+              onerror="this.src='/logo-brand.png'"
+            />
+          </div>
+
+          <div style="display: flex; align-items: center;">
+            <div style="border-left: 1.5px solid ${borderColor}; height: 44px; margin: 0 16px;"></div>
+            <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 900; color: ${primaryText}; white-space: nowrap;">
+                <span style="font-size: 15px; ${isColourful ? 'color: #0284c7;' : ''}">📞</span>
+                <span>9505151527</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: ${primaryText}; white-space: nowrap;">
+                <span style="font-size: 13px; ${isColourful ? 'color: #0284c7;' : ''}">✉</span>
+                <span>charvikstaffingconsulrancy@gmail.com</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horizontal Divider -->
+        <div style="border-bottom: 2.5px solid ${borderColor}; width: 100%; margin: 6px 0 14px 0;"></div>
+
+        <!-- Centered Pill: VEHICLE AUDIT REPORT -->
+        <div style="display: flex; justify-content: center; align-items: center; margin: 0 0 14px 0;">
+          <div
+            style="
+              background: ${pillBg};
+              color: #ffffff;
+              text-align: center;
+              padding: 6px 36px;
+              border-radius: 9999px;
+              font-weight: 900;
+              font-size: 18px;
+              letter-spacing: 0.08em;
+              display: inline-block;
+            "
+          >
+            VEHICLE AUDIT REPORT
+          </div>
+        </div>
+
+        <!-- Vehicle & Crew Info Box -->
+        <div
+          style="
+            border: 2px solid ${borderColor};
+            border-radius: 12px;
+            overflow: hidden;
+            width: 100%;
+            background: #ffffff;
+            margin-bottom: 12px;
+            padding: 8px 10px;
+            box-sizing: border-box;
+          "
+        >
+          <!-- 0. Operator Name -->
+          <div style="display: flex; align-items: center; margin-bottom: 6px;">
+            <div style="width: 32%; background: ${tagBg}; border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 13px; color: ${primaryText};">
+              <span style="font-size: 14px;">🏢</span>
+              <span>Operator Name</span>
+            </div>
+            <div style="width: 4%; text-align: center; font-weight: 900; font-size: 14px; color: ${primaryText};">:</div>
+            <div style="width: 64%; border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 4px 12px; min-height: 22px; font-weight: 800; font-size: 13px; color: #000000; box-sizing: border-box; display: flex; align-items: center;">
+              ${record.operator_name || '-'}
+            </div>
+          </div>
+
+          <!-- 1. Bus Number -->
+          <div style="display: flex; align-items: center; margin-bottom: 6px;">
+            <div style="width: 32%; background: ${tagBg}; border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 13px; color: ${primaryText};">
+              <span style="font-size: 14px;">🚌</span>
+              <span>Bus Number</span>
+            </div>
+            <div style="width: 4%; text-align: center; font-weight: 900; font-size: 14px; color: ${primaryText};">:</div>
+            <div style="width: 64%; border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 4px 12px; min-height: 22px; font-weight: 800; font-size: 13px; color: #000000; font-family: monospace; box-sizing: border-box; display: flex; align-items: center;">
+              ${record.bus_number || '-'}
+            </div>
+          </div>
+
+          <!-- 2. Route -->
+          <div style="display: flex; align-items: center; margin-bottom: 6px;">
+            <div style="width: 32%; background: ${tagBg}; border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 13px; color: ${primaryText};">
+              <span style="font-size: 14px;">📍</span>
+              <span>Route</span>
+            </div>
+            <div style="width: 4%; text-align: center; font-weight: 900; font-size: 14px; color: ${primaryText};">:</div>
+            <div style="width: 64%; border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 4px 12px; min-height: 22px; font-weight: 800; font-size: 13px; color: #000000; box-sizing: border-box; display: flex; align-items: center;">
+              ${record.route || '-'}
+            </div>
+          </div>
+
+          <!-- 3. Captain Name -->
+          <div style="display: flex; align-items: center; margin-bottom: 6px;">
+            <div style="width: 32%; background: ${tagBg}; border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 13px; color: ${primaryText};">
+              <span style="font-size: 14px;">👮</span>
+              <span>Captain Name</span>
+            </div>
+            <div style="width: 4%; text-align: center; font-weight: 900; font-size: 14px; color: ${primaryText};">:</div>
+            <div style="width: 64%; border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 4px 12px; min-height: 22px; font-weight: 800; font-size: 13px; color: #000000; box-sizing: border-box; display: flex; align-items: center;">
+              ${record.captain_name || '-'}
+            </div>
+          </div>
+
+          <!-- 4. Driver Name - 1 -->
+          <div style="display: flex; align-items: center; margin-bottom: 6px;">
+            <div style="width: 32%; background: ${tagBg}; border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 13px; color: ${primaryText};">
+              <span style="font-size: 14px;">👤</span>
+              <span>Driver Name – 1</span>
+            </div>
+            <div style="width: 4%; text-align: center; font-weight: 900; font-size: 14px; color: ${primaryText};">:</div>
+            <div style="width: 64%; border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 4px 12px; min-height: 22px; font-weight: 800; font-size: 13px; color: #000000; box-sizing: border-box; display: flex; align-items: center;">
+              ${record.driver_name || '-'}
+            </div>
+          </div>
+
+          <!-- 5. Driver Name - 2 -->
+          <div style="display: flex; align-items: center; margin-bottom: 6px;">
+            <div style="width: 32%; background: ${tagBg}; border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 13px; color: ${primaryText};">
+              <span style="font-size: 14px;">👤</span>
+              <span>Driver Name – 2</span>
+            </div>
+            <div style="width: 4%; text-align: center; font-weight: 900; font-size: 14px; color: ${primaryText};">:</div>
+            <div style="width: 64%; border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 4px 12px; min-height: 22px; font-weight: 800; font-size: 13px; color: #000000; box-sizing: border-box; display: flex; align-items: center;">
+              ${record.driver_2_name || '-'}
+            </div>
+          </div>
+
+          <!-- 6. Helper Name -->
+          <div style="display: flex; align-items: center;">
+            <div style="width: 32%; background: ${tagBg}; border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 13px; color: ${primaryText};">
+              <span style="font-size: 14px;">👥</span>
+              <span>Helper Name</span>
+            </div>
+            <div style="width: 4%; text-align: center; font-weight: 900; font-size: 14px; color: ${primaryText};">:</div>
+            <div style="width: 64%; border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 4px 12px; min-height: 22px; font-weight: 800; font-size: 13px; color: #000000; box-sizing: border-box; display: flex; align-items: center;">
+              ${record.helper_name || '-'}
+            </div>
+          </div>
+        </div>
+
+        <!-- Centered Pill: AUDIT CHECKLIST -->
+        <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0 10px 0;">
+          <div
+            style="
+              background: ${pillBg};
+              color: #ffffff;
+              text-align: center;
+              padding: 5px 32px;
+              border-radius: 9999px;
+              font-weight: 900;
+              font-size: 16px;
+              letter-spacing: 0.08em;
+              display: inline-block;
+            "
+          >
+            AUDIT CHECKLIST
+          </div>
+        </div>
+
+        <!-- Checklist Table -->
+        <table
+          style="
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid ${borderColor};
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            font-size: 12px;
+          "
+        >
+          <thead>
+            <tr style="background: ${pillBg}; color: #ffffff; font-weight: 900;">
+              <th style="padding: 7px 4px; text-align: center; width: 6%; border-right: 1.5px solid #ffffff; font-size: 12px;">#</th>
+              <th style="padding: 7px 8px; text-align: center; width: 42%; border-right: 1.5px solid #ffffff; font-size: 12px;">AUDIT ITEM / AMENITY</th>
+              <th style="padding: 7px 4px; text-align: center; width: 8%; border-right: 1.5px solid #ffffff; font-size: 12px;">OK</th>
+              <th style="padding: 7px 4px; text-align: center; width: 11%; border-right: 1.5px solid #ffffff; font-size: 12px;">NOT OK</th>
+              <th style="padding: 7px 8px; text-align: center; width: 33%; font-size: 12px;">REMARKS</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map((it, idx) => {
+              const isOk = it.status === 'OK';
+              const isNotOk = it.status === 'Not OK';
+              const okBorder = isColourful ? '#16a34a' : '#000000';
+              const okColor = isColourful ? '#16a34a' : '#000000';
+              const notOkBorder = isColourful ? '#dc2626' : '#000000';
+              const notOkColor = isColourful ? '#dc2626' : '#000000';
+
+              return `
+                <tr style="border-bottom: 1.5px solid ${borderColor};">
+                  <td style="padding: 5px 4px; text-align: center; font-weight: 900; border-right: 1.5px solid ${borderColor};">${idx + 1}</td>
+                  <td style="padding: 5px 8px; font-weight: 800; color: #000000; border-right: 1.5px solid ${borderColor};">${it.name}</td>
+                  <td style="padding: 5px 4px; text-align: center; border-right: 1.5px solid ${borderColor};">
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 2px solid ${okBorder}; border-radius: 4px; font-size: 13px; font-weight: 900; color: ${okColor};">
+                      ${isOk ? '✔' : ''}
+                    </div>
+                  </td>
+                  <td style="padding: 5px 4px; text-align: center; border-right: 1.5px solid ${borderColor};">
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 2px solid ${notOkBorder}; border-radius: 4px; font-size: 13px; font-weight: 900; color: ${notOkColor};">
+                      ${isNotOk ? '✔' : ''}
+                    </div>
+                  </td>
+                  <td style="padding: 5px 8px; font-weight: 600; color: #000000;">
+                    ${it.remarks || ''}
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+
+        <!-- General Remarks Box -->
+        <div style="margin-bottom: 14px;">
+          <div
+            style="
+              background: ${generalRemarksTagBg};
+              border: 1.5px solid ${borderColor};
+              border-bottom: none;
+              border-radius: 8px 8px 0 0;
+              padding: 4px 14px;
+              display: inline-block;
+              font-weight: 900;
+              font-size: 12px;
+              color: ${primaryText};
+            "
+          >
+            General Remarks :
+          </div>
+          <div
+            style="
+              border: 1.5px solid ${borderColor};
+              border-radius: 0 10px 10px 10px;
+              min-height: 48px;
+              padding: 6px 12px;
+              font-size: 12px;
+              font-weight: 600;
+              color: #000000;
+              background: #ffffff;
+              box-sizing: border-box;
+            "
+          >
+            ${record.remarks || ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer: Audited By, Verified By, Date -->
+      <div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 10px;">
+          <div style="border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 7px 12px; font-weight: 800; font-size: 12px; color: #000000; background: #ffffff;">
+            Audited By : <span style="font-weight: 900;">${record.audited_by || record.captain_name || ''}</span>
+          </div>
+          <div style="border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 7px 12px; font-weight: 800; font-size: 12px; color: #000000; background: #ffffff;">
+            Verified By : <span style="font-weight: 900;">${record.verified_by || 'Operations Incharge'}</span>
+          </div>
+          <div style="border: 1.5px solid ${borderColor}; border-radius: 8px; padding: 7px 12px; font-weight: 800; font-size: 12px; color: #000000; background: #ffffff;">
+            Date : <span style="font-weight: 900;">${record.audit_date || new Date().toISOString().split('T')[0]}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+};
 
 export const CaptainAuditRecord: React.FC = () => {
   const { user } = useAuth();
@@ -101,6 +432,8 @@ export const CaptainAuditRecord: React.FC = () => {
   const [buses, setBuses] = useState<any[]>([]);
   const [routes, setRoutes] = useState<any[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [organizers, setOrganizers] = useState<any[]>([]);
 
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState('');
@@ -120,13 +453,22 @@ export const CaptainAuditRecord: React.FC = () => {
   const [activePhotoModal, setActivePhotoModal] = useState<string | null>(null);
 
   // Form Fields
+  const [operatorName, setOperatorName] = useState('');
   const [busNumber, setBusNumber] = useState('');
   const [route, setRoute] = useState('');
   const [captainName, setCaptainName] = useState('');
   const [captainPhone, setCaptainPhone] = useState('');
   const [driverName, setDriverName] = useState('');
   const [driverPhone, setDriverPhone] = useState('');
+  const [driverName2, setDriverName2] = useState('');
+  const [driverPhone2, setDriverPhone2] = useState('');
+  const [helperName, setHelperName] = useState('');
+  const [helperPhone, setHelperPhone] = useState('');
+  const [auditedBy, setAuditedBy] = useState('');
+  const [verifiedBy, setVerifiedBy] = useState('');
+  const [auditDate, setAuditDate] = useState(new Date().toISOString().split('T')[0]);
   const [staffPictures, setStaffPictures] = useState<string[]>([]);
+  const [driverFreshupPictures, setDriverFreshupPictures] = useState<string[]>([]);
   const [cleaningPictures, setCleaningPictures] = useState<string[]>([]);
   const [amenities, setAmenities] = useState<AmenityCheckItem[]>([]);
   const [editingAmenityIndex, setEditingAmenityIndex] = useState<number | null>(null);
@@ -134,9 +476,11 @@ export const CaptainAuditRecord: React.FC = () => {
   const [generalRemarks, setGeneralRemarks] = useState('');
 
   const [uploadingStaffPhoto, setUploadingStaffPhoto] = useState(false);
+  const [uploadingDriverFreshupPhoto, setUploadingDriverFreshupPhoto] = useState(false);
   const [uploadingCleaningPhoto, setUploadingCleaningPhoto] = useState(false);
 
   const staffFileInputRef = useRef<HTMLInputElement>(null);
+  const driverFreshupFileInputRef = useRef<HTMLInputElement>(null);
   const cleaningFileInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize Default Amenities
@@ -154,17 +498,21 @@ export const CaptainAuditRecord: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [auditData, busData, routeData, empData] = await Promise.all([
+      const [auditData, busData, routeData, empData, taskData, orgData] = await Promise.all([
         api.getCaptainAudits().catch(() => []),
         api.getBuses().catch(() => []),
         api.getRoutes().catch(() => []),
-        api.getEmployees().catch(() => [])
+        api.getEmployees().catch(() => []),
+        api.getTasks().catch(() => []),
+        api.getOrganizers().catch(() => [])
       ]);
 
       setRecords(Array.isArray(auditData) ? auditData : []);
       setBuses(Array.isArray(busData) ? busData : []);
       setRoutes(Array.isArray(routeData) ? routeData : []);
       setEmployees(Array.isArray(empData) ? empData : []);
+      setTasks(Array.isArray(taskData) ? taskData : []);
+      setOrganizers(Array.isArray(orgData) ? orgData : []);
     } catch (err: any) {
       console.error('Error loading captain audit data:', err);
     } finally {
@@ -176,20 +524,340 @@ export const CaptainAuditRecord: React.FC = () => {
     loadData();
   }, []);
 
-  // Handle Print Record via Isolated Print Sheet
+  // Isolated Print for Vehicle Audit Report
+  const executePrintVehicleAuditReport = (record: CaptainAuditRecordItem, mode: 'bw' | 'colourful') => {
+    const reportHtml = generateVehicleAuditReportHtml(record, mode);
+    let iframe = document.getElementById('vehicle-audit-report-frame') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'vehicle-audit-report-frame';
+      iframe.style.position = 'fixed';
+      iframe.style.top = '-10000px';
+      iframe.style.left = '-10000px';
+      iframe.style.width = '1024px';
+      iframe.style.height = '1440px';
+      iframe.style.opacity = '0';
+      iframe.style.pointerEvents = 'none';
+      iframe.style.border = 'none';
+      iframe.style.zIndex = '-9999';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc) return;
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Vehicle Audit Report - ${record.bus_number || 'Audit'}</title>
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 6mm 8mm;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+              display: flex;
+              justify-content: center;
+              font-family: Arial, sans-serif;
+            }
+            #charvik-printable-vehicle-audit-report {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${reportHtml}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    const triggerPrint = () => {
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (e) {
+          console.error('Print Vehicle Audit Report error:', e);
+        }
+      }, 350);
+    };
+
+    const imgs = doc.getElementsByTagName('img');
+    if (imgs.length === 0) {
+      triggerPrint();
+    } else {
+      let loaded = 0;
+      const total = imgs.length;
+      let fired = false;
+      const done = () => {
+        if (fired) return;
+        fired = true;
+        triggerPrint();
+      };
+      for (let i = 0; i < total; i++) {
+        if (imgs[i].complete) {
+          loaded++;
+        } else {
+          imgs[i].onload = () => {
+            loaded++;
+            if (loaded >= total) done();
+          };
+          imgs[i].onerror = () => {
+            loaded++;
+            if (loaded >= total) done();
+          };
+        }
+      }
+      if (loaded >= total) done();
+      setTimeout(done, 1500);
+    }
+  };
+
+  // Handle Print Record
   const handlePrintRecord = (record: CaptainAuditRecordItem) => {
     setViewRecord(record);
     setIsViewOpen(true);
-    setTimeout(() => {
-      printSheet({
-        title: `Captain Audit Sheet #${record.id}`,
-        subtitle: `Bus ${record.bus_number} • Date: ${record.audit_date}`,
-        elementId: 'printable-captain-audit-sheet',
-        orientation: 'portrait',
-        hideHeader: true,
-        hideMetaBar: true
-      });
-    }, 150);
+  };
+
+  // Search Options for Operator, Bus, Route, Captain, Drivers, Helper
+  const operatorSearchOptions: SearchOption[] = useMemo(() => {
+    const rawOps: string[] = [
+      'Sri Krishna Travels',
+      'Vyshnavi Travels',
+      'Chandrika Finance',
+      'Orange Travels',
+      'Kaveri Travels',
+      'SRS Travels',
+      'Morning Star Travels'
+    ];
+    tasks.forEach((t: any) => {
+      if (t.client_name) rawOps.push(t.client_name);
+      if (t.operator_name) rawOps.push(t.operator_name);
+    });
+    organizers.forEach((o: any) => {
+      if (o.organization_name) rawOps.push(o.organization_name);
+      if (o.name) rawOps.push(o.name);
+    });
+    buses.forEach((b: any) => {
+      if (b.operator_name) rawOps.push(b.operator_name);
+      if (b.make) rawOps.push(b.make);
+    });
+    const unique = Array.from(new Set(rawOps.map((s) => s.trim()).filter(Boolean)));
+    return unique.map((op) => ({
+      value: op,
+      label: op
+    }));
+  }, [tasks, organizers, buses]);
+
+  const busSearchOptions: SearchOption[] = useMemo(() => {
+    const unique = Array.from(
+      new Set(
+        buses
+          .map((b: any) => (b.bus_number || b.registration_number || '').trim())
+          .filter(Boolean)
+      )
+    );
+    tasks.forEach((t: any) => {
+      const b = (t.vehicle_number || t.bus_number || '').trim();
+      if (b && !unique.includes(b)) unique.push(b);
+    });
+    return unique.map((busNo) => {
+      const found = buses.find((b: any) => (b.bus_number || b.registration_number || '').trim().toLowerCase() === busNo.toLowerCase());
+      const sub = found ? `${found.make || ''} ${found.model || ''} ${found.operator_name ? `• ${found.operator_name}` : ''}`.trim() : undefined;
+      return {
+        value: busNo,
+        label: busNo,
+        sublabel: sub
+      };
+    });
+  }, [buses, tasks]);
+
+  const routeSearchOptions: SearchOption[] = useMemo(() => {
+    const rawRoutes: string[] = [];
+    routes.forEach((r: any) => {
+      if (r.route_name) rawRoutes.push(r.route_name);
+      if (r.origin && r.destination) rawRoutes.push(`${r.origin} - ${r.destination}`);
+    });
+    tasks.forEach((t: any) => {
+      if (t.route_corridor) rawRoutes.push(t.route_corridor);
+      if (t.route) rawRoutes.push(t.route);
+    });
+    if (rawRoutes.length === 0) {
+      rawRoutes.push('Hyderabad - Bangalore', 'Hyderabad - Vijayawada', 'Bangalore - Chennai', 'Hyderabad - Visakhapatnam');
+    }
+    const unique = Array.from(new Set(rawRoutes.map((s) => s.trim()).filter(Boolean)));
+    return unique.map((rt) => ({
+      value: rt,
+      label: rt
+    }));
+  }, [routes, tasks]);
+
+  const captainSearchOptions: SearchOption[] = useMemo(() => {
+    const caps = employees.filter((e: any) => (e.role || '').toLowerCase().includes('captain'));
+    const list = caps.length > 0 ? caps : employees;
+    return list.map((e: any) => ({
+      value: e.full_name || e.name,
+      label: e.full_name || e.name,
+      sublabel: e.phone_number || e.phone || undefined,
+      badge: e.employee_code || undefined
+    }));
+  }, [employees]);
+
+  const driver1SearchOptions: SearchOption[] = useMemo(() => {
+    const drvs = employees.filter((e: any) => (e.role || '').toLowerCase().includes('driver'));
+    const list = drvs.length > 0 ? drvs : employees;
+    return list.map((e: any) => ({
+      value: e.full_name || e.name,
+      label: e.full_name || e.name,
+      sublabel: e.phone_number || e.phone || undefined,
+      badge: e.employee_code || undefined
+    }));
+  }, [employees]);
+
+  const driver2SearchOptions: SearchOption[] = useMemo(() => {
+    return driver1SearchOptions;
+  }, [driver1SearchOptions]);
+
+  const helperSearchOptions: SearchOption[] = useMemo(() => {
+    const helpers = employees.filter((e: any) => (e.role || '').toLowerCase().includes('helper'));
+    const list = helpers.length > 0 ? helpers : employees;
+    return list.map((e: any) => ({
+      value: e.full_name || e.name,
+      label: e.full_name || e.name,
+      sublabel: e.phone_number || e.phone || undefined,
+      badge: e.employee_code || undefined
+    }));
+  }, [employees]);
+
+  // Auto-populate when Operator is selected
+  const handleOperatorSelect = (opName: string) => {
+    setOperatorName(opName);
+    if (!opName) return;
+
+    // 1. Try to find recent task with this operator
+    const matchedTask = tasks.find((t: any) =>
+      (t.client_name && t.client_name.toLowerCase() === opName.toLowerCase()) ||
+      (t.operator_name && t.operator_name.toLowerCase() === opName.toLowerCase())
+    );
+
+    // 2. Try to find bus with this operator
+    const matchedBus = buses.find((b: any) =>
+      (b.operator_name && b.operator_name.toLowerCase() === opName.toLowerCase()) ||
+      (b.make && b.make.toLowerCase() === opName.toLowerCase())
+    );
+
+    if (matchedTask) {
+      if (matchedTask.vehicle_number || matchedTask.bus_number) {
+        setBusNumber(matchedTask.vehicle_number || matchedTask.bus_number);
+      }
+      if (matchedTask.route_corridor || matchedTask.route) {
+        setRoute(matchedTask.route_corridor || matchedTask.route);
+      }
+      if (matchedTask.captain_name) {
+        setCaptainName(matchedTask.captain_name);
+        if (matchedTask.captain_phone) setCaptainPhone(matchedTask.captain_phone);
+      }
+      if (matchedTask.driver_name) {
+        setDriverName(matchedTask.driver_name);
+        if (matchedTask.driver_phone) setDriverPhone(matchedTask.driver_phone);
+      }
+      if (matchedTask.driver_2_name) {
+        setDriverName2(matchedTask.driver_2_name);
+      }
+      if (matchedTask.helper_name) {
+        setHelperName(matchedTask.helper_name);
+      }
+    } else if (matchedBus) {
+      const bNo = matchedBus.bus_number || matchedBus.registration_number;
+      if (bNo) setBusNumber(bNo);
+      if (matchedBus.route || matchedBus.assigned_route) {
+        setRoute(matchedBus.route || matchedBus.assigned_route);
+      }
+      if (matchedBus.driver_name) {
+        setDriverName(matchedBus.driver_name);
+      }
+    }
+  };
+
+  // Auto-populate when Bus Number is selected
+  const handleBusSelect = (busNo: string) => {
+    setBusNumber(busNo);
+    if (!busNo) return;
+
+    const matchedTask = tasks.find((t: any) =>
+      (t.vehicle_number && t.vehicle_number.toLowerCase() === busNo.toLowerCase()) ||
+      (t.bus_number && t.bus_number.toLowerCase() === busNo.toLowerCase())
+    );
+
+    const matchedBus = buses.find((b: any) =>
+      (b.bus_number && b.bus_number.toLowerCase() === busNo.toLowerCase()) ||
+      (b.registration_number && b.registration_number.toLowerCase() === busNo.toLowerCase())
+    );
+
+    if (matchedTask) {
+      if (!operatorName && (matchedTask.client_name || matchedTask.operator_name)) {
+        setOperatorName(matchedTask.client_name || matchedTask.operator_name);
+      }
+      if (matchedTask.route_corridor || matchedTask.route) {
+        setRoute(matchedTask.route_corridor || matchedTask.route);
+      }
+      if (matchedTask.captain_name) {
+        setCaptainName(matchedTask.captain_name);
+        if (matchedTask.captain_phone) setCaptainPhone(matchedTask.captain_phone);
+      }
+      if (matchedTask.driver_name) {
+        setDriverName(matchedTask.driver_name);
+        if (matchedTask.driver_phone) setDriverPhone(matchedTask.driver_phone);
+      }
+      if (matchedTask.driver_2_name) setDriverName2(matchedTask.driver_2_name);
+      if (matchedTask.helper_name) setHelperName(matchedTask.helper_name);
+    } else if (matchedBus) {
+      if (!operatorName && (matchedBus.operator_name || matchedBus.make)) {
+        setOperatorName(matchedBus.operator_name || matchedBus.make);
+      }
+      if (matchedBus.route || matchedBus.assigned_route) {
+        setRoute(matchedBus.route || matchedBus.assigned_route);
+      }
+      if (matchedBus.driver_name) {
+        setDriverName(matchedBus.driver_name);
+      }
+    }
+  };
+
+  const handleCaptainSelect = (capName: string) => {
+    setCaptainName(capName);
+    const emp = employees.find((e: any) => (e.full_name || e.name || '').toLowerCase() === capName.toLowerCase());
+    if (emp?.phone_number || emp?.phone) setCaptainPhone(emp.phone_number || emp.phone);
+  };
+
+  const handleDriver1Select = (dName: string) => {
+    setDriverName(dName);
+    const emp = employees.find((e: any) => (e.full_name || e.name || '').toLowerCase() === dName.toLowerCase());
+    if (emp?.phone_number || emp?.phone) setDriverPhone(emp.phone_number || emp.phone);
+  };
+
+  const handleDriver2Select = (dName: string) => {
+    setDriverName2(dName);
+    const emp = employees.find((e: any) => (e.full_name || e.name || '').toLowerCase() === dName.toLowerCase());
+    if (emp?.phone_number || emp?.phone) setDriverPhone2(emp.phone_number || emp.phone);
+  };
+
+  const handleHelperSelect = (hName: string) => {
+    setHelperName(hName);
+    const emp = employees.find((e: any) => (e.full_name || e.name || '').toLowerCase() === hName.toLowerCase());
+    if (emp?.phone_number || emp?.phone) setHelperPhone(emp.phone_number || emp.phone);
   };
 
   const handleExportTableExcel = () => {
@@ -246,13 +914,22 @@ export const CaptainAuditRecord: React.FC = () => {
   const handleOpenNewForm = () => {
     setIsEditing(false);
     setEditingId(null);
+    setOperatorName('');
     setBusNumber('');
     setRoute('');
     setCaptainName(user?.role === 'Captain' ? (user?.name || '') : '');
     setCaptainPhone(user?.phone_number || '');
     setDriverName('');
     setDriverPhone('');
+    setDriverName2('');
+    setDriverPhone2('');
+    setHelperName('');
+    setHelperPhone('');
+    setAuditedBy(user?.name || 'Neelam Harish');
+    setVerifiedBy('Operations Incharge');
+    setAuditDate(new Date().toISOString().split('T')[0]);
     setStaffPictures([]);
+    setDriverFreshupPictures([]);
     setCleaningPictures([]);
     setAmenities(initializeAmenities());
     setGeneralRemarks('');
@@ -267,13 +944,28 @@ export const CaptainAuditRecord: React.FC = () => {
     }
     setIsEditing(true);
     setEditingId(rec.id);
+    setOperatorName(rec.operator_name || '');
     setBusNumber(rec.bus_number || '');
     setRoute(rec.route || '');
     setCaptainName(rec.captain_name || '');
     setCaptainPhone(rec.captain_phone || '');
     setDriverName(rec.driver_name || '');
     setDriverPhone(rec.driver_phone || '');
+    setDriverName2(rec.driver_2_name || '');
+    setDriverPhone2(rec.driver_2_phone || '');
+    setHelperName(rec.helper_name || '');
+    setHelperPhone(rec.helper_phone || '');
+    setAuditedBy(rec.audited_by || rec.captain_name || user?.name || '');
+    setVerifiedBy(rec.verified_by || 'Operations Incharge');
+    setAuditDate(rec.audit_date || new Date().toISOString().split('T')[0]);
     setStaffPictures(Array.isArray(rec.staff_pictures) ? [...rec.staff_pictures] : []);
+    setDriverFreshupPictures(
+      Array.isArray(rec.driver_freshup_pictures) && rec.driver_freshup_pictures.length > 0
+        ? [...rec.driver_freshup_pictures]
+        : Array.isArray(rec.staff_pictures)
+          ? [...rec.staff_pictures]
+          : []
+    );
     setCleaningPictures(Array.isArray(rec.cleaning_pictures) ? [...rec.cleaning_pictures] : []);
     setAmenities(Array.isArray(rec.amenities) && rec.amenities.length > 0 ? [...rec.amenities] : initializeAmenities());
     setGeneralRemarks(rec.remarks || '');
@@ -305,12 +997,15 @@ export const CaptainAuditRecord: React.FC = () => {
   // Photo Upload Handlers
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: 'staff' | 'cleaning'
+    type: 'staff' | 'cleaning' | 'freshup'
   ) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const currentList = type === 'staff' ? staffPictures : cleaningPictures;
+    let currentList = staffPictures;
+    if (type === 'cleaning') currentList = cleaningPictures;
+    if (type === 'freshup') currentList = driverFreshupPictures;
+
     const remainingSlots = 5 - currentList.length;
 
     if (remainingSlots <= 0) {
@@ -321,6 +1016,7 @@ export const CaptainAuditRecord: React.FC = () => {
     const filesToUpload = Array.from(files).slice(0, remainingSlots);
 
     if (type === 'staff') setUploadingStaffPhoto(true);
+    else if (type === 'freshup') setUploadingDriverFreshupPhoto(true);
     else setUploadingCleaningPhoto(true);
 
     const uploadedUrls: string[] = [];
@@ -364,6 +1060,11 @@ export const CaptainAuditRecord: React.FC = () => {
       setStaffPictures((prev) => [...prev, ...uploadedUrls].slice(0, 5));
       setUploadingStaffPhoto(false);
       if (staffFileInputRef.current) staffFileInputRef.current.value = '';
+    } else if (type === 'freshup') {
+      setDriverFreshupPictures((prev) => [...prev, ...uploadedUrls].slice(0, 5));
+      setStaffPictures((prev) => [...prev, ...uploadedUrls].slice(0, 5));
+      setUploadingDriverFreshupPhoto(false);
+      if (driverFreshupFileInputRef.current) driverFreshupFileInputRef.current.value = '';
     } else {
       setCleaningPictures((prev) => [...prev, ...uploadedUrls].slice(0, 5));
       setUploadingCleaningPhoto(false);
@@ -375,8 +1076,11 @@ export const CaptainAuditRecord: React.FC = () => {
     }
   };
 
-  const removePhoto = (index: number, type: 'staff' | 'cleaning') => {
+  const removePhoto = (index: number, type: 'staff' | 'cleaning' | 'freshup') => {
     if (type === 'staff') {
+      setStaffPictures((prev) => prev.filter((_, i) => i !== index));
+    } else if (type === 'freshup') {
+      setDriverFreshupPictures((prev) => prev.filter((_, i) => i !== index));
       setStaffPictures((prev) => prev.filter((_, i) => i !== index));
     } else {
       setCleaningPictures((prev) => prev.filter((_, i) => i !== index));
@@ -455,7 +1159,7 @@ export const CaptainAuditRecord: React.FC = () => {
   // Submit Handler
   const handleSubmitAudit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isUserAdmin = userRole.toLowerCase().includes('admin') || location.pathname.startsWith('/admin');
+    const isUserAdmin = isAdmin || location.pathname.startsWith('/admin');
 
     let cleanBus = busNumber.trim();
     if (!cleanBus) {
@@ -492,19 +1196,27 @@ export const CaptainAuditRecord: React.FC = () => {
     const overall_status: 'Passed' | 'Needs Attention' = hasDeficiencies ? 'Needs Attention' : 'Passed';
 
     const now = new Date();
-    const audit_date = now.toISOString().split('T')[0];
+    const audit_date = auditDate || now.toISOString().split('T')[0];
     const audit_time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-    const payload = {
+    const payload: Partial<CaptainAuditRecordItem> = {
       audit_date,
       audit_time,
+      operator_name: operatorName.trim(),
       bus_number: busNumber.trim().toUpperCase(),
       route: route.trim(),
-      captain_name: captainName.trim(),
+      captain_name: cleanCaptain,
       captain_phone: captainPhone.trim(),
       driver_name: driverName.trim(),
       driver_phone: driverPhone.trim(),
+      driver_2_name: driverName2.trim(),
+      driver_2_phone: driverPhone2.trim(),
+      helper_name: helperName.trim(),
+      helper_phone: helperPhone.trim(),
+      audited_by: auditedBy.trim() || user?.name || cleanCaptain,
+      verified_by: verifiedBy.trim() || 'Operations Incharge',
       staff_pictures: staffPictures,
+      driver_freshup_pictures: driverFreshupPictures.length > 0 ? driverFreshupPictures : staffPictures,
       cleaning_pictures: cleaningPictures,
       amenities,
       overall_status,
@@ -521,17 +1233,17 @@ export const CaptainAuditRecord: React.FC = () => {
           setSubmitting(false);
           return;
         }
-        const updated = await api.updateCaptainAudit(editingId, payload);
-        success('Captain Audit Record updated successfully.');
-        setRecords((prev) => prev.map((r) => (r.id === editingId ? { ...r, ...payload } : r)));
+        await api.updateCaptainAudit(editingId, payload);
+        success('Vehicle Audit Record updated successfully.');
+        setRecords((prev) => prev.map((r) => (r.id === editingId ? { ...r, ...payload } as any : r)));
       } else {
         const created = await api.createCaptainAudit(payload);
-        success('Captain Audit Record submitted successfully!');
+        success('Vehicle Audit Record submitted successfully!');
         setRecords((prev) => [created, ...prev]);
       }
       setIsFormOpen(false);
     } catch (err: any) {
-      error(err.message || 'Failed to submit Captain Audit Record');
+      error(err.message || 'Failed to submit Vehicle Audit Record');
     } finally {
       setSubmitting(false);
     }
@@ -544,9 +1256,12 @@ export const CaptainAuditRecord: React.FC = () => {
       const matchSearch =
         !q ||
         rec.bus_number.toLowerCase().includes(q) ||
+        (rec.operator_name && rec.operator_name.toLowerCase().includes(q)) ||
         rec.captain_name.toLowerCase().includes(q) ||
         rec.route.toLowerCase().includes(q) ||
-        (rec.driver_name && rec.driver_name.toLowerCase().includes(q));
+        (rec.driver_name && rec.driver_name.toLowerCase().includes(q)) ||
+        (rec.driver_2_name && rec.driver_2_name.toLowerCase().includes(q)) ||
+        (rec.helper_name && rec.helper_name.toLowerCase().includes(q));
 
       const matchStatus =
         statusFilter === 'All' || rec.overall_status === statusFilter;
@@ -794,6 +1509,7 @@ export const CaptainAuditRecord: React.FC = () => {
               <tr className="text-white font-black border-b border-indigo-900/30 uppercase tracking-wider text-xs">
                 <th className="py-2.5 px-3 w-12 text-center">S.No</th>
                 <th className="py-2.5 px-3">Date & Time</th>
+                <th className="py-2.5 px-3">Operator</th>
                 <th className="py-2.5 px-3">Bus Number</th>
                 <th className="py-2.5 px-3">Route</th>
                 <th className="py-2.5 px-3">Captain</th>
@@ -807,13 +1523,13 @@ export const CaptainAuditRecord: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400 font-medium">
+                  <td colSpan={11} className="py-12 text-center text-slate-400 font-medium">
                     Loading Captain Audit Records...
                   </td>
                 </tr>
               ) : filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-slate-400">
+                  <td colSpan={11} className="py-12 text-center text-slate-400">
                     <ShieldCheck className="w-10 h-10 mx-auto text-slate-300 mb-2 stroke-1" />
                     <p className="font-semibold text-slate-600">No Captain Audit Records found.</p>
                     <p className="text-xs text-slate-400 mt-1">
@@ -827,7 +1543,7 @@ export const CaptainAuditRecord: React.FC = () => {
                   const okCount = amenitiesList.filter((a) => a.status === 'OK').length;
                   const totalCount = amenitiesList.length || 14;
                   const isFullyPassed = okCount === totalCount;
-                  const totalPhotos = (rec.staff_pictures?.length || 0) + (rec.cleaning_pictures?.length || 0);
+                  const totalPhotos = (rec.staff_pictures?.length || 0) + (rec.driver_freshup_pictures?.length || 0) + (rec.cleaning_pictures?.length || 0);
 
                   return (
                     <tr key={rec.id} className="hover:bg-blue-50/30 transition-colors">
@@ -845,6 +1561,12 @@ export const CaptainAuditRecord: React.FC = () => {
                             {rec.audit_time}
                           </span>
                         )}
+                      </td>
+
+                      <td className="py-2 px-3 whitespace-nowrap">
+                        <span className="font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 inline-flex items-center gap-1.5">
+                          🏢 {rec.operator_name || '-'}
+                        </span>
                       </td>
 
                       <td className="py-2 px-3 whitespace-nowrap">
@@ -978,83 +1700,72 @@ export const CaptainAuditRecord: React.FC = () => {
         maxWidth="max-w-4xl"
       >
         <form onSubmit={handleSubmitAudit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-          {/* Card 1: Bus Number */}
-          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-1.5">
-            <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-1.5">
-              <Bus className="w-4 h-4 text-blue-600" />
-              <span>Bus Number <span className="text-rose-500">*</span></span>
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                required
-                list="buses-datalist"
-                placeholder="YOUR ANSWER (E.G. AP16TV1234)"
-                value={busNumber}
-                onChange={(e) => setBusNumber(e.target.value)}
-                className="w-full text-sm px-4 py-3 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none uppercase font-bold text-slate-800 shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
-              />
-              <datalist id="buses-datalist">
-                {Array.from(
-                  new Set(
-                    buses
-                      .map((b: any) => (b.bus_number || b.registration_number || '').trim())
-                      .filter(Boolean)
-                  )
-                ).map((busNo) => (
-                  <option key={busNo} value={busNo} />
-                ))}
-              </datalist>
-            </div>
-          </div>
-
-          {/* Card 2: Route & Captain Information */}
-          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
+          {/* Card 1: Vehicle & Crew Information (With Search & Select for everything) */}
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3.5">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#004B9E] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-xs mb-1">
               <Users className="w-4 h-4 text-white" />
-              <span>Route & Crew Information</span>
+              <span>Vehicle &amp; Crew Information</span>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
-                <MapPin className="w-4 h-4 text-blue-600" />
-                <span>Route <span className="text-rose-500">*</span></span>
-              </label>
-              <input
-                type="text"
+            {/* Operator Name (Above Bus Number as requested) */}
+            <div className="space-y-1">
+              <SearchableSelect
+                label="Operator Name"
                 required
-                list="routes-datalist"
-                placeholder="Your answer (e.g. Hyderabad - Bangalore)"
-                value={route}
-                onChange={(e) => setRoute(e.target.value)}
-                className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
+                placeholder="Select or type Operator Name (e.g. Sri Krishna Travels)"
+                searchPlaceholder="Search operator name..."
+                options={operatorSearchOptions}
+                value={operatorName}
+                onChange={handleOperatorSelect}
+                allowCustom={true}
               />
-              <datalist id="routes-datalist">
-                {routes.map((r: any) => (
-                  <option key={r.id} value={r.route_name || `${r.origin} - ${r.destination}`}>
-                    {r.route_code ? `[${r.route_code}] ` : ''}
-                    {r.origin} - {r.destination}
-                  </option>
-                ))}
-              </datalist>
+              <p className="text-[11px] text-blue-600 font-medium">
+                💡 Selecting Operator will auto-fill Bus Number, Route, Captain, Drivers &amp; Helper.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
-                  <User className="w-4 h-4 text-blue-600" />
-                  <span>Captain Name <span className="text-rose-500">*</span></span>
-                </label>
-                <input
-                  type="text"
+            {/* Bus Number */}
+            <div className="space-y-1">
+              <SearchableSelect
+                label="Bus Number"
+                required
+                placeholder="Select or type Bus Number (e.g. AP16TV1234)"
+                searchPlaceholder="Search bus number..."
+                options={busSearchOptions}
+                value={busNumber}
+                onChange={handleBusSelect}
+                allowCustom={true}
+              />
+            </div>
+
+            {/* Route */}
+            <div className="space-y-1">
+              <SearchableSelect
+                label="Route"
+                required
+                placeholder="Select or type Route (e.g. Hyderabad - Bangalore)"
+                searchPlaceholder="Search route..."
+                options={routeSearchOptions}
+                value={route}
+                onChange={(val) => setRoute(val)}
+                allowCustom={true}
+              />
+            </div>
+
+            {/* Captain Name & Mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-blue-100/60">
+              <div>
+                <SearchableSelect
+                  label="Captain Name"
                   required
-                  placeholder="Your answer"
+                  placeholder="Select or type Captain Name"
+                  searchPlaceholder="Search captain..."
+                  options={captainSearchOptions}
                   value={captainName}
-                  onChange={(e) => setCaptainName(e.target.value)}
-                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
+                  onChange={handleCaptainSelect}
+                  allowCustom={true}
                 />
               </div>
-
               <div className="space-y-1.5">
                 <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
                   <Phone className="w-4 h-4 text-blue-600" />
@@ -1062,12 +1773,153 @@ export const CaptainAuditRecord: React.FC = () => {
                 </label>
                 <input
                   type="tel"
-                  placeholder="Your answer (10 digits)"
+                  placeholder="10 digits mobile number"
                   value={captainPhone}
                   onChange={(e) => setCaptainPhone(e.target.value)}
                   className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
                 />
               </div>
+            </div>
+
+            {/* Driver Name – 1 & Mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-blue-100/60">
+              <div>
+                <SearchableSelect
+                  label="Driver Name – 1"
+                  required
+                  placeholder="Select or type Driver 1 Name"
+                  searchPlaceholder="Search primary driver..."
+                  options={driver1SearchOptions}
+                  value={driverName}
+                  onChange={handleDriver1Select}
+                  allowCustom={true}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
+                  <Phone className="w-4 h-4 text-blue-600" />
+                  <span>Driver – 1 Mobile Number</span>
+                </label>
+                <input
+                  type="tel"
+                  placeholder="10 digits mobile number"
+                  value={driverPhone}
+                  onChange={(e) => setDriverPhone(e.target.value)}
+                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
+                />
+              </div>
+            </div>
+
+            {/* Driver Name – 2 & Mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-blue-100/60">
+              <div>
+                <SearchableSelect
+                  label="Driver Name – 2 (Optional)"
+                  placeholder="Select or type Driver 2 Name"
+                  searchPlaceholder="Search second driver..."
+                  options={driver2SearchOptions}
+                  value={driverName2}
+                  onChange={handleDriver2Select}
+                  allowCustom={true}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
+                  <Phone className="w-4 h-4 text-blue-600" />
+                  <span>Driver – 2 Mobile Number</span>
+                </label>
+                <input
+                  type="tel"
+                  placeholder="10 digits mobile number"
+                  value={driverPhone2}
+                  onChange={(e) => setDriverPhone2(e.target.value)}
+                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
+                />
+              </div>
+            </div>
+
+            {/* Helper Name & Mobile */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-blue-100/60">
+              <div>
+                <SearchableSelect
+                  label="Helper Name (Optional)"
+                  placeholder="Select or type Helper Name"
+                  searchPlaceholder="Search helper..."
+                  options={helperSearchOptions}
+                  value={helperName}
+                  onChange={handleHelperSelect}
+                  allowCustom={true}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
+                  <Phone className="w-4 h-4 text-blue-600" />
+                  <span>Helper Mobile Number</span>
+                </label>
+                <input
+                  type="tel"
+                  placeholder="10 digits mobile number"
+                  value={helperPhone}
+                  onChange={(e) => setHelperPhone(e.target.value)}
+                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Driver Freshup Image Upload */}
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-black text-slate-800 flex items-center gap-1">
+                  <Camera className="w-4 h-4 text-blue-600" />
+                  <span>Driver Freshup Image / Crew Photo</span>
+                </label>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Upload crew / driver freshup photos. Max 5 files.
+                </p>
+              </div>
+              <span className="text-xs font-bold text-slate-400">
+                {driverFreshupPictures.length} / 5 uploaded
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {driverFreshupPictures.map((picUrl, idx) => (
+                <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-slate-300 bg-white">
+                  <img src={picUrl} alt={`Freshup ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(idx, 'freshup')}
+                    className="absolute top-1 right-1 p-1 bg-rose-600/90 hover:bg-rose-700 text-white rounded-full transition-colors cursor-pointer shadow-sm"
+                    title="Remove"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+
+              {driverFreshupPictures.length < 5 && (
+                <div>
+                  <input
+                    type="file"
+                    ref={driverFreshupFileInputRef}
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleFileUpload(e, 'freshup')}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => driverFreshupFileInputRef.current?.click()}
+                    disabled={uploadingDriverFreshupPhoto}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-blue-50/50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>{uploadingDriverFreshupPhoto ? 'Uploading...' : 'Add Driver Freshup Photo'}</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1369,15 +2221,53 @@ export const CaptainAuditRecord: React.FC = () => {
           {/* Card 6: General Audit Remarks */}
           <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-1.5">
             <label className="text-xs font-bold text-slate-800">
-              General Audit Remarks / Handover Notes
+              General Remarks
             </label>
             <textarea
               rows={2}
               placeholder="Any additional feedback or supervisor instructions..."
               value={generalRemarks}
               onChange={(e) => setGeneralRemarks(e.target.value)}
-              className="w-full p-3.5 text-xs bg-white border border-blue-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-2xs"
+              className="w-full p-3.5 text-xs bg-white border border-blue-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-2xs font-medium text-slate-800"
             />
+          </div>
+
+          {/* Card 7: Signatories (Audited By, Verified By, Date) */}
+          <div className="bg-blue-50/20 p-4 rounded-2xl border border-blue-100 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 text-white rounded-lg text-[11px] font-bold uppercase tracking-wider shadow-xs">
+              <span>Signatories &amp; Verification</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Audited By</label>
+                <input
+                  type="text"
+                  placeholder="Inspector / Captain Name"
+                  value={auditedBy}
+                  onChange={(e) => setAuditedBy(e.target.value)}
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-blue-200 bg-white font-semibold text-slate-800"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Verified By</label>
+                <input
+                  type="text"
+                  placeholder="Supervisor / Operations Incharge"
+                  value={verifiedBy}
+                  onChange={(e) => setVerifiedBy(e.target.value)}
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-blue-200 bg-white font-semibold text-slate-800"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Date</label>
+                <input
+                  type="date"
+                  value={auditDate}
+                  onChange={(e) => setAuditDate(e.target.value)}
+                  className="w-full text-xs px-3 py-2 rounded-xl border border-blue-200 bg-white font-semibold text-slate-800"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Charvik Company & Tax Details */}
@@ -1425,9 +2315,9 @@ export const CaptainAuditRecord: React.FC = () => {
           subtitle={`Bus ${viewRecord.bus_number} • Date: ${viewRecord.audit_date}`}
           maxWidth="max-w-4xl"
         >
-          <div className="p-4 sm:p-6 space-y-6 max-h-[85vh] overflow-y-auto print:p-0 print:max-h-none print:overflow-visible">
+          <div className="p-4 sm:p-6 space-y-6 max-h-[85vh] overflow-y-auto print:p-0 print:max-h-none print:overflow-visible bg-slate-50">
             {/* Action Bar for Modal (hidden on print) */}
-            <div className="flex items-center justify-between no-print pb-4 border-b border-slate-200">
+            <div className="flex flex-wrap items-center justify-between gap-3 no-print pb-4 border-b border-slate-200 bg-white p-4 rounded-2xl shadow-xs">
               <div className="flex items-center gap-2">
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-black uppercase ${viewRecord.overall_status === 'Passed'
@@ -1442,23 +2332,39 @@ export const CaptainAuditRecord: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Print Report (Black & White mode) */}
+                <button
+                  type="button"
+                  onClick={() => executePrintVehicleAuditReport(viewRecord, 'bw')}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
+                  title="Print official report"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print Report</span>
+                </button>
+
+                {/* Save as PDF (Colourful mode) */}
+                <button
+                  type="button"
+                  onClick={() => executePrintVehicleAuditReport(viewRecord, 'colourful')}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-[#004B9E] hover:bg-[#00367A] text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
+                  title="Save colorful report as PDF"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Save as PDF</span>
+                </button>
+
+                {/* Export Excel */}
                 <button
                   type="button"
                   onClick={() => handleExportSingleRecordExcel(viewRecord)}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   <span>Export Excel</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handlePrintRecord(viewRecord)}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>Print Sheet</span>
-                </button>
+
                 <button
                   type="button"
                   onClick={() => setIsViewOpen(false)}
@@ -1469,189 +2375,74 @@ export const CaptainAuditRecord: React.FC = () => {
               </div>
             </div>
 
-            {/* Official Printable Audit Sheet Container */}
-            <div id="printable-captain-audit-sheet" className="printable-sheet bg-white p-4 sm:p-6 rounded-xl border border-slate-200 print:border-none print:p-0 space-y-5">
-              {/* Official Charvik Letterhead Header */}
-              <div className="border-2 border-[#0056b3] rounded-xl p-2.5 sm:p-3 bg-white text-center mb-3">
-                <div className="flex justify-center items-center mb-2">
-                  <img
-                    src="/charvik-print-logo.png?v=20261120_print"
-                    alt="CHARVIK STAFFING CONSULTANCY"
-                    className="h-14 max-h-[58px] w-auto max-w-[320px] object-contain block mx-auto"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/logo-brand.png'; }}
-                  />
-                </div>
-                <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1.5 leading-tight">
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Phone:</span>
-                    <span className="text-black">{companyDetails.company_phone || '9505151527'}</span>
-                  </span>
-                  <span className="text-[#0056b3] font-black">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Email:</span>
-                    <span className="text-black">{companyDetails.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
-                  </span>
-                  <span className="text-[#0056b3] font-black">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Web:</span>
-                    <span className="text-black">{companyDetails.company_website || 'www.charvikstaffing.com'}</span>
-                  </span>
-                  <span className="text-[#0056b3] font-black">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Location:</span>
-                    <span className="text-black">{companyDetails.company_address || 'Hyderabad, Telangana'}</span>
-                  </span>
-                </div>
-              </div>
+            {/* Official Report Preview Container (Matches exact reference layout) */}
+            <div className="flex justify-center p-2 sm:p-6 bg-slate-200/70 rounded-2xl overflow-x-auto shadow-inner">
+              <div
+                className="bg-white rounded-2xl shadow-xl overflow-hidden max-w-full"
+                dangerouslySetInnerHTML={{
+                  __html: generateVehicleAuditReportHtml(viewRecord, 'colourful')
+                }}
+              />
+            </div>
 
-              {/* Header Letterhead Meta */}
-              <div className="flex items-center justify-between border-b-2 border-slate-800 pb-3">
-                <div>
-                  <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">
-                    CAPTAIN ONBOARD VEHICLE INSPECTION &amp; AUDIT RECORD
-                  </h2>
-                  <p className="text-xs font-bold tracking-wider text-slate-600">
-                    Fleet Operations, Crew Staffing &amp; Transit Vehicle Quality Assurance
-                  </p>
-                </div>
+            {/* Uploaded Photos Section Below Report Preview */}
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+              <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
+                <Camera className="w-4 h-4 text-blue-600" />
+                <span>Uploaded Audit Inspection Photos</span>
+              </h3>
 
-                <div className="text-right">
-                  <div className="text-xs font-black text-blue-900 uppercase">Audit Record</div>
-                  <div className="text-sm font-extrabold text-slate-800">#{viewRecord.id}</div>
-                  <div className="text-xs font-bold tracking-wider text-slate-500">{viewRecord.audit_date}</div>
-                </div>
-              </div>
-
-              {/* Bus & Crew Summary Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+              {/* Driver Freshup / Crew Photos */}
+              {((viewRecord.driver_freshup_pictures && viewRecord.driver_freshup_pictures.length > 0) ||
+                (viewRecord.staff_pictures && viewRecord.staff_pictures.length > 0)) && (
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Bus Number</span>
-                  <span className="font-extrabold text-slate-900 text-sm">{viewRecord.bus_number}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Route</span>
-                  <span className="font-bold text-slate-800">{viewRecord.route}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Captain Name</span>
-                  <span className="font-bold text-slate-800">{viewRecord.captain_name}</span>
-                  {viewRecord.captain_phone && (
-                    <span className="text-[10px] text-slate-500 block">{viewRecord.captain_phone}</span>
-                  )}
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Driver Name</span>
-                  <span className="font-bold text-slate-800">{viewRecord.driver_name || 'N/A'}</span>
-                  {viewRecord.driver_phone && (
-                    <span className="text-[10px] text-slate-500 block">{viewRecord.driver_phone}</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Amenities Inspection Table */}
-              <div>
-                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
-                  Onboard Amenities & Maintenance Checklist
-                </h4>
-                <div className="border border-slate-200 rounded-xl overflow-hidden">
-                  <table className="w-full table-fixed text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                        <th className="py-2 px-2.5 w-[8%] text-center">#</th>
-                        <th className="py-2 px-2.5 w-[36%]">Amenity Item</th>
-                        <th className="py-2 px-2.5 w-[18%] text-center">Compliance</th>
-                        <th className="py-2 px-2.5 w-[38%]">Remarks / Inspector Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {(viewRecord.amenities || []).map((a, i) => (
-                        <tr key={i} className={a.status === 'Not OK' ? 'bg-rose-50/40' : ''}>
-                          <td className="py-2 px-2.5 text-center font-bold text-slate-400 break-words">{i + 1}</td>
-                          <td className="py-2 px-2.5 font-semibold text-slate-800 break-words">{a.name}</td>
-                          <td className="py-2 px-2.5 text-center break-words">
-                            <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-black uppercase inline-block ${a.status === 'OK'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-rose-100 text-rose-800'
-                                }`}
-                            >
-                              {a.status}
-                            </span>
-                          </td>
-                          <td className="py-2 px-2.5 text-slate-600 italic break-words">
-                            {a.remarks || '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Photos Gallery */}
-              <div className="space-y-4 print:break-inside-avoid">
-                {/* Bus Cleaning Pictures */}
-                {viewRecord.cleaning_pictures && viewRecord.cleaning_pictures.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
-                      Bus Cleaning Pictures ({viewRecord.cleaning_pictures.length})
-                    </h4>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 print:grid-cols-5 gap-2.5">
-                      {viewRecord.cleaning_pictures.map((pic, i) => (
-                        <div
-                          key={i}
-                          onClick={() => setActivePhotoModal(pic)}
-                          className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer hover:opacity-90 shadow-2xs"
-                        >
-                          <img src={pic} alt={`Cleaning ${i + 1}`} className="w-full h-full object-cover" />
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    Driver Freshup &amp; Crew Photos
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                    {Array.from(
+                      new Set([
+                        ...(viewRecord.driver_freshup_pictures || []),
+                        ...(viewRecord.staff_pictures || [])
+                      ])
+                    ).map((pic, i) => (
+                      <div
+                        key={i}
+                        onClick={() => setActivePhotoModal(pic)}
+                        className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer hover:opacity-90 shadow-2xs hover:shadow-md transition-all group relative"
+                      >
+                        <img src={pic} alt={`Crew ${i + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-bold">
+                          View
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                )}
-
-                {/* Staff Pictures (Below Bus Cleaning Pictures) */}
-                {viewRecord.staff_pictures && viewRecord.staff_pictures.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
-                      Staff Pictures ({viewRecord.staff_pictures.length})
-                    </h4>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 print:grid-cols-5 gap-2.5">
-                      {viewRecord.staff_pictures.map((pic, i) => (
-                        <div
-                          key={i}
-                          onClick={() => setActivePhotoModal(pic)}
-                          className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer hover:opacity-90 shadow-2xs"
-                        >
-                          <img src={pic} alt={`Staff ${i + 1}`} className="w-full h-full object-cover" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* General Remarks */}
-              {viewRecord.remarks && (
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-                  <span className="font-bold text-slate-700 block mb-1">Supervisor / Captain Remarks:</span>
-                  <p className="text-slate-600">{viewRecord.remarks}</p>
                 </div>
               )}
 
-              {/* Signatures Footer */}
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-end text-xs text-slate-600 print:pt-10">
-                <div className="text-center">
-                  <div className="border-b border-slate-400 w-36 sm:w-44 mb-1"></div>
-                  <span className="font-bold block">{viewRecord.captain_name}</span>
-                  <span className="text-[10px] text-slate-400 uppercase">Captain Signature</span>
+              {/* Bus Cleaning Pictures */}
+              {viewRecord.cleaning_pictures && viewRecord.cleaning_pictures.length > 0 && (
+                <div className="pt-2 border-t border-slate-100">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    Bus Cleaning Pictures ({viewRecord.cleaning_pictures.length})
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                    {viewRecord.cleaning_pictures.map((pic, i) => (
+                      <div
+                        key={i}
+                        onClick={() => setActivePhotoModal(pic)}
+                        className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer hover:opacity-90 shadow-2xs hover:shadow-md transition-all group relative"
+                      >
+                        <img src={pic} alt={`Cleaning ${i + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-bold">
+                          View
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="border-b border-slate-400 w-36 sm:w-44 mb-1"></div>
-                  <span className="font-bold block">Fleet Operations Manager</span>
-                  <span className="text-[10px] text-slate-400 uppercase">Charvik Quality Admin</span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </Modal>
