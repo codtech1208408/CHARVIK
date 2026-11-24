@@ -148,7 +148,7 @@ export function buildSalaryPdfDoc(data: StatementPdfData): jsPDF {
   doc.setFontSize(7.5);
   doc.setTextColor(51, 65, 85);
   doc.text(
-    `Phone: ${comp.company_phone || '+91 9505151527'}   |   Email: ${comp.company_email || 'charvikstaffingconsultancy@gmail.com'}   |   Web: ${comp.company_website || 'www.charvikstaffing.com'}   |   ${comp.company_address || 'Hyderabad, Telangana'}`,
+    `Phone: ${comp.company_phone || '+91 9505151527'}   |   Email: ${comp.company_email || 'charvikstaffingconsultancy@gmail.com'}`,
     pageWidth / 2,
     33,
     { align: "center" }
@@ -644,11 +644,9 @@ export function generateSalaryStatementHtml(data: StatementPdfData): string {
           style="height: 52px; max-width: 320px; object-fit: contain; margin-bottom: 6px;" 
         />
 
-        <div style="display: flex; justify-content: center; align-items: center; gap: 12px; font-size: 10px; color: #334155; font-weight: 600; margin-bottom: 6px; flex-wrap: wrap;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; font-size: 10px; color: #334155; font-weight: 600; margin-bottom: 6px; flex-wrap: wrap;">
           <span>Phone: <strong style="color: #0f172a;">+91 9505151527</strong></span>
           <span>Email: <strong style="color: #0f172a;">charvikstaffingconsultancy@gmail.com</strong></span>
-          <span>Web: <strong style="color: #0f172a;">www.charvikstaffing.com</strong></span>
-          <span>Location: <strong style="color: #0f172a;">Hyderabad, Telangana</strong></span>
         </div>
       </div>
 

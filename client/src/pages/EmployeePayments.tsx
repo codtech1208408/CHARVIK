@@ -52,9 +52,6 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
   const grossColor = isColourful ? '#0f172a' : '#000000';
   const advanceColor = isColourful ? '#15803d' : '#000000';
   const balanceColor = isColourful ? '#be123c' : '#000000';
-  const addressBorder = isColourful ? '1.5px solid #0284c7' : '1.5px solid #000000';
-  const addressBg = isColourful ? '#f0f9ff' : '#ffffff';
-  const addressColor = isColourful ? '#072346' : '#000000';
 
   return `
     <div
@@ -90,19 +87,15 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
           </div>
 
           <div style="display: flex; align-items: center;">
-            <div style="border-left: 1.5px solid ${headerDividerColor}; height: 46px; margin: 0 16px;"></div>
+            <div style="border-left: 1.5px solid ${headerDividerColor}; height: 42px; margin: 0 16px;"></div>
             <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
               <div style="display: block; font-size: 15px; font-weight: 900; color: ${isColourful ? '#072346' : '#000000'}; white-space: nowrap; margin-bottom: 2px;">
                 <span style="font-size: 14px; margin-right: 6px; ${isColourful ? 'color: #ea580c;' : ''}">📞</span>
                 <span>${comp.company_phone || '9505151527'}</span>
               </div>
-              <div style="display: block; font-size: 12px; font-weight: 700; color: ${isColourful ? '#072346' : '#000000'}; white-space: nowrap; margin-bottom: 2px;">
+              <div style="display: block; font-size: 12px; font-weight: 700; color: ${isColourful ? '#072346' : '#000000'}; white-space: nowrap;">
                 <span style="font-size: 13px; margin-right: 6px; ${isColourful ? 'color: #0284c7;' : ''}">✉</span>
                 <span>${comp.company_email || 'charvikstaffingconsultancy@gmail.com'}</span>
-              </div>
-              <div style="display: block; font-size: 12px; font-weight: 700; color: ${isColourful ? '#072346' : '#000000'}; white-space: nowrap;">
-                <span style="font-size: 13px; margin-right: 6px; ${isColourful ? 'color: #0d9488;' : ''}">🌐</span>
-                <span>${comp.company_website || 'www.charvikstaffingconsultancy.in'}</span>
               </div>
             </div>
           </div>
@@ -225,10 +218,10 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
         </div>
       </div>
 
-      <!-- Bottom Signatures and Address Card -->
+      <!-- Bottom Signatures -->
       <div>
         <!-- Three Signatures (Prepared By, Verified By, Received By) -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 40px 0 24px 0;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 40px 0 16px 0;">
           <div style="text-align: center;">
             <div style="border-top: 1.5px solid #000000; width: 130px; margin: 0 auto 6px auto;"></div>
             <span style="font-size: 12px; font-weight: 900; color: #000000;">Prepared By</span>
@@ -240,29 +233,6 @@ export const generatePaymentSlipHtml = (data: PaymentSlipData, mode: 'bw' | 'col
           <div style="text-align: center;">
             <div style="border-top: 1.5px solid #000000; width: 130px; margin: 0 auto 6px auto;"></div>
             <span style="font-size: 12px; font-weight: 900; color: #000000;">Received By</span>
-          </div>
-        </div>
-
-        <!-- Official Bottom Footer Address Card -->
-        <div
-          style="
-            border: ${addressBorder};
-            border-radius: 8px;
-            padding: 6px 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background-color: ${addressBg};
-            color: ${addressColor};
-            margin-top: 12px;
-          "
-        >
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 18px;">📍</span>
-            <div style="border-left: 1.5px solid ${isColourful ? '#0284c7' : '#000000'}; height: 32px;"></div>
-          </div>
-          <div style="font-size: 11px; font-weight: 700; line-height: 1.4;">
-            ${comp.company_address || 'H.No. 5-5-990, Plot No. 74, Emerald Plaza, Opp. Bajaj Electrical, Beside Kakinada Subbaigaru Hotel, Vanasthalipuram, Sahebnagar Kalan, Hayathnagar, Rangareddy.'}
           </div>
         </div>
       </div>
