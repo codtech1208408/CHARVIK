@@ -804,9 +804,6 @@ export const CaptainAuditRecord: React.FC = () => {
       if (!operatorName && (matchedTask.client_name || matchedTask.operator_name)) {
         setOperatorName(matchedTask.client_name || matchedTask.operator_name);
       }
-      if (matchedTask.route_corridor || matchedTask.route) {
-        setRoute(matchedTask.route_corridor || matchedTask.route);
-      }
       if (matchedTask.captain_name) {
         setCaptainName(matchedTask.captain_name);
         if (matchedTask.captain_phone) setCaptainPhone(matchedTask.captain_phone);
@@ -820,9 +817,6 @@ export const CaptainAuditRecord: React.FC = () => {
     } else if (matchedBus) {
       if (!operatorName && (matchedBus.operator_name || matchedBus.make)) {
         setOperatorName(matchedBus.operator_name || matchedBus.make);
-      }
-      if (matchedBus.route || matchedBus.assigned_route) {
-        setRoute(matchedBus.route || matchedBus.assigned_route);
       }
       if (matchedBus.driver_name) {
         setDriverName(matchedBus.driver_name);
@@ -1743,118 +1737,58 @@ export const CaptainAuditRecord: React.FC = () => {
               />
             </div>
 
-            {/* Captain Name & Mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-blue-100/60">
-              <div>
-                <SearchableSelect
-                  label="Captain Name"
-                  required
-                  placeholder="Select or type Captain Name"
-                  searchPlaceholder="Search captain..."
-                  options={captainSearchOptions}
-                  value={captainName}
-                  onChange={handleCaptainSelect}
-                  allowCustom={true}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
-                  <Phone className="w-4 h-4 text-blue-600" />
-                  <span>Captain Mobile Number</span>
-                </label>
-                <input
-                  type="tel"
-                  placeholder="10 digits mobile number"
-                  value={captainPhone}
-                  onChange={(e) => setCaptainPhone(e.target.value)}
-                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
-                />
-              </div>
+            {/* Captain Name */}
+            <div className="pt-1 border-t border-blue-100/60">
+              <SearchableSelect
+                label="Captain Name"
+                required
+                placeholder="Select or type Captain Name"
+                searchPlaceholder="Search captain..."
+                options={captainSearchOptions}
+                value={captainName}
+                onChange={handleCaptainSelect}
+                allowCustom={true}
+              />
             </div>
 
-            {/* Driver Name – 1 & Mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-blue-100/60">
-              <div>
-                <SearchableSelect
-                  label="Driver Name – 1"
-                  required
-                  placeholder="Select or type Driver 1 Name"
-                  searchPlaceholder="Search primary driver..."
-                  options={driver1SearchOptions}
-                  value={driverName}
-                  onChange={handleDriver1Select}
-                  allowCustom={true}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
-                  <Phone className="w-4 h-4 text-blue-600" />
-                  <span>Driver – 1 Mobile Number</span>
-                </label>
-                <input
-                  type="tel"
-                  placeholder="10 digits mobile number"
-                  value={driverPhone}
-                  onChange={(e) => setDriverPhone(e.target.value)}
-                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
-                />
-              </div>
+            {/* Driver Name – 1 */}
+            <div className="pt-1 border-t border-blue-100/60">
+              <SearchableSelect
+                label="Driver Name – 1"
+                required
+                placeholder="Select or type Driver 1 Name"
+                searchPlaceholder="Search primary driver..."
+                options={driver1SearchOptions}
+                value={driverName}
+                onChange={handleDriver1Select}
+                allowCustom={true}
+              />
             </div>
 
-            {/* Driver Name – 2 & Mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-blue-100/60">
-              <div>
-                <SearchableSelect
-                  label="Driver Name – 2 (Optional)"
-                  placeholder="Select or type Driver 2 Name"
-                  searchPlaceholder="Search second driver..."
-                  options={driver2SearchOptions}
-                  value={driverName2}
-                  onChange={handleDriver2Select}
-                  allowCustom={true}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
-                  <Phone className="w-4 h-4 text-blue-600" />
-                  <span>Driver – 2 Mobile Number</span>
-                </label>
-                <input
-                  type="tel"
-                  placeholder="10 digits mobile number"
-                  value={driverPhone2}
-                  onChange={(e) => setDriverPhone2(e.target.value)}
-                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
-                />
-              </div>
+            {/* Driver Name – 2 */}
+            <div className="pt-1 border-t border-blue-100/60">
+              <SearchableSelect
+                label="Driver Name – 2 (Optional)"
+                placeholder="Select or type Driver 2 Name"
+                searchPlaceholder="Search second driver..."
+                options={driver2SearchOptions}
+                value={driverName2}
+                onChange={handleDriver2Select}
+                allowCustom={true}
+              />
             </div>
 
-            {/* Helper Name & Mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-blue-100/60">
-              <div>
-                <SearchableSelect
-                  label="Helper Name (Optional)"
-                  placeholder="Select or type Helper Name"
-                  searchPlaceholder="Search helper..."
-                  options={helperSearchOptions}
-                  value={helperName}
-                  onChange={handleHelperSelect}
-                  allowCustom={true}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1">
-                  <Phone className="w-4 h-4 text-blue-600" />
-                  <span>Helper Mobile Number</span>
-                </label>
-                <input
-                  type="tel"
-                  placeholder="10 digits mobile number"
-                  value={helperPhone}
-                  onChange={(e) => setHelperPhone(e.target.value)}
-                  className="w-full text-sm px-4 py-2.5 rounded-2xl border border-blue-200 bg-white focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none font-semibold text-slate-800 shadow-2xs"
-                />
-              </div>
+            {/* Helper Name */}
+            <div className="pt-1 border-t border-blue-100/60">
+              <SearchableSelect
+                label="Helper Name (Optional)"
+                placeholder="Select or type Helper Name"
+                searchPlaceholder="Search helper..."
+                options={helperSearchOptions}
+                value={helperName}
+                onChange={handleHelperSelect}
+                allowCustom={true}
+              />
             </div>
           </div>
 
