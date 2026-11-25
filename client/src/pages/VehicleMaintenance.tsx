@@ -1932,16 +1932,7 @@ export const VehicleMaintenance: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3 relative z-10 self-start sm:self-auto flex-wrap sm:flex-nowrap">
-          {/* Header Bus Image matching Reference Image 2 */}
-          <div className="hidden sm:block relative shrink-0">
-            <div className="w-48 sm:w-56 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
-              <img
-                src="/assets/fleet1.jpg"
-                alt="Fleet Maintenance"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-          </div>
+
 
           <button
             type="button"

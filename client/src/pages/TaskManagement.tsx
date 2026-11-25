@@ -1003,18 +1003,7 @@ export const TaskManagement: React.FC = () => {
 
         {/* Real Bus Coach Banner Photo & Button */}
         <div className="flex items-center gap-3.5 relative z-10 self-start md:self-auto flex-wrap sm:flex-nowrap">
-          <div className="hidden sm:block relative shrink-0">
-            <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
-              <img
-                src="/assets/fleet5.jpg"
-                alt="Fleet Coach"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
-                <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Dispatch Coach</span>
-              </div>
-            </div>
-          </div>
+
 
           <button
             onClick={() => handleOpenAdd()}

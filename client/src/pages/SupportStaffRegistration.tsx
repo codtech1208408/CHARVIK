@@ -27,7 +27,7 @@ import {
   Award,
   Check
 } from 'lucide-react';
-import luxuryCoachHeader from '../assets/luxury-coach-header.png';
+
 import { api } from '../services/api';
 import { Modal } from '../components/common/Modal';
 import { StatusToggle } from '../components/common/StatusToggle';
@@ -304,14 +304,7 @@ export const SupportStaffRegistration: React.FC = () => {
           </div>
         </div>
 
-        {/* Real 3D Luxury Coach Bus Graphic - Positioned in center/right gap so it NEVER collides with buttons */}
-        <div className="absolute right-[280px] top-0 bottom-0 w-64 pointer-events-none opacity-95 hidden lg:block">
-          <img
-            src={luxuryCoachHeader}
-            alt="Luxury Coach Bus"
-            className="h-full w-full object-contain object-center"
-          />
-        </div>
+
       </div>
 
       {/* Role Selection Toggle */}

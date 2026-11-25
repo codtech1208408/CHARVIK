@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
-import luxuryCoachHeader from '../../assets/luxury-coach-header.png';
 
 interface ModalProps {
   isOpen: boolean;
@@ -77,15 +76,8 @@ export const Modal: React.FC<ModalProps> = ({
               borderBottom: '3.5px solid #F59E0B',
             }}
           >
-            {/* The EXACT Luxury Coach Bus Image on the right side */}
-            <img
-              src={luxuryCoachHeader}
-              alt="Luxury Coach Fleet"
-              className="absolute right-0 bottom-0 h-full w-auto max-w-[38%] sm:max-w-[36%] md:max-w-[33%] object-contain object-right-bottom pointer-events-none select-none z-0"
-            />
-
-            {/* Header Content: Icon Badge + Title + Subtitle (Constrained to left 62% so it never overlaps bus) */}
-            <div className="relative z-10 flex items-center px-5 sm:px-6 py-4 max-w-[62%] sm:max-w-[65%]">
+            {/* Header Content: Icon Badge + Title + Subtitle */}
+            <div className="relative z-10 flex items-center px-5 sm:px-6 py-4 w-full pr-14">
               <div className="flex items-center gap-3.5">
                 {icon && (
                   <div

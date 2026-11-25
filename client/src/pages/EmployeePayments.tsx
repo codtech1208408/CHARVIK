@@ -2881,18 +2881,7 @@ _This is an official automated monthly salary & trip record statement._`;
 
               {/* Real Bus Coach Banner Photo Preview */}
               <div className="flex items-center gap-3.5 self-start lg:self-auto flex-wrap sm:flex-nowrap">
-                <div className="hidden sm:block relative shrink-0">
-                  <div className="w-44 sm:w-52 h-20 sm:h-24 rounded-2xl overflow-hidden shadow-xl border-2 border-white/40 ring-4 ring-white/10 group">
-                    <img
-                      src="/assets/fleet2.jpg"
-                      alt="Payroll Fleet Coach"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
-                      <span className="text-[10px] font-black text-white tracking-wider uppercase drop-shadow-xs">Payroll Ops</span>
-                    </div>
-                  </div>
-                </div>
+
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
                   <div className="flex items-center bg-white/15 p-1 rounded-xl border border-white/20 backdrop-blur-md shrink-0">

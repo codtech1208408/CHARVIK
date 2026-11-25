@@ -26,7 +26,7 @@ import {
 import { useToast } from '../components/common/Toast';
 import { Modal } from '../components/common/Modal';
 import * as XLSX from 'xlsx';
-import luxuryCoachHeader from '../assets/luxury-coach-header.png';
+
 
 export interface ServicePartner {
   id: string;
@@ -326,14 +326,7 @@ export const ServicePartners: React.FC = () => {
     <div className="space-y-6 pb-12">
       {/* ── TOP HERO HEADER BANNER (MATCHES USER IMAGE 1 EXACTLY) ── */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#032B69] via-[#004B9E] to-[#0072E5] text-white p-5 sm:p-7 shadow-xl border-2 border-blue-400/30">
-        {/* Subtle background graphics */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-25 pointer-events-none overflow-hidden hidden md:block">
-          <img
-            src={luxuryCoachHeader}
-            alt="Coach Fleet"
-            className="w-full h-full object-cover object-right"
-          />
-        </div>
+
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">

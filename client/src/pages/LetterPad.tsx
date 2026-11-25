@@ -659,7 +659,6 @@ export const LetterPad: React.FC = () => {
                       <div style="display: flex; flex-direction: column; gap: 3.5px; font-size: 11.5px; color: #1e293b; font-weight: 600; line-height: 1.35; text-align: left;">
                         <div><span style="font-weight: 700; color: #334155;">Phone:</span> +91 ${companyDetails.company_phone || '9505151527'}</div>
                         <div><span style="font-weight: 700; color: #334155;">Email:</span> ${companyDetails.company_email || 'charvikstaffingconsultancy@gmail.com'}</div>
-                        <div><span style="font-weight: 700; color: #334155;">Web:</span> ${companyDetails.company_website || 'www.charvikstaffing.com'}</div>
                       </div>
                     </div>
 
@@ -702,11 +701,9 @@ export const LetterPad: React.FC = () => {
                         <img src="/chandrika-finance-logo-hd.png" alt="Chandrika Finance" style="height: 68px; max-height: 74px; width: auto; object-fit: contain; display: block;" onerror="this.src='/chandrika-finance-logo.png'" />
                       </div>
                       <div style="width: 1.5px; height: 60px; background-color: #d97706; margin: 0 4px;"></div>
-                      <div style="display: flex; flex-direction: column; gap: 3.5px; font-size: 11px; color: #1e293b; font-weight: 600; line-height: 1.35; text-align: left;">
+                      <div style="display: flex; flex-direction: column; gap: 3.5px; font-size: 11.5px; color: #1e293b; font-weight: 600; line-height: 1.35; text-align: left;">
                         <div><span style="font-weight: 700; color: #334155;">Phone:</span> +91 9505151527</div>
                         <div><span style="font-weight: 700; color: #334155;">Email:</span> chandrikafinance@gmail.com</div>
-                        <div><span style="font-weight: 700; color: #334155;">Web:</span> www.chandrikafinance.com</div>
-                        <div><span style="font-weight: 700; color: #334155;">Location:</span> Opp. Kotak Bank, Vanasthalipuram, Hyderabad, Telangana - 500070</div>
                       </div>
                     </div>
 
@@ -1140,7 +1137,6 @@ export const LetterPad: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5px', fontSize: '11.5px', color: '#1e293b', fontWeight: 600, lineHeight: 1.35, textAlign: 'left' }}>
                       <div><span style={{ fontWeight: 700, color: '#334155' }}>Phone:</span> +91 {companyDetails.company_phone || '9505151527'}</div>
                       <div><span style={{ fontWeight: 700, color: '#334155' }}>Email:</span> {companyDetails.company_email || 'charvikstaffingconsultancy@gmail.com'}</div>
-                      <div><span style={{ fontWeight: 700, color: '#334155' }}>Web:</span> {companyDetails.company_website || 'www.charvikstaffing.com'}</div>
                     </div>
                   </div>
                   <div style={{ width: '100%', height: '3.5px', backgroundColor: '#ea580c', marginTop: '12px', marginBottom: '14px' }} />
@@ -1184,11 +1180,9 @@ export const LetterPad: React.FC = () => {
                       />
                     </div>
                     <div style={{ width: '1.5px', height: '60px', backgroundColor: '#d97706', margin: '0 4px' }} />
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5px', fontSize: '11px', color: '#1e293b', fontWeight: 600, lineHeight: 1.35, textAlign: 'left' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5px', fontSize: '11.5px', color: '#1e293b', fontWeight: 600, lineHeight: 1.35, textAlign: 'left' }}>
                       <div><span style={{ fontWeight: 700, color: '#334155' }}>Phone:</span> +91 9505151527</div>
                       <div><span style={{ fontWeight: 700, color: '#334155' }}>Email:</span> chandrikafinance@gmail.com</div>
-                      <div><span style={{ fontWeight: 700, color: '#334155' }}>Web:</span> www.chandrikafinance.com</div>
-                      <div><span style={{ fontWeight: 700, color: '#334155' }}>Location:</span> Opp. Kotak Bank, Vanasthalipuram, Hyderabad, Telangana - 500070</div>
                     </div>
                   </div>
                   <div style={{ width: '100%', height: '3px', backgroundColor: '#d97706', marginTop: '10px', marginBottom: '14px' }} />

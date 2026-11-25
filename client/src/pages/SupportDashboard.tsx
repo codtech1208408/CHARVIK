@@ -367,18 +367,7 @@ export const SupportDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Real Bus Coach Image inside Banner matching Admin Panel */}
-          <div className="w-full lg:w-72 h-36 rounded-2xl overflow-hidden border-2 border-white/30 shadow-md relative group shrink-0">
-            <img
-              src="/assets/fleet2.jpg"
-              alt="Premium Fleet Coach"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-            <span className="absolute bottom-2 left-3 text-[10px] font-black text-white tracking-wider uppercase drop-shadow-sm">
-              PREMIUM FLEET COACH
-            </span>
-          </div>
+
         </div>
       </div>
 
@@ -973,7 +962,6 @@ export const SupportDashboard: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {buses.slice(0, 6).map((b, idx) => {
-                const busImgUrl = (idx % 5 === 0) ? '/assets/fleet1.jpg' : (idx % 5 === 1) ? '/assets/fleet2.jpg' : (idx % 5 === 2) ? '/assets/fleet3.jpg' : (idx % 5 === 3) ? '/assets/fleet4.jpg' : '/assets/fleet5.jpg';
                 return (
                   <div key={b.id || idx} className="p-4 rounded-3xl border-2 border-slate-200/90 bg-white shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
                     <div>
@@ -993,17 +981,9 @@ export const SupportDashboard: React.FC = () => {
                         </span>
                       </div>
 
-                      {/* Real Bus Coach Image matching Admin Panel */}
-                      <div className="w-full h-36 rounded-2xl overflow-hidden my-2.5 relative shadow-xs border border-slate-100">
-                        <img
-                          src={busImgUrl}
-                          alt={b.registration_number || b.bus_number}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <span className="absolute bottom-2 left-2.5 text-[10px] font-black text-white tracking-wider uppercase drop-shadow-sm">
-                          {b.bus_type || 'Express Fleet Coach'}
-                        </span>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 my-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold">
+                        <Bus className="w-4 h-4 text-blue-600" />
+                        <span>{b.bus_type || 'Express Fleet Coach'}</span>
                       </div>
 
                       {/* Odometer Ribbon matching Admin Panel */}

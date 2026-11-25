@@ -290,18 +290,7 @@ export const CaptainDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Real Bus Coach Preview matching Admin Panel */}
-            <div className="hidden sm:block w-48 h-24 rounded-2xl overflow-hidden border-2 border-white/30 shadow-md relative group shrink-0">
-              <img
-                src="/assets/fleet3.jpg"
-                alt="Assigned Fleet Coach"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-              <span className="absolute bottom-1.5 left-2 text-[9px] font-black text-white tracking-wider uppercase">
-                Assigned Coach
-              </span>
-            </div>
+
 
             {/* Duty Status Badge & Quick GPS Toggle */}
             <div className="flex items-center space-x-2 bg-white/10 p-1.5 rounded-xl border border-white/15">
@@ -408,16 +397,9 @@ export const CaptainDashboard: React.FC = () => {
                 <span className="text-[10px] font-black text-blue-700 uppercase tracking-wider">Assigned Bus</span>
                 <p className="text-base font-black text-[#142B4A] mt-0.5">{bus?.bus_number || 'Awaiting Allocation'}</p>
                 <p className="text-xs text-slate-600 font-medium">{bus?.make} {bus?.model} • {bus?.seating_capacity || 42} Seater AC</p>
-                <div className="w-full h-28 rounded-xl overflow-hidden my-2 relative shadow-xs border border-blue-100">
-                  <img
-                    src="/assets/fleet3.jpg"
-                    alt={bus?.registration_number || 'Assigned Coach'}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-                  <span className="absolute bottom-1 left-2 text-[9px] font-black text-white uppercase tracking-wider">
-                    {bus?.bus_type || 'Express Coach'}
-                  </span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 my-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold">
+                  <Bus className="w-4 h-4 text-blue-600" />
+                  <span>{bus?.bus_type || 'Express Coach'}</span>
                 </div>
                 <p className="text-[11px] text-slate-500 font-mono font-bold">Reg: {bus?.registration_number || '-'}</p>
               </div>

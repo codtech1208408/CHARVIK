@@ -629,18 +629,7 @@ export const Dashboard: React.FC = () => {
 
         {/* Bus image & quick action buttons (Matching Reference Image 1 & 2) */}
         <div className="flex items-center gap-4 relative z-10 self-start lg:self-auto flex-wrap sm:flex-nowrap">
-          <div className="relative shrink-0">
-            <div className="w-64 sm:w-80 h-28 sm:h-32 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/40 ring-4 ring-white/10 group">
-              <img
-                src="/assets/fleet1.jpg"
-                alt="Charvik Luxury Fleet"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2.5">
-                <span className="text-[11px] font-black text-white tracking-wider uppercase drop-shadow-xs">Premium Fleet Coach</span>
-              </div>
-            </div>
-          </div>
+
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 shrink-0">
             <button
@@ -998,9 +987,9 @@ export const Dashboard: React.FC = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-3xl border-2 border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-5 overflow-hidden">
-          {/* Left: 2 Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-[58%]">
+        <div className="bg-white rounded-3xl border-2 border-slate-200/90 p-4 sm:p-5 shadow-xs overflow-hidden">
+          {/* Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
             {/* Total Buses Card (Blue Theme matching Image 1) */}
             <div
               onClick={() => navigate('/admin/buses')}
@@ -1036,18 +1025,7 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Panoramic Highway Bus Photo (Matching Reference Image 1) */}
-          <div className="w-full lg:w-[42%] h-36 rounded-2xl overflow-hidden shadow-md border-2 border-slate-100 relative shrink-0 group">
-            <img
-              src="/assets/fleet5.jpg"
-              alt="Fleet Bus on Highway"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-950/70 via-transparent to-transparent flex flex-col justify-end p-3.5 text-white">
-              <span className="text-[10px] font-black uppercase tracking-wider text-sky-300">Express Transit Fleet</span>
-              <span className="text-sm font-extrabold drop-shadow-md">Active Highway Intercity Operations</span>
-            </div>
-          </div>
+
         </div>
       </div>
 
