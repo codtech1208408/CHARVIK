@@ -1747,25 +1747,27 @@ export const IncomeExpense: React.FC<IncomeExpenseProps> = ({
             {/* The Printable Sheet */}
             <div id="printable-voucher" className="voucher bg-white p-5 rounded-2xl border border-slate-300 shadow-sm space-y-3 font-sans">
               {/* Official Vyshnavi Travels Letterhead Header */}
-              <div className="border-2 border-[#0056b3] rounded-xl p-2.5 sm:p-3 bg-white text-center mb-3">
-                <div className="flex justify-center items-center mb-2">
-                  <img
-                    src="/vyshnavi-logo.png"
-                    alt="VYSHNAVI TRAVELS"
-                    className="h-14 max-h-[58px] w-auto max-w-[320px] object-contain block mx-auto"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/vyshnavi-tab-logo.jpg'; }}
-                  />
-                </div>
-                <div className="flex flex-wrap justify-center items-center gap-3 text-xs font-bold text-black mb-1.5 leading-tight">
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Phone:</span>
-                    <span className="text-black">+91 9000202241</span>
-                  </span>
-                  <span className="text-[#0056b3] font-black">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-[#0056b3] font-extrabold">Email:</span>
-                    <span className="text-black">vyshnavitravels@yahoo.com</span>
-                  </span>
+              <div className="border-2 border-[#0056b3] rounded-xl py-3 px-4 sm:py-3.5 sm:px-6 bg-white mb-3">
+                <div className="flex items-center justify-center gap-5 sm:gap-7">
+                  <div className="flex items-center justify-center shrink-0 py-1">
+                    <img
+                      src="/vyshnavi-logo.png"
+                      alt="VYSHNAVI TRAVELS"
+                      className="h-11 sm:h-12 w-auto max-w-[260px] object-contain block"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/vyshnavi-tab-logo.jpg'; }}
+                    />
+                  </div>
+                  <div className="border-l-2 border-[#0056b3] h-10 shrink-0 self-center"></div>
+                  <div className="flex flex-col gap-1 text-left shrink-0">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-black leading-tight whitespace-nowrap">
+                      <span className="text-[#0056b3] font-extrabold">Phone:</span>
+                      <span className="text-black">+91 9000202241</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-black leading-tight whitespace-nowrap">
+                      <span className="text-[#0056b3] font-extrabold">Email:</span>
+                      <span className="text-black">vyshnavitravels@yahoo.com</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 

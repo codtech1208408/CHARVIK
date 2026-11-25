@@ -76,7 +76,7 @@ export const CleaningManagement: React.FC = () => {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
-    } catch {}
+    } catch { }
   }, [logs]);
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export const CleaningManagement: React.FC = () => {
         if (Array.isArray(cData) && cData.length > 0) {
           setLogs(cData);
         }
-      } catch {}
+      } catch { }
     }
     loadAuxData();
   }, []);
@@ -347,23 +347,20 @@ export const CleaningManagement: React.FC = () => {
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5 text-[10px]">
                         <span
-                          className={`px-1.5 py-0.5 rounded ${
-                            log.floor_cleaned ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400'
-                          }`}
+                          className={`px-1.5 py-0.5 rounded ${log.floor_cleaned ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400'
+                            }`}
                         >
                           Floor
                         </span>
                         <span
-                          className={`px-1.5 py-0.5 rounded ${
-                            log.seats_vacuumed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400'
-                          }`}
+                          className={`px-1.5 py-0.5 rounded ${log.seats_vacuumed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400'
+                            }`}
                         >
                           Seats
                         </span>
                         <span
-                          className={`px-1.5 py-0.5 rounded ${
-                            log.exterior_washed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400'
-                          }`}
+                          className={`px-1.5 py-0.5 rounded ${log.exterior_washed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-400'
+                            }`}
                         >
                           Wash
                         </span>
@@ -371,11 +368,10 @@ export const CleaningManagement: React.FC = () => {
                     </td>
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          log.status === 'Completed'
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${log.status === 'Completed'
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}
+                          }`}
                       >
                         {log.status}
                       </span>
@@ -531,7 +527,7 @@ export const CleaningManagement: React.FC = () => {
             />
           </div>
 
-          
+
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <button

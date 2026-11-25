@@ -74,6 +74,7 @@ export const adminVehicleManagementSubItems: NavSubItem[] = [
   { label: 'Earnings', route: '/admin/earnings', icon: TrendingUp, iconColor: 'text-purple-500', activeRoutes: ['/admin/earnings'] },
   { label: 'Record Management', route: '/admin/records', icon: FileText, iconColor: 'text-cyan-500', activeRoutes: ['/admin/records', '/admin/record-management', '/admin/record'] },
   { label: 'Captain Audit Record', route: '/admin/captain-audit', icon: ShieldCheck, iconColor: 'text-blue-600', activeRoutes: ['/admin/captain-audit', '/captain/audit-record'] },
+  { label: 'Bus Rating', route: '/admin/bus-rating', icon: Star, iconColor: 'text-yellow-400', activeRoutes: ['/admin/bus-rating'] },
   { label: 'Official Letter Pad', route: '/admin/letter-pad?company=charvik', icon: FileText, iconColor: 'text-amber-500', activeRoutes: ['/admin/letter-pad', '/admin/official-letter-pad', '/admin/letterhead'] },
 ];
 
@@ -146,7 +147,8 @@ export const BASE_ADMIN_NAV_ITEMS: NavItemLeaf[] = [
       '/admin/record-management',
       '/admin/record',
       '/admin/captain-audit',
-      '/admin/captain-audit-record'
+      '/admin/captain-audit-record',
+      '/admin/bus-rating'
     ],
     subItems: adminVehicleManagementSubItems,
     description: 'Routes, trip duties, organizers, employee directory, payroll & audits'
@@ -206,17 +208,6 @@ export const BASE_ADMIN_NAV_ITEMS: NavItemLeaf[] = [
     activeGradient: 'bg-gradient-to-r from-orange-500 to-amber-600',
     activeRoutes: ['/admin/service-partners'],
     description: 'Authorized service centers, emergency highway garages & network'
-  },
-  {
-    id: 'bus_rating',
-    label: 'Bus Rating',
-    name: 'Bus Rating',
-    route: '/admin/bus-rating',
-    icon: Star,
-    iconColor: 'text-yellow-400',
-    activeGradient: 'bg-gradient-to-r from-amber-500 to-yellow-600',
-    activeRoutes: ['/admin/bus-rating'],
-    description: 'Passenger feedback, cleanliness ratings & coach performance reviews'
   },
   {
     id: 'website_inquiries',

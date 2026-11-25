@@ -539,9 +539,8 @@ export const AcMaintenance: React.FC = () => {
                   return (
                     <tr
                       key={r.id}
-                      className={`hover:bg-slate-50/80 transition-colors ${
-                        statusInfo.isExpired ? 'bg-rose-50/20' : ''
-                      }`}
+                      className={`hover:bg-slate-50/80 transition-colors ${statusInfo.isExpired ? 'bg-rose-50/20' : ''
+                        }`}
                     >
                       {/* 1. S.NO */}
                       <td className="py-3.5 px-4 font-bold text-slate-500 text-center">
@@ -585,13 +584,12 @@ export const AcMaintenance: React.FC = () => {
                             <Clock className="w-3.5 h-3.5 text-slate-400" />
                           )}
                           <span
-                            className={`font-bold ${
-                              statusInfo.isExpired
+                            className={`font-bold ${statusInfo.isExpired
                                 ? 'text-rose-600 underline'
                                 : statusInfo.isExpiring
-                                ? 'text-amber-600'
-                                : 'text-slate-800'
-                            }`}
+                                  ? 'text-amber-600'
+                                  : 'text-slate-800'
+                              }`}
                           >
                             {r.filter_expiry_date || '-'}
                           </span>
@@ -682,11 +680,10 @@ export const AcMaintenance: React.FC = () => {
                           {/* RENEW FILTER BUTTON */}
                           <button
                             onClick={() => handleOpenRenewal(r)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                              statusInfo.isExpired
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${statusInfo.isExpired
                                 ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm'
                                 : 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200'
-                            }`}
+                              }`}
                             title="Renew Filter with Proof Photo"
                           >
                             <RefreshCw className="w-3 h-3" />
@@ -972,7 +969,7 @@ export const AcMaintenance: React.FC = () => {
             />
           </div>
 
-          
+
 
           <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
             <button

@@ -132,7 +132,7 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
 
   const primaryColor = isVyshnavi ? '#004b93' : '#000000';
   const outerBorder = isVyshnavi ? '2.5px solid #004b93' : '2px solid #000000';
-  const logoSrc = isVyshnavi ? '/vyshnavi-logo.png' : '/charvik-invoice-logo.png';
+  const logoSrc = isVyshnavi ? '/vyshnavi-logo.png' : '/charvik-print-logo.png';
   const logoAlt = isVyshnavi ? 'Vyshnavi Travels' : 'CHARVIK Staffing & Consultancy';
   const companyPhone = isVyshnavi ? '+91 9000202241' : (comp.company_phone || '+91 9505151527');
   const companyEmail = isVyshnavi ? 'vyshnavitravels@yahoo.com' : (comp.company_email || 'charvikstaffingconsultancy@gmail.com');
@@ -311,13 +311,15 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
         <div>
           <!-- Official Header: Full Brand Logo on Left, Phone & Email on Right with vertical divider -->
           ${!hideHeader ? `
-          <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px;">
-            <img
-              src="${logoSrc}"
-              alt="${logoAlt}"
-              style="height: 62px; max-height: 68px; width: auto; max-width: 280px; display: block; object-fit: contain;"
-              onerror="this.src='/logo-brand.png'"
-            />
+          <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 6px; padding-bottom: 8px;">
+            <div style="display: flex; align-items: center; padding-top: 2px;">
+              <img
+                src="${logoSrc}"
+                alt="${logoAlt}"
+                style="height: 60px; max-height: 66px; width: auto; max-width: 280px; display: block; object-fit: contain;"
+                onerror="this.src='/logo-brand.png'"
+              />
+            </div>
             <div style="display: flex; align-items: center;">
               <div style="border-left: 1.5px solid ${primaryColor}; height: 46px; margin: 0 16px;"></div>
               <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
