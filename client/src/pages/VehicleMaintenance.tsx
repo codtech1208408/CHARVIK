@@ -319,7 +319,7 @@ export const VehicleMaintenance: React.FC = () => {
     try {
       if (isDocService) {
         // Direct save of the 7 document dates to the bus
-        await api.updateBus(completingService.vehicle.id, docForm).catch(() => {});
+        await api.updateBus(completingService.vehicle.id, docForm).catch(() => { });
       }
 
       await api.completeFleetMaintenance({
@@ -346,13 +346,13 @@ export const VehicleMaintenance: React.FC = () => {
           current_odometer_km: compOdo,
           starting_km: compOdo,
           odometer_km: compOdo
-        }).catch(() => {});
+        }).catch(() => { });
 
         try {
           window.dispatchEvent(new CustomEvent('charvik_bus_km_updated', {
             detail: { bus_id: completingService.vehicle.id, vehicle_number: completingService.vehicle.registration_number, km: compOdo }
           }));
-        } catch (_) {}
+        } catch (_) { }
       }
 
       setCompletingService(null);
@@ -549,9 +549,9 @@ export const VehicleMaintenance: React.FC = () => {
 
       if (editingVehicle) {
         if (editingVehicle.id) {
-          await api.updateBus(editingVehicle.id, payload).catch(() => {});
+          await api.updateBus(editingVehicle.id, payload).catch(() => { });
         }
-        await api.createFleetVehicle(payload).catch(() => {});
+        await api.createFleetVehicle(payload).catch(() => { });
 
         try {
           const cached = localStorage.getItem('charvik_fleet_maintenance_cache');
@@ -576,7 +576,7 @@ export const VehicleMaintenance: React.FC = () => {
               localStorage.setItem('charvik_fleet_maintenance_cache', JSON.stringify(parsed));
             }
           }
-        } catch {}
+        } catch { }
 
         success(`Vehicle ${payload.registration_number} updated successfully!`);
       } else {
@@ -614,9 +614,9 @@ export const VehicleMaintenance: React.FC = () => {
 
     try {
       const targetId = veh.id || reg;
-      await api.deleteFleetVehicle(targetId).catch(() => {});
+      await api.deleteFleetVehicle(targetId).catch(() => { });
       if (veh.id) {
-        await api.archiveBus(veh.id).catch(() => {});
+        await api.archiveBus(veh.id).catch(() => { });
       }
 
       try {
@@ -637,7 +637,7 @@ export const VehicleMaintenance: React.FC = () => {
             localStorage.setItem('charvik_fleet_maintenance_cache', JSON.stringify(parsed));
           }
         }
-      } catch {}
+      } catch { }
 
       try {
         const bRaw = localStorage.getItem('charvik_buses_data');
@@ -651,7 +651,7 @@ export const VehicleMaintenance: React.FC = () => {
           );
           localStorage.setItem('charvik_buses_data', JSON.stringify(filtered));
         }
-      } catch {}
+      } catch { }
 
       const remaining = vehicles.filter(
         (b) => b.id !== veh.id && b.registration_number !== veh.registration_number
@@ -828,8 +828,8 @@ export const VehicleMaintenance: React.FC = () => {
         statusFilter === 'All Alerts'
           ? true
           : statusFilter === 'Needs Attention'
-          ? (v.overdueCount || 0) > 0
-          : (v.dueSoonCount || 0) > 0 && (v.overdueCount || 0) === 0;
+            ? (v.overdueCount || 0) > 0
+            : (v.dueSoonCount || 0) > 0 && (v.overdueCount || 0) === 0;
 
       const matchDepot = depotFilter === 'All' || (v.parking_location || '').includes(depotFilter);
 
@@ -972,9 +972,9 @@ export const VehicleMaintenance: React.FC = () => {
           </div>
         </div>
 
-        
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+
+        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
           <button
             type="button"
             onClick={handleCloseVehicleModal}
@@ -1022,13 +1022,12 @@ export const VehicleMaintenance: React.FC = () => {
                   {v.registration_number}
                 </h1>
                 <span
-                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
-                    v.overdueCount > 0
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${v.overdueCount > 0
                       ? 'bg-rose-50 text-rose-700 border border-rose-200'
                       : v.dueSoonCount > 0
-                      ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  }`}
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    }`}
                 >
                   <Flame className="w-3.5 h-3.5 text-rose-500" />
                   <span>{v.overdueCount > 0 ? 'Needs Attention' : v.dueSoonCount > 0 ? 'Due Soon' : 'Healthy'}</span>
@@ -1146,11 +1145,10 @@ export const VehicleMaintenance: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setServiceViewMode('list')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    serviceViewMode === 'list'
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${serviceViewMode === 'list'
                       ? 'bg-white text-slate-900 shadow-2xs font-extrabold'
                       : 'text-slate-500 hover:text-slate-800'
-                  }`}
+                    }`}
                   title="Vertical list view"
                 >
                   <List className="w-3.5 h-3.5" />
@@ -1159,11 +1157,10 @@ export const VehicleMaintenance: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setServiceViewMode('grid')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    serviceViewMode === 'grid'
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${serviceViewMode === 'grid'
                       ? 'bg-white text-slate-900 shadow-2xs font-extrabold'
                       : 'text-slate-500 hover:text-slate-800'
-                  }`}
+                    }`}
                   title="Grid box view"
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
@@ -1184,15 +1181,14 @@ export const VehicleMaintenance: React.FC = () => {
                 return (
                   <div
                     key={s.key}
-                    className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
-                      isExpanded
+                    className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${isExpanded
                         ? 'border-blue-400 shadow-sm ring-1 ring-blue-100'
                         : isOverdue
-                        ? 'border-rose-200/90 hover:border-rose-300 shadow-2xs'
-                        : isDueSoon
-                        ? 'border-amber-200/90 hover:border-amber-300 shadow-2xs'
-                        : 'border-slate-200/90 hover:border-slate-300 shadow-2xs'
-                    }`}
+                          ? 'border-rose-200/90 hover:border-rose-300 shadow-2xs'
+                          : isDueSoon
+                            ? 'border-amber-200/90 hover:border-amber-300 shadow-2xs'
+                            : 'border-slate-200/90 hover:border-slate-300 shadow-2xs'
+                      }`}
                   >
                     {/* Clickable Header Row: Name displayed vertically one by one */}
                     <button
@@ -1202,13 +1198,12 @@ export const VehicleMaintenance: React.FC = () => {
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
                         <span
-                          className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
-                            isOverdue
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${isOverdue
                               ? 'bg-rose-100 text-rose-700'
                               : isDueSoon
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-slate-100 text-slate-700'
-                          }`}
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-slate-100 text-slate-700'
+                            }`}
                         >
                           {idx + 1}
                         </span>
@@ -1230,13 +1225,12 @@ export const VehicleMaintenance: React.FC = () => {
                         </span>
 
                         <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
-                            isOverdue
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${isOverdue
                               ? 'bg-rose-50 text-rose-700 border border-rose-200'
                               : isDueSoon
-                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}
                         >
                           {isOverdue && <Flame className="w-3.5 h-3.5 text-rose-500" />}
                           {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
@@ -1245,9 +1239,8 @@ export const VehicleMaintenance: React.FC = () => {
                         </span>
 
                         <ChevronDown
-                          className={`w-5 h-5 text-slate-400 transition-transform duration-200 shrink-0 ${
-                            isExpanded ? 'rotate-180 text-blue-600' : 'group-hover:text-slate-600'
-                          }`}
+                          className={`w-5 h-5 text-slate-400 transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-180 text-blue-600' : 'group-hover:text-slate-600'
+                            }`}
                         />
                       </div>
                     </button>
@@ -1264,13 +1257,12 @@ export const VehicleMaintenance: React.FC = () => {
                                 <p className="text-xs text-slate-500 font-medium mt-0.5">{s.intervalLabel}</p>
                               </div>
                               <span
-                                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
-                                  isOverdue
+                                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${isOverdue
                                     ? 'bg-rose-50 text-rose-700 border border-rose-200'
                                     : isDueSoon
-                                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                }`}
+                                      ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  }`}
                               >
                                 {isOverdue && <Flame className="w-3.5 h-3.5 text-rose-500" />}
                                 {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
@@ -1282,9 +1274,8 @@ export const VehicleMaintenance: React.FC = () => {
                             {/* Progress Bar */}
                             <div className="mt-4 w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                               <div
-                                className={`h-full rounded-full transition-all duration-300 ${
-                                  isOverdue ? 'bg-rose-500' : isDueSoon ? 'bg-amber-500' : 'bg-emerald-500'
-                                }`}
+                                className={`h-full rounded-full transition-all duration-300 ${isOverdue ? 'bg-rose-500' : isDueSoon ? 'bg-amber-500' : 'bg-emerald-500'
+                                  }`}
                                 style={{ width: `${Math.max(5, s.progressPercent)}%` }}
                               />
                             </div>
@@ -1311,13 +1302,12 @@ export const VehicleMaintenance: React.FC = () => {
 
                             {/* Status Text Line */}
                             <p
-                              className={`text-sm font-bold mt-3.5 ${
-                                isOverdue
+                              className={`text-sm font-bold mt-3.5 ${isOverdue
                                   ? 'text-rose-600'
                                   : isDueSoon
-                                  ? 'text-amber-600'
-                                  : 'text-emerald-600'
-                              }`}
+                                    ? 'text-amber-600'
+                                    : 'text-emerald-600'
+                                }`}
                             >
                               {s.statusText}
                             </p>
@@ -1359,13 +1349,12 @@ export const VehicleMaintenance: React.FC = () => {
                           <p className="text-xs text-slate-500 font-medium mt-0.5">{s.intervalLabel}</p>
                         </div>
                         <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
-                            isOverdue
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold shrink-0 ${isOverdue
                               ? 'bg-rose-50 text-rose-700 border border-rose-200'
                               : isDueSoon
-                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}
                         >
                           {isOverdue && <Flame className="w-3.5 h-3.5 text-rose-500" />}
                           {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
@@ -1377,9 +1366,8 @@ export const VehicleMaintenance: React.FC = () => {
                       {/* Progress Bar */}
                       <div className="mt-4 w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all duration-300 ${
-                            isOverdue ? 'bg-rose-500' : isDueSoon ? 'bg-amber-500' : 'bg-emerald-500'
-                          }`}
+                          className={`h-full rounded-full transition-all duration-300 ${isOverdue ? 'bg-rose-500' : isDueSoon ? 'bg-amber-500' : 'bg-emerald-500'
+                            }`}
                           style={{ width: `${Math.max(5, s.progressPercent)}%` }}
                         />
                       </div>
@@ -1406,13 +1394,12 @@ export const VehicleMaintenance: React.FC = () => {
 
                       {/* Status Text Line */}
                       <p
-                        className={`text-sm font-bold mt-3.5 ${
-                          isOverdue
+                        className={`text-sm font-bold mt-3.5 ${isOverdue
                             ? 'text-rose-600'
                             : isDueSoon
-                            ? 'text-amber-600'
-                            : 'text-emerald-600'
-                        }`}
+                              ? 'text-amber-600'
+                              : 'text-emerald-600'
+                          }`}
                       >
                         {s.statusText}
                       </p>
@@ -1470,7 +1457,7 @@ export const VehicleMaintenance: React.FC = () => {
                       else if (typeof h.photos_json === 'string') {
                         try {
                           parsedPhotos = JSON.parse(h.photos_json);
-                        } catch {}
+                        } catch { }
                       }
 
                       return (
@@ -1666,123 +1653,123 @@ export const VehicleMaintenance: React.FC = () => {
                 </div>
               </div>
             ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Last service date</label>
-                <input
-                  type="date"
-                  value={completionForm.last_service_date}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    let autoDate = completionForm.completion_date;
-                    if (completingService?.service.intervalType === 'date' && val) {
-                      const d = new Date(val);
-                      if (!isNaN(d.getTime())) {
-                        d.setDate(d.getDate() + (completingService.service.interval || 7));
-                        autoDate = d.toISOString().split('T')[0];
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Last service date</label>
+                  <input
+                    type="date"
+                    value={completionForm.last_service_date}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      let autoDate = completionForm.completion_date;
+                      if (completingService?.service.intervalType === 'date' && val) {
+                        const d = new Date(val);
+                        if (!isNaN(d.getTime())) {
+                          d.setDate(d.getDate() + (completingService.service.interval || 7));
+                          autoDate = d.toISOString().split('T')[0];
+                        }
                       }
-                    }
-                    setCompletionForm((prev) => ({
-                      ...prev,
-                      last_service_date: val,
-                      completion_date: autoDate
-                    }));
-                  }}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
-                />
-              </div>
+                      setCompletionForm((prev) => ({
+                        ...prev,
+                        last_service_date: val,
+                        completion_date: autoDate
+                      }));
+                    }}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Last servicing KM</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 300000"
-                  value={completionForm.last_service_km}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const kmNum = Number(val) || 0;
-                    const isKm = completingService?.service.intervalType === 'km';
-                    const autoOdometer = isKm && kmNum > 0
-                      ? kmNum + (completingService?.service.interval || 60000)
-                      : completionForm.odometer_km;
-                    setCompletionForm((prev) => ({
-                      ...prev,
-                      last_service_km: val,
-                      odometer_km: autoOdometer > 0 ? autoOdometer : prev.odometer_km
-                    }));
-                  }}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Last servicing KM</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 300000"
+                    value={completionForm.last_service_km}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const kmNum = Number(val) || 0;
+                      const isKm = completingService?.service.intervalType === 'km';
+                      const autoOdometer = isKm && kmNum > 0
+                        ? kmNum + (completingService?.service.interval || 60000)
+                        : completionForm.odometer_km;
+                      setCompletionForm((prev) => ({
+                        ...prev,
+                        last_service_km: val,
+                        odometer_km: autoOdometer > 0 ? autoOdometer : prev.odometer_km
+                      }));
+                    }}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Service completion date *</label>
-                <input
-                  type="date"
-                  required
-                  value={completionForm.completion_date}
-                  onChange={(e) => setCompletionForm({ ...completionForm, completion_date: e.target.value })}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Service completion date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={completionForm.completion_date}
+                    onChange={(e) => setCompletionForm({ ...completionForm, completion_date: e.target.value })}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Odometer at completion (KM) *</label>
-                <input
-                  type="number"
-                  required
-                  value={completionForm.odometer_km}
-                  onChange={(e) => setCompletionForm({ ...completionForm, odometer_km: Number(e.target.value) })}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold text-blue-900 bg-blue-50/30"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Odometer at completion (KM) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={completionForm.odometer_km}
+                    onChange={(e) => setCompletionForm({ ...completionForm, odometer_km: Number(e.target.value) })}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500 font-mono font-bold text-blue-900 bg-blue-50/30"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Maintenance cost (₹)</label>
-                <input
-                  type="number"
-                  value={completionForm.cost}
-                  onChange={(e) => setCompletionForm({ ...completionForm, cost: Number(e.target.value) })}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Maintenance cost (₹)</label>
+                  <input
+                    type="number"
+                    value={completionForm.cost}
+                    onChange={(e) => setCompletionForm({ ...completionForm, cost: Number(e.target.value) })}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Workshop</label>
-                <input
-                  type="text"
-                  value={completionForm.workshop}
-                  onChange={(e) => setCompletionForm({ ...completionForm, workshop: e.target.value })}
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
-                />
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Workshop</label>
+                  <input
+                    type="text"
+                    value={completionForm.workshop}
+                    onChange={(e) => setCompletionForm({ ...completionForm, workshop: e.target.value })}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
               </div>
-            </div>
             )}
 
             {!(completingService?.service.key === 'vehicle_documents' || completingService?.service.name === 'Vehicle Documents') && (
-            <>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Mechanic name</label>
-              <input
-                type="text"
-                placeholder="e.g. B. Singh / Rajesh"
-                value={completionForm.mechanic_name}
-                onChange={(e) => setCompletionForm({ ...completionForm, mechanic_name: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
+              <>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Mechanic name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. B. Singh / Rajesh"
+                    value={completionForm.mechanic_name}
+                    onChange={(e) => setCompletionForm({ ...completionForm, mechanic_name: e.target.value })}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Remarks</label>
-              <textarea
-                rows={2}
-                placeholder="Parts replaced, observations, follow-ups..."
-                value={completionForm.remarks}
-                onChange={(e) => setCompletionForm({ ...completionForm, remarks: e.target.value })}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-            </>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Remarks</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Parts replaced, observations, follow-ups..."
+                    value={completionForm.remarks}
+                    onChange={(e) => setCompletionForm({ ...completionForm, remarks: e.target.value })}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </>
             )}
 
             {/* 2-3 Photos Upload (User Request) */}
@@ -2053,11 +2040,10 @@ export const VehicleMaintenance: React.FC = () => {
                   key={filter}
                   type="button"
                   onClick={() => setStatusFilter(filter)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    isSelected
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${isSelected
                       ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                    }`}
                 >
                   All Alerts
                 </button>
@@ -2069,11 +2055,10 @@ export const VehicleMaintenance: React.FC = () => {
                   key={filter}
                   type="button"
                   onClick={() => setStatusFilter(filter)}
-                  className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    isSelected
+                  className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${isSelected
                       ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20'
                       : 'bg-rose-50 text-rose-700 border-2 border-rose-300 hover:bg-rose-100'
-                  }`}
+                    }`}
                 >
                   <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
                   <span>Needs Attention</span>
@@ -2085,11 +2070,10 @@ export const VehicleMaintenance: React.FC = () => {
                 key={filter}
                 type="button"
                 onClick={() => setStatusFilter(filter)}
-                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  isSelected
+                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${isSelected
                     ? 'bg-amber-600 text-white shadow-md shadow-amber-500/20'
                     : 'bg-amber-50 text-amber-800 border-2 border-amber-300 hover:bg-amber-100'
-                }`}
+                  }`}
               >
                 <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
                 <span>Due Soon</span>
@@ -2135,13 +2119,12 @@ export const VehicleMaintenance: React.FC = () => {
               <div
                 key={bus.id}
                 onClick={() => handleSelectVehicle(bus)}
-                className={`bg-white rounded-2xl border-2 ${
-                  isAttention
+                className={`bg-white rounded-2xl border-2 ${isAttention
                     ? 'border-rose-300 hover:border-rose-500 shadow-rose-500/10'
                     : isDueSoon
-                    ? 'border-amber-300 hover:border-amber-500 shadow-amber-500/10'
-                    : 'border-slate-200/90 hover:border-slate-300'
-                } p-4 sm:p-4.5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group`}
+                      ? 'border-amber-300 hover:border-amber-500 shadow-amber-500/10'
+                      : 'border-slate-200/90 hover:border-slate-300'
+                  } p-4 sm:p-4.5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group`}
               >
                 <div>
                   {/* Top Header: Reg, Badge, Model */}
@@ -2154,13 +2137,12 @@ export const VehicleMaintenance: React.FC = () => {
                     </div>
 
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 ${
-                        isAttention
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 ${isAttention
                           ? 'bg-rose-50 text-rose-700 border border-rose-200'
                           : isDueSoon
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      }`}
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}
                     >
                       {isAttention && <Flame className="w-3.5 h-3.5 text-rose-500" />}
                       {isDueSoon && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
@@ -2255,8 +2237,8 @@ export const VehicleMaintenance: React.FC = () => {
                     {bus.overdueCount > 0
                       ? `${bus.overdueCount} service${bus.overdueCount > 1 ? 's' : ''} overdue`
                       : bus.dueSoonCount > 0
-                      ? `${bus.dueSoonCount} service${bus.dueSoonCount > 1 ? 's' : ''} due soon`
-                      : 'All services OK'}
+                        ? `${bus.dueSoonCount} service${bus.dueSoonCount > 1 ? 's' : ''} due soon`
+                        : 'All services OK'}
                   </span>
 
                   <div className="flex items-center gap-2">
