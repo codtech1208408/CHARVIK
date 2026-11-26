@@ -75,7 +75,7 @@ export const AdminLayout: React.FC = () => {
       const parsedRole = String(parsed?.role || '').toLowerCase();
       if (parsed && parsedRole) {
         if (isOperatorPortal) {
-          const isOp = parsedRole.includes('operator') || parsedRole.includes('support');
+          const isOp = parsedRole.includes('operator') || parsedRole.includes('support') || parsedRole.includes('manager');
           if (isOp) return parsed;
           return DEFAULT_OPERATOR;
         }

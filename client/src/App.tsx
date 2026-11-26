@@ -74,6 +74,7 @@ export function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/admin/login" element={<Login defaultRole="Admin" />} />
             <Route path="/captain/login" element={<Login defaultRole="Captain" />} />
+            <Route path="/manager/login" element={<Navigate to="/operator/login?role=captain" replace />} />
             <Route path="/operator/login" element={<Login defaultRole="Operator" />} />
             <Route path="/supporter/login" element={<Navigate to="/operator/login" replace />} />
 

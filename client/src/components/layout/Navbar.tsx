@@ -37,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         const s = localStorage.getItem('charvik_user');
         const parsed = s ? JSON.parse(s) : null;
         const parsedRole = String(parsed?.role || '').toLowerCase();
-        if (parsed && (parsedRole.includes('operator') || parsedRole.includes('support'))) {
+        if (parsed && (parsedRole.includes('operator') || parsedRole.includes('support') || parsedRole.includes('manager'))) {
           return parsed;
         }
       } catch { }

@@ -14,7 +14,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
 
   const initialRole: 'Admin' | 'Captain' | 'Operator' =
     defaultRole ||
-    (urlRole === 'captain'
+    (urlRole === 'captain' || urlRole === 'manager'
       ? 'Captain'
       : urlRole === 'admin'
       ? 'Admin'
@@ -34,7 +34,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
   useEffect(() => {
     if (defaultRole) {
       setSelectedRole(defaultRole === ('Supporter' as any) ? 'Operator' : defaultRole);
-    } else if (urlRole === 'captain') {
+    } else if (urlRole === 'captain' || urlRole === 'manager') {
       setSelectedRole('Captain');
     } else if (urlRole === 'operator' || urlRole === 'supporter') {
       setSelectedRole('Operator');
@@ -47,11 +47,16 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
       const userRole = (user.role || '').toLowerCase();
       const isAdmin = userRole.includes('admin');
       const isCaptain = userRole.includes('captain');
+      const isManager = userRole.includes('manager');
       const isOperator = userRole.includes('support') || userRole.includes('operator');
 
-      if (selectedRole === 'Captain' && isCaptain) {
-        navigate('/captain/dashboard', { replace: true });
-      } else if (selectedRole === 'Operator' && isOperator) {
+      if (selectedRole === 'Captain') {
+        if (isCaptain) {
+          navigate('/captain/dashboard', { replace: true });
+        } else if (isManager) {
+          navigate('/operator/dashboard', { replace: true });
+        }
+      } else if (selectedRole === 'Operator' && (isOperator || isManager)) {
         navigate('/operator/dashboard', { replace: true });
       } else if (selectedRole === 'Admin' && isAdmin) {
         navigate('/admin/dashboard', { replace: true });
@@ -77,7 +82,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
       const normalizedRole = (loggedUser?.role || selectedRole).toLowerCase();
       if (normalizedRole.includes('captain')) {
         navigate('/captain/dashboard');
-      } else if (normalizedRole.includes('support') || normalizedRole.includes('operator') || normalizedRole.includes('helper')) {
+      } else if (normalizedRole.includes('manager') || normalizedRole.includes('support') || normalizedRole.includes('operator') || normalizedRole.includes('helper')) {
         navigate('/operator/dashboard');
       } else {
         navigate('/admin/dashboard');
@@ -107,12 +112,12 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
     switch (selectedRole) {
       case 'Captain':
         return {
-          title: 'Captain & Route Lead Portal',
-          badgeText: 'Fleet Captain Portal',
+          title: 'Captain & Manager Operational Portal',
+          badgeText: 'Captain / Manager Portal',
           badgeClass: 'bg-amber-50 text-amber-800 border-amber-300',
           icon: Compass,
-          notice: 'Authorized Route Captain Portal. Please log in using your registered mobile number and password provided by Fleet Admin.',
-          emailPlaceholder: 'e.g. 9701055555 (Registered Mobile)'
+          notice: 'Authorized Employee Portal for Captains & Operations Managers. Please log in using your registered username, mobile number, or email and password provided by the Operator.',
+          emailPlaceholder: 'e.g. captain_ops, manager@charvik.com, or Mobile'
         };
       case 'Operator':
         return {
@@ -177,7 +182,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
 
         {/* Card */}
         <div className="mt-5 bg-white py-8 px-6 sm:px-10 shadow-xl rounded-2xl border border-slate-200/80">
-          {/* Individual Login Role Tabs — Operator & Captain only (Admin logs in via /admin/login) */}
+          {/* Individual Login Role Tabs — Operator & Captain / Manager only */}
           <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-slate-100 rounded-xl mb-6 border border-slate-200/80">
             <button
               type="button"
@@ -212,7 +217,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
               }`}
             >
               <Compass className="w-3.5 h-3.5 text-amber-600" />
-              <span>Captain</span>
+              <span>Captain / Manager</span>
             </button>
           </div>
 
@@ -234,7 +239,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
             <div>
               <label className="block text-xs font-bold text-[#172B4D] uppercase tracking-wider mb-1.5">
                 {selectedRole === 'Captain'
-                  ? 'Registered Mobile Number'
+                  ? 'Username / Mobile / Email'
                   : 'Email / Username'}
               </label>
               <div className="relative rounded-xl shadow-xs">
@@ -290,7 +295,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <span>Sign In as {selectedRole}</span>
+                    <span>Sign In as {selectedRole === 'Captain' ? 'Captain / Manager' : selectedRole}</span>
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </>
                 )}
