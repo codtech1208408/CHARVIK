@@ -560,39 +560,39 @@ export const BusRating: React.FC = () => {
 
         return `
           <tr style="${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
-            <td style="text-align: center; font-weight: bold; width: 35px;">${idx + 1}</td>
-            <td style="white-space: nowrap; font-weight: 700; width: 85px;">${r.travelDate || '-'}</td>
-            <td style="font-weight: 800; color: #032b69; white-space: nowrap; width: 120px;">${r.operator || '-'}</td>
-            <td style="font-family: monospace; font-weight: bold; white-space: nowrap; width: 95px;">${cleanTripBus || '-'}</td>
-            <td style="font-family: monospace; font-weight: 800; color: #0284c7; white-space: nowrap; width: 85px;">${r.pnrNumber || '-'}</td>
-            <td style="white-space: nowrap; font-weight: 600; width: 140px;">${routeText}</td>
-            <td style="font-weight: 700; white-space: nowrap; width: 110px;">${r.customerName || '-'}</td>
-            <td style="font-family: monospace; font-weight: 700; white-space: nowrap; width: 100px;">${r.phoneNumber || '-'}</td>
-            <td style="white-space: nowrap; width: 90px;">${r.calledByAgent || '-'}</td>
-            <td style="text-align: center; white-space: nowrap; width: 75px;">
+            <td style="text-align: center; font-weight: bold; width: 4%;">${idx + 1}</td>
+            <td style="white-space: nowrap; font-weight: 700; width: 9%;">${r.travelDate || '-'}</td>
+            <td style="font-weight: 800; color: #032b69; white-space: nowrap; width: 12%;">${r.operator || '-'}</td>
+            <td style="font-family: monospace; font-weight: bold; white-space: nowrap; width: 10%;">${cleanTripBus || '-'}</td>
+            <td style="font-family: monospace; font-weight: 800; color: #0284c7; white-space: nowrap; width: 9%;">${r.pnrNumber || '-'}</td>
+            <td style="white-space: nowrap; font-weight: 600; width: 14%;">${routeText}</td>
+            <td style="font-weight: 700; white-space: nowrap; width: 11%;">${r.customerName || '-'}</td>
+            <td style="font-family: monospace; font-weight: 700; white-space: nowrap; width: 10%;">${r.phoneNumber || '-'}</td>
+            <td style="white-space: nowrap; width: 8%;">${r.calledByAgent || '-'}</td>
+            <td style="text-align: center; white-space: nowrap; width: 6%;">
               <span style="color: #d97706; font-size: 13px;">${stars}</span>
               <div style="font-size: 10px; font-weight: 800; color: #334155;">${r.rating} / 5</div>
             </td>
-            <td style="font-size: 10.5px; color: #334155;">${r.complaintsRemarks || '-'}</td>
+            <td style="font-size: 10.5px; color: #334155; min-width: 110px; word-break: break-word;">${r.complaintsRemarks || '-'}</td>
           </tr>
         `;
       }).join('');
 
       const tableHtml = `
-        <table style="width: 100%; border-collapse: collapse; margin-top: 4px;">
+        <table style="width: 100%; border-collapse: collapse; margin-top: 4px; table-layout: auto;">
           <thead>
             <tr>
-              <th style="width: 35px; text-align: center;">#</th>
-              <th style="width: 85px; text-align: left;">Travel Date</th>
-              <th style="width: 120px; text-align: left;">Operator</th>
-              <th style="width: 95px; text-align: left;">Trip / Bus</th>
-              <th style="width: 85px; text-align: left;">PNR No</th>
-              <th style="width: 140px; text-align: left;">Route (From &rarr; To)</th>
-              <th style="width: 110px; text-align: left;">Customer Name</th>
-              <th style="width: 100px; text-align: left;">Phone Number</th>
-              <th style="width: 90px; text-align: left;">Called By</th>
-              <th style="width: 75px; text-align: center;">Rating</th>
-              <th style="text-align: left;">Complaints &amp; Remarks</th>
+              <th style="width: 4%; text-align: center; white-space: nowrap;">#</th>
+              <th style="width: 9%; text-align: left; white-space: nowrap;">Travel Date</th>
+              <th style="width: 12%; text-align: left; white-space: nowrap;">Operator</th>
+              <th style="width: 10%; text-align: left; white-space: nowrap;">Trip / Bus</th>
+              <th style="width: 9%; text-align: left; white-space: nowrap;">PNR No</th>
+              <th style="width: 14%; text-align: left; white-space: nowrap;">Route (From &rarr; To)</th>
+              <th style="width: 11%; text-align: left; white-space: nowrap;">Customer Name</th>
+              <th style="width: 10%; text-align: left; white-space: nowrap;">Phone Number</th>
+              <th style="width: 8%; text-align: left; white-space: nowrap;">Called By</th>
+              <th style="width: 6%; text-align: center; white-space: nowrap;">Rating</th>
+              <th style="width: 17%; min-width: 110px; text-align: left; white-space: normal;">Complaints &amp; Remarks</th>
             </tr>
           </thead>
           <tbody>

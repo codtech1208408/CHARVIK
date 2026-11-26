@@ -148,8 +148,8 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
       ${existingStyles}
       <style>
         @page {
-          size: ${orientation === 'landscape' ? 'A4 landscape' : 'A4 portrait'};
-          margin: 5mm 6mm;
+          size: ${orientation === 'landscape' ? 'landscape' : 'portrait'};
+          margin: 6mm 8mm;
         }
         * {
           margin: 0;
@@ -309,26 +309,24 @@ export function printSheet(optionsOrHtml: PrintOptions | string, legacyOptions?:
     <body>
       <div class="printable-sheet">
         <div>
-          <!-- Official Header: Full Brand Logo on Left, Phone & Email on Right with vertical divider -->
+          <!-- Official Header: Centered Brand Logo, Vertical Divider & Contact Info (Centered in Middle) -->
           ${!hideHeader ? `
-          <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 6px; padding-bottom: 8px;">
-            <div style="display: flex; align-items: center; padding-top: 2px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 24px; padding-top: 4px; padding-bottom: 8px; margin: 0 auto; text-align: center;">
+            <div style="display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
               <img
                 src="${logoSrc}"
                 alt="${logoAlt}"
-                style="height: 60px; max-height: 66px; width: auto; max-width: 280px; display: block; object-fit: contain;"
+                style="height: 52px; max-height: 58px; width: auto; max-width: 260px; display: block; object-fit: contain;"
                 onerror="this.src='/logo-brand.png'"
               />
             </div>
-            <div style="display: flex; align-items: center;">
-              <div style="border-left: 1.5px solid ${primaryColor}; height: 46px; margin: 0 16px;"></div>
-              <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
-                <div style="display: block; font-size: 15px; font-weight: 900; color: ${primaryColor}; line-height: 1.3; white-space: nowrap;">
-                  <span style="display: inline-block; font-size: 14px; margin-right: 6px;">📞</span><span>${companyPhone}</span>
-                </div>
-                <div style="display: block; font-size: 12px; font-weight: 700; color: ${primaryColor}; line-height: 1.3; white-space: nowrap;">
-                  <span style="display: inline-block; font-size: 13px; margin-right: 6px;">✉</span><span>${companyEmail}</span>
-                </div>
+            <div style="border-left: 2px solid ${primaryColor}; height: 42px; margin: 0 4px; flex-shrink: 0;"></div>
+            <div style="display: flex; flex-direction: column; gap: 4px; text-align: left; flex-shrink: 0;">
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 900; color: ${primaryColor}; line-height: 1.25; white-space: nowrap;">
+                <span style="display: inline-block; font-size: 13px;">📞</span><span>${companyPhone}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: ${primaryColor}; line-height: 1.25; white-space: nowrap;">
+                <span style="display: inline-block; font-size: 12px;">✉</span><span>${companyEmail}</span>
               </div>
             </div>
           </div>
