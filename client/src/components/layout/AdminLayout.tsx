@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ErrorBoundary } from '../common/ErrorBoundary';
 import AOS from 'aos';
 import { auditLogger } from '../../services/auditLogger';
-import { ALL_CATEGORY_NAMES, getAdminModuleCategories, mapCategoryToCurrentTab } from '../../constants/moduleCategories';
+import { ALL_CATEGORY_NAMES, getAdminModuleCategories, mapCategoryToCurrentTab, isRouteAllowedForCategories } from '../../constants/moduleCategories';
 
 export const AdminLayout: React.FC = () => {
   // 1. ALL HOOKS CALLED UNCONDITIONALLY AT THE VERY TOP
@@ -307,7 +307,6 @@ export const AdminLayout: React.FC = () => {
 
     if (!isDashboardRoute && !isAdmin) {
       if (isOperator) {
-        const cat = getCategoryForPath(location.pathname);
         const rawActiveCats = Array.isArray(activeUser?.categories)
           ? activeUser.categories
           : typeof activeUser?.categories === 'string'
@@ -323,9 +322,8 @@ export const AdminLayout: React.FC = () => {
           ? rawActiveCats.map((c: any) => String(c || '').trim()).filter(Boolean)
           : ALL_CATEGORY_NAMES;
 
-        const mappedUserCats = userCats.map((c: string) => mapCategoryToCurrentTab(c));
-
-        if (cat && !mappedUserCats.includes(cat) && !userCats.includes(cat)) {
+        const isAllowed = isRouteAllowedForCategories(location.pathname, userCats);
+        if (!isAllowed) {
           return <Navigate to="/admin/dashboard" replace />;
         }
       } else {

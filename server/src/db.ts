@@ -418,6 +418,21 @@ export function initDatabase() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Website Inquiries Table
+    CREATE TABLE IF NOT EXISTS website_inquiries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      phone TEXT,
+      email TEXT,
+      service_type TEXT,
+      message TEXT,
+      date DATE NOT NULL,
+      status TEXT DEFAULT 'New',
+      is_archived INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Indexes for high-performance filtering & search
     CREATE INDEX IF NOT EXISTS idx_buses_bus_number ON buses(bus_number);
     CREATE INDEX IF NOT EXISTS idx_buses_status ON buses(operational_status);

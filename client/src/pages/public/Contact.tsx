@@ -13,6 +13,15 @@ import {
   CalendarCheck,
   ArrowLeft
 } from 'lucide-react';
+import { api } from '../../services/api';
+
+const serviceLabelMap: Record<string, string> = {
+  'bus-rental': 'Bus Rental & Hire',
+  'fleet-supply': 'Corporate Fleet Supply',
+  'driver-provision': 'Driver / Helper / Captain Provision',
+  'maintenance-fleet': 'Maintenance-Backed Operations',
+  'project-transport': 'Project / Contract Transportation'
+};
 
 export const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -26,14 +35,42 @@ export const Contact: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    // Simulate quick submit
-    setTimeout(() => {
-      setSubmitting(false);
+    const serviceName = serviceLabelMap[formData.service] || formData.service;
+    const newInquiry = {
+      id: Date.now(),
+      name: formData.name.trim(),
+      phone: formData.phone.trim(),
+      email: formData.email.trim(),
+      service_type: serviceName,
+      message: formData.requirementDetails.trim(),
+      date: new Date().toISOString().split('T')[0],
+      status: 'New'
+    };
+
+    try {
+      // 1. Save to localStorage immediately
+      try {
+        const raw = localStorage.getItem('charvik_website_inquiries_data');
+        const existing = raw ? JSON.parse(raw) : [];
+        const updated = [newInquiry, ...existing.filter((x: any) => x.id !== newInquiry.id)];
+        localStorage.setItem('charvik_website_inquiries_data', JSON.stringify(updated));
+      } catch { }
+
+      // 2. Save via API & Supabase cloud sync
+      await api.createInquiry(newInquiry).catch(() => { });
+
+      // 3. Dispatch event for any open admin panels
+      window.dispatchEvent(new CustomEvent('charvik_inquiries_updated', { detail: newInquiry }));
+
       setSubmitted(true);
-    }, 600);
+    } catch {
+      setSubmitted(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

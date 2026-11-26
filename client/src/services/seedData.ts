@@ -3251,4 +3251,27 @@ export const BASE_DONATIONS: any[] = [
   }
 ];
 
+export const BASE_WEBSITE_INQUIRIES: any[] = [
+  {
+    id: 1,
+    name: 'Raghavendra Rao',
+    phone: '9849011223',
+    email: 'raghavendra@techsolutions.com',
+    service_type: 'Corporate Staff Bus Rental',
+    message: 'Looking for 3 air-conditioned 45-seater buses for daily employee transit between Miyapur and Gachibowli.',
+    date: '2026-10-23',
+    status: 'New'
+  },
+  {
+    id: 2,
+    name: 'Priyanka Sharma',
+    phone: '9701044556',
+    email: 'priyanka@springdales.edu',
+    service_type: 'School Transport Contract',
+    message: 'Require 5 buses with GPS tracking, CCTV, and verified lady helpers for the academic year.',
+    date: '2026-10-22',
+    status: 'Contacted'
+  }
+];
+
 

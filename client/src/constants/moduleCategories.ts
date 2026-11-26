@@ -353,6 +353,82 @@ export const ALL_MODULE_CATEGORIES: ModuleCategoryItem[] = BASE_ADMIN_NAV_ITEMS.
 export const ALL_CATEGORY_NAMES: string[] = ALL_MODULE_CATEGORIES.map((c) => c.name);
 
 /**
+ * Returns all unique selectable permission names across all main tabs and all their subtabs.
+ */
+export const getAllCategoryAndSubItemNames = (): string[] => {
+  const categories = getAdminModuleCategories();
+  const list: string[] = [];
+  for (const cat of categories) {
+    list.push(cat.name);
+    if (cat.subItems) {
+      for (const sub of cat.subItems) {
+        list.push(sub.label);
+      }
+    }
+  }
+  return Array.from(new Set(list));
+};
+
+/**
+ * Checks whether a given route is permitted based on granular category & subtab permissions.
+ */
+export const isRouteAllowedForCategories = (
+  pathname: string,
+  userCategories: string[]
+): boolean => {
+  if (!pathname) return true;
+  if (
+    pathname === '/admin' ||
+    pathname === '/admin/' ||
+    pathname === '/admin/dashboard' ||
+    pathname.endsWith('/dashboard')
+  ) {
+    return true;
+  }
+
+  const normalized = userCategories.map((c) => String(c).toLowerCase().trim());
+  const modules = getAdminModuleCategories();
+
+  for (const mod of modules) {
+    const modNameLower = mod.name.toLowerCase();
+    const hasParentAccess = normalized.includes(modNameLower);
+
+    if (hasParentAccess) {
+      if (mod.activeRoutes && mod.activeRoutes.some((r) => pathname === r || pathname.startsWith(r + '/'))) {
+        return true;
+      }
+      if (pathname === mod.route || pathname.startsWith(mod.route + '/')) {
+        return true;
+      }
+      if (mod.subItems) {
+        for (const sub of mod.subItems) {
+          const pureSub = sub.route.split('?')[0];
+          if (pathname === pureSub || pathname.startsWith(pureSub + '/')) return true;
+          if (sub.activeRoutes && sub.activeRoutes.some((r) => {
+            const pureR = r.split('?')[0];
+            return pathname === pureR || pathname.startsWith(pureR + '/');
+          })) return true;
+        }
+      }
+    } else if (mod.subItems) {
+      for (const sub of mod.subItems) {
+        const subLabelLower = sub.label.toLowerCase();
+        if (normalized.includes(subLabelLower)) {
+          const pureSub = sub.route.split('?')[0];
+          if (pathname === pureSub || pathname.startsWith(pureSub + '/')) return true;
+          if (sub.activeRoutes && sub.activeRoutes.some((r) => {
+            const pureR = r.split('?')[0];
+            return pathname === pureR || pathname.startsWith(pureR + '/');
+          })) return true;
+        }
+      }
+    }
+  }
+
+  return false;
+};
+
+/**
  * Maps legacy/submodule category names (e.g. "Trip Management", "AC Maintenance", "Daily Kilometers")
  * to the corresponding active Admin Panel tab.
  */

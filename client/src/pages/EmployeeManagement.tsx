@@ -45,6 +45,7 @@ import {
   ALL_MODULE_CATEGORIES,
   ALL_CATEGORY_NAMES,
   getAdminModuleCategories,
+  getAllCategoryAndSubItemNames,
   mapCategoryToCurrentTab
 } from '../constants/moduleCategories';
 import { formatEmployeeId } from '../utils/employeeCode';
@@ -95,6 +96,7 @@ export const EmployeeManagement: React.FC = () => {
 
   const activeCategories = useMemo(() => getAdminModuleCategories(), [tabsVersion]);
   const activeCategoryNames = useMemo(() => activeCategories.map((c) => c.name), [activeCategories]);
+  const allSelectableItems = useMemo(() => getAllCategoryAndSubItemNames(), [activeCategories]);
 
   const [showEditCategoriesModal, setShowEditCategoriesModal] = useState(false);
   const [selectedStaffForCategories, setSelectedStaffForCategories] = useState<any>(null);
@@ -109,7 +111,158 @@ export const EmployeeManagement: React.FC = () => {
   const [newStaffMobile, setNewStaffMobile] = useState('');
   const [newStaffUsername, setNewStaffUsername] = useState('');
   const [newStaffPassword, setNewStaffPassword] = useState('');
-  const [newStaffCategories, setNewStaffCategories] = useState<string[]>(() => getAdminModuleCategories().map(c => c.name));
+  const [newStaffCategories, setNewStaffCategories] = useState<string[]>(() => getAllCategoryAndSubItemNames());
+
+  // Granular module and subtab permission toggling helpers
+  const handleToggleModuleCategory = (
+    cat: any,
+    currentList: string[],
+    setList: (val: string[]) => void
+  ) => {
+    const subLabels = cat.subItems ? cat.subItems.map((s: any) => s.label) : [];
+    const allLabelsForCat = [cat.name, ...subLabels];
+    const isFullyChecked = allLabelsForCat.every((lbl) => currentList.includes(lbl));
+
+    if (isFullyChecked) {
+      setList(currentList.filter((item) => !allLabelsForCat.includes(item)));
+    } else {
+      setList(Array.from(new Set([...currentList, ...allLabelsForCat])));
+    }
+  };
+
+  const handleToggleSubItemPermission = (
+    cat: any,
+    subLabel: string,
+    currentList: string[],
+    setList: (val: string[]) => void
+  ) => {
+    if (currentList.includes(subLabel)) {
+      setList(currentList.filter((item) => item !== subLabel));
+    } else {
+      setList(Array.from(new Set([...currentList, subLabel, cat.name])));
+    }
+  };
+
+  const renderCategoryHierarchySelector = (
+    selectedList: string[],
+    setList: (val: string[]) => void
+  ) => {
+    return (
+      <div className="space-y-2.5 max-h-[380px] overflow-y-auto p-2 bg-slate-50/70 rounded-xl border border-slate-200">
+        {activeCategories.map((cat) => {
+          const CatIcon = cat.icon || LayoutGrid;
+          const hasSubs = Boolean(cat.subItems && cat.subItems.length > 0);
+          const subLabels = hasSubs ? cat.subItems!.map((s: any) => s.label) : [];
+
+          const isCatChecked = selectedList.includes(cat.name);
+          const checkedSubsCount = subLabels.filter((l) => selectedList.includes(l)).length;
+          const isAllSubsChecked = hasSubs && checkedSubsCount === subLabels.length;
+          const isParentSelected = isCatChecked || isAllSubsChecked;
+
+          return (
+            <div
+              key={cat.id}
+              className={`rounded-xl border transition-all ${
+                isParentSelected || checkedSubsCount > 0
+                  ? 'bg-white border-blue-200 shadow-2xs'
+                  : 'bg-white/90 border-slate-200/80 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between p-2.5 bg-slate-50/60 rounded-t-xl border-b border-slate-100">
+                <label className="flex items-center gap-2.5 cursor-pointer flex-1 select-none">
+                  <input
+                    type="checkbox"
+                    checked={isParentSelected && (!hasSubs || isAllSubsChecked)}
+                    ref={(el) => {
+                      if (el) {
+                        el.indeterminate = hasSubs && checkedSubsCount > 0 && !isAllSubsChecked;
+                      }
+                    }}
+                    onChange={() => handleToggleModuleCategory(cat, selectedList, setList)}
+                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <div
+                    className={`p-1.5 rounded-lg ${
+                      isParentSelected || checkedSubsCount > 0
+                        ? 'bg-blue-100/70 text-blue-700'
+                        : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    <CatIcon className="w-4 h-4 shrink-0" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-800">
+                    {cat.name}
+                  </span>
+                </label>
+
+                {hasSubs ? (
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        checkedSubsCount === subLabels.length
+                          ? 'bg-blue-100 text-blue-700'
+                          : checkedSubsCount > 0
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
+                      {checkedSubsCount}/{subLabels.length} subtabs
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleModuleCategory(cat, selectedList, setList)}
+                      className="text-[10px] font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                    >
+                      {checkedSubsCount === subLabels.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-[10px] text-slate-400 font-semibold px-2">
+                    Direct Module
+                  </span>
+                )}
+              </div>
+
+              {hasSubs && (
+                <div className="p-2.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5 bg-white rounded-b-xl">
+                  {cat.subItems!.map((sub: any) => {
+                    const SubIcon = sub.icon || FileText;
+                    const isSubChecked = selectedList.includes(sub.label);
+
+                    return (
+                      <label
+                        key={sub.label + sub.route}
+                        className={`flex items-center gap-2 p-1.5 rounded-lg border text-xs cursor-pointer transition-all ${
+                          isSubChecked
+                            ? 'bg-blue-50/70 border-blue-200 text-blue-900 font-semibold shadow-2xs'
+                            : 'bg-slate-50/40 border-slate-100 text-slate-600 hover:bg-slate-100/60'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSubChecked}
+                          onChange={() => handleToggleSubItemPermission(cat, sub.label, selectedList, setList)}
+                          className="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <SubIcon
+                          className={`w-3.5 h-3.5 shrink-0 ${
+                            isSubChecked ? (sub.iconColor || 'text-blue-600') : 'text-slate-400'
+                          }`}
+                        />
+                        <span className="truncate text-[11px] leading-tight select-none">
+                          {sub.label}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   // Modals & Views
   const [viewingProfile, setViewingProfile] = useState<any>(null);
@@ -264,7 +417,7 @@ export const EmployeeManagement: React.FC = () => {
       setNewStaffMobile('');
       setNewStaffUsername('');
       setNewStaffPassword('');
-      setNewStaffCategories([...activeCategoryNames]);
+      setNewStaffCategories([...allSelectableItems]);
       loadStaffCredentials();
     } catch (err: any) {
       error(err.message || 'Failed to create account');
@@ -277,10 +430,17 @@ export const EmployeeManagement: React.FC = () => {
     setSelectedStaffForCategories(staff);
     const assigned = Array.isArray(staff.categories) && staff.categories.length > 0
       ? staff.categories
-      : activeCategoryNames;
-    const mapped = assigned.map((name: string) => mapCategoryToCurrentTab(name)).filter(Boolean);
+      : allSelectableItems;
+    const allSelectable = getAllCategoryAndSubItemNames();
+    const mapped = assigned.map((name: string) => {
+      const match = allSelectable.find(
+        (s) => s.toLowerCase() === String(name).toLowerCase().trim()
+      );
+      if (match) return match;
+      return mapCategoryToCurrentTab(name);
+    }).filter(Boolean);
     const unique = Array.from(new Set(mapped));
-    setEditingCategoriesList(unique.length > 0 ? unique : [...activeCategoryNames]);
+    setEditingCategoriesList(unique.length > 0 ? unique : [...allSelectableItems]);
     setShowEditCategoriesModal(true);
   };
 
@@ -525,7 +685,7 @@ export const EmployeeManagement: React.FC = () => {
                 onClick={() => {
                   setPageView('staff-accounts');
                   setNewStaffRole('Captain');
-                  setNewStaffCategories([...activeCategoryNames]);
+                  setNewStaffCategories([...allSelectableItems]);
                   setShowCreateStaffModal(true);
                 }}
                 className="inline-flex items-center px-4 py-2.5 bg-white text-blue-900 hover:bg-blue-50 text-xs font-black rounded-xl transition-all shadow-md gap-2 cursor-pointer"
@@ -742,7 +902,7 @@ export const EmployeeManagement: React.FC = () => {
               <button
                 onClick={() => {
                   setNewStaffRole(isOperatorDashboard ? 'Captain' : 'Support Staff');
-                  setNewStaffCategories([...activeCategoryNames]);
+                  setNewStaffCategories([...allSelectableItems]);
                   setShowCreateStaffModal(true);
                 }}
                 className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm gap-2 cursor-pointer ml-auto"
@@ -881,7 +1041,7 @@ export const EmployeeManagement: React.FC = () => {
                               title="Click to view or edit dashboard category permissions"
                             >
                               <Layers className="w-3.5 h-3.5 text-blue-600" />
-                              <span>{assignedCats.length} / {activeCategories.length} Categories</span>
+                              <span>{assignedCats.length} / {allSelectableItems.length} Permissions</span>
                             </button>
                           )}
                         </td>
@@ -983,7 +1143,7 @@ export const EmployeeManagement: React.FC = () => {
             ? 'Provision employee credentials (Captain or Manager) and assign visible categories for their dashboard'
             : 'Provision Operator credentials and assign accessible categories for their dashboard'
         }
-        maxWidth="max-w-xl"
+        maxWidth="max-w-2xl"
       >
         <form onSubmit={handleCreateStaff} className="space-y-4">
           {/* 1. First Role Option (Captain, Manager for Operator; Only Operator for Admin) */}
@@ -1118,19 +1278,19 @@ export const EmployeeManagement: React.FC = () => {
             <div className="flex items-center justify-between mb-2">
               <div>
                 <label className="block text-xs font-bold text-slate-800">
-                  Dashboard Categories (Admin Modules){' '}
+                  Dashboard Categories & Subtabs (Admin Modules){' '}
                   <span className="text-blue-600 font-extrabold">
-                    ({newStaffCategories.length} of {activeCategories.length} selected)
+                    ({newStaffCategories.length} of {allSelectableItems.length} selected)
                   </span>
                 </label>
                 <p className="text-[11px] text-slate-500">
-                  Select which categories will be visible to this employee in their dashboard.
+                  Select which main tabs and subtabs will be visible to this employee in their dashboard.
                 </p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
-                  onClick={() => setNewStaffCategories([...activeCategoryNames])}
+                  onClick={() => setNewStaffCategories([...allSelectableItems])}
                   className="px-2 py-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 cursor-pointer"
                 >
                   Select All
@@ -1145,38 +1305,9 @@ export const EmployeeManagement: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-              {activeCategories.map((cat) => {
-                const isChecked = newStaffCategories.includes(cat.name);
-                const CatIcon = cat.icon;
-                return (
-                  <label
-                    key={cat.id}
-                    className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs font-medium cursor-pointer transition-all ${
-                      isChecked
-                        ? 'bg-blue-50/80 border-blue-300 text-blue-900 shadow-2xs font-bold'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setNewStaffCategories([...newStaffCategories, cat.name]);
-                        } else {
-                          setNewStaffCategories(newStaffCategories.filter((c) => c !== cat.name));
-                        }
-                      }}
-                      className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                    />
-                    <CatIcon className={`w-4 h-4 shrink-0 ${isChecked ? 'text-blue-600' : 'text-slate-400'}`} />
-                    <span className="truncate flex-1">{cat.name}</span>
-                  </label>
-                );
-              })}
-            </div>
-            <p className="text-[10px] text-slate-400 mt-1 italic">
+            {renderCategoryHierarchySelector(newStaffCategories, setNewStaffCategories)}
+
+            <p className="text-[10px] text-slate-400 mt-1.5 italic">
               All data created or edited in these categories is synced live with the Admin panel.
             </p>
           </div>
@@ -1205,22 +1336,22 @@ export const EmployeeManagement: React.FC = () => {
       <Modal
         isOpen={showEditCategoriesModal}
         onClose={() => setShowEditCategoriesModal(false)}
-        title="Manage Dashboard Category Permissions"
-        subtitle={selectedStaffForCategories ? `Select which categories are visible to ${selectedStaffForCategories.name} (${selectedStaffForCategories.role})` : ''}
-        maxWidth="max-w-lg"
+        title="Manage Dashboard Category & Subtab Permissions"
+        subtitle={selectedStaffForCategories ? `Select which main tabs and subtabs are visible to ${selectedStaffForCategories.name} (${selectedStaffForCategories.role})` : ''}
+        maxWidth="max-w-2xl"
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-xs text-slate-600">
               Selected:{' '}
               <strong className="text-blue-700 font-bold">
-                {editingCategoriesList.length} of {activeCategories.length} Categories
+                {editingCategoriesList.length} of {allSelectableItems.length} Permissions
               </strong>
             </p>
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => setEditingCategoriesList([...activeCategoryNames])}
+                onClick={() => setEditingCategoriesList([...allSelectableItems])}
                 className="px-2 py-1 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 cursor-pointer"
               >
                 Select All
@@ -1235,37 +1366,7 @@ export const EmployeeManagement: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-            {activeCategories.map((cat) => {
-              const isChecked = editingCategoriesList.includes(cat.name);
-              const CatIcon = cat.icon;
-              return (
-                <label
-                  key={cat.id}
-                  className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs font-medium cursor-pointer transition-all ${
-                    isChecked
-                      ? 'bg-blue-50/80 border-blue-300 text-blue-900 shadow-2xs font-bold'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setEditingCategoriesList([...editingCategoriesList, cat.name]);
-                      } else {
-                        setEditingCategoriesList(editingCategoriesList.filter((c) => c !== cat.name));
-                      }
-                    }}
-                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                  />
-                  <CatIcon className={`w-4 h-4 shrink-0 ${isChecked ? 'text-blue-600' : 'text-slate-400'}`} />
-                  <span className="truncate flex-1">{cat.name}</span>
-                </label>
-              );
-            })}
-          </div>
+          {renderCategoryHierarchySelector(editingCategoriesList, setEditingCategoriesList)}
 
           <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
             <button

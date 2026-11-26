@@ -17,6 +17,7 @@ import {
   Check
 } from 'lucide-react';
 import { useToast } from '../components/common/Toast';
+import { api } from '../services/api';
 
 interface InquiryItem {
   id: number;
@@ -70,6 +71,36 @@ export const WebsiteInquiries: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('All');
 
   useEffect(() => {
+    loadInquiries();
+
+    const handleUpdate = (e: any) => {
+      if (e?.detail) {
+        setInquiries((prev) => [e.detail, ...prev.filter((x) => x.id !== e.detail.id)]);
+      } else {
+        loadInquiries();
+      }
+    };
+
+    window.addEventListener('charvik_inquiries_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    return () => {
+      window.removeEventListener('charvik_inquiries_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
+  const loadInquiries = async () => {
+    try {
+      const res = await api.getInquiries();
+      if (Array.isArray(res) && res.length > 0) {
+        setInquiries(res);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(res));
+      }
+    } catch { }
+  };
+
+  useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(inquiries));
     } catch {}
@@ -78,12 +109,14 @@ export const WebsiteInquiries: React.FC = () => {
   const handleStatusChange = (id: number, nextStatus: InquiryItem['status']) => {
     const updated = inquiries.map((i) => (i.id === id ? { ...i, status: nextStatus } : i));
     setInquiries(updated);
+    api.updateInquiry(id, { status: nextStatus }).catch(() => { });
     success(`Inquiry marked as ${nextStatus}.`);
   };
 
   const handleDelete = (id: number) => {
     if (!confirm('Are you sure you want to remove this inquiry?')) return;
     setInquiries(inquiries.filter((i) => i.id !== id));
+    api.deleteInquiry(id).catch(() => { });
     success('Inquiry deleted.');
   };
 

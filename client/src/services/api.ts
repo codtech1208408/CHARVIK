@@ -25,6 +25,7 @@ import {
   BASE_VYSHNAVI_TRANSACTIONS,
   BASE_VEHICLE_MAINTENANCE_JOB_CARDS,
   BASE_DONATIONS,
+  BASE_WEBSITE_INQUIRIES,
   type DailyMaintenanceRecord,
   type VehicleMaintenanceJobCardRecord,
   type VehicleComplaintItem,
@@ -293,6 +294,7 @@ async function handleFallbackTableCrud(
         else if (tableKey === 'vyshnavi_records' || tableKey === 'vyshnavi_service_records') localList = [...BASE_VYSHNAVI_RECORDS];
         else if (tableKey === 'vyshnavi_transactions') localList = [...BASE_VYSHNAVI_TRANSACTIONS];
         else if (tableKey === 'donations') localList = [...BASE_DONATIONS];
+        else if (tableKey === 'website_inquiries') localList = [...BASE_WEBSITE_INQUIRIES];
 
         if (localList.length > 0) {
           setLocalCollection(tableKey, localList);
@@ -1646,6 +1648,14 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         ...d,
         proof_images: typeof d.proof_images === 'string' ? JSON.parse(d.proof_images || '[]') : (d.proof_images || [])
       }))
+    }) as any;
+  }
+
+  // 17H-3. WEBSITE INQUIRIES FALLBACK
+  if (path === '/inquiries' || path.startsWith('/inquiries/')) {
+    return handleFallbackTableCrud('website_inquiries', 'website_inquiries', path, method, body, params, {
+      idGenerator: () => Date.now(),
+      enrich: (items: any[]) => items.sort((a, b) => new Date(b.date || b.created_at || 0).getTime() - new Date(a.date || a.created_at || 0).getTime())
     }) as any;
   }
 
@@ -3665,6 +3675,12 @@ export const api = {
   createDonation: (data: any) => request<any>('/donations', { method: 'POST', body: JSON.stringify(data) }),
   updateDonation: (id: string | number, data: any) => request<any>(`/donations/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteDonation: (id: string | number) => request<any>(`/donations/${id}`, { method: 'DELETE' }),
+
+  // Website Inquiries Management
+  getInquiries: () => request<any[]>('/inquiries'),
+  createInquiry: (data: any) => request<any>('/inquiries', { method: 'POST', body: JSON.stringify(data) }),
+  updateInquiry: (id: string | number, data: any) => request<any>(`/inquiries/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteInquiry: (id: string | number) => request<any>(`/inquiries/${id}`, { method: 'DELETE' }),
 
   // File Upload
   uploadFile: async (file: File) => {

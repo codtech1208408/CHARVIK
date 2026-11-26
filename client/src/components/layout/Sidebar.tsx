@@ -331,14 +331,66 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isCaptainUser = isCaptain || userRole.includes('captain');
 
   const isOperatorPortal = isOperator;
-  const showOperatorNav = isOperatorPortal || (isOperatorUser && !isAdmin);
-  const showCaptainNav = isCaptain || (isCaptainUser && !isAdmin);
+  const showCaptainNav = isCaptain || (isCaptainUser && !isAdmin && !location.pathname.startsWith('/admin'));
+
+  // Filter adminNavItems by granular category & subtab permissions for non-superadmin users
+  const filteredAdminNavItems = useMemo(() => {
+    if (isAdmin) {
+      return adminNavItems;
+    }
+
+    let rawCats: string[] = [];
+    if (Array.isArray(activeUser?.categories)) {
+      rawCats = activeUser.categories;
+    } else if (typeof activeUser?.categories === 'string') {
+      try {
+        const parsed = JSON.parse(activeUser.categories);
+        if (Array.isArray(parsed)) rawCats = parsed;
+      } catch { }
+    } else if (operatorCategories.length > 0) {
+      rawCats = operatorCategories;
+    }
+
+    if (rawCats.length === 0) {
+      return adminNavItems;
+    }
+
+    const normalizedCats = rawCats.map((c) => String(c).toLowerCase().trim());
+
+    return adminNavItems
+      .map((item) => {
+        const itemLabelLower = (item.label || item.name || '').toLowerCase();
+        const hasParentAccess = normalizedCats.includes(itemLabelLower) || itemLabelLower === 'dashboard';
+
+        if (item.subItems && item.subItems.length > 0) {
+          const allowedSubs = item.subItems.filter((sub) => {
+            const subLabelLower = sub.label.toLowerCase();
+            return hasParentAccess || normalizedCats.includes(subLabelLower);
+          });
+
+          if (allowedSubs.length > 0 || hasParentAccess) {
+            return {
+              ...item,
+              subItems: allowedSubs.length > 0 ? allowedSubs : item.subItems
+            };
+          }
+          return null;
+        }
+
+        if (hasParentAccess) {
+          return item;
+        }
+
+        return null;
+      })
+      .filter(Boolean) as NavItemLeaf[];
+  }, [adminNavItems, isAdmin, activeUser, operatorCategories]);
 
   const navItems = showCaptainNav
     ? captainNavItems
-    : showOperatorNav
+    : isOperatorPortal
       ? supporterNavItems
-      : adminNavItems;
+      : filteredAdminNavItems;
 
   // Active status helper
   const isTabActive = (item: NavItemLeaf) => {

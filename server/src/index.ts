@@ -5480,6 +5480,65 @@ app.delete('/api/donations/:id', (req: Request, res: Response) => {
   }
 });
 
+// ================= WEBSITE INQUIRIES =================
+app.get('/api/inquiries', (req: Request, res: Response) => {
+  try {
+    const list = db.prepare('SELECT * FROM website_inquiries WHERE is_archived = 0 ORDER BY id DESC').all();
+    return res.json(list);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/inquiries', (req: Request, res: Response) => {
+  try {
+    const { name, phone, email, service_type, message, date, status } = req.body;
+    if (!name || (!phone && !email)) {
+      return res.status(400).json({ error: 'Name and either Phone or Email are required' });
+    }
+    const stmt = db.prepare(`
+      INSERT INTO website_inquiries (name, phone, email, service_type, message, date, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    const info = stmt.run(
+      name.trim(),
+      phone ? phone.trim() : '',
+      email ? email.trim() : '',
+      service_type || 'General Fleet Inquiry',
+      message || '',
+      date || new Date().toISOString().split('T')[0],
+      status || 'New'
+    );
+    const created = db.prepare('SELECT * FROM website_inquiries WHERE id = ?').get(info.lastInsertRowid);
+    return res.status(201).json(created);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/inquiries/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status, message } = req.body;
+    db.prepare('UPDATE website_inquiries SET status = COALESCE(?, status), message = COALESCE(?, message), updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+      .run(status, message, id);
+    const updated = db.prepare('SELECT * FROM website_inquiries WHERE id = ?').get(id);
+    return res.json(updated);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/inquiries/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    db.prepare('UPDATE website_inquiries SET is_archived = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+    return res.json({ success: true, message: 'Inquiry deleted' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ================= SETTINGS & AUDIT LOGS =================
 app.get('/api/settings', (req: Request, res: Response) => {
   const settings = db.prepare('SELECT * FROM application_settings').all();
