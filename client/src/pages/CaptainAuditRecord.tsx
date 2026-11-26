@@ -947,11 +947,7 @@ export const CaptainAuditRecord: React.FC = () => {
     setAuditDate(rec.audit_date || new Date().toISOString().split('T')[0]);
     setStaffPictures(Array.isArray(rec.staff_pictures) ? [...rec.staff_pictures] : []);
     setDriverFreshupPictures(
-      Array.isArray(rec.driver_freshup_pictures) && rec.driver_freshup_pictures.length > 0
-        ? [...rec.driver_freshup_pictures]
-        : Array.isArray(rec.staff_pictures)
-          ? [...rec.staff_pictures]
-          : []
+      Array.isArray(rec.driver_freshup_pictures) ? [...rec.driver_freshup_pictures] : []
     );
     setCleaningPictures(Array.isArray(rec.cleaning_pictures) ? [...rec.cleaning_pictures] : []);
     setAmenities(Array.isArray(rec.amenities) && rec.amenities.length > 0 ? [...rec.amenities] : initializeAmenities());
@@ -1049,7 +1045,6 @@ export const CaptainAuditRecord: React.FC = () => {
       if (staffFileInputRef.current) staffFileInputRef.current.value = '';
     } else if (type === 'freshup') {
       setDriverFreshupPictures((prev) => [...prev, ...uploadedUrls].slice(0, 5));
-      setStaffPictures((prev) => [...prev, ...uploadedUrls].slice(0, 5));
       setUploadingDriverFreshupPhoto(false);
       if (driverFreshupFileInputRef.current) driverFreshupFileInputRef.current.value = '';
     } else {
@@ -1068,7 +1063,6 @@ export const CaptainAuditRecord: React.FC = () => {
       setStaffPictures((prev) => prev.filter((_, i) => i !== index));
     } else if (type === 'freshup') {
       setDriverFreshupPictures((prev) => prev.filter((_, i) => i !== index));
-      setStaffPictures((prev) => prev.filter((_, i) => i !== index));
     } else {
       setCleaningPictures((prev) => prev.filter((_, i) => i !== index));
     }
@@ -1203,7 +1197,7 @@ export const CaptainAuditRecord: React.FC = () => {
       audited_by: auditedBy.trim() || user?.name || cleanCaptain,
       verified_by: verifiedBy.trim() || 'Operations Incharge',
       staff_pictures: staffPictures,
-      driver_freshup_pictures: driverFreshupPictures.length > 0 ? driverFreshupPictures : staffPictures,
+      driver_freshup_pictures: driverFreshupPictures,
       cleaning_pictures: cleaningPictures,
       amenities,
       overall_status,
@@ -2298,26 +2292,43 @@ export const CaptainAuditRecord: React.FC = () => {
                 <span>Uploaded Audit Inspection Photos</span>
               </h3>
 
-              {/* Driver Freshup / Crew Photos */}
-              {((viewRecord.driver_freshup_pictures && viewRecord.driver_freshup_pictures.length > 0) ||
-                (viewRecord.staff_pictures && viewRecord.staff_pictures.length > 0)) && (
+              {/* Staff Pictures */}
+              {viewRecord.staff_pictures && viewRecord.staff_pictures.length > 0 && (
                 <div>
                   <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    Driver Freshup &amp; Crew Photos
+                    Staff Pictures ({viewRecord.staff_pictures.length})
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                    {Array.from(
-                      new Set([
-                        ...(viewRecord.driver_freshup_pictures || []),
-                        ...(viewRecord.staff_pictures || [])
-                      ])
-                    ).map((pic, i) => (
+                    {viewRecord.staff_pictures.map((pic, i) => (
                       <div
                         key={i}
                         onClick={() => setActivePhotoModal(pic)}
                         className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer hover:opacity-90 shadow-2xs hover:shadow-md transition-all group relative"
                       >
-                        <img src={pic} alt={`Crew ${i + 1}`} className="w-full h-full object-cover" />
+                        <img src={pic} alt={`Staff ${i + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-bold">
+                          View
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Driver Freshup / Crew Photos */}
+              {viewRecord.driver_freshup_pictures && viewRecord.driver_freshup_pictures.length > 0 && (
+                <div className={viewRecord.staff_pictures && viewRecord.staff_pictures.length > 0 ? 'pt-2 border-t border-slate-100' : ''}>
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    Driver Freshup Image / Crew Photos ({viewRecord.driver_freshup_pictures.length})
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                    {viewRecord.driver_freshup_pictures.map((pic, i) => (
+                      <div
+                        key={i}
+                        onClick={() => setActivePhotoModal(pic)}
+                        className="aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 cursor-pointer hover:opacity-90 shadow-2xs hover:shadow-md transition-all group relative"
+                      >
+                        <img src={pic} alt={`Freshup ${i + 1}`} className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-bold">
                           View
                         </div>
