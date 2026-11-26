@@ -490,42 +490,269 @@ export const BusRating: React.FC = () => {
     };
   }, [records]);
 
-  // Export to Excel
+  // Export to Excel with auto-fitted column widths, clean headers, and uncorrupted numbers
   const handleExportExcel = () => {
     try {
-      const rows = filteredRecords.map((r, idx) => ({
-        '#': idx + 1,
-        'Travel Date': r.travelDate,
-        Operator: r.operator,
-        'Trip / Bus No': r.tripBusNo,
-        'PNR Number': r.pnrNumber,
-        Route: `${r.origin} → ${r.destination}`,
-        'Customer Name': r.customerName,
-        'Phone Number': r.phoneNumber,
-        'Called By Agent': r.calledByAgent,
-        Rating: `${r.rating} / 5`,
-        'Feedback / Remarks': r.complaintsRemarks
-      }));
+      if (filteredRecords.length === 0) {
+        warning('No rating records available to export.');
+        return;
+      }
+
+      const rows = filteredRecords.map((r, idx) => {
+        // Clean phone number (strip extraneous whitespace)
+        const cleanPhone = (r.phoneNumber || '').trim();
+        // Clean trip / bus number (remove trailing slashes)
+        const cleanTripBus = (r.tripBusNo || '').replace(/\s*\/\s*$/, '').trim();
+        const routeText = r.origin && r.destination ? `${r.origin} → ${r.destination}` : (r.origin || r.destination || '-');
+
+        return {
+          'S.No': idx + 1,
+          'Travel Date': r.travelDate || '-',
+          'Operator Name': r.operator || '-',
+          'Trip / Bus No': cleanTripBus || '-',
+          'PNR Number': r.pnrNumber || '-',
+          'From (Origin)': r.origin || '-',
+          'To (Destination)': r.destination || '-',
+          'Full Route': routeText,
+          'Customer Name': r.customerName || '-',
+          'Phone Number': cleanPhone || '-',
+          'Called By Agent': r.calledByAgent || '-',
+          'Rating (Stars)': `${r.rating} / 5 Stars`,
+          'Feedback / Remarks': r.complaintsRemarks || 'No remarks provided'
+        };
+      });
 
       const ws = XLSX.utils.json_to_sheet(rows);
+
+      // Auto-fit column widths so text and numbers are never cut off or cramped in Excel
+      const colKeys = Object.keys(rows[0] || {});
+      const colWidths = colKeys.map((key) => {
+        let maxLen = key.length;
+        rows.forEach((row) => {
+          const val = (row as any)[key] != null ? String((row as any)[key]) : '';
+          if (val.length > maxLen) {
+            maxLen = val.length;
+          }
+        });
+        // Provide generous padding so Excel never truncates numbers or headers
+        return { wch: Math.max(maxLen + 4, 14) };
+      });
+      ws['!cols'] = colWidths;
+
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Bus Ratings');
-      XLSX.writeFile(wb, `Charvik_Bus_Ratings_${new Date().toISOString().slice(0, 10)}.xlsx`);
-      success('Ratings data exported to Excel.');
+      const safeOp = operatorFilter === 'All' ? 'All_Operators' : operatorFilter.replace(/\s+/g, '_');
+      XLSX.writeFile(wb, `Charvik_Bus_Ratings_${safeOp}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      success('Ratings data exported successfully to Excel with full text & number formatting.');
     } catch (err: any) {
       error(`Export failed: ${err.message || 'Unknown error'}`);
     }
   };
 
-  // Print Report
+  // Dedicated Print Function: prints ONLY the clean data table report
   const handlePrint = () => {
-    window.print();
+    try {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        window.print();
+        return;
+      }
+
+      const rowsHtml = filteredRecords.map((r, idx) => {
+        const cleanTripBus = (r.tripBusNo || '').replace(/\s*\/\s*$/, '').trim();
+        const routeText = r.origin && r.destination ? `${r.origin} &rarr; ${r.destination}` : (r.origin || r.destination || '-');
+        const stars = '★'.repeat(Math.max(1, Math.min(5, r.rating))) + '☆'.repeat(Math.max(0, 5 - r.rating));
+
+        return `
+          <tr style="border-bottom: 1px solid #cbd5e1; ${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
+            <td style="padding: 7px 6px; text-align: center; font-weight: bold; color: #64748b; font-size: 10.5px;">${idx + 1}</td>
+            <td style="padding: 7px 6px; white-space: nowrap; font-weight: 600; font-size: 10.5px;">${r.travelDate || '-'}</td>
+            <td style="padding: 7px 6px; font-weight: 800; color: #032b69; white-space: nowrap; font-size: 10.5px;">${r.operator || '-'}</td>
+            <td style="padding: 7px 6px; font-family: monospace; font-weight: bold; white-space: nowrap; font-size: 10.5px;">${cleanTripBus || '-'}</td>
+            <td style="padding: 7px 6px; font-family: monospace; font-weight: 700; color: #0284c7; white-space: nowrap; font-size: 10.5px;">${r.pnrNumber || '-'}</td>
+            <td style="padding: 7px 6px; white-space: nowrap; font-weight: 600; font-size: 10.5px;">${routeText}</td>
+            <td style="padding: 7px 6px; font-weight: 700; color: #0f172a; font-size: 10.5px;">${r.customerName || '-'}</td>
+            <td style="padding: 7px 6px; font-family: monospace; font-weight: 600; white-space: nowrap; font-size: 10.5px;">${r.phoneNumber || '-'}</td>
+            <td style="padding: 7px 6px; white-space: nowrap; font-size: 10.5px;">${r.calledByAgent || '-'}</td>
+            <td style="padding: 7px 6px; text-align: center; white-space: nowrap;">
+              <span style="color: #d97706; font-size: 12px;">${stars}</span>
+              <div style="font-size: 9.5px; font-weight: bold; color: #475569;">${r.rating} / 5</div>
+            </td>
+            <td style="padding: 7px 6px; color: #334155; font-size: 10px;">${r.complaintsRemarks || '-'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>Charvik Bus Ratings Report - ${new Date().toISOString().slice(0, 10)}</title>
+          <style>
+            @page {
+              size: landscape;
+              margin: 8mm 6mm;
+            }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              color: #0f172a;
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+              font-size: 10.5px;
+            }
+            .header-box {
+              border-bottom: 2.5px solid #032b69;
+              padding-bottom: 10px;
+              margin-bottom: 12px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+            .title-area h1 {
+              font-size: 18px;
+              font-weight: 900;
+              color: #032b69;
+              margin: 0 0 2px 0;
+              letter-spacing: -0.3px;
+            }
+            .title-area p {
+              margin: 0;
+              font-size: 10.5px;
+              color: #475569;
+              font-weight: 600;
+            }
+            .meta-pills {
+              display: flex;
+              gap: 8px;
+              align-items: center;
+            }
+            .meta-pill {
+              background: #f8fafc;
+              border: 1px solid #cbd5e1;
+              padding: 4px 8px;
+              border-radius: 6px;
+              font-size: 10px;
+              font-weight: 700;
+              color: #1e293b;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 10.5px;
+            }
+            th {
+              background: #032b69;
+              color: #ffffff;
+              padding: 8px 6px;
+              text-align: left;
+              font-size: 9.5px;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.4px;
+              border: 1px solid #022050;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            td {
+              border: 1px solid #cbd5e1;
+              page-break-inside: avoid;
+            }
+            .footer {
+              margin-top: 12px;
+              padding-top: 6px;
+              border-top: 1px dashed #cbd5e1;
+              display: flex;
+              justify-content: space-between;
+              font-size: 9px;
+              color: #64748b;
+              font-weight: 600;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header-box">
+            <div class="title-area">
+              <h1>CHARVIK STAFFING &amp; FLEET MANAGEMENT</h1>
+              <p>Bus Operator Ratings &amp; Traveler Feedback Report &bull; Verified Data Summary</p>
+            </div>
+            <div class="meta-pills">
+              <div class="meta-pill">Operator: <strong>${operatorFilter}</strong></div>
+              <div class="meta-pill">Total Records: <strong>${filteredRecords.length}</strong></div>
+              <div class="meta-pill">Avg Rating: <strong>${kpis.avgRating} / 5</strong></div>
+              <div class="meta-pill">Printed: <strong>${new Date().toLocaleDateString('en-GB')}</strong></div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 25px; text-align: center;">#</th>
+                <th style="width: 75px;">Travel Date</th>
+                <th style="width: 110px;">Operator</th>
+                <th style="width: 90px;">Trip / Bus</th>
+                <th style="width: 80px;">PNR No</th>
+                <th style="width: 140px;">Route (From &rarr; To)</th>
+                <th style="width: 95px;">Customer Name</th>
+                <th style="width: 95px;">Phone Number</th>
+                <th style="width: 85px;">Called By</th>
+                <th style="width: 75px; text-align: center;">Rating</th>
+                <th>Complaints &amp; Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+
+          <div class="footer">
+            <span>Charvik Fleet Management Portal &bull; Official Ratings Registry</span>
+            <span>Printed on: ${new Date().toLocaleString('en-IN')} &bull; Page 1 of 1</span>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.focus();
+              window.print();
+              setTimeout(function() { window.close(); }, 1200);
+            };
+          </script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch {
+      window.print();
+    }
   };
 
   return (
     <div className="space-y-6 pb-12">
+      {/* ── PRINT-SPECIFIC CSS RULES (FOR BROWSER CTRL+P AS WELL) ── */}
+      <style>{`
+        @media print {
+          @page {
+            size: landscape;
+            margin: 8mm 6mm;
+          }
+          nav, aside, header, [data-sidebar], #admin-sidebar, #admin-topbar, .no-print {
+            display: none !important;
+          }
+          body, html, main {
+            background: #ffffff !important;
+            color: #000000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .print\\:hidden {
+            display: none !important;
+          }
+        }
+      `}</style>
+
       {/* ── TOP HERO HEADER BANNER (MATCHES USER IMAGE 2) ── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#032B69] via-[#004B9E] to-[#0072E5] text-white p-5 sm:p-7 shadow-xl border-2 border-blue-400/30">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#032B69] via-[#004B9E] to-[#0072E5] text-white p-5 sm:p-7 shadow-xl border-2 border-blue-400/30 print:hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide text-blue-200">
@@ -561,6 +788,7 @@ export const BusRating: React.FC = () => {
             <button
               onClick={handleExportExcel}
               className="px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 text-white text-xs font-bold flex items-center gap-1.5 backdrop-blur-md transition-all cursor-pointer shadow-xs"
+              title="Export all data to Excel"
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-300" />
               <span>Export</span>
@@ -568,6 +796,7 @@ export const BusRating: React.FC = () => {
             <button
               onClick={handlePrint}
               className="px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 text-white text-xs font-bold flex items-center gap-1.5 backdrop-blur-md transition-all cursor-pointer shadow-xs"
+              title="Print data table report only"
             >
               <Printer className="w-4 h-4 text-amber-300" />
               <span>Printout</span>
@@ -577,7 +806,7 @@ export const BusRating: React.FC = () => {
       </div>
 
       {/* ── TOP KPI SUMMARY CARDS (5 HORIZONTAL CARDS MATCHING REFERENCE IMAGE 2) ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 print:hidden">
         {/* Card 1: Total Ratings */}
         <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex items-center gap-3.5 hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-md">
@@ -655,7 +884,7 @@ export const BusRating: React.FC = () => {
       </div>
 
       {/* ── MIDDLE DUAL SECTION: LEFT FORM + RIGHT OPERATOR SUMMARY ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 print:hidden">
         {/* Left 2 Cols: Add Bus Rating / Customer Feedback Form */}
         <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
@@ -1038,9 +1267,34 @@ export const BusRating: React.FC = () => {
       </div>
 
       {/* ── BOTTOM DATA TABLE: RECENT RATINGS & TRAVELING DATA ── */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden space-y-3">
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden space-y-3 print:border-none print:shadow-none print:rounded-none print:p-0">
+        {/* Printable Official Header (Visible ONLY on print preview / hard copy) */}
+        <div className="hidden print:block p-3 border-b-2 border-[#032B69] mb-3">
+          <div className="flex items-center justify-between pb-2">
+            <div>
+              <h1 className="text-xl font-black text-[#032B69] tracking-tight">
+                CHARVIK STAFFING &amp; FLEET MANAGEMENT
+              </h1>
+              <p className="text-xs font-bold text-slate-600 mt-0.5">
+                Bus Operator Ratings &amp; Traveler Feedback Report &bull; Official Registry
+              </p>
+            </div>
+            <div className="text-right text-[10px] font-bold text-slate-600">
+              <div>Printed: {new Date().toLocaleDateString('en-GB')}</div>
+              <div>Cycle: Nov-2026</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 pt-1 text-[11px] font-bold text-slate-700">
+            <span>Operator: <strong className="text-[#032B69]">{operatorFilter}</strong></span>
+            <span>&bull;</span>
+            <span>Total Records: <strong className="text-[#032B69]">{filteredRecords.length}</strong></span>
+            <span>&bull;</span>
+            <span>Average Rating: <strong className="text-amber-600">{kpis.avgRating} / 5 Stars</strong></span>
+          </div>
+        </div>
+
         {/* Table Top Header & Controls */}
-        <div className="p-4 sm:p-5 pb-0 flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 sm:p-5 pb-0 flex flex-wrap items-center justify-between gap-3 print:hidden">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-[#032B69] text-white flex items-center justify-center font-bold text-sm">
               📋
@@ -1048,9 +1302,12 @@ export const BusRating: React.FC = () => {
             <h3 className="text-sm font-black text-[#142B4A] tracking-tight">
               Recent Ratings & Traveling Data
             </h3>
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold">
+              {filteredRecords.length} Records
+            </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center flex-wrap gap-2.5">
             {/* Operator Filter */}
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
               <span>Operator:</span>
@@ -1073,6 +1330,28 @@ export const BusRating: React.FC = () => {
               <Calendar className="w-3.5 h-3.5 text-blue-600" />
               <span>Current Cycle: Nov-2026</span>
             </div>
+
+            {/* Printout button inside the Data Tab */}
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              title="Print data table report only"
+            >
+              <Printer className="w-3.5 h-3.5 text-amber-300" />
+              <span>Printout</span>
+            </button>
+
+            {/* Export Excel button inside the Data Tab */}
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              title="Export formatted Excel sheet"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-white" />
+              <span>Export</span>
+            </button>
           </div>
         </div>
 
@@ -1092,7 +1371,7 @@ export const BusRating: React.FC = () => {
                 <th className="py-3 px-3">Called By (Agent)</th>
                 <th className="py-3 px-3 text-center">Rating</th>
                 <th className="py-3 px-3">Complaints / Remarks</th>
-                <th className="py-3 px-3 text-center">Actions</th>
+                <th className="py-3 px-3 text-center print:hidden">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
@@ -1136,7 +1415,7 @@ export const BusRating: React.FC = () => {
                         {rec.calledByAgent}
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                    <td className="py-3 px-3 text-center whitespace-nowrap print:hidden">
                       <div className="flex items-center justify-center gap-0.5 text-amber-500">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
@@ -1158,7 +1437,7 @@ export const BusRating: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                    <td className="py-3 px-3 text-center whitespace-nowrap print:hidden">
                       <div className="flex items-center justify-center gap-1.5">
                         <button
                           type="button"
