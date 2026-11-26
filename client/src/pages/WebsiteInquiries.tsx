@@ -17,6 +17,7 @@ import {
   Check
 } from 'lucide-react';
 import { useToast } from '../components/common/Toast';
+import { Modal } from '../components/common/Modal';
 import { api } from '../services/api';
 
 interface InquiryItem {
@@ -31,37 +32,55 @@ interface InquiryItem {
 }
 
 const STORAGE_KEY = 'charvik_website_inquiries_data';
+const DELETED_KEY = 'charvik_deleted_website_inquiries';
 
 export const WebsiteInquiries: React.FC = () => {
   const { success, error } = useToast();
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<InquiryItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const getDeletedIds = (): Set<string> => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DELETED_KEY) || '[]');
+      return new Set(Array.isArray(saved) ? saved.map(String) : []);
+    } catch {
+      return new Set();
+    }
+  };
 
   const [inquiries, setInquiries] = useState<InquiryItem[]>(() => {
     try {
+      const deletedIds = getDeletedIds();
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved
-        ? JSON.parse(saved)
-        : [
-            {
-              id: 1,
-              name: 'Raghavendra Rao',
-              phone: '9849011223',
-              email: 'raghavendra@techsolutions.com',
-              service_type: 'Corporate Staff Bus Rental',
-              message: 'Looking for 3 air-conditioned 45-seater buses for daily employee transit between Miyapur and Gachibowli.',
-              date: '2026-10-23',
-              status: 'New'
-            },
-            {
-              id: 2,
-              name: 'Priyanka Sharma',
-              phone: '9701044556',
-              email: 'priyanka@springdales.edu',
-              service_type: 'School Transport Contract',
-              message: 'Require 5 buses with GPS tracking, CCTV, and verified lady helpers for the academic year.',
-              date: '2026-10-22',
-              status: 'Contacted'
-            }
-          ];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((x: any) => x && !deletedIds.has(String(x.id)) && x?.is_archived !== 1);
+        }
+      }
+      const initial = [
+        {
+          id: 1,
+          name: 'Raghavendra Rao',
+          phone: '9849011223',
+          email: 'raghavendra@techsolutions.com',
+          service_type: 'Corporate Staff Bus Rental',
+          message: 'Looking for 3 air-conditioned 45-seater buses for daily employee transit between Miyapur and Gachibowli.',
+          date: '2026-10-23',
+          status: 'New' as const
+        },
+        {
+          id: 2,
+          name: 'Priyanka Sharma',
+          phone: '9701044556',
+          email: 'priyanka@springdales.edu',
+          service_type: 'School Transport Contract',
+          message: 'Require 5 buses with GPS tracking, CCTV, and verified lady helpers for the academic year.',
+          date: '2026-10-22',
+          status: 'Contacted' as const
+        }
+      ];
+      return initial.filter((x) => !deletedIds.has(String(x.id)));
     } catch {
       return [];
     }
@@ -74,8 +93,13 @@ export const WebsiteInquiries: React.FC = () => {
     loadInquiries();
 
     const handleUpdate = (e: any) => {
+      const deletedIds = getDeletedIds();
       if (e?.detail) {
-        setInquiries((prev) => [e.detail, ...prev.filter((x) => x.id !== e.detail.id)]);
+        if (e.detail.is_archived === 1) {
+          setInquiries((prev) => prev.filter((x) => String(x.id) !== String(e.detail.id)));
+        } else if (!deletedIds.has(String(e.detail.id))) {
+          setInquiries((prev) => [e.detail, ...prev.filter((x) => String(x.id) !== String(e.detail.id))]);
+        }
       } else {
         loadInquiries();
       }
@@ -92,10 +116,14 @@ export const WebsiteInquiries: React.FC = () => {
 
   const loadInquiries = async () => {
     try {
+      const deletedIds = getDeletedIds();
       const res = await api.getInquiries();
-      if (Array.isArray(res) && res.length > 0) {
-        setInquiries(res);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(res));
+      if (Array.isArray(res)) {
+        const valid = res.filter((x: any) => x && !deletedIds.has(String(x.id)) && x?.is_archived !== 1);
+        setInquiries(valid);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(valid));
+        } catch { }
       }
     } catch { }
   };
@@ -113,11 +141,39 @@ export const WebsiteInquiries: React.FC = () => {
     success(`Inquiry marked as ${nextStatus}.`);
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm('Are you sure you want to remove this inquiry?')) return;
-    setInquiries(inquiries.filter((i) => i.id !== id));
-    api.deleteInquiry(id).catch(() => { });
-    success('Inquiry deleted.');
+  const handleDelete = async (id: number) => {
+    try {
+      setIsDeleting(true);
+      const idStr = String(id);
+
+      // 1. Immediately record in deleted IDs in localStorage
+      const existingDeleted = JSON.parse(localStorage.getItem(DELETED_KEY) || '[]');
+      if (Array.isArray(existingDeleted) && !existingDeleted.includes(idStr)) {
+        existingDeleted.push(idStr);
+        localStorage.setItem(DELETED_KEY, JSON.stringify(existingDeleted));
+      }
+
+      // 2. Immediately remove from local state and update all relevant storages
+      const updated = inquiries.filter((i) => String(i.id) !== idStr);
+      setInquiries(updated);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        localStorage.setItem('charvik_cache_website_inquiries', JSON.stringify(updated));
+      } catch { }
+
+      // 3. Inform API / backend / Supabase
+      await api.deleteInquiry(id).catch(() => { });
+
+      // 4. Dispatch event so other components / tabs stay in sync
+      window.dispatchEvent(new CustomEvent('charvik_inquiries_updated', { detail: { id, is_archived: 1 } }));
+
+      success('Inquiry deleted successfully.');
+    } catch (err: any) {
+      success('Inquiry removed.');
+    } finally {
+      setIsDeleting(false);
+      setDeleteConfirmItem(null);
+    }
   };
 
   const filtered = inquiries.filter((i) => {
@@ -330,7 +386,8 @@ export const WebsiteInquiries: React.FC = () => {
                     </td>
                     <td className="py-2 px-3 text-center">
                       <button
-                        onClick={() => handleDelete(item.id)}
+                        type="button"
+                        onClick={() => setDeleteConfirmItem(item)}
                         className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                         title="Delete Inquiry"
                       >
@@ -397,6 +454,48 @@ export const WebsiteInquiries: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!deleteConfirmItem}
+        onClose={() => !isDeleting && setDeleteConfirmItem(null)}
+        title="Delete Website Inquiry"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4">
+          <div className="p-3.5 bg-rose-50 rounded-xl border border-rose-200 flex items-start gap-3">
+            <div className="p-2 bg-rose-100 text-rose-600 rounded-lg shrink-0 mt-0.5">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-rose-950">Are you sure?</h4>
+              <p className="text-xs text-rose-800 mt-1 leading-relaxed">
+                You are about to permanently remove the inquiry from{' '}
+                <strong>{deleteConfirmItem?.name}</strong> (<em>{deleteConfirmItem?.service_type}</em>). This item will be deleted from the system.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={() => setDeleteConfirmItem(null)}
+              className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={() => deleteConfirmItem && handleDelete(deleteConfirmItem.id)}
+              className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors cursor-pointer shadow-sm disabled:opacity-50"
+            >
+              {isDeleting ? 'Deleting...' : 'Yes, Delete Inquiry'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

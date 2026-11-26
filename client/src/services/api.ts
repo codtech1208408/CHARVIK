@@ -268,12 +268,22 @@ async function handleFallbackTableCrud(
 
   if (!isItemRoute) {
     if (method === 'GET') {
+      // Get deleted IDs to prevent resurrection of deleted items
+      let deletedIds = new Set<string>();
+      try {
+        const delKey = `charvik_deleted_${tableKey}`;
+        const existingDeleted = JSON.parse(localStorage.getItem(delKey) || '[]');
+        if (Array.isArray(existingDeleted)) {
+          deletedIds = new Set(existingDeleted.map((id: any) => String(id)));
+        }
+      } catch { }
+
       // 1. First retrieve reliable local items (IndexedDB + localStorage)
       let localList = (await getReliableCollection<any>(tableKey)) || [];
-      localList = localList.filter((x: any) => x && x?.is_archived !== 1);
+      localList = localList.filter((x: any) => x && x?.is_archived !== 1 && !deletedIds.has(String(x.id)));
 
-      // 2. If local store is empty, seed with baseline operational data
-      if (localList.length === 0) {
+      // 2. If local store is empty and user hasn't explicitly deleted all items, seed with baseline operational data
+      if (localList.length === 0 && deletedIds.size === 0) {
         if (tableKey === 'buses') localList = [...BASE_FLEET_BUSES];
         else if (tableKey === 'routes' || tableKey === 'transit_routes') localList = [...BASE_FLEET_ROUTES];
         else if (tableKey === 'organizers') localList = [...BASE_FLEET_ORGANIZERS];
@@ -310,8 +320,8 @@ async function handleFallbackTableCrud(
         const supabasePromise = supabase.from(supabaseTable).select('*').order('id', { ascending: false });
         const { data, error } = await Promise.race([supabasePromise, timeoutPromise]);
         if (!error && Array.isArray(data) && data.length > 0) {
-          const remoteValid = data.filter((x: any) => x && x?.is_archived !== 1);
-          localList = mergeSeedCollection(remoteValid, localList);
+          const remoteValid = data.filter((x: any) => x && x?.is_archived !== 1 && !deletedIds.has(String(x.id)));
+          localList = mergeSeedCollection(remoteValid, localList).filter((x: any) => !deletedIds.has(String(x.id)));
           setLocalCollection(tableKey, localList);
         } else {
           // Cloud sync backup fallback for tables stored as application_settings JSON
@@ -319,15 +329,15 @@ async function handleFallbackTableCrud(
           if (appData && appData.value) {
             const parsed = JSON.parse(appData.value);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              const remoteValid = parsed.filter((x: any) => x && x?.is_archived !== 1);
-              localList = mergeSeedCollection(remoteValid, localList);
+              const remoteValid = parsed.filter((x: any) => x && x?.is_archived !== 1 && !deletedIds.has(String(x.id)));
+              localList = mergeSeedCollection(remoteValid, localList).filter((x: any) => !deletedIds.has(String(x.id)));
               setLocalCollection(tableKey, localList);
             }
           }
         }
       } catch { }
 
-      let list = localList;
+      let list = localList.filter((x: any) => !deletedIds.has(String(x.id)));
       if (options?.enrich) list = options.enrich(list);
       if (options?.filter) list = options.filter(list, params);
       return list;
@@ -445,12 +455,22 @@ async function handleFallbackTableCrud(
     }
 
     if (method === 'DELETE') {
-      // 1. Immediately delete from local collection
+      // 1. Immediately track deleted ID in localStorage so it can never be re-seeded or revived
+      try {
+        const delKey = `charvik_deleted_${tableKey}`;
+        const existingDeleted = JSON.parse(localStorage.getItem(delKey) || '[]');
+        if (Array.isArray(existingDeleted) && !existingDeleted.includes(String(itemId))) {
+          existingDeleted.push(String(itemId));
+          localStorage.setItem(delKey, JSON.stringify(existingDeleted));
+        }
+      } catch { }
+
+      // 2. Immediately delete from local collection
       const currentList = (await getReliableCollection<any>(tableKey)) || [];
       const updatedList = currentList.filter((x: any) => String(x.id) !== String(itemId));
       setLocalCollection(tableKey, updatedList);
 
-      // 2. Background delete from Supabase
+      // 3. Background delete from Supabase
       try {
         await supabase.from(supabaseTable).delete().eq('id', itemId);
       } catch { }
