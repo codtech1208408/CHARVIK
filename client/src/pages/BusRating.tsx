@@ -28,6 +28,8 @@ import {
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
 import * as XLSX from 'xlsx';
+import { printSheet } from '../utils/printSheet';
+import { exportTableToExcel } from '../utils/exportToExcel';
 
 export interface BusRatingRecord {
   id: string;
@@ -490,7 +492,7 @@ export const BusRating: React.FC = () => {
     };
   }, [records]);
 
-  // Export to Excel with auto-fitted column widths, clean headers, and uncorrupted numbers
+  // Export to Excel using Charvik standard high-definition exporter
   const handleExportExcel = () => {
     try {
       if (filteredRecords.length === 0) {
@@ -498,230 +500,113 @@ export const BusRating: React.FC = () => {
         return;
       }
 
+      const headers = [
+        'S.No',
+        'Travel Date',
+        'Operator Name',
+        'Trip / Bus No',
+        'PNR Number',
+        'Route (From → To)',
+        'Customer Name',
+        'Phone Number',
+        'Called By Agent',
+        'Star Rating',
+        'Customer Feedback / Remarks'
+      ];
+
       const rows = filteredRecords.map((r, idx) => {
-        // Clean phone number (strip extraneous whitespace)
         const cleanPhone = (r.phoneNumber || '').trim();
-        // Clean trip / bus number (remove trailing slashes)
         const cleanTripBus = (r.tripBusNo || '').replace(/\s*\/\s*$/, '').trim();
         const routeText = r.origin && r.destination ? `${r.origin} → ${r.destination}` : (r.origin || r.destination || '-');
+        const starText = `${r.rating} / 5 Stars`;
 
-        return {
-          'S.No': idx + 1,
-          'Travel Date': r.travelDate || '-',
-          'Operator Name': r.operator || '-',
-          'Trip / Bus No': cleanTripBus || '-',
-          'PNR Number': r.pnrNumber || '-',
-          'From (Origin)': r.origin || '-',
-          'To (Destination)': r.destination || '-',
-          'Full Route': routeText,
-          'Customer Name': r.customerName || '-',
-          'Phone Number': cleanPhone || '-',
-          'Called By Agent': r.calledByAgent || '-',
-          'Rating (Stars)': `${r.rating} / 5 Stars`,
-          'Feedback / Remarks': r.complaintsRemarks || 'No remarks provided'
-        };
+        return [
+          idx + 1,
+          r.travelDate || '-',
+          r.operator || '-',
+          cleanTripBus || '-',
+          r.pnrNumber || '-',
+          routeText,
+          r.customerName || '-',
+          cleanPhone || '-',
+          r.calledByAgent || '-',
+          starText,
+          r.complaintsRemarks || 'No remarks provided'
+        ];
       });
 
-      const ws = XLSX.utils.json_to_sheet(rows);
-
-      // Auto-fit column widths so text and numbers are never cut off or cramped in Excel
-      const colKeys = Object.keys(rows[0] || {});
-      const colWidths = colKeys.map((key) => {
-        let maxLen = key.length;
-        rows.forEach((row) => {
-          const val = (row as any)[key] != null ? String((row as any)[key]) : '';
-          if (val.length > maxLen) {
-            maxLen = val.length;
-          }
-        });
-        // Provide generous padding so Excel never truncates numbers or headers
-        return { wch: Math.max(maxLen + 4, 14) };
+      exportTableToExcel({
+        title: 'BUS OPERATOR RATINGS & TRAVELER FEEDBACK REPORT',
+        subtitle: `Operator: ${operatorFilter} | Total Records: ${filteredRecords.length} | Avg Rating: ${kpis.avgRating} / 5`,
+        filename: `Charvik_Bus_Ratings_${operatorFilter === 'All' ? 'All_Operators' : operatorFilter.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}`,
+        sheetName: 'Bus Ratings',
+        headers,
+        rows
       });
-      ws['!cols'] = colWidths;
 
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Bus Ratings');
-      const safeOp = operatorFilter === 'All' ? 'All_Operators' : operatorFilter.replace(/\s+/g, '_');
-      XLSX.writeFile(wb, `Charvik_Bus_Ratings_${safeOp}_${new Date().toISOString().slice(0, 10)}.xlsx`);
-      success('Ratings data exported successfully to Excel with full text & number formatting.');
+      success('Ratings data exported to Excel with official Charvik letterhead and full formatting.');
     } catch (err: any) {
       error(`Export failed: ${err.message || 'Unknown error'}`);
     }
   };
 
-  // Dedicated Print Function: prints ONLY the clean data table report
+  // Dedicated Print Function using Charvik printSheet (matches all other printouts: logo, mobile, email, signatory)
   const handlePrint = () => {
     try {
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) {
-        window.print();
-        return;
-      }
-
       const rowsHtml = filteredRecords.map((r, idx) => {
         const cleanTripBus = (r.tripBusNo || '').replace(/\s*\/\s*$/, '').trim();
         const routeText = r.origin && r.destination ? `${r.origin} &rarr; ${r.destination}` : (r.origin || r.destination || '-');
         const stars = '★'.repeat(Math.max(1, Math.min(5, r.rating))) + '☆'.repeat(Math.max(0, 5 - r.rating));
 
         return `
-          <tr style="border-bottom: 1px solid #cbd5e1; ${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
-            <td style="padding: 7px 6px; text-align: center; font-weight: bold; color: #64748b; font-size: 10.5px;">${idx + 1}</td>
-            <td style="padding: 7px 6px; white-space: nowrap; font-weight: 600; font-size: 10.5px;">${r.travelDate || '-'}</td>
-            <td style="padding: 7px 6px; font-weight: 800; color: #032b69; white-space: nowrap; font-size: 10.5px;">${r.operator || '-'}</td>
-            <td style="padding: 7px 6px; font-family: monospace; font-weight: bold; white-space: nowrap; font-size: 10.5px;">${cleanTripBus || '-'}</td>
-            <td style="padding: 7px 6px; font-family: monospace; font-weight: 700; color: #0284c7; white-space: nowrap; font-size: 10.5px;">${r.pnrNumber || '-'}</td>
-            <td style="padding: 7px 6px; white-space: nowrap; font-weight: 600; font-size: 10.5px;">${routeText}</td>
-            <td style="padding: 7px 6px; font-weight: 700; color: #0f172a; font-size: 10.5px;">${r.customerName || '-'}</td>
-            <td style="padding: 7px 6px; font-family: monospace; font-weight: 600; white-space: nowrap; font-size: 10.5px;">${r.phoneNumber || '-'}</td>
-            <td style="padding: 7px 6px; white-space: nowrap; font-size: 10.5px;">${r.calledByAgent || '-'}</td>
-            <td style="padding: 7px 6px; text-align: center; white-space: nowrap;">
-              <span style="color: #d97706; font-size: 12px;">${stars}</span>
-              <div style="font-size: 9.5px; font-weight: bold; color: #475569;">${r.rating} / 5</div>
+          <tr style="${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
+            <td style="text-align: center; font-weight: bold; width: 35px;">${idx + 1}</td>
+            <td style="white-space: nowrap; font-weight: 700; width: 85px;">${r.travelDate || '-'}</td>
+            <td style="font-weight: 800; color: #032b69; white-space: nowrap; width: 120px;">${r.operator || '-'}</td>
+            <td style="font-family: monospace; font-weight: bold; white-space: nowrap; width: 95px;">${cleanTripBus || '-'}</td>
+            <td style="font-family: monospace; font-weight: 800; color: #0284c7; white-space: nowrap; width: 85px;">${r.pnrNumber || '-'}</td>
+            <td style="white-space: nowrap; font-weight: 600; width: 140px;">${routeText}</td>
+            <td style="font-weight: 700; white-space: nowrap; width: 110px;">${r.customerName || '-'}</td>
+            <td style="font-family: monospace; font-weight: 700; white-space: nowrap; width: 100px;">${r.phoneNumber || '-'}</td>
+            <td style="white-space: nowrap; width: 90px;">${r.calledByAgent || '-'}</td>
+            <td style="text-align: center; white-space: nowrap; width: 75px;">
+              <span style="color: #d97706; font-size: 13px;">${stars}</span>
+              <div style="font-size: 10px; font-weight: 800; color: #334155;">${r.rating} / 5</div>
             </td>
-            <td style="padding: 7px 6px; color: #334155; font-size: 10px;">${r.complaintsRemarks || '-'}</td>
+            <td style="font-size: 10.5px; color: #334155;">${r.complaintsRemarks || '-'}</td>
           </tr>
         `;
       }).join('');
 
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Charvik Bus Ratings Report - ${new Date().toISOString().slice(0, 10)}</title>
-          <style>
-            @page {
-              size: landscape;
-              margin: 8mm 6mm;
-            }
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-              color: #0f172a;
-              margin: 0;
-              padding: 0;
-              background: #ffffff;
-              font-size: 10.5px;
-            }
-            .header-box {
-              border-bottom: 2.5px solid #032b69;
-              padding-bottom: 10px;
-              margin-bottom: 12px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            }
-            .title-area h1 {
-              font-size: 18px;
-              font-weight: 900;
-              color: #032b69;
-              margin: 0 0 2px 0;
-              letter-spacing: -0.3px;
-            }
-            .title-area p {
-              margin: 0;
-              font-size: 10.5px;
-              color: #475569;
-              font-weight: 600;
-            }
-            .meta-pills {
-              display: flex;
-              gap: 8px;
-              align-items: center;
-            }
-            .meta-pill {
-              background: #f8fafc;
-              border: 1px solid #cbd5e1;
-              padding: 4px 8px;
-              border-radius: 6px;
-              font-size: 10px;
-              font-weight: 700;
-              color: #1e293b;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              font-size: 10.5px;
-            }
-            th {
-              background: #032b69;
-              color: #ffffff;
-              padding: 8px 6px;
-              text-align: left;
-              font-size: 9.5px;
-              font-weight: 800;
-              text-transform: uppercase;
-              letter-spacing: 0.4px;
-              border: 1px solid #022050;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-            td {
-              border: 1px solid #cbd5e1;
-              page-break-inside: avoid;
-            }
-            .footer {
-              margin-top: 12px;
-              padding-top: 6px;
-              border-top: 1px dashed #cbd5e1;
-              display: flex;
-              justify-content: space-between;
-              font-size: 9px;
-              color: #64748b;
-              font-weight: 600;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header-box">
-            <div class="title-area">
-              <h1>CHARVIK STAFFING &amp; FLEET MANAGEMENT</h1>
-              <p>Bus Operator Ratings &amp; Traveler Feedback Report &bull; Verified Data Summary</p>
-            </div>
-            <div class="meta-pills">
-              <div class="meta-pill">Operator: <strong>${operatorFilter}</strong></div>
-              <div class="meta-pill">Total Records: <strong>${filteredRecords.length}</strong></div>
-              <div class="meta-pill">Avg Rating: <strong>${kpis.avgRating} / 5</strong></div>
-              <div class="meta-pill">Printed: <strong>${new Date().toLocaleDateString('en-GB')}</strong></div>
-            </div>
-          </div>
+      const tableHtml = `
+        <table style="width: 100%; border-collapse: collapse; margin-top: 4px;">
+          <thead>
+            <tr>
+              <th style="width: 35px; text-align: center;">#</th>
+              <th style="width: 85px; text-align: left;">Travel Date</th>
+              <th style="width: 120px; text-align: left;">Operator</th>
+              <th style="width: 95px; text-align: left;">Trip / Bus</th>
+              <th style="width: 85px; text-align: left;">PNR No</th>
+              <th style="width: 140px; text-align: left;">Route (From &rarr; To)</th>
+              <th style="width: 110px; text-align: left;">Customer Name</th>
+              <th style="width: 100px; text-align: left;">Phone Number</th>
+              <th style="width: 90px; text-align: left;">Called By</th>
+              <th style="width: 75px; text-align: center;">Rating</th>
+              <th style="text-align: left;">Complaints &amp; Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      `;
 
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 25px; text-align: center;">#</th>
-                <th style="width: 75px;">Travel Date</th>
-                <th style="width: 110px;">Operator</th>
-                <th style="width: 90px;">Trip / Bus</th>
-                <th style="width: 80px;">PNR No</th>
-                <th style="width: 140px;">Route (From &rarr; To)</th>
-                <th style="width: 95px;">Customer Name</th>
-                <th style="width: 95px;">Phone Number</th>
-                <th style="width: 85px;">Called By</th>
-                <th style="width: 75px; text-align: center;">Rating</th>
-                <th>Complaints &amp; Remarks</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-
-          <div class="footer">
-            <span>Charvik Fleet Management Portal &bull; Official Ratings Registry</span>
-            <span>Printed on: ${new Date().toLocaleString('en-IN')} &bull; Page 1 of 1</span>
-          </div>
-
-          <script>
-            window.onload = function() {
-              window.focus();
-              window.print();
-              setTimeout(function() { window.close(); }, 1200);
-            };
-          </script>
-        </body>
-        </html>
-      `);
-      printWindow.document.close();
+      printSheet({
+        title: 'BUS OPERATOR RATINGS & TRAVELER FEEDBACK REPORT',
+        subtitle: `Operator: ${operatorFilter} | Total Records: ${filteredRecords.length} | Average Rating: ${kpis.avgRating} / 5 Stars`,
+        htmlContent: tableHtml,
+        orientation: 'landscape'
+      });
     } catch {
       window.print();
     }
