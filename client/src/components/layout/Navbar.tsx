@@ -163,16 +163,16 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Vertical Divider */}
         <div className="h-8 w-[1.5px] bg-slate-300 mx-1 shrink-0" />
 
-        {/* Charvik brand logo - centered with ample clearance from top and bottom blue lines */}
+        {/* Charvik brand logo - enlarged and centered with clean clearance from blue borders */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer select-none py-1 my-auto group"
+          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer select-none my-auto group"
           title="Charvik Staffing Consultancy"
         >
           <img
-            src="/logo-navbar.png?v=20261126_full_v8"
+            src="/logo-navbar.png?v=20261126_full_v9"
             alt="Charvik Staffing Consultancy"
-            className="h-[58px] sm:h-[64px] w-auto max-w-[290px] sm:max-w-[320px] object-contain transition-transform group-hover:scale-[1.02]"
+            className="h-[72px] sm:h-[78px] w-auto max-w-[340px] sm:max-w-[380px] object-contain transition-transform group-hover:scale-[1.02]"
           />
         </Link>
 
