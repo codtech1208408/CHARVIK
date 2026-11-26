@@ -23,7 +23,6 @@ import {
   MessageSquare,
   Upload,
   Image as ImageIcon,
-  Zap,
   Check
 } from 'lucide-react';
 import { useToast } from '../components/common/Toast';
@@ -669,24 +668,14 @@ export const BusRating: React.FC = () => {
           </div>
 
           <form onSubmit={handleSaveRating} className="space-y-4">
-            {/* Automatic Selection Bar: Service & Vehicle Number */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-sky-50 border border-blue-200/80 shadow-xs space-y-2.5">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-1.5 text-xs font-black text-blue-900 uppercase tracking-wide">
-                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-                  <span>Auto-Fill Options (Select Automatically)</span>
-                </div>
-                <span className="text-[10px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200">
-                  ⚡ Automatically populates Route, Origin, Destination, Operator & Bus
-                </span>
-              </div>
-
+            {/* Service & Vehicle Number Selection */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-sky-50 border border-blue-200/80 shadow-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* 1. Select Service Automatically */}
+                {/* 1. Service */}
                 <div>
                   <label className="block text-[11px] font-black text-blue-900 mb-1 flex items-center gap-1">
                     <Route className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Select Service Automatically</span>
+                    <span>Service</span>
                   </label>
                   <select
                     value={selectedServiceAuto}
@@ -702,11 +691,11 @@ export const BusRating: React.FC = () => {
                   </select>
                 </div>
 
-                {/* 2. Select Vehicle Number Automatically */}
+                {/* 2. Vehicle Number */}
                 <div>
                   <label className="block text-[11px] font-black text-blue-900 mb-1 flex items-center gap-1">
                     <Bus className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Select Vehicle Number Automatically</span>
+                    <span>Vehicle Number</span>
                   </label>
                   <select
                     value={selectedVehicleAuto}
