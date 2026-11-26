@@ -166,13 +166,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Charvik brand logo - centered with ample clearance from top and bottom blue lines */}
         <Link
           to={`${basePrefix}/dashboard`}
-          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer select-none py-2 my-auto group"
+          className="flex items-center justify-center shrink-0 transition-opacity hover:opacity-95 cursor-pointer select-none py-1 my-auto group"
           title="Charvik Staffing Consultancy"
         >
           <img
-            src="/charvik-print-logo.png"
+            src="/logo-navbar.png?v=20261126_full_v8"
             alt="Charvik Staffing Consultancy"
-            className="h-[54px] sm:h-[60px] w-auto max-w-[280px] object-contain transition-transform group-hover:scale-[1.02]"
+            className="h-[58px] sm:h-[64px] w-auto max-w-[290px] sm:max-w-[320px] object-contain transition-transform group-hover:scale-[1.02]"
           />
         </Link>
 
