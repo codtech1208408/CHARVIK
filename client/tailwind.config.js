@@ -29,7 +29,8 @@ export default {
         slatebg: '#F5F7FB',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Poppins', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        poppins: ['Poppins', 'sans-serif'],
       },
       boxShadow: {
         subtle: '0 1px 3px 0 rgba(20, 43, 74, 0.05), 0 1px 2px 0 rgba(20, 43, 74, 0.03)',
