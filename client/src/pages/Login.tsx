@@ -129,10 +129,14 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
     setConfirmPassword('');
     setForgotError('');
     setForgotSuccessMsg('');
-    if (emailOrUser && emailOrUser.includes('@')) {
-      setForgotEmail(emailOrUser);
+    if (emailOrUser && emailOrUser.trim()) {
+      setForgotEmail(emailOrUser.trim());
     } else if (selectedRole === 'Admin') {
-      setForgotEmail('admin@charvik.com');
+      setForgotEmail('charvikstaffingconsulrancy@gmail.com');
+    } else if (selectedRole === 'Operator') {
+      setForgotEmail('operator@charvik.com');
+    } else if (selectedRole === 'Captain') {
+      setForgotEmail('captain@charvik.com');
     } else {
       setForgotEmail('');
     }
@@ -141,7 +145,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!forgotEmail.trim()) {
-      setForgotError('Please enter your admin email or username.');
+      setForgotError(`Please enter your ${selectedRole === 'Captain' ? 'Captain / Manager' : selectedRole} username, email, or mobile.`);
       return;
     }
     setForgotLoading(true);
@@ -211,20 +215,34 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
         newPassword: newPassword,
         otpToken: sessionStorage.getItem('charvik_reset_otp_token') || undefined
       });
+
       // Immediately persist the custom password in local storage & Supabase
-      localStorage.setItem('charvik_custom_admin_password', newPassword);
+      const lower = forgotEmail.toLowerCase();
+      let settingKey = 'admin_password';
+      let localKey = 'charvik_custom_admin_password';
+
+      if (selectedRole === 'Operator' || lower.includes('operator') || lower.includes('support')) {
+        settingKey = 'operator_password';
+        localKey = 'charvik_custom_operator_password';
+      } else if (selectedRole === 'Captain' || lower.includes('captain') || lower.includes('manager')) {
+        settingKey = 'captain_password';
+        localKey = 'charvik_custom_captain_password';
+      }
+
+      localStorage.setItem(localKey, newPassword);
       try {
         await supabase.from('application_settings').upsert({
-          key: 'admin_password',
+          key: settingKey,
           value: newPassword,
           updated_at: new Date().toISOString()
         }, { onConflict: 'key' });
       } catch (syncErr) {
         console.warn('Supabase password persistence note:', syncErr);
       }
+
       sessionStorage.removeItem('charvik_reset_otp_token');
       setForgotStep(4);
-      success('Admin password reset successfully! You can now log in.');
+      success(`${selectedRole === 'Captain' ? 'Captain / Manager' : selectedRole} password reset successfully! You can now log in.`);
     } catch (err: any) {
       setForgotError(err.message || 'Failed to reset password. OTP may be invalid or expired.');
     } finally {
@@ -388,15 +406,13 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                 <label className="block text-xs font-bold text-[#172B4D] uppercase tracking-wider">
                   Password
                 </label>
-                {selectedRole === 'Admin' && (
-                  <button
-                    type="button"
-                    onClick={handleOpenForgotModal}
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
-                  >
-                    Forgot Password?
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={handleOpenForgotModal}
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                >
+                  Forgot Password?
+                </button>
               </div>
               <div className="relative rounded-xl shadow-xs">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -438,21 +454,12 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
             </div>
           </form>
 
-          {/* Quick Demo Credentials Fill Button — only for Operator & Captain, NOT for Admin */}
-          {selectedRole !== 'Admin' && (
-            <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center">
-              <button
-                type="button"
-                onClick={handleDemoFill}
-                className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100/80 px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>Auto-Fill Demo Credentials ({currentTheme.emailPlaceholder})</span>
-              </button>
-              <p className="text-[11px] text-slate-400 mt-2 text-center">
-                Protected portal with secure encrypted tokens & role verification.
-              </p>
-            </div>
-          )}
+          {/* Footer note */}
+          <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col items-center">
+            <p className="text-[11px] text-slate-400 text-center">
+              Protected portal with secure encrypted tokens &amp; role verification.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -467,7 +474,9 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                   <Key className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold tracking-tight">Admin Password Reset</h3>
+                  <h3 className="text-sm font-bold tracking-tight">
+                    {selectedRole === 'Admin' ? 'Admin' : selectedRole === 'Captain' ? 'Captain / Manager' : 'Operator'} Password Reset
+                  </h3>
                   <p className="text-[11px] text-slate-300">Secure SMTP email verification via Gmail</p>
                 </div>
               </div>
@@ -516,12 +525,12 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
               {forgotStep === 1 && (
                 <form onSubmit={handleSendOtp} className="space-y-4">
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Enter your Admin username or email address. We will immediately send a 6-digit verification code to the registered administrator email (<strong>charvikstaffingconsulrancy@gmail.com</strong>).
+                    Enter your {selectedRole === 'Admin' ? 'Admin' : selectedRole === 'Captain' ? 'Captain / Manager' : 'Operator'} username, email address, or registered mobile number. We will send a 6-digit verification code to the registered email address.
                   </p>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Admin Email or Username
+                      {selectedRole === 'Admin' ? 'Admin Email or Username' : selectedRole === 'Captain' ? 'Captain / Manager Username or Mobile' : 'Operator Username or Email'}
                     </label>
                     <div className="relative rounded-xl shadow-xs">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -531,7 +540,13 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                         type="text"
                         value={forgotEmail}
                         onChange={(e) => setForgotEmail(e.target.value)}
-                        placeholder="admin@charvik.com or charvikstaffingconsulrancy@gmail.com"
+                        placeholder={
+                          selectedRole === 'Admin'
+                            ? 'admin@charvik.com or charvikstaffingconsulrancy@gmail.com'
+                            : selectedRole === 'Captain'
+                            ? 'captain@charvik.com or 9701055555'
+                            : 'operator@charvik.com or Username'
+                        }
                         className="block w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white"
                         required
                         autoFocus
@@ -738,7 +753,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                   <div>
                     <h4 className="text-base font-bold text-slate-900">Password Reset Successful!</h4>
                     <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                      Your new admin password is now active. You can immediately log into the Fleet Administration Portal.
+                      Your new {selectedRole === 'Captain' ? 'Captain / Manager' : selectedRole} password is now active. You can immediately log into the portal.
                     </p>
                   </div>
                   <div className="pt-2">
@@ -746,13 +761,12 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                       type="button"
                       onClick={() => {
                         setIsForgotOpen(false);
-                        setSelectedRole('Admin');
-                        setEmailOrUser(forgotEmail || 'admin@charvik.com');
+                        setEmailOrUser(forgotEmail);
                         setPassword(newPassword);
                       }}
                       className="w-full py-2.5 px-4 text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
-                      <span>Proceed to Admin Sign In</span>
+                      <span>Proceed to Sign In</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>

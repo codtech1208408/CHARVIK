@@ -535,6 +535,32 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       'charvikstaffingconsultancy@gmail.com'
     ].includes(identifier) || (identifier.includes('charvik') && (identifier.includes('admin') || identifier.includes('@gmail.com')));
 
+    // Captain / Operations Manager custom password
+    let savedCaptainPassword = localStorage.getItem('charvik_custom_captain_password');
+    if (!savedCaptainPassword) {
+      try {
+        const { data: setting } = await supabase.from('application_settings').select('value').eq('key', 'captain_password').single();
+        if (setting && setting.value) {
+          savedCaptainPassword = setting.value;
+          localStorage.setItem('charvik_custom_captain_password', setting.value);
+        }
+      } catch { }
+    }
+    const isCustomCaptainPassMatch = Boolean(savedCaptainPassword && password === savedCaptainPassword);
+
+    // Operator / Support Staff custom password
+    let savedOperatorPassword = localStorage.getItem('charvik_custom_operator_password');
+    if (!savedOperatorPassword) {
+      try {
+        const { data: setting } = await supabase.from('application_settings').select('value').eq('key', 'operator_password').single();
+        if (setting && setting.value) {
+          savedOperatorPassword = setting.value;
+          localStorage.setItem('charvik_custom_operator_password', setting.value);
+        }
+      } catch { }
+    }
+    const isCustomOperatorPassMatch = Boolean(savedOperatorPassword && password === savedOperatorPassword);
+
     if (
       isSuperAdminIdentifier &&
       (['admin123', 'adminpassword', 'Snusrvcc@1527'].includes(password) || isCustomAdminPassMatch)
@@ -548,24 +574,24 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         status: 'Active'
       };
     }
-    // Employee (Fleet Captain)
+    // Employee (Fleet Captain / Manager)
     else if (
-      ['9701055555', 'captain@charvik.com', 'captain'].includes(identifier) &&
-      ['captain123', 'admin123'].includes(password)
+      ['9701055555', 'captain@charvik.com', 'captain', 'manager@charvik.com', 'manager'].includes(identifier) &&
+      (['captain123', 'manager123', 'admin123'].includes(password) || isCustomCaptainPassMatch)
     ) {
       matchedUser = {
         id: 2,
         name: 'Employee',
         email: 'captain@charvik.com',
         phone_number: '9701055555',
-        role: 'Captain',
+        role: identifier.includes('manager') ? 'Manager' : 'Captain',
         status: 'Active'
       };
     }
     // Operator (Support Staff)
     else if (
       ['supporter@charvik.com', 'supporter', 'support', 'operator@charvik.com', 'operator', '9848033445'].includes(identifier) &&
-      ['supporter123', 'support123', 'operator123', 'admin123'].includes(password)
+      (['supporter123', 'support123', 'operator123', 'admin123'].includes(password) || isCustomOperatorPassMatch)
     ) {
       const creds = getLocalCollection<any>('staff_credentials');
       const found = creds.find((c: any) => c.id === 3 || c.email_or_username === 'supporter@charvik.com');
@@ -594,14 +620,12 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
             if (found.status !== 'Active') {
               throw new Error('Your account has been disabled by the Administrator.');
             }
-            // In demo / cloud mode, accept password if it matches role demo default or standard password
-            if (
-              password === 'admin123' ||
-              password === 'captain123' ||
-              password === 'supporter123' ||
-              password === 'password123' ||
-              password.length >= 4
-            ) {
+            const isMatch = password === found.password_hash ||
+              (found.role === 'Super Admin' && isCustomAdminPassMatch) ||
+              (['Support Staff', 'Operator'].includes(found.role) && isCustomOperatorPassMatch) ||
+              (['Captain', 'Manager'].includes(found.role) && isCustomCaptainPassMatch) ||
+              ['admin123', 'captain123', 'supporter123', 'operator123', 'manager123'].includes(password);
+            if (isMatch) {
               matchedUser = {
                 id: found.id,
                 name: found.name,

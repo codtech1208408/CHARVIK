@@ -35,8 +35,15 @@ export default async function handler(req: any, res: any) {
 
   const identifier = String(body?.email_or_username || body?.email || body?.username || body?.phone_number || '').trim();
   if (!identifier) {
-    return res.status(400).json({ error: 'Please enter your Admin Email, Username, or registered Mobile Number.' });
+    return res.status(400).json({ error: 'Please enter your username, email, or mobile number.' });
   }
+
+  const lowerIdent = identifier.toLowerCase();
+  const roleName = lowerIdent.includes('operator') || lowerIdent.includes('support')
+    ? 'Operator'
+    : lowerIdent.includes('captain') || lowerIdent.includes('manager')
+    ? 'Captain / Manager'
+    : 'Admin';
 
   const smtpUser = (process.env.SMTP_USER || 'charvikstaffingconsulrancy@gmail.com').trim();
   const smtpPass = (process.env.SMTP_PASSWORD || 'xjxt hfmz wgqt dsgz').replace(/\s+/g, '');
@@ -44,8 +51,11 @@ export default async function handler(req: any, res: any) {
   const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10);
   const smtpFrom = process.env.SMTP_FROM || `"Charvik Staffing Consultancy" <${smtpUser}>`;
 
-  // Always send to official admin email for admin reset requests
-  const targetEmail = smtpUser;
+  // If a personal/external email address is provided, deliver directly to it; otherwise send to registered admin inbox
+  let targetEmail = smtpUser;
+  if (identifier.includes('@') && !lowerIdent.endsWith('@charvik.com')) {
+    targetEmail = identifier;
+  }
 
   // Generate 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -76,13 +86,13 @@ export default async function handler(req: any, res: any) {
           <tr>
             <td style="padding: 32px 30px 24px 30px;">
               <h2 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 12px 0;">
-                Admin Password Reset Request
+                ${roleName} Password Reset Request
               </h2>
               <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 20px 0;">
-                Hello <strong>Administrator</strong>,
+                Hello <strong>${roleName}</strong>,
               </p>
               <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0;">
-                A password reset was requested for your <strong>Charvik Admin account</strong> (${identifier}). Use this 6-digit verification code to reset your password:
+                A password reset was requested for your <strong>Charvik ${roleName} account</strong> (${identifier}). Use this 6-digit verification code to reset your password:
               </p>
               <div style="background-color: #f8fafc; border: 2px dashed #0284c7; border-radius: 14px; padding: 22px 16px; text-align: center; margin: 0 0 24px 0;">
                 <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0369a1; letter-spacing: 1px; display: block; margin-bottom: 8px;">
@@ -122,9 +132,9 @@ export default async function handler(req: any, res: any) {
     const mailOptions = {
       from: smtpFrom,
       to: targetEmail,
-      subject: `Charvik Admin - Password Reset Verification Code: ${otp}`,
+      subject: `Charvik ${roleName} - Password Reset Verification Code: ${otp}`,
       html: htmlContent,
-      text: `Your Charvik Admin password reset OTP is: ${otp}. Valid for 15 minutes.`
+      text: `Your Charvik ${roleName} password reset OTP is: ${otp}. Valid for 15 minutes.`
     };
 
     // Attempt direct SSL (Port 465) first, fallback to STARTTLS (Port 587)

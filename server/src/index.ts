@@ -278,9 +278,16 @@ app.post('/api/auth/forgot-password', async (req: Request, res: Response) => {
          OR phone_number = ?
          OR (LOWER(?) IN ('admin', 'administrator', 'super admin') AND role = 'Super Admin')
          OR (LOWER(?) = 'charvikstaffingconsulrancy@gmail.com' AND role = 'Super Admin')
-    `).get(identifier, identifier, identifier, identifier) as any;
+         OR (LOWER(?) IN ('operator', 'support', 'supporter') AND role IN ('Support Staff', 'Operator'))
+         OR (LOWER(?) IN ('captain', 'manager') AND role IN ('Captain', 'Manager'))
+    `).get(identifier, identifier, identifier, identifier, identifier, identifier) as any;
 
-    // Fallback matching for super admin
+    if (!user && (identifier.toLowerCase().includes('operator') || identifier.toLowerCase().includes('support'))) {
+      user = db.prepare("SELECT * FROM administrators WHERE role IN ('Support Staff', 'Operator') LIMIT 1").get() as any;
+    }
+    if (!user && (identifier.toLowerCase().includes('captain') || identifier.toLowerCase().includes('manager'))) {
+      user = db.prepare("SELECT * FROM administrators WHERE role IN ('Captain', 'Manager') LIMIT 1").get() as any;
+    }
     if (!user && (identifier.toLowerCase().includes('admin') || identifier.toLowerCase().includes('charvik') || identifier === '9505151527')) {
       user = db.prepare("SELECT * FROM administrators WHERE role = 'Super Admin' LIMIT 1").get() as any;
     }
@@ -344,7 +351,7 @@ app.post('/api/auth/verify-reset-otp', (req: Request, res: Response) => {
   try {
     const record = db.prepare(`
       SELECT * FROM password_resets
-      WHERE (email_or_username = ? OR target_email = ? OR ? IN ('admin', 'administrator', '9505151527', 'admin@charvik.com', 'charvikstaffingconsulrancy@gmail.com'))
+      WHERE (email_or_username = ? OR target_email = ? OR ? IN ('admin', 'administrator', '9505151527', 'admin@charvik.com', 'charvikstaffingconsulrancy@gmail.com', 'operator', 'operator@charvik.com', 'captain', 'captain@charvik.com', 'manager', 'manager@charvik.com'))
         AND otp = ?
         AND is_used = 0
         AND expires_at > datetime('now')
@@ -378,7 +385,7 @@ app.post('/api/auth/reset-password', async (req: Request, res: Response) => {
     // 1. Verify OTP
     const resetRecord = db.prepare(`
       SELECT * FROM password_resets
-      WHERE (email_or_username = ? OR target_email = ? OR ? IN ('admin', 'administrator', '9505151527', 'admin@charvik.com', 'charvikstaffingconsulrancy@gmail.com'))
+      WHERE (email_or_username = ? OR target_email = ? OR ? IN ('admin', 'administrator', '9505151527', 'admin@charvik.com', 'charvikstaffingconsulrancy@gmail.com', 'operator', 'operator@charvik.com', 'captain', 'captain@charvik.com', 'manager', 'manager@charvik.com'))
         AND otp = ?
         AND is_used = 0
         AND expires_at > datetime('now')
@@ -396,8 +403,16 @@ app.post('/api/auth/reset-password', async (req: Request, res: Response) => {
          OR phone_number = ?
          OR (LOWER(?) IN ('admin', 'administrator', 'super admin') AND role = 'Super Admin')
          OR (LOWER(?) = 'charvikstaffingconsulrancy@gmail.com' AND role = 'Super Admin')
-    `).get(identifier, identifier, identifier, identifier) as any;
+         OR (LOWER(?) IN ('operator', 'support', 'supporter') AND role IN ('Support Staff', 'Operator'))
+         OR (LOWER(?) IN ('captain', 'manager') AND role IN ('Captain', 'Manager'))
+    `).get(identifier, identifier, identifier, identifier, identifier, identifier) as any;
 
+    if (!user && (identifier.toLowerCase().includes('operator') || identifier.toLowerCase().includes('support'))) {
+      user = db.prepare("SELECT * FROM administrators WHERE role IN ('Support Staff', 'Operator') LIMIT 1").get() as any;
+    }
+    if (!user && (identifier.toLowerCase().includes('captain') || identifier.toLowerCase().includes('manager'))) {
+      user = db.prepare("SELECT * FROM administrators WHERE role IN ('Captain', 'Manager') LIMIT 1").get() as any;
+    }
     if (!user && (identifier.toLowerCase().includes('admin') || identifier.toLowerCase().includes('charvik') || identifier === '9505151527')) {
       user = db.prepare("SELECT * FROM administrators WHERE role = 'Super Admin' LIMIT 1").get() as any;
     }
