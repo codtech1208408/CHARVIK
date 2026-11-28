@@ -6,6 +6,7 @@ import {
   Filter,
   UserPlus,
   Eye,
+  EyeOff,
   Edit,
   Trash2,
   Printer,
@@ -111,6 +112,8 @@ export const EmployeeManagement: React.FC = () => {
   const [newStaffMobile, setNewStaffMobile] = useState('');
   const [newStaffUsername, setNewStaffUsername] = useState('');
   const [newStaffPassword, setNewStaffPassword] = useState('');
+  const [showStaffPassword, setShowStaffPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [newStaffCategories, setNewStaffCategories] = useState<string[]>(() => getAllCategoryAndSubItemNames());
 
   // Granular module and subtab permission toggling helpers
@@ -1262,15 +1265,25 @@ export const EmployeeManagement: React.FC = () => {
             <label className="block text-xs font-bold text-slate-700 mb-1">
               Password <span className="text-rose-500">*</span>
             </label>
-            <input
-              type="password"
-              required
-              minLength={4}
-              placeholder="Minimum 4 characters"
-              value={newStaffPassword}
-              onChange={(e) => setNewStaffPassword(e.target.value)}
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500"
-            />
+            <div className="relative">
+              <input
+                type={showStaffPassword ? 'text' : 'password'}
+                required
+                minLength={4}
+                placeholder="Minimum 4 characters"
+                value={newStaffPassword}
+                onChange={(e) => setNewStaffPassword(e.target.value)}
+                className="w-full text-xs p-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500 transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowStaffPassword(!showStaffPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                title={showStaffPassword ? 'Hide password' : 'Show password'}
+              >
+                {showStaffPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           {/* 5. Category Option (Single & Multiple Selection) */}
@@ -1407,15 +1420,25 @@ export const EmployeeManagement: React.FC = () => {
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">New Password</label>
-            <input
-              type="password"
-              required
-              minLength={6}
-              placeholder="Enter at least 6 characters"
-              value={resetPasswordVal}
-              onChange={(e) => setResetPasswordVal(e.target.value)}
-              className="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500"
-            />
+            <div className="relative">
+              <input
+                type={showResetPassword ? 'text' : 'password'}
+                required
+                minLength={4}
+                placeholder="Enter at least 4 characters"
+                value={resetPasswordVal}
+                onChange={(e) => setResetPasswordVal(e.target.value)}
+                className="w-full text-xs p-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-blue-500 transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowResetPassword(!showResetPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                title={showResetPassword ? 'Hide password' : 'Show password'}
+              >
+                {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
