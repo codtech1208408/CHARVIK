@@ -504,15 +504,37 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
   if (path === '/auth/login' && method === 'POST') {
     const identifier = String(body.email_or_username || body.email || body.username || body.phone_number || body.mobile || '').trim().toLowerCase();
     const password = String(body.password || '').trim();
+    const portalRole = String(body.portalRole || body.role || '').trim();
 
     if (!identifier || !password) {
       throw new Error('Mobile number or Email/Username and password are required.');
     }
 
-    // A. Check Standard Authorised Demo Credentials
     let matchedUser: any = null;
 
-    // Super Admin
+    // Super Admin identifier check
+    const isSuperAdminIdentifier = [
+      'admin@charvik.com',
+      'admin',
+      'administrator',
+      '9505151527',
+      '9876543210',
+      'charvikstaffingconsulrancy@gmail.com',
+      'charvikstaffingconsultancy@gmail.com'
+    ].includes(identifier) || (identifier.includes('charvik') && (identifier.includes('admin') || identifier.includes('@gmail.com')));
+
+    // Portal Role Guards: Prevent Admin from logging in on Operator or Captain tab and vice versa
+    if ((portalRole === 'Operator' || portalRole === 'Support Staff') && isSuperAdminIdentifier) {
+      throw new Error('Admin credentials cannot be used on the Operator Portal. Please use your authorized Operator credentials, or sign in via the Admin Portal at /admin/login.');
+    }
+    if ((portalRole === 'Captain' || portalRole === 'Manager') && isSuperAdminIdentifier) {
+      throw new Error('Admin credentials cannot be used on the Captain Portal. Please use your authorized Captain / Manager credentials, or sign in via the Admin Portal at /admin/login.');
+    }
+    if (portalRole === 'Admin' && !isSuperAdminIdentifier) {
+      throw new Error('This portal is exclusively for Super Admin. Please sign in via the Employee Portal at /login.');
+    }
+
+    // Super Admin custom password
     let savedAdminPassword = localStorage.getItem('charvik_custom_admin_password');
     if (!savedAdminPassword) {
       try {
@@ -524,16 +546,6 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       } catch { }
     }
     const isCustomAdminPassMatch = Boolean(savedAdminPassword && password === savedAdminPassword);
-
-    const isSuperAdminIdentifier = [
-      'admin@charvik.com',
-      'admin',
-      'administrator',
-      '9505151527',
-      '9876543210',
-      'charvikstaffingconsulrancy@gmail.com',
-      'charvikstaffingconsultancy@gmail.com'
-    ].includes(identifier) || (identifier.includes('charvik') && (identifier.includes('admin') || identifier.includes('@gmail.com')));
 
     // Captain / Operations Manager custom password
     let savedCaptainPassword = localStorage.getItem('charvik_custom_captain_password');
@@ -561,84 +573,164 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     }
     const isCustomOperatorPassMatch = Boolean(savedOperatorPassword && password === savedOperatorPassword);
 
-    if (
-      isSuperAdminIdentifier &&
-      (['admin123', 'adminpassword', 'Snusrvcc@1527'].includes(password) || isCustomAdminPassMatch)
-    ) {
-      matchedUser = {
-        id: 1,
-        name: 'Admin Manager',
-        email: 'admin@charvik.com',
-        phone_number: '9505151527',
-        role: 'Super Admin',
-        status: 'Active'
-      };
-    }
-    // Employee (Fleet Captain / Manager)
-    else if (
-      ['9701055555', 'captain@charvik.com', 'captain', 'manager@charvik.com', 'manager'].includes(identifier) &&
-      (['captain123', 'manager123', 'admin123'].includes(password) || isCustomCaptainPassMatch)
-    ) {
-      matchedUser = {
-        id: 2,
-        name: 'Employee',
-        email: 'captain@charvik.com',
-        phone_number: '9701055555',
-        role: identifier.includes('manager') ? 'Manager' : 'Captain',
-        status: 'Active'
-      };
-    }
-    // Operator (Support Staff)
-    else if (
-      ['supporter@charvik.com', 'supporter', 'support', 'operator@charvik.com', 'operator', '9848033445'].includes(identifier) &&
-      (['supporter123', 'support123', 'operator123', 'admin123'].includes(password) || isCustomOperatorPassMatch)
-    ) {
-      const creds = getLocalCollection<any>('staff_credentials');
-      const found = creds.find((c: any) => c.id === 3 || c.email_or_username === 'supporter@charvik.com');
-      matchedUser = {
-        id: 3,
-        name: 'Operator',
-        email: 'supporter@charvik.com',
-        phone_number: '9848033445',
-        role: 'Support Staff',
-        status: 'Active',
-        categories: found?.categories || []
-      };
+    // A. Check Employee Credentials created by Admin in staff_credentials
+    const localStaffList = getLocalCollection<any>('staff_credentials') || [];
+    let savedStaffList: any[] = [];
+    try {
+      const s = localStorage.getItem('charvik_staff_credentials');
+      if (s) savedStaffList = JSON.parse(s);
+    } catch { }
+    const combinedStaff = [...localStaffList, ...savedStaffList];
+
+    const foundStaff = combinedStaff.find((s: any) => {
+      const u = String(s.email_or_username || '').trim().toLowerCase();
+      const p = String(s.phone_number || '').trim();
+      return u === identifier || p === identifier;
+    });
+
+    if (foundStaff && foundStaff.role !== 'Super Admin') {
+      const staffRole = (foundStaff.role || '').toLowerCase();
+      if ((portalRole === 'Operator' || portalRole === 'Support Staff') && !staffRole.includes('operator') && !staffRole.includes('support')) {
+        throw new Error(`This employee account is registered as "${foundStaff.role}". Please switch to the appropriate login portal.`);
+      }
+      if ((portalRole === 'Captain' || portalRole === 'Manager') && !staffRole.includes('captain') && !staffRole.includes('manager')) {
+        throw new Error(`This employee account is registered as "${foundStaff.role}". Please switch to the appropriate login portal.`);
+      }
+
+      let customStaffPwd = localStorage.getItem(`charvik_custom_pwd_${identifier}`) || foundStaff.password || foundStaff.password_hash;
+      if (!customStaffPwd) {
+        try {
+          const { data: s } = await supabase.from('application_settings').select('value').eq('key', 'pwd_' + identifier.replace(/[^a-zA-Z0-9]/g, '_')).single();
+          if (s && s.value) customStaffPwd = s.value;
+        } catch { }
+      }
+
+      const isPassValid = password === customStaffPwd ||
+        password === foundStaff.password ||
+        password === foundStaff.password_hash ||
+        (['Support Staff', 'Operator'].includes(foundStaff.role) && (['operator123', 'supporter123', 'support123'].includes(password) || isCustomOperatorPassMatch)) ||
+        (['Captain', 'Manager'].includes(foundStaff.role) && (['captain123', 'manager123'].includes(password) || isCustomCaptainPassMatch));
+
+      if (isPassValid) {
+        matchedUser = {
+          id: foundStaff.id,
+          name: foundStaff.name,
+          email: foundStaff.email_or_username,
+          phone_number: foundStaff.phone_number || '',
+          role: foundStaff.role,
+          categories: foundStaff.categories || [],
+          status: foundStaff.status || 'Active'
+        };
+      } else {
+        throw new Error('Invalid credentials. Incorrect password for this employee account.');
+      }
     }
 
-    // B. Check Supabase administrators table if not matched by standard presets
+    // B. Check Supabase administrators table
     if (!matchedUser) {
       try {
         const { data: admins } = await supabase.from('administrators').select('*');
         if (admins && admins.length > 0) {
           const found = admins.find(u => {
             const emailOrUser = String(u.email_or_username || '').trim().toLowerCase();
-            const phone = String(u.phone_number || '').trim();
-            return emailOrUser === identifier || phone === identifier;
+            return emailOrUser === identifier;
           });
           if (found) {
             if (found.status !== 'Active') {
               throw new Error('Your account has been disabled by the Administrator.');
             }
-            const isMatch = password === found.password_hash ||
-              (found.role === 'Super Admin' && isCustomAdminPassMatch) ||
-              (['Support Staff', 'Operator'].includes(found.role) && isCustomOperatorPassMatch) ||
-              (['Captain', 'Manager'].includes(found.role) && isCustomCaptainPassMatch) ||
-              ['admin123', 'captain123', 'supporter123', 'operator123', 'manager123'].includes(password);
-            if (isMatch) {
+            if ((portalRole === 'Operator' || portalRole === 'Support Staff') && found.role === 'Super Admin') {
+              throw new Error('Admin credentials cannot be used on the Operator Portal. Please use your authorized Operator credentials, or sign in via the Admin Portal at /admin/login.');
+            }
+            if ((portalRole === 'Captain' || portalRole === 'Manager') && found.role === 'Super Admin') {
+              throw new Error('Admin credentials cannot be used on the Captain Portal. Please use your authorized Captain / Manager credentials, or sign in via the Admin Portal at /admin/login.');
+            }
+            if (portalRole === 'Admin' && found.role !== 'Super Admin' && found.role !== 'Admin') {
+              throw new Error('This portal is exclusively for Super Admin. Please sign in via the Employee Portal at /login.');
+            }
+
+            let customAdminPwd = localStorage.getItem(`charvik_custom_pwd_${identifier}`);
+            if (!customAdminPwd) {
+              try {
+                const { data: s } = await supabase.from('application_settings').select('value').eq('key', 'pwd_' + identifier.replace(/[^a-zA-Z0-9]/g, '_')).single();
+                if (s && s.value) customAdminPwd = s.value;
+              } catch { }
+            }
+
+            const isPassValid = password === found.password_hash ||
+              password === customAdminPwd ||
+              (found.role === 'Super Admin' && (['admin123', 'adminpassword', 'Snusrvcc@1527'].includes(password) || isCustomAdminPassMatch)) ||
+              (['Support Staff', 'Operator'].includes(found.role) && (['operator123', 'supporter123', 'support123'].includes(password) || isCustomOperatorPassMatch)) ||
+              (['Captain', 'Manager'].includes(found.role) && (['captain123', 'manager123'].includes(password) || isCustomCaptainPassMatch));
+
+            if (isPassValid) {
               matchedUser = {
                 id: found.id,
                 name: found.name,
                 email: found.email_or_username,
-                phone_number: found.phone_number,
+                phone_number: '',
                 role: found.role,
                 status: found.status
               };
+            } else {
+              throw new Error('Invalid credentials. Incorrect password for this account.');
             }
           }
         }
-      } catch (err) {
-        console.warn('Supabase auth query note:', err);
+      } catch (err: any) {
+        if (err.message && (err.message.includes('Admin credentials cannot') || err.message.includes('Incorrect password') || err.message.includes('This portal is exclusively'))) {
+          throw err;
+        }
+      }
+    }
+
+    // C. Check Standard Authorised Demo/Default Accounts (guarded by portalRole)
+    if (!matchedUser) {
+      // Super Admin
+      if (
+        (portalRole === 'Admin' || !portalRole) &&
+        isSuperAdminIdentifier &&
+        (['admin123', 'adminpassword', 'Snusrvcc@1527'].includes(password) || isCustomAdminPassMatch)
+      ) {
+        matchedUser = {
+          id: 1,
+          name: 'Admin Manager',
+          email: 'admin@charvik.com',
+          phone_number: '9505151527',
+          role: 'Super Admin',
+          status: 'Active'
+        };
+      }
+      // Employee (Fleet Captain / Manager)
+      else if (
+        (portalRole === 'Captain' || !portalRole) &&
+        ['9701055555', 'captain@charvik.com', 'captain', 'manager@charvik.com', 'manager'].includes(identifier) &&
+        (['captain123', 'manager123', 'admin123'].includes(password) || isCustomCaptainPassMatch)
+      ) {
+        matchedUser = {
+          id: 2,
+          name: 'Employee',
+          email: 'captain@charvik.com',
+          phone_number: '9701055555',
+          role: identifier.includes('manager') ? 'Manager' : 'Captain',
+          status: 'Active'
+        };
+      }
+      // Operator (Support Staff)
+      else if (
+        (portalRole === 'Operator' || !portalRole) &&
+        ['supporter@charvik.com', 'supporter', 'support', 'operator@charvik.com', 'operator', '9848033445', 'harisn@gmail.com', '8519821491'].includes(identifier) &&
+        (['supporter123', 'support123', 'operator123', 'admin123'].includes(password) || isCustomOperatorPassMatch)
+      ) {
+        matchedUser = {
+          id: 7,
+          name: 'NEELAM HARISH',
+          email: 'harisn@gmail.com',
+          phone_number: '8519821491',
+          role: 'Support Staff',
+          status: 'Active',
+          categories: ['Route Management', 'Trip Management', 'AC Maintenance']
+        };
       }
     }
 
@@ -1640,17 +1732,20 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
             })) as any;
         }
         const defaults = [
-          { id: 1, name: 'Admin Manager', email_or_username: 'admin@charvik.com', phone_number: '9505151527', role: 'Super Admin', status: 'Active', categories: allCategoryNames }
+          { id: 1, name: 'Admin Manager', email_or_username: 'admin@charvik.com', phone_number: '9505151527', role: 'Super Admin', status: 'Active', categories: allCategoryNames },
+          { id: 7, name: 'NEELAM HARISH', email_or_username: 'harisn@gmail.com', phone_number: '8519821491', role: 'Support Staff', status: 'Active', categories: ['Route Management', 'Trip Management', 'AC Maintenance'] }
         ];
         setLocalCollection('staff_credentials', defaults);
         return defaults as any;
       }
       if (method === 'POST') {
+        const passwordVal = String(body.password || 'operator123').trim();
         const rec = {
           id: Date.now(),
           name: body.name,
           email_or_username: body.email_or_username || body.phone_number,
-          phone_number: body.phone_number,
+          phone_number: body.phone_number || '',
+          password: passwordVal,
           role: body.role || 'Support Staff',
           status: 'Active',
           categories: body.categories || [],
@@ -1660,7 +1755,33 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
         list.push(rec);
         setLocalCollection('staff_credentials', list);
         try {
-          await supabase.from('administrators').insert([rec]);
+          localStorage.setItem('charvik_staff_credentials', JSON.stringify(list));
+          if (rec.email_or_username) {
+            localStorage.setItem(`charvik_custom_pwd_${rec.email_or_username.toLowerCase()}`, passwordVal);
+          }
+          if (rec.phone_number) {
+            localStorage.setItem(`charvik_custom_pwd_${rec.phone_number}`, passwordVal);
+          }
+        } catch { }
+
+        // Sync to Supabase
+        try {
+          await supabase.from('administrators').insert([{
+            name: rec.name,
+            email_or_username: rec.email_or_username,
+            password_hash: passwordVal,
+            role: rec.role,
+            status: 'Active',
+            created_at: rec.created_at,
+            updated_at: rec.created_at
+          }]);
+          if (rec.email_or_username) {
+            await supabase.from('application_settings').upsert({
+              key: 'pwd_' + rec.email_or_username.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_'),
+              value: passwordVal,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'key' });
+          }
         } catch { }
         return { success: true, ...rec } as any;
       }
@@ -1670,6 +1791,21 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
       const subAction = parts[2];
       const list = getLocalCollection<any>('staff_credentials');
       if (subAction === 'password' && method === 'PUT') {
+        const newPass = String(body.newPassword || body.password || '').trim();
+        const updated = list.map(s => String(s.id) === String(staffId) ? { ...s, password: newPass, password_hash: newPass } : s);
+        setLocalCollection('staff_credentials', updated);
+        try {
+          localStorage.setItem('charvik_staff_credentials', JSON.stringify(updated));
+          const target = list.find(s => String(s.id) === String(staffId));
+          if (target && target.email_or_username) {
+            localStorage.setItem(`charvik_custom_pwd_${target.email_or_username.toLowerCase()}`, newPass);
+            await supabase.from('application_settings').upsert({
+              key: 'pwd_' + target.email_or_username.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_'),
+              value: newPass,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'key' });
+          }
+        } catch { }
         return { success: true, message: 'Password updated successfully' } as any;
       }
       if (subAction === 'categories' && method === 'PUT') {

@@ -157,6 +157,8 @@ function isUserAdmin(req: Request): boolean {
 app.post('/api/auth/login', (req: Request, res: Response) => {
   const identifier = String(req.body.email_or_username || req.body.email || req.body.username || req.body.phone_number || req.body.mobile || '').trim();
   const password = req.body.password;
+  const portalRole = String(req.body.portalRole || req.body.role || '').trim();
+
   if (!identifier || !password) {
     return res.status(400).json({ error: 'Mobile number or Email/Username and password are required' });
   }
@@ -190,6 +192,17 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
 
   if (!user) {
     return res.status(401).json({ error: 'Invalid credentials. Please verify your mobile number or email/username.' });
+  }
+
+  // Enforce portal role boundary
+  if ((portalRole === 'Operator' || portalRole === 'Support Staff') && user.role === 'Super Admin') {
+    return res.status(403).json({ error: 'Admin credentials cannot be used on the Operator Portal. Please use your authorized Operator credentials, or sign in via the Admin Portal at /admin/login.' });
+  }
+  if ((portalRole === 'Captain' || portalRole === 'Manager') && user.role === 'Super Admin') {
+    return res.status(403).json({ error: 'Admin credentials cannot be used on the Captain Portal. Please use your authorized Captain / Manager credentials, or sign in via the Admin Portal at /admin/login.' });
+  }
+  if (portalRole === 'Admin' && user.role !== 'Super Admin') {
+    return res.status(403).json({ error: 'This portal is exclusively for Super Admin. Please sign in via the Employee Portal at /login.' });
   }
 
   if (user.status !== 'Active') {

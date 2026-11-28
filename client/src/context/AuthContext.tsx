@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (emailOrUser: string, pass: string) => Promise<User>;
+  login: (emailOrUser: string, pass: string, portalRole?: string) => Promise<User>;
   logout: () => void;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   isAuthenticated: boolean;
@@ -57,8 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     verifyAuth();
   }, []);
 
-  const login = async (emailOrUser: string, pass: string): Promise<User> => {
-    const res = await api.login({ email_or_username: emailOrUser, password: pass });
+  const login = async (emailOrUser: string, pass: string, portalRole?: string): Promise<User> => {
+    const res = await api.login({ email_or_username: emailOrUser, password: pass, portalRole });
     setToken(res.token);
     setUser(res.user);
     localStorage.setItem('charvik_token', res.token);

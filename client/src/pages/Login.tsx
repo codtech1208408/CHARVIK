@@ -91,7 +91,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
     setErrorMessage('');
 
     try {
-      const loggedUser = await login(emailOrUser, password);
+      const loggedUser = await login(emailOrUser, password, selectedRole);
       const roleName = loggedUser?.role === 'Support Staff' ? 'Operator' : (loggedUser?.role || selectedRole);
       success(`Welcome to Charvik Fleet Management! Logged in as ${roleName}.`);
       
