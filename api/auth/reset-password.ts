@@ -61,16 +61,25 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Invalid or expired verification code.' });
   }
 
-  // If Supabase is available, sync to Supabase
-  const sbUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const sbKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  // Sync new admin password to Supabase application_settings
+  const sbUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://kqhqicixrcbzqwogabrz.supabase.co';
+  const sbKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxaHFpY2l4cmNienF3b2dhYnJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyOTIyMjQsImV4cCI6MjEwNzg2ODIyNH0.tKpThJBIapEtApyAdDYbZowj3F1LdnpaKPzLa1CgpUs';
   if (sbUrl && sbKey) {
     try {
-      const supabase = createClient(sbUrl, sbKey);
-      await supabase
-        .from('administrators')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('role', 'Super Admin');
+      await fetch(sbUrl + '/rest/v1/application_settings', {
+        method: 'POST',
+        headers: {
+          'apikey': sbKey,
+          'Authorization': 'Bearer ' + sbKey,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          key: 'admin_password',
+          value: newPassword,
+          updated_at: new Date().toISOString()
+        })
+      });
     } catch (e) {
       console.warn('Supabase update note in serverless:', e);
     }

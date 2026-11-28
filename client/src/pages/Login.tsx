@@ -4,6 +4,7 @@ import { Lock, Mail, Phone, Eye, EyeOff, ShieldCheck, ArrowRight, Compass, Users
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/common/Toast';
 import { api } from '../services/api';
+import { supabase } from '../services/supabase';
 
 interface LoginProps {
   defaultRole?: 'Admin' | 'Captain' | 'Operator';
@@ -210,6 +211,17 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
         newPassword: newPassword,
         otpToken: sessionStorage.getItem('charvik_reset_otp_token') || undefined
       });
+      // Immediately persist the custom password in local storage & Supabase
+      localStorage.setItem('charvik_custom_admin_password', newPassword);
+      try {
+        await supabase.from('application_settings').upsert({
+          key: 'admin_password',
+          value: newPassword,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+      } catch (syncErr) {
+        console.warn('Supabase password persistence note:', syncErr);
+      }
       sessionStorage.removeItem('charvik_reset_otp_token');
       setForgotStep(4);
       success('Admin password reset successfully! You can now log in.');

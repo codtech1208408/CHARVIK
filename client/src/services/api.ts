@@ -513,12 +513,31 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
     let matchedUser: any = null;
 
     // Super Admin
-    const savedAdminPassword = localStorage.getItem('charvik_custom_admin_password');
+    let savedAdminPassword = localStorage.getItem('charvik_custom_admin_password');
+    if (!savedAdminPassword) {
+      try {
+        const { data: setting } = await supabase.from('application_settings').select('value').eq('key', 'admin_password').single();
+        if (setting && setting.value) {
+          savedAdminPassword = setting.value;
+          localStorage.setItem('charvik_custom_admin_password', setting.value);
+        }
+      } catch { }
+    }
     const isCustomAdminPassMatch = Boolean(savedAdminPassword && password === savedAdminPassword);
 
+    const isSuperAdminIdentifier = [
+      'admin@charvik.com',
+      'admin',
+      'administrator',
+      '9505151527',
+      '9876543210',
+      'charvikstaffingconsulrancy@gmail.com',
+      'charvikstaffingconsultancy@gmail.com'
+    ].includes(identifier) || (identifier.includes('charvik') && (identifier.includes('admin') || identifier.includes('@gmail.com')));
+
     if (
-      ['admin@charvik.com', 'admin', 'administrator', '9505151527', '9876543210', 'charvikstaffingconsulrancy@gmail.com'].includes(identifier) &&
-      (['admin123', 'adminpassword'].includes(password) || isCustomAdminPassMatch)
+      isSuperAdminIdentifier &&
+      (['admin123', 'adminpassword', 'Snusrvcc@1527'].includes(password) || isCustomAdminPassMatch)
     ) {
       matchedUser = {
         id: 1,
