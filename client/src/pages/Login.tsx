@@ -30,7 +30,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
 
   // Forgot & Reset Password Modal States
   const [isForgotOpen, setIsForgotOpen] = useState(false);
-  const [forgotStep, setForgotStep] = useState<1 | 2 | 3>(1);
+  const [forgotStep, setForgotStep] = useState<1 | 2 | 3 | 4>(1);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotOtp, setForgotOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -162,7 +162,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotOtp.trim()) {
       setForgotError('Please enter the 6-digit OTP verification code.');
@@ -172,6 +172,26 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
       setForgotError('OTP code must be exactly 6 digits.');
       return;
     }
+
+    setForgotLoading(true);
+    setForgotError('');
+    try {
+      const res = await api.verifyResetOtp({
+        email_or_username: forgotEmail.trim(),
+        otp: forgotOtp.trim(),
+        otpToken: sessionStorage.getItem('charvik_reset_otp_token') || undefined
+      });
+      setForgotSuccessMsg(res?.message || 'OTP verified successfully! Now set your new password.');
+      setForgotStep(3);
+    } catch (err: any) {
+      setForgotError(err.message || 'Invalid or expired OTP code. Please check your email and try again.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!newPassword || newPassword.length < 6) {
       setForgotError('New password must be at least 6 characters.');
       return;
@@ -191,7 +211,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
         otpToken: sessionStorage.getItem('charvik_reset_otp_token') || undefined
       });
       sessionStorage.removeItem('charvik_reset_otp_token');
-      setForgotStep(3);
+      setForgotStep(4);
       success('Admin password reset successfully! You can now log in.');
     } catch (err: any) {
       setForgotError(err.message || 'Failed to reset password. OTP may be invalid or expired.');
@@ -449,20 +469,26 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
             </div>
 
             {/* Step Indicators */}
-            <div className="px-6 pt-4 pb-1 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between text-xs">
+            <div className="px-6 pt-4 pb-2 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between text-xs">
               <div className={`flex items-center gap-1.5 font-bold ${forgotStep >= 1 ? 'text-blue-700' : 'text-slate-400'}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${forgotStep >= 1 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>1</span>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${forgotStep > 1 ? 'bg-emerald-600 text-white' : forgotStep === 1 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                  {forgotStep > 1 ? '✓' : '1'}
+                </span>
                 <span>Send OTP</span>
               </div>
-              <span className="w-6 h-[1px] bg-slate-200"></span>
+              <span className="w-5 h-[1px] bg-slate-200"></span>
               <div className={`flex items-center gap-1.5 font-bold ${forgotStep >= 2 ? 'text-blue-700' : 'text-slate-400'}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${forgotStep >= 2 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>2</span>
-                <span>Verify & New Pass</span>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${forgotStep > 2 ? 'bg-emerald-600 text-white' : forgotStep === 2 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                  {forgotStep > 2 ? '✓' : '2'}
+                </span>
+                <span>Verify OTP</span>
               </div>
-              <span className="w-6 h-[1px] bg-slate-200"></span>
-              <div className={`flex items-center gap-1.5 font-bold ${forgotStep === 3 ? 'text-emerald-700' : 'text-slate-400'}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${forgotStep === 3 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500'}`}>3</span>
-                <span>Success</span>
+              <span className="w-5 h-[1px] bg-slate-200"></span>
+              <div className={`flex items-center gap-1.5 font-bold ${forgotStep >= 3 ? (forgotStep === 4 ? 'text-emerald-700' : 'text-blue-700') : 'text-slate-400'}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${forgotStep === 4 ? 'bg-emerald-600 text-white' : forgotStep === 3 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                  {forgotStep === 4 ? '✓' : '3'}
+                </span>
+                <span>New Password</span>
               </div>
             </div>
 
@@ -530,9 +556,9 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                 </form>
               )}
 
-              {/* STEP 2: Enter OTP & New Password */}
+              {/* STEP 2: Enter & Verify 6-Digit OTP */}
               {forgotStep === 2 && (
-                <form onSubmit={handleResetPassword} className="space-y-4">
+                <form onSubmit={handleVerifyOtp} className="space-y-4">
                   <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-xl text-xs text-blue-900 leading-relaxed">
                     <p className="font-semibold">{forgotSuccessMsg || 'Verification code sent!'}</p>
                     <p className="text-[11px] text-blue-700 mt-0.5">
@@ -561,10 +587,50 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                       value={forgotOtp}
                       onChange={(e) => setForgotOtp(e.target.value.replace(/\D/g, ''))}
                       placeholder="• • • • • •"
-                      className="block w-full py-2.5 text-center text-lg font-mono font-bold tracking-[0.5em] bg-slate-50 border border-slate-300 rounded-xl text-[#142B4A] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white"
+                      className="block w-full py-3 text-center text-xl font-mono font-bold tracking-[0.5em] bg-slate-50 border border-slate-300 rounded-xl text-[#142B4A] focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-xs"
                       required
                       autoFocus
                     />
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-end gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setForgotStep(1)}
+                      className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={forgotLoading || forgotOtp.length !== 6}
+                      className="px-5 py-2.5 text-xs font-bold text-white bg-[#142B4A] hover:bg-[#1E3A5F] rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                    >
+                      {forgotLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Verifying OTP...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Verify OTP Code</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* STEP 3: Enter New Password & Confirm Password (Shows ONLY AFTER entering & verifying OTP) */}
+              {forgotStep === 3 && (
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 leading-relaxed flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <p className="font-semibold">OTP Code Verified ({forgotOtp})</p>
+                      <p className="text-[11px] text-emerald-700">Now enter and confirm your new password below:</p>
+                    </div>
                   </div>
 
                   <div>
@@ -583,11 +649,12 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                         className="block w-full pl-10 pr-10 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white"
                         required
                         minLength={6}
+                        autoFocus
                       />
                       <button
                         type="button"
                         onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
                         {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
@@ -614,7 +681,7 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600"
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
                         {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
@@ -624,8 +691,8 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                   <div className="pt-2 flex items-center justify-end gap-2.5">
                     <button
                       type="button"
-                      onClick={() => setForgotStep(1)}
-                      className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                      onClick={() => setForgotStep(2)}
+                      className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
                     >
                       Back
                     </button>
@@ -637,11 +704,11 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                       {forgotLoading ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Resetting...</span>
+                          <span>Saving New Password...</span>
                         </>
                       ) : (
                         <>
-                          <span>Verify & Reset Password</span>
+                          <span>Save &amp; Reset Password</span>
                           <ArrowRight className="w-3.5 h-3.5" />
                         </>
                       )}
@@ -650,8 +717,8 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
                 </form>
               )}
 
-              {/* STEP 3: Success Confirmation */}
-              {forgotStep === 3 && (
+              {/* STEP 4: Success Confirmation */}
+              {forgotStep === 4 && (
                 <div className="text-center py-4 space-y-4">
                   <div className="w-14 h-14 mx-auto rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-inner">
                     <CheckCircle className="w-8 h-8" />

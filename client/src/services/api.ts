@@ -2051,7 +2051,7 @@ export const api = {
   getMe: () => request<any>('/auth/me'),
   forgotPassword: (data: { email_or_username: string }) =>
     request<any>('/auth/forgot-password', { method: 'POST', body: JSON.stringify(data) }),
-  verifyResetOtp: (data: { email_or_username: string; otp: string }) =>
+  verifyResetOtp: (data: { email_or_username: string; otp: string; otpToken?: string }) =>
     request<any>('/auth/verify-reset-otp', { method: 'POST', body: JSON.stringify(data) }),
   resetPassword: (data: { email_or_username: string; otp: string; newPassword: string; otpToken?: string }) =>
     request<any>('/auth/reset-password', { method: 'POST', body: JSON.stringify(data) }),
