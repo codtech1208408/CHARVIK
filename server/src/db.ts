@@ -32,6 +32,17 @@ export function initDatabase() {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Password Reset OTPs
+    CREATE TABLE IF NOT EXISTS password_resets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email_or_username TEXT NOT NULL,
+      target_email TEXT NOT NULL,
+      otp TEXT NOT NULL,
+      expires_at DATETIME NOT NULL,
+      is_used INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Employees (shared between Drivers, Helpers, Captains)
     CREATE TABLE IF NOT EXISTS employees (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

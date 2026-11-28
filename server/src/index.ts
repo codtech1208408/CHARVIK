@@ -19,6 +19,7 @@ import { db, initDatabase } from './db.js';
 import { runSeed } from './seed.js';
 import { supabase, testSupabaseConnection } from './supabase.js';
 import { cloudinary, uploadToCloudinary } from './cloudinary.js';
+import { sendPasswordResetOtpEmail } from './mailer.js';
 import {
   syncTaskToSupabase,
   deleteTaskFromSupabase,
@@ -255,6 +256,180 @@ app.get('/api/auth/me', (req: Request, res: Response) => {
     return res.json({ user });
   } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+});
+
+// ================= FORGOT & RESET PASSWORD (NODEMAILER SMTP) =================
+app.post('/api/auth/forgot-password', async (req: Request, res: Response) => {
+  const identifier = String(req.body.email_or_username || req.body.email || req.body.username || req.body.phone_number || '').trim();
+  if (!identifier) {
+    return res.status(400).json({ error: 'Please enter your Admin Email, Username, or registered Mobile Number.' });
+  }
+
+  try {
+    // 1. Locate user in administrators table
+    let user = db.prepare(`
+      SELECT * FROM administrators 
+      WHERE email_or_username = ? 
+         OR phone_number = ?
+         OR (LOWER(?) IN ('admin', 'administrator', 'super admin') AND role = 'Super Admin')
+         OR (LOWER(?) = 'charvikstaffingconsulrancy@gmail.com' AND role = 'Super Admin')
+    `).get(identifier, identifier, identifier, identifier) as any;
+
+    // Fallback matching for super admin
+    if (!user && (identifier.toLowerCase().includes('admin') || identifier.toLowerCase().includes('charvik') || identifier === '9505151527')) {
+      user = db.prepare("SELECT * FROM administrators WHERE role = 'Super Admin' LIMIT 1").get() as any;
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: 'No administrator account found matching the provided details.' });
+    }
+
+    // Target recipient email: use SMTP_USER or user's email if valid
+    let targetEmail = process.env.SMTP_USER || 'charvikstaffingconsulrancy@gmail.com';
+    if (user.email_or_username && user.email_or_username.includes('@') && !user.email_or_username.endsWith('@charvik.com')) {
+      targetEmail = user.email_or_username;
+    }
+
+    // 2. Generate secure 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    // 3. Store OTP in database
+    db.prepare(`
+      INSERT INTO password_resets (email_or_username, target_email, otp, expires_at, is_used)
+      VALUES (?, ?, ?, ?, 0)
+    `).run(identifier, targetEmail, otp, expiresAt);
+
+    // 4. Send email via Nodemailer
+    const emailResult = await sendPasswordResetOtpEmail(targetEmail, otp, user.name || 'Administrator');
+
+    if (!emailResult.success) {
+      return res.status(500).json({
+        error: `Failed to deliver reset email: ${emailResult.error || 'SMTP delivery error'}. Please check SMTP configuration.`
+      });
+    }
+
+    // Masked email for security display (e.g., ch***cy@gmail.com)
+    const [userPart, domainPart] = targetEmail.split('@');
+    const maskedUser = userPart.length > 4 ? `${userPart.slice(0, 2)}***${userPart.slice(-2)}` : `${userPart.slice(0, 1)}***`;
+    const maskedEmail = `${maskedUser}@${domainPart}`;
+
+    logAudit('FORGOT_PASSWORD_REQUEST', 'Auth', user.id, `Password reset OTP generated and emailed to ${targetEmail}`);
+
+    return res.json({
+      success: true,
+      message: `Password reset verification code has been sent to ${maskedEmail}`,
+      maskedEmail,
+      expiresInMinutes: 15
+    });
+  } catch (err: any) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error while processing password reset' });
+  }
+});
+
+app.post('/api/auth/verify-reset-otp', (req: Request, res: Response) => {
+  const identifier = String(req.body.email_or_username || '').trim();
+  const otp = String(req.body.otp || '').trim();
+
+  if (!identifier || !otp) {
+    return res.status(400).json({ error: 'Email/Username and verification OTP are required.' });
+  }
+
+  try {
+    const record = db.prepare(`
+      SELECT * FROM password_resets
+      WHERE (email_or_username = ? OR target_email = ? OR ? IN ('admin', 'administrator', '9505151527', 'admin@charvik.com', 'charvikstaffingconsulrancy@gmail.com'))
+        AND otp = ?
+        AND is_used = 0
+        AND expires_at > datetime('now')
+      ORDER BY id DESC LIMIT 1
+    `).get(identifier, identifier, identifier, otp) as any;
+
+    if (!record) {
+      return res.status(400).json({ error: 'Invalid or expired verification code. Please check your email or request a new OTP.' });
+    }
+
+    return res.json({ success: true, message: 'OTP verified successfully.' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/auth/reset-password', async (req: Request, res: Response) => {
+  const identifier = String(req.body.email_or_username || '').trim();
+  const otp = String(req.body.otp || '').trim();
+  const newPassword = String(req.body.newPassword || '').trim();
+
+  if (!identifier || !otp || !newPassword) {
+    return res.status(400).json({ error: 'Email/Username, OTP, and new password are required.' });
+  }
+
+  if (newPassword.length < 4) {
+    return res.status(400).json({ error: 'Password must be at least 4 characters long.' });
+  }
+
+  try {
+    // 1. Verify OTP
+    const resetRecord = db.prepare(`
+      SELECT * FROM password_resets
+      WHERE (email_or_username = ? OR target_email = ? OR ? IN ('admin', 'administrator', '9505151527', 'admin@charvik.com', 'charvikstaffingconsulrancy@gmail.com'))
+        AND otp = ?
+        AND is_used = 0
+        AND expires_at > datetime('now')
+      ORDER BY id DESC LIMIT 1
+    `).get(identifier, identifier, identifier, otp) as any;
+
+    if (!resetRecord) {
+      return res.status(400).json({ error: 'Invalid or expired verification code. Please request a new OTP.' });
+    }
+
+    // 2. Locate user
+    let user = db.prepare(`
+      SELECT * FROM administrators 
+      WHERE email_or_username = ? 
+         OR phone_number = ?
+         OR (LOWER(?) IN ('admin', 'administrator', 'super admin') AND role = 'Super Admin')
+         OR (LOWER(?) = 'charvikstaffingconsulrancy@gmail.com' AND role = 'Super Admin')
+    `).get(identifier, identifier, identifier, identifier) as any;
+
+    if (!user && (identifier.toLowerCase().includes('admin') || identifier.toLowerCase().includes('charvik') || identifier === '9505151527')) {
+      user = db.prepare("SELECT * FROM administrators WHERE role = 'Super Admin' LIMIT 1").get() as any;
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: 'Administrator account not found.' });
+    }
+
+    // 3. Mark OTP as used
+    db.prepare('UPDATE password_resets SET is_used = 1 WHERE id = ?').run(resetRecord.id);
+
+    // 4. Update Password Hash
+    const password_hash = bcrypt.hashSync(newPassword, 10);
+    db.prepare('UPDATE administrators SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(password_hash, user.id);
+
+    // 5. Sync to Supabase if connected
+    try {
+      if (supabase) {
+        await supabase
+          .from('administrators')
+          .update({ password_hash, updated_at: new Date().toISOString() })
+          .eq('id', user.id);
+      }
+    } catch (sbErr) {
+      console.warn('Supabase password sync note:', sbErr);
+    }
+
+    logAudit('PASSWORD_RESET_SUCCESS', 'Auth', user.id, `Admin ${user.name} successfully reset their password`);
+
+    return res.json({
+      success: true,
+      message: 'Password reset successful! You can now log in with your new password.'
+    });
+  } catch (err: any) {
+    console.error('Reset password error:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error while updating password' });
   }
 });
 
