@@ -37,7 +37,7 @@ export default async function handler(req: any, res: any) {
   const smtpUser = (process.env.SMTP_USER || 'charvikstaffingconsulrancy@gmail.com').trim();
   const smtpPass = (process.env.SMTP_PASSWORD || 'xjxt hfmz wgqt dsgz').replace(/\s+/g, '');
   const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
+  const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10);
   const smtpFrom = process.env.SMTP_FROM || `"Charvik Staffing Consultancy" <${smtpUser}>`;
 
   // Always send to official admin email for admin reset requests
@@ -47,19 +47,6 @@ export default async function handler(req: any, res: any) {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
-
     const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -128,13 +115,36 @@ export default async function handler(req: any, res: any) {
 </html>
     `;
 
-    await transporter.sendMail({
+    const mailOptions = {
       from: smtpFrom,
       to: targetEmail,
       subject: `Charvik Admin - Password Reset Verification Code: ${otp}`,
       html: htmlContent,
       text: `Your Charvik Admin password reset OTP is: ${otp}. Valid for 15 minutes.`
-    });
+    };
+
+    // Attempt direct SSL (Port 465) first, fallback to STARTTLS (Port 587)
+    let sendResult;
+    try {
+      const transporterSSL = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user: smtpUser, pass: smtpPass },
+        tls: { rejectUnauthorized: false }
+      });
+      sendResult = await transporterSSL.sendMail(mailOptions);
+    } catch (sslErr: any) {
+      console.warn('Port 465 SSL failed, trying Port 587 STARTTLS:', sslErr?.message);
+      const transporterTLS = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: { user: smtpUser, pass: smtpPass },
+        tls: { rejectUnauthorized: false }
+      });
+      sendResult = await transporterTLS.sendMail(mailOptions);
+    }
 
     const [u, d] = targetEmail.split('@');
     const masked = `${u.slice(0, 2)}***${u.slice(-2)}@${d}`;

@@ -1961,12 +1961,13 @@ async function handleCloudFallback<T>(endpoint: string, options: RequestInit = {
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const isLocalHost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
   const hasRealRemoteApi = !!import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost');
+  const isAuthReset = endpoint.startsWith('/auth/forgot-password') || endpoint.startsWith('/auth/reset-password') || endpoint.startsWith('/auth/verify-reset-otp');
 
-  // Attempt standard network request only if we are on localhost or if VITE_API_URL is configured
-  if (isLocalHost || hasRealRemoteApi) {
+  // Attempt standard network request if on localhost, configured remote API, OR for auth reset
+  if (isLocalHost || hasRealRemoteApi || isAuthReset) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), isAuthReset ? 25000 : 3500);
 
       const url = `${API_BASE}${endpoint}`;
       const headers = {
@@ -1995,7 +1996,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       // When any write operation (POST, PUT, DELETE, PATCH) is executed on localhost,
       // asynchronously mirror it to Supabase cloud fallback so Vercel users receive it immediately!
       const method = (options.method || 'GET').toUpperCase();
-      if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+      if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method) && !isAuthReset) {
         try {
           let mirrorBody = options.body;
           if (options.body) {
@@ -2016,6 +2017,10 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
       return data;
     } catch (err: any) {
+      if (isAuthReset) {
+        // If auth reset failed, rethrow error to inform user with actual message
+        throw err;
+      }
       // If server returned a business logic error (400 Bad Request, 401 Unauthorized, 403 Forbidden), pass it to UI
       if (err.status && err.status >= 400 && err.status < 500) {
         throw err;

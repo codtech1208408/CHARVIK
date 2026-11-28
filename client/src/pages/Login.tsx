@@ -148,8 +148,11 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
     try {
       const res = await api.forgotPassword({ email_or_username: forgotEmail.trim() });
       setForgotSuccessMsg(res.message || 'OTP verification code sent to your email.');
-      if (res.target_email) {
-        setTargetEmailMasked(res.target_email);
+      if (res.target_email || res.maskedEmail) {
+        setTargetEmailMasked(res.target_email || res.maskedEmail);
+      }
+      if (res.otpToken) {
+        sessionStorage.setItem('charvik_reset_otp_token', res.otpToken);
       }
       setForgotStep(2);
     } catch (err: any) {
@@ -184,8 +187,10 @@ export const Login: React.FC<LoginProps> = ({ defaultRole }) => {
       await api.resetPassword({
         email_or_username: forgotEmail.trim(),
         otp: forgotOtp.trim(),
-        newPassword: newPassword
+        newPassword: newPassword,
+        otpToken: sessionStorage.getItem('charvik_reset_otp_token') || undefined
       });
+      sessionStorage.removeItem('charvik_reset_otp_token');
       setForgotStep(3);
       success('Admin password reset successfully! You can now log in.');
     } catch (err: any) {
